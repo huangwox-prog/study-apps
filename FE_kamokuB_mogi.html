@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>基本情報技術者 科目B 模擬試験</title>
+<style>
+  :root{
+    --ink:#243b6b;        /* 官製試験インクの濃紺 */
+    --ink-soft:#3d5894;
+    --paper:#e9ebf0;
+    --card:#ffffff;
+    --line:#d3d8e2;
+    --code-bg:#f3f5fb;
+    --red:#c0392b;        /* 採点の赤ペン */
+    --green:#2f7d4f;
+    --muted:#6c7385;
+    --amber:#b8860b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:#1c2330;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif;
+    line-height:1.7; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:0 18px 80px;}
+
+  /* ---- header ---- */
+  header.top{
+    background:var(--ink); color:#fff; padding:26px 18px 22px;
+    border-bottom:5px solid var(--red);
+  }
+  header.top .inner{max-width:860px; margin:0 auto;}
+  header.top h1{margin:0; font-size:1.35rem; letter-spacing:.04em;}
+  header.top p{margin:6px 0 0; font-size:.82rem; color:#c6d0e8;}
+
+  /* ---- sticky scorecard ---- */
+  .scorebar{
+    position:sticky; top:0; z-index:20;
+    background:rgba(255,255,255,.94); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding:10px 18px;
+  }
+  .scorebar .inner{max-width:860px; margin:0 auto; width:100%; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .score-num{font-weight:700; color:var(--ink); font-size:1.05rem;}
+  .score-num b{font-size:1.6rem; color:var(--red);}
+  .progress{flex:1; min-width:120px; height:8px; background:var(--line); border-radius:99px; overflow:hidden;}
+  .progress > i{display:block; height:100%; width:0; background:var(--ink); transition:width .3s;}
+
+  .btn{
+    border:none; border-radius:7px; padding:9px 18px; font-size:.92rem; cursor:pointer;
+    font-family:inherit; font-weight:600; transition:filter .15s,transform .05s;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-grade{background:var(--ink); color:#fff;}
+  .btn-grade:hover{filter:brightness(1.12);}
+  .btn-reset{background:transparent; color:var(--ink); border:1.5px solid var(--ink);}
+  .btn-reset:hover{background:rgba(36,59,107,.07);}
+
+  /* ---- question card ---- */
+  .q{
+    background:var(--card); border:1px solid var(--line); border-radius:11px;
+    margin-top:22px; overflow:hidden; box-shadow:0 1px 3px rgba(30,40,70,.06);
+  }
+  .q-head{display:flex; align-items:center; gap:10px; padding:14px 18px 0;}
+  .q-no{font-weight:700; color:var(--ink); font-size:1.05rem;}
+  .badge{font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:99px; letter-spacing:.05em;}
+  .lv1{background:#e3f0e8; color:#2f7d4f;}
+  .lv2{background:#e2ecf7; color:#2b5d99;}
+  .lv3{background:#fdf0db; color:#b8860b;}
+  .lv4{background:#f7e3e0; color:#c0392b;}
+  .lv5{background:#2d1b2e; color:#ff9aa8;}
+  .q-stamp{margin-left:auto; font-size:1.5rem; font-weight:800; opacity:0;}
+  .q-stamp.show{opacity:1;}
+  .q-stamp.ok{color:var(--green);}
+  .q-stamp.ng{color:var(--red);}
+
+  .q-body{padding:6px 18px 18px;}
+  .q-text{margin:8px 0 4px;}
+  .q-text .mark{color:var(--red); font-weight:700;}
+
+  pre.code{
+    background:var(--code-bg); border-left:4px solid var(--ink);
+    border-radius:0 8px 8px 0; padding:14px 16px; margin:12px 0;
+    font-family:"SFMono-Regular","Consolas","Menlo","BIZ UDGothic","MS Gothic",monospace;
+    font-size:.86rem; line-height:1.65; overflow-x:auto; white-space:pre; color:#26303f;
+  }
+  pre.code .cm{color:var(--red); font-weight:700;}
+  pre.code .blk{background:#fff3cd; color:#7a5a00; border-radius:4px; padding:0 5px; font-weight:700;}
+  pre.code .kw{color:var(--ink-soft); font-weight:700;}
+
+  .diagram{display:block; margin:8px 0 4px; max-width:100%;}
+  .data-note{font-size:.86rem; color:var(--muted); background:#f6f7fa; border-radius:6px; padding:8px 12px; margin:10px 0;}
+  .data-note code{font-family:"SFMono-Regular","Consolas",monospace; color:#26303f;}
+
+  /* ---- options ---- */
+  .opts{margin:14px 0 0; display:flex; flex-direction:column; gap:9px;}
+  .opt{
+    display:flex; gap:11px; align-items:flex-start; padding:11px 13px;
+    border:1.5px solid var(--line); border-radius:9px; cursor:pointer; transition:.12s;
+  }
+  .opt:hover{border-color:var(--ink-soft); background:#f8faff;}
+  .opt.sel{border-color:var(--ink); background:#eef3fc;}
+  .opt .key{
+    flex:none; width:24px; height:24px; border-radius:50%; background:var(--ink); color:#fff;
+    display:grid; place-items:center; font-size:.8rem; font-weight:700;
+  }
+  .opt .txt{flex:1;}
+  .opt .txt code{font-family:"SFMono-Regular","Consolas","BIZ UDGothic",monospace; font-size:.84rem;}
+  .opt.correct{border-color:var(--green); background:#eaf6ee;}
+  .opt.correct .key{background:var(--green);}
+  .opt.wrongpick{border-color:var(--red); background:#fdecea;}
+  .opt.wrongpick .key{background:var(--red);}
+  .opts.locked .opt{cursor:default;}
+  .opts.locked .opt:hover{background:inherit;}
+
+  /* ---- explanation ---- */
+  .explain{
+    margin-top:14px; padding:13px 15px; border-radius:9px;
+    background:#f6f7fa; border:1px solid var(--line); display:none;
+    font-size:.9rem;
+  }
+  .explain.show{display:block;}
+  .explain h4{margin:0 0 6px; font-size:.85rem; color:var(--ink); letter-spacing:.04em;}
+  .explain code{font-family:"SFMono-Regular","Consolas","BIZ UDGothic",monospace; font-size:.82rem; background:#fff; padding:0 4px; border-radius:3px;}
+  .explain .ans{color:var(--green); font-weight:700;}
+
+  /* ---- final result ---- */
+  #final{
+    display:none; margin-top:26px; background:var(--ink); color:#fff;
+    border-radius:12px; padding:24px; text-align:center;
+  }
+  #final.show{display:block;}
+  #final .big{font-size:2.6rem; font-weight:800; color:#ffd27a;}
+  #final .msg{margin-top:8px; font-size:.95rem; color:#d6deef;}
+
+  footer{text-align:center; color:var(--muted); font-size:.78rem; margin-top:34px;}
+
+  @media (max-width:520px){
+    header.top h1{font-size:1.15rem;}
+    pre.code{font-size:.78rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <h1>基本情報技術者試験 科目B 模擬試験</h1>
+    <p>全7問 / アルゴリズム編 ― 線形探索・選択ソート・連結リスト ― 難易度: 基礎 → 激難</p>
+  </div>
+</header>
+
+<div class="scorebar">
+  <div class="inner">
+    <span class="score-num"><b id="sNum">–</b> / 7 問正解</span>
+    <span class="progress"><i id="sBar"></i></span>
+    <button class="btn btn-grade" id="gradeBtn">採点する</button>
+    <button class="btn btn-reset" id="resetBtn">やり直す</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="quiz"></div>
+
+  <div id="final">
+    <div class="big" id="finalNum">0 / 7</div>
+    <div class="msg" id="finalMsg"></div>
+  </div>
+
+  <footer>※ 配列の添字は 1 から始まる。終端は <code>未定義</code> で表す。IPA疑似言語準拠。</footer>
+</div>
+
+<script>
+/* ============ 問題データ ============ */
+const QUESTIONS = [
+{
+  no:"問1", level:"基礎", lv:"lv1",
+  text:"次の関数 <code>合計</code> は、配列 <code>data</code> の全要素の和を返す。プログラム中の空欄 <span class='mark'>a</span>・<span class='mark'>b</span> に入れる字句の正しい組合せはどれか。",
+  code:
+`<span class="kw">〇整数型: 合計</span>(整数型の配列: data)
+  整数型: i, total
+  total ← <span class="blk">　a　</span>
+  for (i を 1 から dataの要素数 まで 1 ずつ増やす)
+    total ← <span class="blk">　b　</span>
+  endfor
+  return total`,
+  opts:[
+    "a: <code>0</code> ／ b: <code>total + data[i]</code>",
+    "a: <code>1</code> ／ b: <code>total + data[i]</code>",
+    "a: <code>0</code> ／ b: <code>total + data[i - 1]</code>",
+    "a: <code>0</code> ／ b: <code>total × data[i]</code>"
+  ],
+  ans:0,
+  exp:"和の初期値は <code>0</code>（a）。ループでは現在の合計に <code>data[i]</code> を足し込むので b は <code>total + data[i]</code>。a を <code>1</code> にすると和が1ずれ、b を <code>data[i-1]</code> にすると添字が1要素ぶんずれる。"
+},
+{
+  no:"問2", level:"標準", lv:"lv2",
+  text:"次の関数 <code>探索</code> に <code>data = {12, 7, 25, 9, 31, 7, 18}</code>、<code>key = 31</code> を与えて実行する。コメント <span class='mark'>α</span> の比較は何回実行されるか。",
+  code:
+`<span class="kw">〇整数型: 探索</span>(整数型の配列: data, 整数型: key)
+  整数型: i
+  for (i を 1 から dataの要素数 まで 1 ずつ増やす)
+    if (data[i] = key)  <span class="cm">/* α: この比較は何回実行されるか */</span>
+      return i
+    endif
+  endfor
+  return -1`,
+  note:"data = <code>{12, 7, 25, 9, 31, 7, 18}</code> ／ key = <code>31</code>",
+  opts:["4回","5回","6回","7回"],
+  ans:1,
+  exp:"先頭から順に比較する。1:12≠31、2:7≠31、3:25≠31、4:9≠31、5:31=31 でヒットして <code>return</code>。よって α は <span class='ans'>5回</span>。もし key を <code>{}</code> 内に無い値にすると全要素を比較して7回になる。"
+},
+{
+  no:"問3", level:"応用", lv:"lv3",
+  text:"次の手続き <code>選択ソート</code> は配列を昇順に並べ替える。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> に入れる字句の正しい組合せはどれか。",
+  code:
+`<span class="kw">〇 選択ソート</span>(整数型の配列: data)
+  整数型: i, j, min, tmp
+  for (i を 1 から dataの要素数 - 1 まで 1 ずつ増やす)
+    min ← i
+    for (j を i + 1 から dataの要素数 まで 1 ずつ増やす)
+      if (<span class="blk">　a　</span>)
+        min ← j
+      endif
+    endfor
+    tmp ← data[i]
+    data[i] ← data[min]
+    <span class="blk">　b　</span>
+  endfor`,
+  opts:[
+    "a: <code>data[j] &lt; data[min]</code> ／ b: <code>data[min] ← tmp</code>",
+    "a: <code>data[j] &gt; data[min]</code> ／ b: <code>data[min] ← tmp</code>",
+    "a: <code>data[j] &lt; data[min]</code> ／ b: <code>data[min] ← data[i]</code>",
+    "a: <code>data[j] &lt; data[i]</code> ／ b: <code>data[min] ← tmp</code>"
+  ],
+  ans:0,
+  exp:"未確定部分から最小値の位置を探すので、より小さい要素を見つけたら min を更新する → a は <code>data[j] &lt; data[min]</code>。最後は <code>data[i]</code> と <code>data[min]</code> の交換で、tmp に退避した値を min 側へ入れる → b は <code>data[min] ← tmp</code>。b を <code>data[i]</code> にすると、すでに上書き済みの値が入り交換が壊れる。"
+},
+{
+  no:"問4", level:"難", lv:"lv4",
+  text:"単方向連結リストの各ノードはフィールド <code>値</code> と次ノードへの参照 <code>次</code> をもつ。下図のリストで、ノード <code>p</code> の直後に新ノード <code>new</code> を挿入したい（=矢印の付け替え）。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+  diagram:`<svg class="diagram" viewBox="0 0 560 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="連結リストの挿入図">
+    <style>
+      .nd{fill:#eef3fc;stroke:#243b6b;stroke-width:1.5;}
+      .nl{font:600 13px sans-serif;fill:#243b6b;}
+      .nn{font:11px monospace;fill:#6c7385;}
+      .ar{stroke:#243b6b;stroke-width:1.6;fill:none;marker-end:url(#ah);}
+      .nw{fill:#fdf0db;stroke:#b8860b;stroke-width:1.5;}
+      .nwl{font:600 13px sans-serif;fill:#b8860b;}
+    </style>
+    <defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#243b6b"/></marker></defs>
+    <rect class="nd" x="20"  y="20" width="80" height="42" rx="6"/>
+    <text class="nl" x="60"  y="46" text-anchor="middle">p</text>
+    <rect class="nd" x="200" y="20" width="80" height="42" rx="6"/>
+    <text class="nn" x="240" y="46" text-anchor="middle">p の次</text>
+    <rect class="nd" x="380" y="20" width="80" height="42" rx="6"/>
+    <text class="nn" x="420" y="46" text-anchor="middle">…</text>
+    <line class="ar" x1="100" y1="41" x2="196" y2="41"/>
+    <line class="ar" x1="280" y1="41" x2="376" y2="41"/>
+    <rect class="nw" x="200" y="84" width="80" height="32" rx="6"/>
+    <text class="nwl" x="240" y="105" text-anchor="middle">new</text>
+  </svg>`,
+  code:
+`<span class="kw">〇 挿入</span>(ノード: p, ノード: new)
+  <span class="blk">　a　</span>
+  <span class="blk">　b　</span>`,
+  opts:[
+    "a: <code>new.次 ← p.次</code> ／ b: <code>p.次 ← new</code>",
+    "a: <code>p.次 ← new</code> ／ b: <code>new.次 ← p.次</code>",
+    "a: <code>new.次 ← p</code> ／ b: <code>p ← new.次</code>",
+    "a: <code>p.次 ← new.次</code> ／ b: <code>new.次 ← p</code>"
+  ],
+  ans:0,
+  exp:"先に <code>new.次 ← p.次</code> で new から元の後続へ矢印を張り、その後 <code>p.次 ← new</code> で p の矢印を new に付け替える。順序が逆（選択肢イ）だと、先に <code>p.次</code> を上書きした時点で元の後続ノードへの参照が失われ、<code>new.次</code> がリスト末尾を指せなくなる。"
+},
+{
+  no:"問5", level:"難", lv:"lv4",
+  text:"単方向連結リストを丸ごと逆順にする関数 <code>逆転</code> である（先頭からの矢印をすべて逆向きに付け替える）。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+  diagram:`<svg class="diagram" viewBox="0 0 560 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="連結リストの逆転図">
+    <style>
+      .nd{fill:#eef3fc;stroke:#243b6b;stroke-width:1.5;}
+      .nl{font:600 13px monospace;fill:#243b6b;}
+      .ar{stroke:#243b6b;stroke-width:1.6;fill:none;}
+      .arR{stroke:#c0392b;stroke-width:1.6;fill:none;stroke-dasharray:4 3;}
+    </style>
+    <defs>
+      <marker id="ah2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#243b6b"/></marker>
+      <marker id="ah3" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#c0392b"/></marker>
+    </defs>
+    <rect class="nd" x="20"  y="20" width="56" height="34" rx="6"/><text class="nl" x="48"  y="42" text-anchor="middle">1</text>
+    <rect class="nd" x="150" y="20" width="56" height="34" rx="6"/><text class="nl" x="178" y="42" text-anchor="middle">2</text>
+    <rect class="nd" x="280" y="20" width="56" height="34" rx="6"/><text class="nl" x="308" y="42" text-anchor="middle">3</text>
+    <rect class="nd" x="410" y="20" width="56" height="34" rx="6"/><text class="nl" x="438" y="42" text-anchor="middle">4</text>
+    <line class="arR" x1="146" y1="30" x2="80"  y2="30" marker-end="url(#ah3)"/>
+    <line class="arR" x1="276" y1="30" x2="210" y2="30" marker-end="url(#ah3)"/>
+    <line class="arR" x1="406" y1="30" x2="340" y2="30" marker-end="url(#ah3)"/>
+    <line class="ar"  x1="466" y1="46" x2="500" y2="46" marker-end="url(#ah2)"/>
+  </svg>`,
+  code:
+`<span class="kw">〇ノード: 逆転</span>(ノード: head)
+  ノード: prev, cur, next
+  prev ← 未定義
+  cur ← head
+  while (cur ≠ 未定義)
+    next ← cur.次
+    <span class="blk">　a　</span>
+    prev ← cur
+    <span class="blk">　b　</span>
+  endwhile
+  return prev`,
+  opts:[
+    "a: <code>cur.次 ← prev</code> ／ b: <code>cur ← next</code>",
+    "a: <code>cur ← next</code> ／ b: <code>cur.次 ← prev</code>",
+    "a: <code>cur.次 ← next</code> ／ b: <code>cur ← prev</code>",
+    "a: <code>prev ← cur.次</code> ／ b: <code>cur ← next</code>"
+  ],
+  ans:0,
+  exp:"<code>next</code> に後続を退避した後、a で <code>cur.次 ← prev</code> として矢印を逆向きに付け替える。<code>prev ← cur</code> で prev を1つ進め、b の <code>cur ← next</code> で cur を退避しておいた後続へ進める。a と b を入れ替える（選択肢イ）と、付け替え前に cur を進めてしまい元のリンクが切れる。"
+},
+{
+  no:"問6", level:"激難", lv:"lv5",
+  text:"昇順に整列済みの2つの連結リスト <code>a</code>・<code>b</code> を、1本の昇順リストにマージして返す関数である。<code>dummy</code> は番兵ノード。空欄 <span class='mark'>あ</span>・<span class='mark'>い</span> の正しい組合せはどれか。",
+  code:
+`<span class="kw">〇ノード: マージ</span>(ノード: a, ノード: b)
+  ノード: dummy, tail
+  dummy ← 新しいノード
+  tail ← dummy
+  while (a ≠ 未定義 かつ b ≠ 未定義)
+    if (a.値 ≦ b.値)  <span class="cm">/* α */</span>
+      tail.次 ← a
+      a ← <span class="blk">　あ　</span>
+    else
+      tail.次 ← b
+      b ← b.次
+    endif
+    tail ← <span class="blk">　い　</span>
+  endwhile
+  if (a ≠ 未定義)
+    tail.次 ← a
+  else
+    tail.次 ← b
+  endif
+  return dummy.次`,
+  opts:[
+    "あ: <code>a.次</code> ／ い: <code>tail.次</code>",
+    "あ: <code>a.次</code> ／ い: <code>tail</code>",
+    "あ: <code>tail.次</code> ／ い: <code>tail.次</code>",
+    "あ: <code>a</code> ／ い: <code>tail.次</code>"
+  ],
+  ans:0,
+  exp:"小さい方のノードを結果リストの末尾 <code>tail.次</code> につないだら、取り出した側のポインタを1つ進める → あ は <code>a.次</code>。つないだ後は末尾も1つ進めるので、い は <code>tail.次</code>（今つないだノードが新しい末尾）。い を <code>tail</code> のままにすると末尾が前進せず、次の代入で上書きしてリストが壊れる。"
+},
+{
+  no:"問7", level:"激難", lv:"lv5",
+  text:"問6の関数 <code>マージ</code> に、<code>a = {1, 4, 6, 8}</code>、<code>b = {2, 3, 5, 9, 10}</code> を与えて実行する。コメント <span class='mark'>α</span> の比較（<code>a.値 ≦ b.値</code>）は何回実行されるか。",
+  note:"a = <code>{1, 4, 6, 8}</code> ／ b = <code>{2, 3, 5, 9, 10}</code>",
+  opts:["5回","7回","8回","9回"],
+  ans:1,
+  exp:"while はどちらかが <code>未定義</code> になるまで回り、毎回 α を1回評価する。追跡: ①1≦2◯→a進む ②4≦2✕→b ③4≦3✕→b ④4≦5◯→a ⑤6≦5✕→b ⑥6≦9◯→a ⑦8≦9◯→a。ここで a が末尾を越えてループ終了。よって α は <span class='ans'>7回</span>。残った b（9,10）は比較なしで末尾に連結される。"
+}
+];
+
+/* ============ 描画 ============ */
+const quizEl = document.getElementById('quiz');
+const state = QUESTIONS.map(()=>({picked:null, locked:false}));
+
+function letter(i){return ["ア","イ","ウ","エ"][i];}
+
+function render(){
+  quizEl.innerHTML = "";
+  QUESTIONS.forEach((q, qi)=>{
+    const card = document.createElement('div');
+    card.className = 'q';
+    card.id = 'q'+qi;
+    card.innerHTML = `
+      <div class="q-head">
+        <span class="q-no">${q.no}</span>
+        <span class="badge ${q.lv}">${q.level}</span>
+        <span class="q-stamp" id="stamp${qi}"></span>
+      </div>
+      <div class="q-body">
+        <p class="q-text">${q.text}</p>
+        ${q.diagram ? q.diagram : ""}
+        ${q.code ? `<pre class="code">${q.code}</pre>` : ""}
+        ${q.note ? `<div class="data-note">${q.note}</div>` : ""}
+        <div class="opts" id="opts${qi}">
+          ${q.opts.map((o,oi)=>`
+            <div class="opt" data-q="${qi}" data-o="${oi}">
+              <span class="key">${letter(oi)}</span>
+              <span class="txt">${o}</span>
+            </div>`).join("")}
+        </div>
+        <div class="explain" id="exp${qi}">
+          <h4>解説</h4>
+          <p>正解: <span class="ans">${letter(q.ans)}</span></p>
+          <p>${q.exp}</p>
+        </div>
+      </div>`;
+    quizEl.appendChild(card);
+  });
+
+  document.querySelectorAll('.opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const qi = +el.dataset.q, oi = +el.dataset.o;
+      if(state[qi].locked) return;
+      state[qi].picked = oi;
+      const box = document.getElementById('opts'+qi);
+      box.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+      el.classList.add('sel');
+    });
+  });
+}
+
+/* ============ 採点 ============ */
+function grade(){
+  let correct = 0;
+  QUESTIONS.forEach((q, qi)=>{
+    state[qi].locked = true;
+    const box = document.getElementById('opts'+qi);
+    box.classList.add('locked');
+    const stamp = document.getElementById('stamp'+qi);
+    const picked = state[qi].picked;
+
+    box.querySelectorAll('.opt').forEach(o=>{
+      const oi = +o.dataset.o;
+      o.classList.remove('sel');
+      if(oi === q.ans) o.classList.add('correct');
+      if(oi === picked && picked !== q.ans) o.classList.add('wrongpick');
+    });
+
+    if(picked === q.ans){
+      correct++;
+      stamp.textContent = "○"; stamp.className = "q-stamp show ok";
+    }else{
+      stamp.textContent = "×"; stamp.className = "q-stamp show ng";
+    }
+    document.getElementById('exp'+qi).classList.add('show');
+  });
+
+  document.getElementById('sNum').textContent = correct;
+  document.getElementById('sBar').style.width = (correct/7*100)+"%";
+
+  const fin = document.getElementById('final');
+  fin.classList.add('show');
+  document.getElementById('finalNum').textContent = correct + " / 7";
+  const msgs = {
+    7:"全問正解。連結リストの矢印の付け替えも完璧。この調子で本番へ。",
+    6:"あと一歩。間違えた1問の解説を声に出して説明できるか確認を。",
+    5:"合格圏の手前。連結リスト系の処理順序をもう一周。",
+    4:"基礎は取れている。難問の実行回数追跡を紙に書いて練習。",
+    3:"半分。空欄補充は『順序が壊れる選択肢』を消去法で潰す練習を。",
+    2:"伸びしろ大。問4・問5の矢印の付け替えを図で手を動かして。",
+    1:"まず問1〜問3を確実に。基礎の取りこぼしが一番もったいない。",
+    0:"焦らず1問ずつ。解説を読んでから再挑戦で必ず上がる。"
+  };
+  document.getElementById('finalMsg').textContent = msgs[correct];
+  fin.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function reset(){
+  state.forEach(s=>{s.picked=null; s.locked=false;});
+  document.getElementById('sNum').textContent = "–";
+  document.getElementById('sBar').style.width = "0%";
+  document.getElementById('final').classList.remove('show');
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('gradeBtn').addEventListener('click', grade);
+document.getElementById('resetBtn').addEventListener('click', reset);
+render();
+</script>
+</body>
+</html>

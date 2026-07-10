@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科目B オブジェクト指向・リスト構造 3問</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#1a1f2e; --muted:#5b6472;
+    --line:#e3e6ec; --line-strong:#cdd2db; --accent:#2563a8; --accent-soft:#eaf1f9;
+    --correct:#1f7a4d; --correct-soft:#e8f4ed; --wrong:#b4452f; --wrong-soft:#fbecea;
+    --code:#0f1530; --code-ink:#e7ecf5; --code-key:#8fb8ff; --code-mut:#7f8aa3; --code-blank:#ffd479;
+    --mono:'SFMono-Regular',Consolas,'Roboto Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 64px;}
+  header.top{display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px;}
+  header.top h1{font-size:15px;margin:0;letter-spacing:.03em;}
+  header.top .meta{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:20px 20px 22px;box-shadow:0 1px 2px rgba(20,30,50,.04);margin-bottom:16px;}
+  .qhead{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap;}
+  .qnum{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);padding:3px 9px;border-radius:5px;}
+  .cat{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .diff{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:auto;}
+  .d-易{color:#1f7a4d;background:#e8f4ed;}
+  .d-中{color:#2563a8;background:#eaf1f9;}
+  .d-難{color:#b4452f;background:#fbecea;}
+  .scenario{font-size:14px;margin:0 0 10px;}
+  .code{background:var(--code);color:var(--code-ink);border-radius:8px;font-family:var(--mono);
+    font-size:12.5px;line-height:1.95;padding:14px 15px;overflow-x:auto;margin:10px 0;white-space:pre;}
+  .code .k{color:var(--code-key);} .code .c{color:var(--code-mut);} .code .bl{color:var(--code-blank);font-weight:700;}
+  .ask{font-size:14.5px;font-weight:600;margin:14px 0 12px;}
+  .opts{display:flex;flex-direction:column;gap:8px;}
+  .opt{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line-strong);
+    border-radius:8px;padding:11px 13px;cursor:pointer;background:var(--surface);
+    transition:border-color .12s,background .12s;font-size:14px;}
+  .opt:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .mk{flex-shrink:0;width:19px;height:19px;border:2px solid var(--line-strong);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+    font-family:var(--mono);font-size:9px;font-weight:700;color:#fff;}
+  .opt.sel .mk{background:var(--accent);border-color:var(--accent);}
+  .opt.sel .mk::after{content:"●";}
+  .opt-code{font-family:var(--mono);font-size:12px;white-space:pre;line-height:1.7;margin:0;}
+  .opt.locked{cursor:default;} .opt.locked:hover{border-color:var(--line-strong);background:var(--surface);}
+  .opt.r-ok{border-color:var(--correct);background:var(--correct-soft);}
+  .opt.r-ok .mk{background:var(--correct);border-color:var(--correct);}
+  .opt.r-wrong{border-color:var(--wrong);background:var(--wrong-soft);}
+  .opt.r-wrong .mk{background:var(--wrong);border-color:var(--wrong);}
+  .rpill{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700;
+    padding:2px 6px;border-radius:4px;align-self:center;white-space:nowrap;}
+  .rpill.ok{color:var(--correct);border:1px solid var(--correct);}
+  .rpill.wrong{color:var(--wrong);border:1px solid var(--wrong);}
+  .btnrow{margin-top:16px;}
+  button.chk{font-family:inherit;font-size:14px;font-weight:600;padding:10px 22px;border-radius:8px;
+    border:none;background:var(--ink);color:#fff;cursor:pointer;}
+  button.chk:disabled{opacity:.4;cursor:not-allowed;}
+  .reveal{display:none;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:13.5px;animation:fade .3s;}
+  .reveal.show{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+  .qjudge{font-family:var(--mono);font-weight:700;font-size:12.5px;margin:0 0 10px;}
+  .qjudge.y{color:var(--correct);} .qjudge.n{color:var(--wrong);}
+  .reveal h4{font-size:11.5px;font-family:var(--mono);color:var(--muted);letter-spacing:.04em;margin:14px 0 6px;}
+  .trace{background:#fafbfc;border:1px solid var(--line);border-radius:7px;font-family:var(--mono);
+    font-size:12.5px;padding:10px 12px;margin:8px 0;overflow-x:auto;}
+  .trace b{color:var(--accent);}
+  .tip{border-left:3px solid var(--correct);background:var(--correct-soft);border-radius:0 7px 7px 0;
+    padding:11px 13px;font-size:13px;margin:10px 0 0;}
+  .tip b{color:var(--correct);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>科目B ─ オブジェクト指向・リスト構造 <span style="font-weight:400;color:var(--muted);">3問</span></h1>
+    <span class="meta">易 → 難</span>
+  </header>
+  <div id="exam"></div>
+</div>
+
+<script>
+const Q=[
+ { n:1, cat:'単方向リスト・トレース', diff:'易',
+   scenario:'単方向リストの各要素はクラス ListElement で表す。各要素は値と「次の要素への参照」を持ち、最後の要素の「次」は 未定義 とする。次の関数 length は、head が指すリストの要素数を返す。',
+   code:`<span class="k">クラス</span> ListElement
+  値 : 整数型
+  次 : ListElement   <span class="c">// 最後の要素の「次」は 未定義</span>
+
+<span class="k">○整数型</span>: length(ListElement: head)
+  整数型: cnt
+  ListElement: p
+  cnt ← 0
+  p ← head
+  <span class="k">while</span> (p が 未定義 でない)
+    cnt ← cnt + 1
+    p ← p.次
+  <span class="k">endwhile</span>
+  <span class="k">return</span> cnt
+
+<span class="c">リスト:</span>  head → [5] → [8] → [2] → 未定義`,
+   ask:'length(head) の戻り値はいくつか。',
+   options:['2','3','4','未定義'], answer:1,
+   expl:{
+     trace:`p=head([5]) → cnt 0→<b>1</b>、p→[8]\np=[8]   → cnt 1→<b>2</b>、p→[2]\np=[2]   → cnt 2→<b>3</b>、p→未定義\np=未定義 → while を抜ける`,
+     text:'ループ条件が「p が 未定義」なので、p が最後の要素[2]の次(未定義)に進んだ時点で止まる。要素3個ぶん数えて 3。条件が「p.次 が 未定義」だと最後の1個を数え損ねる(2になる)ので、そこが定番の引っかけ。',
+     tip:'リストの長さ系は「p を head から始め、p が 未定義 になるまで」が基本形。p.次 を条件にすると1個ずれる。'
+   }},
+
+ { n:2, cat:'単方向リスト・削除', diff:'中',
+   scenario:'グローバル変数 head はリストの先頭を指す(空のとき 未定義)。手続 deleteFirst は、値が target と等しい最初の要素を1つだけリストから削除する。空欄 a・b に入る式の正しい組合せはどれか。',
+   code:`<span class="k">○手続</span>: deleteFirst(整数型: target)
+  ListElement: p, prev
+  prev ← 未定義
+  p ← head
+  <span class="k">while</span> (p が 未定義 でない <span class="k">かつ</span> p.値 が target と等しくない)
+    prev ← p
+    p ← p.次
+  <span class="k">endwhile</span>
+  <span class="k">if</span> (p が 未定義 でない)        <span class="c">// 見つかった</span>
+    <span class="k">if</span> (prev が 未定義)           <span class="c">// 削除対象が先頭だった</span>
+      head ← <span class="bl">［ a ］</span>
+    <span class="k">else</span>
+      prev.次 ← <span class="bl">［ b ］</span>
+    <span class="k">endif</span>
+  <span class="k">endif</span>`,
+   ask:'空欄 a・b の正しい組合せはどれか。',
+   options:[
+     '<pre class="opt-code">a: p.次     b: p.次</pre>',
+     '<pre class="opt-code">a: p        b: p</pre>',
+     '<pre class="opt-code">a: prev     b: head</pre>',
+     '<pre class="opt-code">a: p.次     b: p</pre>'],
+   answer:0,
+   expl:{
+     trace:`探索後、p = 削除したい要素、prev = その1つ前(先頭なら 未定義)。\n先頭のとき: head を p の次へ → <b>head ← p.次</b>\n途中のとき: 前の要素の次を p の次へつなぎ替え → <b>prev.次 ← p.次</b>`,
+     text:'削除とは「前の要素の『次』を、削除対象の次の要素に飛ばす」こと。先頭の場合は前の要素がないので head 自体を p.次 に更新する。どちらも右辺は p.次。b に p を入れると(エ)、prev.次 が削除対象自身を指したままで何も削除されない。',
+     tip:'リスト削除の合言葉は「前の要素から、対象を飛び越して、対象の次へつなぐ」。先頭だけは head が前要素の役。'
+   }},
+
+ { n:3, cat:'単方向リスト・反転', diff:'難',
+   scenario:'次の関数 reverse は、head が指す単方向リストの並びを逆順にして、新しい先頭を返す。prev・cur・nx の3つの参照を使って、要素の「次」の向きを1つずつ反転させていく。空欄 a〜d に入る式の正しい組合せはどれか。',
+   code:`<span class="k">○ListElement</span>: reverse(ListElement: head)
+  ListElement: prev, cur, nx
+  prev ← 未定義
+  cur ← head
+  <span class="k">while</span> (cur が 未定義 でない)
+    nx ← <span class="bl">［ a ］</span>      <span class="c">// 次の要素を退避</span>
+    cur.次 ← <span class="bl">［ b ］</span>   <span class="c">// 向きを反転</span>
+    prev ← <span class="bl">［ c ］</span>      <span class="c">// prev を1つ進める</span>
+    cur ← <span class="bl">［ d ］</span>       <span class="c">// cur を1つ進める</span>
+  <span class="k">endwhile</span>
+  <span class="k">return</span> prev`,
+   ask:'空欄 a〜d の正しい組合せはどれか。',
+   options:[
+     '<pre class="opt-code">a: cur.次   b: prev\nc: cur      d: nx</pre>',
+     '<pre class="opt-code">a: prev     b: cur.次\nc: nx       d: cur</pre>',
+     '<pre class="opt-code">a: cur.次   b: prev\nc: nx       d: cur</pre>',
+     '<pre class="opt-code">a: cur      b: prev.次\nc: cur      d: nx</pre>'],
+   answer:0,
+   expl:{
+     trace:`リスト 1→2→3 で1周目(cur=[1], prev=未定義):\n nx ← cur.次 = [2]     ← 先に退避（ここが命）\n cur.次 ← prev = 未定義  ← [1] の向きを反転\n prev ← cur = [1]\n cur ← nx = [2]\n…これを繰り返すと 3→2→1 になり、最後の prev が新しい先頭。`,
+     text:'核心は順序。cur.次 ← prev で向きを変えると、元の「次」が消える。だから先に nx ← cur.次 で退避しておく(空欄a)。退避を怠ると(イのように a で prev を入れる等)、進む先を見失ってリストが1個目で切れる。c と d を入れ替えると(ウ)、prev ← nx となって反転した鎖を取り落とす。',
+     tip:'ポインタ反転の鉄則は前にもやった「参照を上書きする前に、必要な旧値(cur.次)を退避する」。reverse はその典型で、退避→反転→prev前進→cur前進 の順が固定。'
+   }},
+];
+
+const LET=['ア','イ','ウ','エ','オ'];
+const exam=document.getElementById('exam');
+const state=Q.map(()=>({sel:null,locked:false}));
+
+exam.innerHTML=Q.map((q,qi)=>{
+  const opts=q.options.map((o,oi)=>`
+    <div class="opt" data-q="${qi}" data-o="${oi}">
+      <span class="mk"></span><span class="lab" style="font-family:var(--mono);font-weight:700;flex-shrink:0;">${LET[oi]}</span>
+      <span class="otext">${o}</span>
+    </div>`).join('');
+  return `<div class="card">
+    <div class="qhead"><span class="qnum">問${q.n}</span><span class="cat">${q.cat}</span><span class="diff d-${q.diff}">${q.diff}</span></div>
+    <p class="scenario">${q.scenario}</p>
+    <div class="code">${q.code}</div>
+    <p class="ask">${q.ask}</p>
+    <div class="opts" id="opts${qi}">${opts}</div>
+    <div class="btnrow"><button class="chk" id="chk${qi}" disabled>解答を確認</button></div>
+    <div class="reveal" id="rev${qi}"></div>
+  </div>`;
+}).join('');
+
+exam.querySelectorAll('.opt').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const qi=+el.dataset.q, oi=+el.dataset.o;
+    if(state[qi].locked)return;
+    state[qi].sel=oi;
+    document.getElementById('opts'+qi).querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel');
+    document.getElementById('chk'+qi).disabled=false;
+  });
+});
+
+Q.forEach((q,qi)=>{
+  document.getElementById('chk'+qi).addEventListener('click',()=>{
+    if(state[qi].locked||state[qi].sel===null)return;
+    state[qi].locked=true;
+    const opts=document.getElementById('opts'+qi).querySelectorAll('.opt');
+    opts.forEach((el,oi)=>{
+      el.classList.add('locked');el.classList.remove('sel');
+      if(oi===q.answer){el.classList.add('r-ok');el.insertAdjacentHTML('beforeend','<span class="rpill ok">正解</span>');}
+      else if(oi===state[qi].sel){el.classList.add('r-wrong');el.insertAdjacentHTML('beforeend','<span class="rpill wrong">あなたの選択</span>');}
+    });
+    const ok=(state[qi].sel===q.answer);
+    const e=q.expl;
+    document.getElementById('rev'+qi).innerHTML=
+      `<p class="qjudge ${ok?'y':'n'}">${ok?'○ 正解':'✕ 不正解'}（正解は ${LET[q.answer]}）</p>`+
+      `<h4>トレース</h4><div class="trace">${e.trace}</div>`+
+      `<h4>解説</h4><p>${e.text}</p>`+
+      `<div class="tip"><b>型:</b> ${e.tip}</div>`;
+    document.getElementById('rev'+qi).classList.add('show');
+    document.getElementById('chk'+qi).disabled=true;
+  });
+});
+</script>
+</body>
+</html>

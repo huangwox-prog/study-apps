@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科目B セキュリティ 実戦演習 ─ 複数選択</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#1a1f2e; --muted:#5b6472;
+    --line:#e3e6ec; --line-strong:#cdd2db; --accent:#2563a8; --accent-soft:#eaf1f9;
+    --correct:#1f7a4d; --correct-soft:#e8f4ed; --wrong:#b4452f; --wrong-soft:#fbecea;
+    --miss:#b8860b; --miss-soft:#fbf3dd;
+    --mono:'SFMono-Regular',Consolas,'Roboto Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;
+    line-height:1.78;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 64px;}
+  header.top{display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:8px;}
+  header.top h1{font-size:16px;margin:0;letter-spacing:.04em;}
+  header.top .meta{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .progress{display:flex;gap:6px;margin:14px 0 22px;}
+  .progress .seg{flex:1;height:4px;border-radius:2px;background:var(--line-strong);transition:background .3s;}
+  .progress .seg.done{background:var(--accent);}
+  .progress .seg.current{background:var(--ink);}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:22px 22px 24px;box-shadow:0 1px 2px rgba(20,30,50,.04);}
+  .qhead{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .qnum{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);padding:3px 9px;border-radius:5px;letter-spacing:.05em;}
+  .qtag{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em;}
+  .qfmt{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;}
+  .scenario{font-size:14.5px;margin:0 0 6px;}
+  .ask{font-size:15px;font-weight:600;margin:16px 0 4px;padding-top:14px;border-top:1px solid var(--line);}
+  .askhint{font-size:12px;color:var(--muted);font-family:var(--mono);margin:0 0 16px;}
+  .choices{display:flex;flex-direction:column;gap:9px;}
+  .choice{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line-strong);
+    border-radius:8px;padding:12px 14px;cursor:pointer;background:var(--surface);
+    transition:border-color .15s,background .15s;font-size:14.5px;}
+  .choice:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .choice.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .box{flex-shrink:0;width:20px;height:20px;border:2px solid var(--line-strong);border-radius:5px;
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+    font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;transition:all .15s;}
+  .choice.selected .box{background:var(--accent);border-color:var(--accent);}
+  .choice.selected .box::after{content:"✓";}
+  .clab{font-family:var(--mono);font-weight:700;flex-shrink:0;color:var(--muted);}
+  .choice.locked{cursor:default;}
+  .choice.locked:hover{border-color:var(--line-strong);background:var(--surface);}
+  .choice.res-ok{border-color:var(--correct);background:var(--correct-soft);}
+  .choice.res-ok .box{background:var(--correct);border-color:var(--correct);}
+  .choice.res-ok .box::after{content:"✓";}
+  .choice.res-miss{border-color:var(--miss);background:var(--miss-soft);}
+  .choice.res-miss .box{background:#fff;border-color:var(--miss);color:var(--miss);}
+  .choice.res-miss .box::after{content:"○";}
+  .choice.res-wrong{border-color:var(--wrong);background:var(--wrong-soft);}
+  .choice.res-wrong .box{background:var(--wrong);border-color:var(--wrong);}
+  .choice.res-wrong .box::after{content:"✕";}
+  .res-pill{margin-left:auto;font-family:var(--mono);font-size:10.5px;font-weight:700;
+    padding:2px 7px;border-radius:4px;flex-shrink:0;align-self:center;white-space:nowrap;}
+  .res-pill.ok{color:var(--correct);background:#fff;border:1px solid var(--correct);}
+  .res-pill.miss{color:var(--miss);background:#fff;border:1px solid var(--miss);}
+  .res-pill.wrong{color:var(--wrong);background:#fff;border:1px solid var(--wrong);}
+  .btnrow{margin-top:18px;display:flex;gap:10px;}
+  button.action{font-family:inherit;font-size:14px;font-weight:600;padding:11px 20px;
+    border-radius:8px;border:none;cursor:pointer;transition:opacity .15s,background .15s;}
+  button.action:disabled{opacity:.4;cursor:not-allowed;}
+  button.primary{background:var(--ink);color:#fff;}
+  button.primary:not(:disabled):hover{background:#000;}
+  button.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .reveal{margin-top:20px;display:none;animation:fade .3s ease;}
+  .reveal.show{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .judge{font-family:var(--mono);font-size:13px;font-weight:700;margin:0 0 14px;padding:9px 12px;border-radius:7px;}
+  .judge.full{color:var(--correct);background:var(--correct-soft);}
+  .judge.partial{color:var(--miss);background:var(--miss-soft);}
+  .judge.fail{color:var(--wrong);background:var(--wrong-soft);}
+  .steps{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+  .steprow{display:grid;grid-template-columns:92px 1fr;border-bottom:1px solid var(--line);font-size:13.5px;}
+  .steprow:last-child{border-bottom:none;}
+  .steprow .k{background:#fafbfc;font-family:var(--mono);font-size:11px;color:var(--muted);
+    padding:9px 10px;letter-spacing:.03em;display:flex;align-items:center;border-right:1px solid var(--line);}
+  .steprow .v{padding:9px 12px;}
+  .steprow .v b{color:var(--accent);}
+  .noise{font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 0 14px;
+    padding:8px 11px;background:#fafbfc;border-left:3px solid var(--line-strong);border-radius:0 6px 6px 0;}
+  .why{font-size:13.5px;}
+  .why h4{font-size:12px;font-family:var(--mono);color:var(--muted);letter-spacing:.05em;margin:0 0 8px;font-weight:600;}
+  .why ul{margin:0;padding:0;list-style:none;}
+  .why li{padding:7px 0;border-top:1px dashed var(--line);display:flex;gap:9px;}
+  .why li:first-child{border-top:none;}
+  .why .mk{font-family:var(--mono);font-size:13px;font-weight:700;flex-shrink:0;width:18px;text-align:center;}
+  .mk.y{color:var(--correct);}
+  .mk.n{color:var(--wrong);}
+  .why .lab2{font-family:var(--mono);font-weight:700;}
+  .result{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px 22px;text-align:center;}
+  .result .score{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--accent);line-height:1;}
+  .result .score small{font-size:18px;color:var(--muted);}
+  .result p{font-size:14px;color:var(--muted);margin:14px 0 0;}
+  .result .msg{font-size:15px;color:var(--ink);font-weight:600;margin:8px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>科目B ─ セキュリティ <span style="font-weight:400;color:var(--muted);">複数選択・本番超</span></h1>
+    <span class="meta">READ → SELECT ALL → CHECK</span>
+  </header>
+  <div class="progress" id="progress"></div>
+  <div id="stage"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    tag:"標的型攻撃メール / 組織対策", fmt:"複数選択",
+    scenario:"A社は従業員120名の中堅製造業で、設計図面や取引先との見積りなど、機密性の高い情報を多く扱っている。日常的にメールで社外とやり取りしており、添付ファイルやURLを開く機会も多い。半年前、経理部の社員が取引先を装ったメールの添付ファイルを開いてしまい、PCがマルウェアに感染する事故が起きた。幸い被害は最小限で済んだが、原因を調べると、その社員は「取引先からの請求書だと思った」と話していた。A社ではウイルス対策ソフトは全PCに導入しているものの、社員へのセキュリティ教育や、感染してしまった場合を想定した手順は整備されていない。情報システム部のBさんは、業界で標的型攻撃メールの被害が増えているニュースも受け、組織として被害を継続的に減らすための対策を検討することになった。",
+    ask:"A社が講じる対策として適切なものを すべて 選べ。",
+    hint:"※ 正解は1つとは限らない。各選択肢を独立に「適切か」で判定する。",
+    noise:"ノイズ:従業員120名/設計図面/半年前の事故の被害規模 ── 背景説明であって、対策の良し悪しとは無関係。",
+    target:"社内の端末・機密情報(機密性・可用性)",
+    threat:"取引先になりすました標的型攻撃メールによる感染と、教育・初動の不備",
+    cia:"機密性 / 可用性",
+    correct:[0,1,3],
+    choices:[
+      {t:"不審なメールを受信したときの報告手順を定め、社員に周知して定期的に訓練する。", ok:true,
+       why:"報告のルート整備と訓練は組織的な恒久対策。人の判断ミスを前提に仕組みで拾う。適切。"},
+      {t:"標的型攻撃メールを模した訓練メールを定期的に送り、社員の対応状況を確認・教育する。", ok:true,
+       why:"いわゆる標的型攻撃メール訓練。気づく力を継続的に鍛えられる。適切。"},
+      {t:"全社員のメール利用を禁止し、社外との連絡を電話と郵送のみに切り替える。", ok:false,
+       why:"業務が成立しない過剰対策。脅威は“不審な添付を開くこと”であって“メールそのもの”ではない。不適切。"},
+      {t:"添付を開いて感染した場合に備え、PCをネットワークから速やかに隔離する手順と連絡体制を整える。", ok:true,
+       why:"感染を前提とした初動の整備。被害の拡大を抑える恒久対策。本文の“初動が未整備”という穴に当たる。適切。"},
+      {t:"ウイルス対策ソフトを導入済みなので、これ以上の追加対策は不要と判断する。", ok:false,
+       why:"既存対策だけで十分とする現状肯定。未知のマルウェアや人的ミスは防げない。不適切。"},
+    ]
+  },
+  {
+    tag:"在宅勤務 / 情報漏えい", fmt:"複数選択",
+    scenario:"C社では働き方改革の一環で在宅勤務を導入した。社員は会社支給のノートPCを自宅に持ち帰り、VPNを通して社内システムに接続して業務を行う。導入から半年が経過し、情報システム部のDさんのもとには現場の実態がいくつか報告されてきた。ある社員は、自宅の家族と共用しているWi-Fiルータの管理者パスワードを購入時の初期設定のまま使っていた。別の社員は、外出先のカフェで作業する際、店の公衆無線LANから社内システムに接続することがあった。さらに、自宅で短時間席を離れるとき、PCをロックせず画面を表示したままにしている社員も複数いることが分かった。Dさんは、在宅勤務における情報漏えいのリスクを下げるための対策を整理している。",
+    ask:"情報漏えいのリスクを下げる対策として適切なものを すべて 選べ。",
+    hint:"※ 正解は1つとは限らない。各選択肢を独立に「適切か」で判定する。",
+    noise:"ノイズ:導入から半年/家族と共用のWi-Fi ── 状況描写。判定対象は各選択肢が脅威に当たるか。",
+    target:"社用PC内の情報と社内システムへの通信(機密性)",
+    threat:"離席時の覗き見・盗用、公衆無線LAN経由の盗聴",
+    cia:"機密性",
+    correct:[0,1],
+    choices:[
+      {t:"一定時間操作がないと自動で画面ロックがかかるよう、全社用PCに設定する。", ok:true,
+       why:"離席時の覗き見・不正操作という脅威に直接当たる。人の“ロックし忘れ”を仕組みで吸収。適切。"},
+      {t:"公衆無線LANから社内システムへ接続する場合も、必ずVPNを経由するよう徹底する。", ok:true,
+       why:"VPNで通信が暗号化され、公衆無線LANでの盗聴リスクを下げられる。適切。"},
+      {t:"在宅勤務を廃止し、全社員を出社勤務に戻す。", ok:false,
+       why:"制度ごと壊す過剰対策。脅威は“在宅”でなく“設定・運用の不備”。不適切。"},
+      {t:"離席時の対策として、PCの画面に「業務中」と書いた紙を貼る。", ok:false,
+       why:"画面の中身は隠れず、覗き見も操作も防げない。的外れ。不適切。"},
+      {t:"作業を効率化するため、家族が社用PCを共用して操作してよいことにする。", ok:false,
+       why:"権限のない第三者に業務情報を触らせる。漏えいリスクをむしろ上げる。不適切。"},
+    ]
+  },
+  {
+    tag:"バックアップ / 事業継続", fmt:"複数選択",
+    scenario:"E社では、基幹システムのデータを毎晩自動でバックアップする運用を行っている。バックアップデータは、本番サーバと同じサーバ室内に置いた別のハードディスクに保存していた。ある日、サーバ室で電気系統のトラブルから火災が発生し、本番サーバとバックアップ用ハードディスクの両方が焼損してしまった。E社は事業継続のためにデータの復旧を試みたが、両方が同時に失われていたため、復旧することができなかった。結果として、過去の取引データの一部が永久に失われ、業務にも大きな支障が出た。情報システム部のFさんは、二度と同じ事態に陥らないよう、バックアップの運用方法を根本的に見直すことにした。",
+    ask:"Fさんが行う見直しとして適切なものを すべて 選べ。",
+    hint:"※ 正解は1つとは限らない。1つだけのこともある。",
+    noise:"ノイズ:電気系統のトラブル/取引データが失われた ── 急所は「本番もバックアップも同じサーバ室にあり、同時に焼損した」一点。",
+    target:"基幹データの可用性(失われない・復旧できる)",
+    threat:"本番とバックアップが同一拠点にあることによる同時被災",
+    cia:"可用性",
+    correct:[0],
+    choices:[
+      {t:"バックアップデータを、サーバ室とは物理的に離れた遠隔地にも保管する。", ok:true,
+       why:"同時被災という今回の急所に直接当たる。遠隔地保管(または3-2-1の考え方)が本質。適切。"},
+      {t:"バックアップの取得頻度を毎晩から毎週に減らし、運用の負荷を下げる。", ok:false,
+       why:"頻度を下げると障害時に失うデータが増える。可用性に逆行。不適切。"},
+      {t:"バックアップ用ハードディスクの台数を増やし、同じサーバ室内に複数台設置する。", ok:false,
+       why:"“台数を増やす=強化”に見えるが、同じ部屋なら同時に焼ける。今回の教訓をまったく拾えていない。不適切。"},
+      {t:"バックアップ取得をやめ、本番データの冗長化(二重化)だけで備える。", ok:false,
+       why:"冗長化は機器故障向けで、誤削除やランサムや拠点災害には無力。バックアップ廃止は危険。不適切。"},
+      {t:"火災対策として、サーバ室に消火器を増設する。", ok:false,
+       why:"設問はデータ復旧の備え。火元対策はあってよいが、バックアップ運用の見直しという問いには当たらない。不適切。"},
+    ]
+  },
+  {
+    tag:"認証 / パスワードリスト攻撃", fmt:"複数選択",
+    scenario:"G社は一般利用者向けのWebサービスを運営しており、利用者はIDとパスワードを入力してログインする。最近、このサービスで、第三者が他人のアカウントへ不正にログインする被害が短期間に複数発生した。情報システム部のHさんが調査したところ、利用者の多くがG社のサービスと他のサービスとで同じパスワードを使い回していたこと、そして、どこか別のサービスから流出したとみられるIDとパスワードの組合せのリストを使って、G社のサービスへ機械的にログインが試みられていたことが分かった(いわゆるパスワードリスト攻撃)。G社のパスワードの保管方法自体に不備は見つからなかった。Hさんは、この種の不正ログインを防ぐ、あるいは被害を抑える対策を検討している。",
+    ask:"不正ログインを防ぐ・被害を抑える対策として適切なものを すべて 選べ。",
+    hint:"※ 正解は1つとは限らない。各選択肢を独立に判定する。",
+    noise:"ノイズ:G社のパスワード保管に不備はない ── 流出元はG社ではなく他サービス。G社側でできる“ログイン側”の対策を考える。",
+    target:"利用者アカウント(機密性)",
+    threat:"流出済みID/パスワードを使った機械的な不正ログイン(パスワードリスト攻撃)",
+    cia:"機密性",
+    correct:[0,1],
+    choices:[
+      {t:"ログイン時に、パスワードに加えてSMSや認証アプリのワンタイムコード入力を求める(多要素認証)。", ok:true,
+       why:"パスワードが流出していても、第二要素がなければログインできない。本攻撃に最も効く。適切。"},
+      {t:"短時間に何度もログインに失敗したアカウントやアクセス元を、一時的に制限・ロックする。", ok:true,
+       why:"機械的に大量試行する攻撃の試行自体を抑制できる。適切。"},
+      {t:"利用者に、現在のパスワードをそのまま変更せず使い続けるよう案内する。", ok:false,
+       why:"流出している可能性のあるパスワードを使い続けさせる逆効果。不適切。"},
+      {t:"利用者の利便性のため、パスワードを4文字以内に制限して入力の手間を減らす。", ok:false,
+       why:"パスワードを弱くして総当たりも容易にする。論外。不適切。"},
+      {t:"不正ログインは完全には防げないため、特に追加の対策はしないと決める。", ok:false,
+       why:"打てる手があるのに放置する判断。不適切。"},
+    ]
+  },
+  {
+    tag:"インシデント対応 / 漏えい後", fmt:"複数選択",
+    scenario:"I社で、ある社員のPCがマルウェアに感染し、社内の一部の情報が外部へ送信された可能性があることが判明した。情報システム部はただちに該当PCを社内ネットワークから隔離した。現時点で被害範囲は完全には特定できていないが、送信された情報の中に顧客の個人情報が含まれていた可能性がある。I社にはインシデント対応の体制としてCSIRTが設置されており、対応手順も定められている。経営層は、ここから先の対応方針を決めなければならない。なお、I社が属する業界では、個人情報の漏えいが発生(またはそのおそれが判明)した場合、所管の機関へ報告することが法令で義務づけられている。",
+    ask:"この段階でI社が取るべき対応として適切なものを すべて 選べ。",
+    hint:"※ 正解は1つとは限らない。各選択肢を独立に判定する。",
+    noise:"ノイズ:CSIRTが設置済み/隔離は実施済み ── これらは前提。問うのは“隔離の後にやること”。法令の報告義務の一文が効く。",
+    target:"顧客の個人情報と、組織の説明責任(機密性・信頼)",
+    threat:"漏えいの可能性が判明した後の、調査・報告・通知の不備や隠蔽",
+    cia:"機密性(+説明責任)",
+    correct:[0,1,2],
+    choices:[
+      {t:"感染の原因と影響範囲を調査し、何の情報がどこまで漏れた可能性があるかを把握する。", ok:true,
+       why:"対応や報告の判断には事実把握が前提。適切。"},
+      {t:"個人情報漏えいのおそれについて、法令に従い所管の機関へ報告する準備を進める。", ok:true,
+       why:"本文に報告義務が明記されている。法令順守として適切。"},
+      {t:"影響を受ける可能性のある顧客への連絡・告知の要否を検討する。", ok:true,
+       why:"被害拡大(二次被害)を防ぐための本人への注意喚起は妥当。少なくとも“検討する”は適切。"},
+      {t:"会社の評判を守るため、インシデントの事実を一切公表せず、社内にも口外を禁じる。", ok:false,
+       why:"隠蔽。法令違反かつ被害拡大を招く。不適切。"},
+      {t:"原因の調査より先に感染PCを初期化し、すぐ通常業務に戻して稼働を優先する。", ok:false,
+       why:"原因や証拠が消え、再発防止も報告もできなくなる。順序が誤り。不適切。"},
+    ]
+  }
+];
+
+const LETTERS=["ア","イ","ウ","エ","オ"];
+let idx=0, selected=new Set(), revealed=false, score=0;
+const stage=document.getElementById('stage');
+const prog=document.getElementById('progress');
+
+function renderProgress(){
+  prog.innerHTML='';
+  for(let i=0;i<QUESTIONS.length;i++){
+    const s=document.createElement('div');
+    s.className='seg'+(i<idx?' done':'')+(i===idx?' current':'');
+    prog.appendChild(s);
+  }
+}
+
+function renderQuestion(){
+  const q=QUESTIONS[idx];
+  renderProgress();
+  const choicesHTML=q.choices.map((c,i)=>`
+    <div class="choice" data-i="${i}">
+      <span class="box"></span>
+      <span class="clab">${LETTERS[i]}</span>
+      <span class="ctext">${c.t}</span>
+    </div>`).join('');
+  const whyHTML=q.choices.map((c,i)=>`
+    <li><span class="mk ${c.ok?'y':'n'}">${c.ok?'○':'✕'}</span>
+      <span><span class="lab2">${LETTERS[i]}</span> ${c.why}</span></li>`).join('');
+
+  stage.innerHTML=`
+  <div class="card">
+    <div class="qhead">
+      <span class="qnum">Q${idx+1} / ${QUESTIONS.length}</span>
+      <span class="qtag">${q.tag}</span>
+      <span class="qfmt">${q.fmt}</span>
+    </div>
+    <p class="scenario">${q.scenario}</p>
+    <p class="ask">${q.ask}</p>
+    <p class="askhint">${q.hint}</p>
+    <div class="choices" id="choices">${choicesHTML}</div>
+    <div class="btnrow"><button class="action primary" id="checkBtn" disabled>解答を確認</button></div>
+    <div class="reveal" id="reveal">
+      <p class="judge" id="judge"></p>
+      <p class="noise">${q.noise}</p>
+      <div class="steps">
+        <div class="steprow"><div class="k">①守る対象</div><div class="v">${q.target}</div></div>
+        <div class="steprow"><div class="k">②脅威</div><div class="v">${q.threat}</div></div>
+        <div class="steprow"><div class="k">③CIA</div><div class="v"><b>${q.cia}</b></div></div>
+        <div class="steprow"><div class="k">④正解</div><div class="v">適切なのは <b>${q.correct.map(i=>LETTERS[i]).join('・')}</b>(${q.correct.length}個)</div></div>
+      </div>
+      <div class="why"><h4>各選択肢の判定</h4><ul>${whyHTML}</ul></div>
+      <div class="btnrow"><button class="action ghost" id="nextBtn">${idx<QUESTIONS.length-1?'次の問題 →':'結果を見る →'}</button></div>
+    </div>
+  </div>`;
+
+  selected=new Set(); revealed=false;
+  const choiceEls=stage.querySelectorAll('.choice');
+  choiceEls.forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(revealed)return;
+      const i=parseInt(el.dataset.i);
+      if(selected.has(i)){selected.delete(i);el.classList.remove('selected');}
+      else{selected.add(i);el.classList.add('selected');}
+      document.getElementById('checkBtn').disabled = selected.size===0;
+    });
+  });
+  document.getElementById('checkBtn').addEventListener('click',doReveal);
+}
+
+function doReveal(){
+  if(selected.size===0||revealed)return;
+  revealed=true;
+  const q=QUESTIONS[idx];
+  const correctSet=new Set(q.correct);
+  const choiceEls=stage.querySelectorAll('.choice');
+  let extraWrong=0, missed=0;
+  choiceEls.forEach((el,i)=>{
+    el.classList.add('locked');
+    el.classList.remove('selected');
+    const isCorrect=correctSet.has(i);
+    const isSel=selected.has(i);
+    if(isCorrect&&isSel){el.classList.add('res-ok');
+      el.insertAdjacentHTML('beforeend','<span class="res-pill ok">適切 ✓選んだ</span>');}
+    else if(isCorrect&&!isSel){el.classList.add('res-miss');missed++;
+      el.insertAdjacentHTML('beforeend','<span class="res-pill miss">適切 ✗選び逃し</span>');}
+    else if(!isCorrect&&isSel){el.classList.add('res-wrong');extraWrong++;
+      el.insertAdjacentHTML('beforeend','<span class="res-pill wrong">不適切 ✗選んだ</span>');}
+  });
+
+  const full=(extraWrong===0&&missed===0);
+  if(full)score++;
+  const j=document.getElementById('judge');
+  if(full){j.className='judge full';j.textContent='◎ 完全正解 ── 過不足なし';}
+  else if(extraWrong===0){j.className='judge partial';j.textContent=`△ 惜しい ── 適切なものを ${missed}個 選び逃し(誤選択はなし)`;}
+  else if(missed===0){j.className='judge partial';j.textContent=`△ 惜しい ── 不適切なものを ${extraWrong}個 選んでしまった`;}
+  else{j.className='judge fail';j.textContent=`✕ 選び逃し${missed}個・誤選択${extraWrong}個 ── 1つずつ独立に判定し直す`;}
+
+  document.getElementById('checkBtn').disabled=true;
+  document.getElementById('reveal').classList.add('show');
+  document.getElementById('nextBtn').addEventListener('click',next);
+}
+
+function next(){
+  if(idx<QUESTIONS.length-1){idx++;renderQuestion();window.scrollTo({top:0,behavior:'smooth'});}
+  else renderResult();
+}
+
+function renderResult(){
+  idx=QUESTIONS.length;renderProgress();
+  const n=QUESTIONS.length;
+  let msg,sub;
+  if(score===n){msg="全問完全正解。1個ずつ独立判定が効いてる。";sub="“すべて選べ”でも崩れないなら、通常の4〜5択は確実に取れる。";}
+  else if(score>=n-1){msg="ほぼ完璧。";sub="落とした1問、選び逃しか誤選択かを確認。多くは“正しそうな過剰/的外れ”を1個拾ってしまう。";}
+  else if(score>=Math.ceil(n/2)){msg="半分は完全正解。判定の精度にムラ。";sub="迷った選択肢は、②脅威に当たるか・過剰でないか・的外れでないかを1個ずつ言語化。";}
+  else{msg="まだ“雰囲気で複数選ぶ”状態。";sub="各選択肢を独立に〇✕で言い切れるまで本文に戻る。正解数は問題ごとに違う前提で。";}
+  stage.innerHTML=`
+  <div class="result">
+    <div class="score">${score}<small> / ${n}</small></div>
+    <p class="msg">${msg}</p>
+    <p>${sub}</p>
+    <div class="btnrow" style="justify-content:center;margin-top:20px;">
+      <button class="action ghost" id="retry">もう一度</button></div>
+  </div>`;
+  document.getElementById('retry').addEventListener('click',()=>{
+    idx=0;score=0;renderQuestion();window.scrollTo({top:0,behavior:'smooth'});});
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

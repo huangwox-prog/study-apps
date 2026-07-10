@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科目B セキュリティ 実戦演習</title>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --surface:#ffffff;
+    --ink:#1a1f2e;
+    --muted:#5b6472;
+    --line:#e3e6ec;
+    --line-strong:#cdd2db;
+    --accent:#2563a8;
+    --accent-soft:#eaf1f9;
+    --correct:#1f7a4d;
+    --correct-soft:#e8f4ed;
+    --wrong:#b4452f;
+    --wrong-soft:#fbecea;
+    --mono:'SFMono-Regular',Consolas,'Roboto Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:24px 18px 64px;}
+
+  header.top{
+    display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px;margin-bottom:8px;
+  }
+  header.top h1{font-size:16px;margin:0;letter-spacing:.04em;}
+  header.top .meta{font-family:var(--mono);font-size:12px;color:var(--muted);}
+
+  .progress{
+    display:flex;gap:6px;margin:14px 0 22px;
+  }
+  .progress .seg{
+    flex:1;height:4px;border-radius:2px;background:var(--line-strong);
+    transition:background .3s;
+  }
+  .progress .seg.done{background:var(--accent);}
+  .progress .seg.current{background:var(--ink);}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 22px 24px;
+    box-shadow:0 1px 2px rgba(20,30,50,.04);
+  }
+  .qhead{
+    display:flex;align-items:center;gap:10px;margin-bottom:14px;
+  }
+  .qnum{
+    font-family:var(--mono);font-size:12px;font-weight:600;
+    color:var(--accent);background:var(--accent-soft);
+    padding:3px 9px;border-radius:5px;letter-spacing:.05em;
+  }
+  .qtag{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em;}
+
+  .scenario{font-size:15px;margin:0 0 6px;}
+  .ask{font-size:15px;font-weight:600;margin:14px 0 18px;}
+
+  .choices{display:flex;flex-direction:column;gap:9px;}
+  .choice{
+    display:flex;gap:11px;align-items:flex-start;
+    border:1px solid var(--line-strong);
+    border-radius:8px;padding:12px 14px;
+    cursor:pointer;background:var(--surface);
+    transition:border-color .15s,background .15s;
+    font-size:14.5px;
+  }
+  .choice:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .choice.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .choice .lab{
+    font-family:var(--mono);font-weight:700;flex-shrink:0;
+    width:20px;text-align:center;color:var(--ink);
+  }
+  .choice.locked{cursor:default;}
+  .choice.locked:hover{border-color:var(--line-strong);background:var(--surface);}
+  .choice.correct{border-color:var(--correct);background:var(--correct-soft);}
+  .choice.correct .lab{color:var(--correct);}
+  .choice.chosen-wrong{border-color:var(--wrong);background:var(--wrong-soft);}
+  .choice.chosen-wrong .lab{color:var(--wrong);}
+  .verdict-pill{
+    margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:700;
+    padding:2px 7px;border-radius:4px;flex-shrink:0;align-self:center;
+  }
+  .verdict-pill.ok{color:var(--correct);background:#fff;border:1px solid var(--correct);}
+  .verdict-pill.ng{color:var(--wrong);background:#fff;border:1px solid var(--wrong);}
+
+  .btnrow{margin-top:18px;display:flex;gap:10px;}
+  button.action{
+    font-family:inherit;font-size:14px;font-weight:600;
+    padding:11px 20px;border-radius:8px;border:none;cursor:pointer;
+    transition:opacity .15s,background .15s;
+  }
+  button.action:disabled{opacity:.4;cursor:not-allowed;}
+  button.primary{background:var(--ink);color:#fff;}
+  button.primary:not(:disabled):hover{background:#000;}
+  button.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* reveal */
+  .reveal{margin-top:20px;display:none;animation:fade .3s ease;}
+  .reveal.show{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .steps{
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;
+    margin-bottom:16px;
+  }
+  .steprow{
+    display:grid;grid-template-columns:84px 1fr;
+    border-bottom:1px solid var(--line);font-size:13.5px;
+  }
+  .steprow:last-child{border-bottom:none;}
+  .steprow .k{
+    background:#fafbfc;font-family:var(--mono);font-size:11px;
+    color:var(--muted);padding:9px 10px;letter-spacing:.03em;
+    display:flex;align-items:center;border-right:1px solid var(--line);
+  }
+  .steprow .v{padding:9px 12px;}
+  .steprow .v b{color:var(--accent);}
+
+  .why{font-size:13.5px;}
+  .why h4{
+    font-size:12px;font-family:var(--mono);color:var(--muted);
+    letter-spacing:.05em;margin:0 0 8px;font-weight:600;
+  }
+  .why ul{margin:0;padding:0;list-style:none;}
+  .why li{
+    padding:7px 0;border-top:1px dashed var(--line);
+    display:flex;gap:9px;
+  }
+  .why li:first-child{border-top:none;}
+  .why .tag{
+    font-family:var(--mono);font-size:10.5px;font-weight:700;
+    flex-shrink:0;padding:1px 6px;border-radius:4px;height:fit-content;
+    margin-top:2px;
+  }
+  .tag.t-ok{color:var(--correct);background:var(--correct-soft);}
+  .tag.t-off{color:#8a6d1a;background:#fbf3dd;}    /* 的外れ */
+  .tag.t-over{color:#7a3a8a;background:#f4e8f6;}    /* 過剰 */
+  .tag.t-all{color:#b4452f;background:var(--wrong-soft);} /* 全部盛り */
+  .tag.t-bluff{color:#3a5a8a;background:#e8eef6;}   /* 用語ハッタリ */
+  .why .lab2{font-family:var(--mono);font-weight:700;flex-shrink:0;}
+
+  /* result */
+  .result{
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:28px 22px;text-align:center;
+  }
+  .result .score{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--accent);line-height:1;}
+  .result .score small{font-size:18px;color:var(--muted);}
+  .result p{font-size:14px;color:var(--muted);margin:14px 0 0;}
+  .result .msg{font-size:15px;color:var(--ink);font-weight:600;margin:8px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>科目B ─ セキュリティ 実戦演習</h1>
+    <span class="meta">SELECT → CHECK</span>
+  </header>
+  <div class="progress" id="progress"></div>
+
+  <div id="stage"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    tag:"内部不正 / アクセス権限",
+    scenario:"ある会社で、経理担当の従業員が、自分の職務には必要のない人事システム上の全社員の給与・評価データまで閲覧・編集できる状態になっていた。調査の結果、過去の異動時に付与された権限が削除されないまま残っていたことが分かった。",
+    ask:"同様の状態を防ぐために最も適切な対策はどれか。",
+    target:"人事システム上の個人データ(機密性)",
+    threat:"職務に不要な権限の付与放置による内部不正・情報漏えい",
+    cia:"機密性",
+    answer:1,
+    choices:[
+      {t:"給与・評価データをすべて暗号化して保管する。", type:"off",
+       why:"暗号化は盗聴・媒体紛失向け。正規の権限で開ける状態は変わらない。脅威の本体(過剰な権限)に当たってない。"},
+      {t:"職務に必要な範囲だけにアクセス権を限定し、異動・退職時に権限を棚卸しして見直す運用を定める。", type:"ok",
+       why:"最小権限の原則そのもの。あいてる穴(不要権限の放置)に直接ふたをしている。"},
+      {t:"経理担当者に、人事システムを閲覧した際のアクセスログを毎週提出させる。", type:"bluff",
+       why:"ログは「あとで気づく」検知・抑止であって、不要な権限そのものは残ったまま。設問が問う“防ぐ”の本丸じゃない。"},
+      {t:"人事システムへのアクセスを全社員に対して禁止する。", type:"over",
+       why:"人事業務まで止まる過剰対策。脅威は“不要な人が見られる”であって“誰も見られなくする”ことではない。"},
+    ]
+  },
+  {
+    tag:"誤操作起因 / 情報漏えい",
+    scenario:"営業部が顧客向けの案内を一斉送信した際、本来BCCに入れるべき宛先をTo欄に入れてしまい、約300名の顧客のメールアドレスが相互に見える状態で送信された。これにより顧客情報が漏えいした。",
+    ask:"再発防止のために最も適切な対策はどれか。",
+    target:"顧客のメールアドレス(機密性)",
+    threat:"送信時の人的ミス(宛先の入れ間違い)",
+    cia:"機密性",
+    answer:0,
+    choices:[
+      {t:"一斉送信時はBCCを使う運用を明文化し、送信前に宛先と送信方法をダブルチェックする手順を定める。", type:"ok",
+       why:"原因(宛先の入れ間違い)に運用と確認の二重で当たっている。再発防止に直結。"},
+      {t:"今回アドレスが漏えいした全顧客に謝罪メールを送る。", type:"off",
+       why:"これは起きた後の“事後対応”。設問が問うのは“再発防止”。問われている時点が違う。FB頻出の引っかけ。"},
+      {t:"送信するメールの本文を暗号化する。", type:"bluff",
+       why:"漏れたのは本文ではなく宛先(アドレス)。本文を暗号化しても、見えてしまう宛先には無関係。"},
+      {t:"メールシステムを廃止し、顧客連絡はすべて郵送に切り替える。", type:"over",
+       why:"業務効率を壊す過剰対策。ミスの種類はメール固有でなく“宛先確認”の問題で、手段を変えても本質は残る。"},
+    ]
+  },
+  {
+    tag:"可用性 / インシデント復旧",
+    scenario:"ある会社がランサムウェアに感染し、業務サーバ上のデータが暗号化されて読めなくなり、業務が数日間停止した。今後、万一感染しても業務を確実に復旧できるようにしたい。",
+    ask:"復旧を確実にするための備えとして最も適切なものはどれか。",
+    target:"業務データの可用性(復旧できること)",
+    threat:"ランサムウェアによるデータの暗号化・業務停止",
+    cia:"可用性",
+    answer:0,
+    choices:[
+      {t:"重要データを定期的にバックアップし、そのバックアップをネットワークから切り離して(オフラインで)保管する。", type:"ok",
+       why:"設問は“復旧を確実に”。オフライン保管なら感染が伝播せず、確実に戻せる。問われている可用性にドンピシャ。"},
+      {t:"全社員の端末にウイルス対策ソフトを導入し、定義ファイルを最新に保つ。", type:"bluff",
+       why:"いかにも“正しい強い対策”だが、これは感染の“予防”。設問が問うのは感染後の“復旧”。正しそうでも設問に当たっていない。"},
+      {t:"感染した場合に備え、攻撃者へ身代金を支払う手順をあらかじめ定めておく。", type:"off",
+       why:"支払っても復号される保証はなく、犯罪を助長する。復旧の確実な備えにならない。"},
+      {t:"業務データをすべてクラウドストレージへ移行する。", type:"bluff",
+       why:"クラウドでも端末と同期していれば暗号化が伝播しうる。“クラウド=安全”ではなく、復旧の保証にならない。"},
+    ]
+  }
+];
+
+const TAGLABEL = {
+  ok:["正解","t-ok"],
+  off:["的外れ型","t-off"],
+  over:["過剰型","t-over"],
+  all:["全部盛り型","t-all"],
+  bluff:["ハッタリ型","t-bluff"],
+};
+const LETTERS = ["ア","イ","ウ","エ"];
+
+let idx = 0;
+let selected = null;
+let revealed = false;
+let score = 0;
+const answeredCorrect = [];
+
+const stage = document.getElementById('stage');
+const prog = document.getElementById('progress');
+
+function renderProgress(){
+  prog.innerHTML = '';
+  for(let i=0;i<QUESTIONS.length;i++){
+    const s = document.createElement('div');
+    s.className = 'seg' + (i<idx?' done':'') + (i===idx?' current':'');
+    prog.appendChild(s);
+  }
+}
+
+function renderQuestion(){
+  const q = QUESTIONS[idx];
+  renderProgress();
+  let choicesHTML = q.choices.map((c,i)=>`
+    <div class="choice" data-i="${i}">
+      <span class="lab">${LETTERS[i]}</span>
+      <span class="ctext">${c.t}</span>
+    </div>`).join('');
+
+  let whyHTML = q.choices.map((c,i)=>{
+    const [label,cls] = TAGLABEL[c.type];
+    return `<li>
+      <span class="tag ${cls}">${label}</span>
+      <span><span class="lab2">${LETTERS[i]}</span> ${c.why}</span>
+    </li>`;
+  }).join('');
+
+  stage.innerHTML = `
+  <div class="card">
+    <div class="qhead">
+      <span class="qnum">Q${idx+1} / ${QUESTIONS.length}</span>
+      <span class="qtag">${q.tag}</span>
+    </div>
+    <p class="scenario">${q.scenario}</p>
+    <p class="ask">${q.ask}</p>
+    <div class="choices" id="choices">${choicesHTML}</div>
+
+    <div class="btnrow">
+      <button class="action primary" id="checkBtn" disabled>解答を確認</button>
+    </div>
+
+    <div class="reveal" id="reveal">
+      <div class="steps">
+        <div class="steprow"><div class="k">①守る対象</div><div class="v">${q.target}</div></div>
+        <div class="steprow"><div class="k">②脅威</div><div class="v">${q.threat}</div></div>
+        <div class="steprow"><div class="k">③CIA</div><div class="v"><b>${q.cia}</b></div></div>
+        <div class="steprow"><div class="k">④判定</div><div class="v">正解は <b>${LETTERS[q.answer]}</b> ── ②の脅威に直接当たっているのはこれだけ。</div></div>
+      </div>
+      <div class="why">
+        <h4>選択肢の切り分け</h4>
+        <ul>${whyHTML}</ul>
+      </div>
+      <div class="btnrow">
+        <button class="action ghost" id="nextBtn">${idx < QUESTIONS.length-1 ? '次の問題 →' : '結果を見る →'}</button>
+      </div>
+    </div>
+  </div>`;
+
+  selected = null;
+  revealed = false;
+
+  const choiceEls = stage.querySelectorAll('.choice');
+  choiceEls.forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(revealed) return;
+      choiceEls.forEach(e=>e.classList.remove('selected'));
+      el.classList.add('selected');
+      selected = parseInt(el.dataset.i);
+      document.getElementById('checkBtn').disabled = false;
+    });
+  });
+
+  document.getElementById('checkBtn').addEventListener('click', doReveal);
+}
+
+function doReveal(){
+  if(selected===null || revealed) return;
+  revealed = true;
+  const q = QUESTIONS[idx];
+  const choiceEls = stage.querySelectorAll('.choice');
+  choiceEls.forEach((el,i)=>{
+    el.classList.add('locked');
+    el.classList.remove('selected');
+    if(i===q.answer){
+      el.classList.add('correct');
+      el.insertAdjacentHTML('beforeend','<span class="verdict-pill ok">正解</span>');
+    }
+    if(i===selected && selected!==q.answer){
+      el.classList.add('chosen-wrong');
+      el.insertAdjacentHTML('beforeend','<span class="verdict-pill ng">あなたの選択</span>');
+    }
+  });
+
+  const correct = (selected===q.answer);
+  if(correct) score++;
+  answeredCorrect.push(correct);
+
+  document.getElementById('checkBtn').disabled = true;
+  document.getElementById('reveal').classList.add('show');
+  document.getElementById('nextBtn').addEventListener('click', next);
+}
+
+function next(){
+  if(idx < QUESTIONS.length-1){
+    idx++;
+    renderQuestion();
+    window.scrollTo({top:0,behavior:'smooth'});
+  } else {
+    renderResult();
+  }
+}
+
+function renderResult(){
+  idx = QUESTIONS.length;
+  renderProgress();
+  let msg, sub;
+  if(score===QUESTIONS.length){
+    msg = "全問正解。型が通ってる。";
+    sub = "“強さ”ではなく“脅威に当たってるか”で選べてる。本番でもこの順で。";
+  } else if(score>=QUESTIONS.length-1){
+    msg = "ほぼ取れてる。";
+    sub = "外した1問、引っかけの型(的外れ/過剰/ハッタリ)のどれに引っかかったか確認を。";
+  } else {
+    msg = "まだ“強そう”で選んでる兆候。";
+    sub = "外した問題は、必ず②脅威に戻って選択肢を消し直す。根拠は本文の中にある。";
+  }
+  stage.innerHTML = `
+  <div class="result">
+    <div class="score">${score}<small> / ${QUESTIONS.length}</small></div>
+    <p class="msg">${msg}</p>
+    <p>${sub}</p>
+    <div class="btnrow" style="justify-content:center;margin-top:20px;">
+      <button class="action ghost" id="retry">もう一度</button>
+    </div>
+  </div>`;
+  document.getElementById('retry').addEventListener('click',()=>{
+    idx=0;score=0;answeredCorrect.length=0;renderQuestion();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

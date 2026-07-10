@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>基本情報技術者 科目B 模擬試験 v3</title>
+<style>
+  :root{--ink:#243b6b;--ink-soft:#3d5894;--paper:#e9ebf0;--card:#fff;--line:#d3d8e2;
+    --code-bg:#f3f5fb;--red:#c0392b;--green:#2f7d4f;--muted:#6c7385;--amber:#b8860b;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:#1c2330;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif;line-height:1.7;-webkit-text-size-adjust:100%;}
+  .wrap{max-width:860px;margin:0 auto;padding:0 18px 80px;}
+  header.top{background:var(--ink);color:#fff;padding:26px 18px 22px;border-bottom:5px solid var(--red);}
+  header.top .inner{max-width:860px;margin:0 auto;}
+  header.top h1{margin:0;font-size:1.35rem;letter-spacing:.04em;}
+  header.top p{margin:6px 0 0;font-size:.82rem;color:#c6d0e8;}
+  .scorebar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 18px;}
+  .scorebar .inner{max-width:860px;margin:0 auto;width:100%;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .score-num{font-weight:700;color:var(--ink);font-size:1.05rem;}
+  .score-num b{font-size:1.6rem;color:var(--red);}
+  .progress{flex:1;min-width:120px;height:8px;background:var(--line);border-radius:99px;overflow:hidden;}
+  .progress>i{display:block;height:100%;width:0;background:var(--ink);transition:width .3s;}
+  .btn{border:none;border-radius:7px;padding:9px 18px;font-size:.92rem;cursor:pointer;font-family:inherit;font-weight:600;transition:filter .15s,transform .05s;}
+  .btn:active{transform:translateY(1px);}
+  .btn-grade{background:var(--ink);color:#fff;}.btn-grade:hover{filter:brightness(1.12);}
+  .btn-reset{background:transparent;color:var(--ink);border:1.5px solid var(--ink);}.btn-reset:hover{background:rgba(36,59,107,.07);}
+  .q{background:var(--card);border:1px solid var(--line);border-radius:11px;margin-top:22px;overflow:hidden;box-shadow:0 1px 3px rgba(30,40,70,.06);}
+  .q-head{display:flex;align-items:center;gap:10px;padding:14px 18px 0;}
+  .q-no{font-weight:700;color:var(--ink);font-size:1.05rem;}
+  .badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.05em;}
+  .lv1{background:#e3f0e8;color:#2f7d4f;}.lv2{background:#e2ecf7;color:#2b5d99;}.lv3{background:#fdf0db;color:#b8860b;}.lv4{background:#f7e3e0;color:#c0392b;}.lv5{background:#2d1b2e;color:#ff9aa8;}
+  .topic{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;background:#eef1f6;color:var(--muted);letter-spacing:.04em;}
+  .q-stamp{margin-left:auto;font-size:1.5rem;font-weight:800;opacity:0;}
+  .q-stamp.show{opacity:1;}.q-stamp.ok{color:var(--green);}.q-stamp.ng{color:var(--red);}
+  .q-body{padding:6px 18px 18px;}
+  .q-text{margin:8px 0 4px;}.q-text .mark{color:var(--red);font-weight:700;}
+  pre.code{background:var(--code-bg);border-left:4px solid var(--ink);border-radius:0 8px 8px 0;padding:14px 16px;margin:12px 0;font-family:"SFMono-Regular","Consolas","Menlo","BIZ UDGothic","MS Gothic",monospace;font-size:.86rem;line-height:1.65;overflow-x:auto;white-space:pre;color:#26303f;}
+  pre.code .cm{color:var(--red);font-weight:700;}
+  pre.code .blk{background:#fff3cd;color:#7a5a00;border-radius:4px;padding:0 5px;font-weight:700;}
+  pre.code .kw{color:var(--ink-soft);font-weight:700;}
+  pre.code .cls{color:var(--green);font-weight:700;}
+  .diagram{display:block;margin:8px auto 4px;max-width:100%;}
+  .data-note{font-size:.86rem;color:var(--muted);background:#f6f7fa;border-radius:6px;padding:8px 12px;margin:10px 0;}
+  .data-note code{font-family:"SFMono-Regular","Consolas",monospace;color:#26303f;}
+  .opts{margin:14px 0 0;display:flex;flex-direction:column;gap:9px;}
+  .opt{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;cursor:pointer;transition:.12s;}
+  .opt:hover{border-color:var(--ink-soft);background:#f8faff;}
+  .opt.sel{border-color:var(--ink);background:#eef3fc;}
+  .opt .key{flex:none;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:.8rem;font-weight:700;}
+  .opt .txt{flex:1;}
+  .opt .txt code{font-family:"SFMono-Regular","Consolas","BIZ UDGothic",monospace;font-size:.84rem;}
+  .opt.correct{border-color:var(--green);background:#eaf6ee;}.opt.correct .key{background:var(--green);}
+  .opt.wrongpick{border-color:var(--red);background:#fdecea;}.opt.wrongpick .key{background:var(--red);}
+  .opts.locked .opt{cursor:default;}.opts.locked .opt:hover{background:inherit;}
+  .explain{margin-top:14px;padding:13px 15px;border-radius:9px;background:#f6f7fa;border:1px solid var(--line);display:none;font-size:.9rem;}
+  .explain.show{display:block;}
+  .explain h4{margin:0 0 6px;font-size:.85rem;color:var(--ink);letter-spacing:.04em;}
+  .explain code{font-family:"SFMono-Regular","Consolas","BIZ UDGothic",monospace;font-size:.82rem;background:#fff;padding:0 4px;border-radius:3px;}
+  .explain .ans{color:var(--green);font-weight:700;}
+  #final{display:none;margin-top:26px;background:var(--ink);color:#fff;border-radius:12px;padding:24px;text-align:center;}
+  #final.show{display:block;}
+  #final .big{font-size:2.6rem;font-weight:800;color:#ffd27a;}
+  #final .msg{margin-top:8px;font-size:.95rem;color:#d6deef;}
+  footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:34px;}
+  @media (max-width:520px){header.top h1{font-size:1.15rem;}pre.code{font-size:.78rem;}}
+</style>
+</head>
+<body>
+<header class="top"><div class="inner">
+  <h1>基本情報技術者試験 科目B 模擬試験</h1>
+  <p>全16問 / 探索・整列・再帰・連結リスト(OOP)・二分木 ― 難易度: 基礎 → 激難</p>
+</div></header>
+<div class="scorebar"><div class="inner">
+  <span class="score-num"><b id="sNum">–</b> / 16 問正解</span>
+  <span class="progress"><i id="sBar"></i></span>
+  <button class="btn btn-grade" id="gradeBtn">採点する</button>
+  <button class="btn btn-reset" id="resetBtn">やり直す</button>
+</div></div>
+<div class="wrap">
+  <div id="quiz"></div>
+  <div id="final"><div class="big" id="finalNum">0 / 16</div><div class="msg" id="finalMsg"></div></div>
+  <footer>※ 配列の添字は 1 から始まる。空き／終端は <code>未定義</code> で表す。IPA疑似言語(オブジェクト指向)準拠。</footer>
+</div>
+<script>
+const SVG_LIST=`<svg class="diagram" viewBox="0 0 600 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="連結リスト挿入図">
+<style>.nd{fill:#eef3fc;stroke:#243b6b;stroke-width:1.5}.nl{font:600 14px monospace;fill:#243b6b}.cap{font:11px sans-serif;fill:#6c7385}.ar{stroke:#243b6b;stroke-width:1.6;fill:none}.nw{fill:#fdf0db;stroke:#b8860b;stroke-width:1.5}.nwl{font:600 14px monospace;fill:#b8860b}</style>
+<defs><marker id="ahL" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#243b6b"/></marker></defs>
+<text class="cap" x="20" y="24">listHead</text>
+<rect class="nd" x="20"  y="34" width="62" height="38" rx="6"/><text class="nl" x="51"  y="58" text-anchor="middle">10</text>
+<rect class="nd" x="160" y="34" width="62" height="38" rx="6"/><text class="nl" x="191" y="58" text-anchor="middle">20</text>
+<rect class="nd" x="300" y="34" width="62" height="38" rx="6"/><text class="nl" x="331" y="58" text-anchor="middle">30</text>
+<rect class="nd" x="440" y="34" width="62" height="38" rx="6"/><text class="nl" x="471" y="58" text-anchor="middle">40</text>
+<line class="ar" x1="82"  y1="53" x2="156" y2="53" marker-end="url(#ahL)"/>
+<line class="ar" x1="222" y1="53" x2="296" y2="53" marker-end="url(#ahL)"/>
+<line class="ar" x1="362" y1="53" x2="436" y2="53" marker-end="url(#ahL)"/>
+<rect class="nw" x="160" y="92" width="62" height="34" rx="6"/><text class="nwl" x="191" y="115" text-anchor="middle">25</text>
+<text class="cap" x="232" y="113">← key=20 の直後に挿入</text></svg>`;
+
+const SVG_BST=`<svg class="diagram" viewBox="0 0 420 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="二分探索木">
+<style>.e{stroke:#9aa6bd;stroke-width:1.6}.c{fill:#eef3fc;stroke:#243b6b;stroke-width:1.6}.t{font:600 14px monospace;fill:#243b6b}</style>
+<line class="e" x1="210" y1="40" x2="120" y2="100"/><line class="e" x1="210" y1="40" x2="300" y2="100"/>
+<line class="e" x1="120" y1="100" x2="70"  y2="170"/><line class="e" x1="120" y1="100" x2="170" y2="170"/>
+<line class="e" x1="300" y1="100" x2="250" y2="170"/><line class="e" x1="300" y1="100" x2="350" y2="170"/>
+<circle class="c" cx="210" cy="40"  r="22"/><text class="t" x="210" y="45" text-anchor="middle">50</text>
+<circle class="c" cx="120" cy="100" r="22"/><text class="t" x="120" y="105" text-anchor="middle">30</text>
+<circle class="c" cx="300" cy="100" r="22"/><text class="t" x="300" y="105" text-anchor="middle">70</text>
+<circle class="c" cx="70"  cy="170" r="22"/><text class="t" x="70"  y="175" text-anchor="middle">20</text>
+<circle class="c" cx="170" cy="170" r="22"/><text class="t" x="170" y="175" text-anchor="middle">40</text>
+<circle class="c" cx="250" cy="170" r="22"/><text class="t" x="250" y="175" text-anchor="middle">60</text>
+<circle class="c" cx="350" cy="170" r="22"/><text class="t" x="350" y="175" text-anchor="middle">80</text></svg>`;
+
+const CLS_LIST=`<span class="cls">クラス ListElement</span>
+  整数型: val
+  ListElement: next
+  <span class="cm">/* コンストラクタ */</span>
+  ListElement(整数型: v)
+    val ← v
+    next ← 未定義
+
+大域: ListElement: listHead   <span class="cm">/* リストの先頭。初期値 未定義 */</span>`;
+
+const CLS_TREE=`<span class="cls">クラス Node</span>
+  整数型: val
+  Node: left, right
+  Node(整数型: v)
+    val ← v
+    left ← 未定義
+    right ← 未定義`;
+
+const QUESTIONS=[
+{no:"問1",level:"基礎",lv:"lv1",topic:"配列",
+ text:"関数 <code>合計</code> は配列 <code>data</code> の全要素の和を返す。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇整数型: 合計</span>(整数型の配列: data)
+  整数型: i, total
+  total ← <span class="blk">　a　</span>
+  for (i を 1 から dataの要素数 まで 1 ずつ増やす)
+    total ← <span class="blk">　b　</span>
+  endfor
+  return total`,
+ opts:["a: <code>0</code> ／ b: <code>total + data[i]</code>","a: <code>1</code> ／ b: <code>total + data[i]</code>","a: <code>0</code> ／ b: <code>total + data[i - 1]</code>","a: <code>0</code> ／ b: <code>total × data[i]</code>"],
+ ans:0,exp:"和の初期値は <code>0</code>。現在の合計に <code>data[i]</code> を足し込む。"},
+
+{no:"問2",level:"基礎",lv:"lv1",topic:"配列",
+ text:"関数 <code>最大</code> は配列の最大値を返す。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇整数型: 最大</span>(整数型の配列: data)
+  整数型: i, max
+  max ← <span class="blk">　a　</span>
+  for (i を 2 から dataの要素数 まで 1 ずつ増やす)
+    if (<span class="blk">　b　</span>)
+      max ← data[i]
+    endif
+  endfor
+  return max`,
+ opts:["a: <code>data[1]</code> ／ b: <code>data[i] &gt; max</code>","a: <code>0</code> ／ b: <code>data[i] &gt; max</code>","a: <code>data[1]</code> ／ b: <code>data[i] &lt; max</code>","a: <code>data[1]</code> ／ b: <code>data[i] = max</code>"],
+ ans:0,exp:"初期値は先頭要素 <code>data[1]</code>、2番目以降と比べてより大きければ更新。初期値を <code>0</code> にすると負の値だけの配列で誤る。"},
+
+{no:"問3",level:"標準",lv:"lv2",topic:"探索・実行回数",
+ text:"関数 <code>探索</code> に <code>data = {9, 17, 5, 28, 13, 6}</code>、<code>key = 28</code> を与えて実行する。コメント <span class='mark'>α</span> の比較は何回実行されるか。",
+ code:`<span class="kw">〇整数型: 探索</span>(整数型の配列: data, 整数型: key)
+  整数型: i
+  for (i を 1 から dataの要素数 まで 1 ずつ増やす)
+    if (data[i] = key)  <span class="cm">/* α: この比較は何回実行されるか */</span>
+      return i
+    endif
+  endfor
+  return -1`,
+ note:"data = <code>{9, 17, 5, 28, 13, 6}</code> ／ key = <code>28</code>",
+ opts:["3回","4回","5回","6回"],
+ ans:1,exp:"1:9≠28、2:17≠28、3:5≠28、4:28=28 でヒットして <code>return</code>。よって <span class='ans'>4回</span>。"},
+
+{no:"問4",level:"標準",lv:"lv2",topic:"整列",
+ text:"手続き <code>選択ソート</code> は配列を昇順に並べ替える。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇 選択ソート</span>(整数型の配列: data)
+  整数型: i, j, min, tmp
+  for (i を 1 から dataの要素数 - 1 まで 1 ずつ増やす)
+    min ← i
+    for (j を i + 1 から dataの要素数 まで 1 ずつ増やす)
+      if (<span class="blk">　a　</span>)
+        min ← j
+      endif
+    endfor
+    tmp ← data[i]
+    data[i] ← data[min]
+    <span class="blk">　b　</span>
+  endfor`,
+ opts:["a: <code>data[j] &lt; data[min]</code> ／ b: <code>data[min] ← tmp</code>","a: <code>data[j] &gt; data[min]</code> ／ b: <code>data[min] ← tmp</code>","a: <code>data[j] &lt; data[min]</code> ／ b: <code>data[min] ← data[i]</code>","a: <code>data[j] &lt; data[i]</code> ／ b: <code>data[min] ← tmp</code>"],
+ ans:0,exp:"最小値の位置を探すので、より小さい要素で min を更新。交換の仕上げは退避値を min 側へ → <code>data[min] ← tmp</code>。<code>data[i]</code> は上書き済みなので使えない。"},
+
+{no:"問5",level:"応用",lv:"lv3",topic:"二分探索",
+ text:"昇順整列済みの配列に対する関数 <code>二分探索</code>。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇整数型: 二分探索</span>(整数型の配列: data, 整数型: key)
+  整数型: lo, hi, mid
+  lo ← 1
+  hi ← dataの要素数
+  while (lo ≦ hi)
+    mid ← (lo + hi) ÷ 2 の商
+    if (data[mid] = key)
+      return mid
+    elseif (data[mid] &lt; key)
+      <span class="blk">　a　</span>
+    else
+      <span class="blk">　b　</span>
+    endif
+  endwhile
+  return -1`,
+ opts:["a: <code>lo ← mid + 1</code> ／ b: <code>hi ← mid - 1</code>","a: <code>hi ← mid - 1</code> ／ b: <code>lo ← mid + 1</code>","a: <code>lo ← mid</code> ／ b: <code>hi ← mid</code>","a: <code>lo ← mid + 1</code> ／ b: <code>hi ← mid</code>"],
+ ans:0,exp:"中央値が key より小さければ探索範囲は右半分 → <code>lo ← mid + 1</code>。大きければ左半分 → <code>hi ← mid - 1</code>。<code>±1</code> を省くと範囲が縮まらず無限ループの危険。"},
+
+{no:"問6",level:"応用",lv:"lv3",topic:"再帰",
+ text:"非負整数 <code>n</code> の階乗 <code>n!</code> を求める再帰関数 <code>階乗</code>。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇整数型: 階乗</span>(整数型: n)
+  if (n ≦ 1)
+    return <span class="blk">　a　</span>
+  endif
+  return <span class="blk">　b　</span>`,
+ opts:["a: <code>1</code> ／ b: <code>n × 階乗(n - 1)</code>","a: <code>0</code> ／ b: <code>n × 階乗(n - 1)</code>","a: <code>1</code> ／ b: <code>n × 階乗(n)</code>","a: <code>1</code> ／ b: <code>(n - 1) × 階乗(n - 1)</code>"],
+ ans:0,exp:"基底は <code>1!</code>=<code>0!</code>=<code>1</code>。再帰部は <code>n × 階乗(n-1)</code>。b を <code>階乗(n)</code> にすると n が減らず無限再帰、a を <code>0</code> にすると常に 0 になる。"},
+
+{no:"問7",level:"応用",lv:"lv3",topic:"再帰・実行回数",
+ text:"次の再帰関数 <code>フィボ</code> について、<code>フィボ(6)</code> を呼び出したとき、関数 <code>フィボ</code> は最初の呼び出しを含めて合計何回呼び出されるか。",
+ code:`<span class="kw">〇整数型: フィボ</span>(整数型: n)
+  if (n ≦ 1)
+    return n
+  endif
+  return フィボ(n - 1) + フィボ(n - 2)  <span class="cm">/* α: 呼び出し回数 */</span>`,
+ note:"<code>フィボ(0)=0</code>、<code>フィボ(1)=1</code>。最初の <code>フィボ(6)</code> も1回に数える。",
+ opts:["13回","15回","25回","49回"],
+ ans:2,exp:"呼び出し総数 <code>T(n)</code> は <code>T(n)=1+T(n-1)+T(n-2)</code>、<code>T(0)=T(1)=1</code>。<code>T(2)=3, T(3)=5, T(4)=9, T(5)=15, T(6)=25</code>。よって <span class='ans'>25回</span>。同じ <code>フィボ(k)</code> を何度も計算する無駄が指数的に効く、再帰の典型例。"},
+
+{no:"問8",level:"難",lv:"lv4",topic:"連結リスト(OOP)",
+ text:"単方向連結リストを表す次のクラス定義の下で、末尾に値 <code>qVal</code> の要素を追加する手続き <code>append</code> を考える。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`${CLS_LIST}
+
+<span class="kw">〇append</span>(整数型: qVal)
+  ListElement: prev, curr
+  curr ← ListElement(qVal)
+  if (listHead が 未定義 と等しい)
+    listHead ← curr
+  else
+    prev ← listHead
+    while (<span class="blk">　a　</span>)
+      prev ← prev.next
+    endwhile
+    <span class="blk">　b　</span>
+  endif`,
+ opts:["a: <code>prev.next が 未定義 と等しくない</code> ／ b: <code>prev.next ← curr</code>","a: <code>prev.next が 未定義 と等しい</code> ／ b: <code>prev.next ← curr</code>","a: <code>prev が 未定義 と等しくない</code> ／ b: <code>prev.next ← curr</code>","a: <code>prev.next が 未定義 と等しくない</code> ／ b: <code>curr.next ← prev</code>"],
+ ans:0,exp:"末尾要素は <code>next</code> が <code>未定義</code>。<code>prev.next が 未定義 と等しくない</code> 間だけ進めば、終了時 prev が末尾を指す。そこへ <code>prev.next ← curr</code> で連結。条件を <code>prev ≠ 未定義</code> にすると行き過ぎて末尾を見失う。"},
+
+{no:"問9",level:"難",lv:"lv4",topic:"連結リスト(OOP)",
+ text:"問8のクラス定義の下で、値 <code>key</code> をもつ要素を探し、その直後に値 <code>qVal</code> の新要素を挿入する手続き <code>insertAfter</code>(下図)。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ diagram:"SVG_LIST",
+ code:`<span class="kw">〇insertAfter</span>(整数型: key, 整数型: qVal)
+  ListElement: curr, newElem
+  curr ← listHead
+  while (curr.val が key と等しくない)
+    curr ← curr.next
+  endwhile
+  newElem ← ListElement(qVal)
+  <span class="blk">　a　</span>
+  <span class="blk">　b　</span>`,
+ opts:["a: <code>newElem.next ← curr.next</code> ／ b: <code>curr.next ← newElem</code>","a: <code>curr.next ← newElem</code> ／ b: <code>newElem.next ← curr.next</code>","a: <code>newElem.next ← curr</code> ／ b: <code>curr.next ← newElem</code>","a: <code>newElem.next ← curr.next</code> ／ b: <code>curr.next ← curr</code>"],
+ ans:0,exp:"先に <code>newElem.next ← curr.next</code> で新要素から元の後続へ矢印を張り、次に <code>curr.next ← newElem</code> で curr を付け替える。順序を逆にすると <code>curr.next</code> を先に上書きした時点で元の後続への参照が失われる。"},
+
+{no:"問10",level:"難",lv:"lv4",topic:"連結リスト(OOP)",
+ text:"問8のクラス定義の下で、値 <code>key</code> をもつ最初の要素を削除する手続き <code>delete</code>。先頭要素が対象の場合も正しく動くものとする。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇delete</span>(整数型: key)
+  ListElement: prev, curr
+  prev ← 未定義
+  curr ← listHead
+  while (curr.val が key と等しくない)
+    prev ← curr
+    <span class="blk">　a　</span>
+  endwhile
+  if (prev が 未定義 と等しい)
+    listHead ← curr.next
+  else
+    <span class="blk">　b　</span>
+  endif`,
+ opts:["a: <code>curr ← curr.next</code> ／ b: <code>prev.next ← curr.next</code>","a: <code>curr ← curr.next</code> ／ b: <code>prev.next ← curr</code>","a: <code>prev ← curr.next</code> ／ b: <code>prev.next ← curr.next</code>","a: <code>curr ← curr.next</code> ／ b: <code>curr.next ← prev.next</code>"],
+ ans:0,exp:"走査は <code>curr ← curr.next</code> で前進。削除は直前要素の矢印を対象の後続へ付け替え → <code>prev.next ← curr.next</code>。prev が <code>未定義</code>(=先頭が対象)のときだけ <code>listHead</code> を更新する。"},
+
+{no:"問11",level:"応用",lv:"lv3",topic:"二分木",
+ text:"次のクラス定義は二分探索木(BST)のノードを表す。値 <code>key</code> が木に含まれるか調べる再帰関数 <code>探索</code>(右図は具体例)。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ diagram:"SVG_BST",
+ code:`${CLS_TREE}
+
+<span class="kw">〇論理型: 探索</span>(Node: t, 整数型: key)
+  if (t が 未定義 と等しい)
+    return false
+  endif
+  if (t.val が key と等しい)
+    return true
+  elseif (<span class="blk">　a　</span>)
+    return 探索(t.left, key)
+  else
+    return 探索(<span class="blk">　b　</span>, key)
+  endif`,
+ opts:["a: <code>key &lt; t.val</code> ／ b: <code>t.right</code>","a: <code>key &gt; t.val</code> ／ b: <code>t.right</code>","a: <code>key &lt; t.val</code> ／ b: <code>t.left</code>","a: <code>key &lt; t.val</code> ／ b: <code>t</code>"],
+ ans:0,exp:"BST は「左 &lt; 親 &lt; 右」。<code>key &lt; t.val</code> なら左部分木を、そうでなければ右部分木 <code>t.right</code> をたどる。図で 60 を探すと 50→70→60 の3ノードで到達する。"},
+
+{no:"問12",level:"難",lv:"lv4",topic:"二分木",
+ text:"二分探索木に値 <code>v</code> を挿入し、木の根を返す再帰関数 <code>挿入</code>。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇Node: 挿入</span>(Node: t, 整数型: v)
+  if (t が 未定義 と等しい)
+    return Node(v)
+  endif
+  if (v &lt; t.val)
+    t.left ← 挿入(t.left, v)
+  else
+    <span class="blk">　a　</span>
+  endif
+  <span class="blk">　b　</span>`,
+ opts:["a: <code>t.right ← 挿入(t.right, v)</code> ／ b: <code>return t</code>","a: <code>t.right ← 挿入(t.right, v)</code> ／ b: <code>return v</code>","a: <code>挿入(t.right, v)</code> ／ b: <code>return t</code>","a: <code>t.left ← 挿入(t.right, v)</code> ／ b: <code>return t</code>"],
+ ans:0,exp:"v が大きい側は右部分木へ再帰し、戻り値を <code>t.right</code> につなぎ直す → <code>t.right ← 挿入(t.right, v)</code>。最後に自分自身 <code>t</code> を返して上位のつなぎ直しを成立させる。代入を省く(選択肢ウ)と新ノードが木に接続されない。"},
+
+{no:"問13",level:"難",lv:"lv4",topic:"二分木",
+ text:"二分木を中間順(左→自分→右)で走査し、各ノードの値を出力する再帰手続き <code>中間順</code>。BST に適用すると昇順に出力される。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇中間順</span>(Node: t)
+  if (t が 未定義 と等しい)
+    return
+  endif
+  中間順(t.left)
+  <span class="blk">　a　</span>
+  <span class="blk">　b　</span>`,
+ opts:["a: <code>t.val を出力する</code> ／ b: <code>中間順(t.right)</code>","a: <code>中間順(t.right)</code> ／ b: <code>t.val を出力する</code>","a: <code>t.val を出力する</code> ／ b: <code>中間順(t.left)</code>","a: <code>t.val を出力する</code> ／ b: <code>中間順(t)</code>"],
+ ans:0,exp:"中間順は「左部分木 → 自ノード → 右部分木」。左の再帰のあとに <code>t.val を出力</code>、続けて <code>中間順(t.right)</code>。b を <code>中間順(t)</code> にすると自分自身を無限に呼び続ける。図の木なら 20,30,40,50,60,70,80 の順。"},
+
+{no:"問14",level:"激難",lv:"lv5",topic:"二分木",
+ text:"二分木の高さ(根から最も深い葉までのノード数。空の木は0)を求める再帰関数 <code>高さ</code>。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇整数型: 高さ</span>(Node: t)
+  整数型: hl, hr
+  if (t が 未定義 と等しい)
+    return 0
+  endif
+  hl ← 高さ(t.left)
+  hr ← 高さ(t.right)
+  if (hl &gt; hr)
+    return <span class="blk">　a　</span>
+  else
+    return <span class="blk">　b　</span>
+  endif`,
+ opts:["a: <code>hl + 1</code> ／ b: <code>hr + 1</code>","a: <code>hl</code> ／ b: <code>hr</code>","a: <code>hr + 1</code> ／ b: <code>hl + 1</code>","a: <code>hl + 1</code> ／ b: <code>hr</code>"],
+ ans:0,exp:"左右の部分木の高さの大きい方に、自ノードぶんの <code>+1</code> を足す。<code>hl &gt; hr</code> の枝では <code>hl + 1</code>、その他は <code>hr + 1</code>。<code>+1</code> を落とすと自分の段を数え損ねる。図の木の高さは3。"},
+
+{no:"問15",level:"難",lv:"lv4",topic:"二分木",
+ text:"二分木の全ノードの値の合計を求める再帰関数 <code>合計</code>。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇整数型: 合計</span>(Node: t)
+  if (t が 未定義 と等しい)
+    return <span class="blk">　a　</span>
+  endif
+  return t.val + 合計(t.left) + <span class="blk">　b　</span>`,
+ opts:["a: <code>0</code> ／ b: <code>合計(t.right)</code>","a: <code>0</code> ／ b: <code>合計(t.left)</code>","a: <code>t.val</code> ／ b: <code>合計(t.right)</code>","a: <code>0</code> ／ b: <code>t.right</code>"],
+ ans:0,exp:"空の木の合計は <code>0</code>(基底)。自分の値に左右の部分木の合計を足す → <code>t.val + 合計(t.left) + 合計(t.right)</code>。b を <code>合計(t.left)</code> にすると左ばかり二重で数え右を見落とす。図の木の合計は350。"},
+
+{no:"問16",level:"激難",lv:"lv5",topic:"二分木",
+ text:"二分木の葉(左右の子がともに <code>未定義</code> のノード)の個数を求める再帰関数 <code>葉の数</code>。空欄 <span class='mark'>a</span>・<span class='mark'>b</span> の正しい組合せはどれか。",
+ code:`<span class="kw">〇整数型: 葉の数</span>(Node: t)
+  if (t が 未定義 と等しい)
+    return 0
+  endif
+  if (t.left が 未定義 と等しい かつ t.right が 未定義 と等しい)
+    return <span class="blk">　a　</span>
+  endif
+  return 葉の数(t.left) + <span class="blk">　b　</span>`,
+ opts:["a: <code>1</code> ／ b: <code>葉の数(t.right)</code>","a: <code>0</code> ／ b: <code>葉の数(t.right)</code>","a: <code>1</code> ／ b: <code>葉の数(t.left)</code>","a: <code>1</code> ／ b: <code>t.right</code>"],
+ ans:0,exp:"子が無いノードに来たら葉が1つ → <code>return 1</code>。そうでなければ左右の葉を足し合わせる → <code>葉の数(t.left) + 葉の数(t.right)</code>。図の木では葉は 20,40,60,80 の4枚。"}
+];
+
+const quizEl=document.getElementById('quiz');
+const TOTAL=QUESTIONS.length;
+const state=QUESTIONS.map(()=>({picked:null,locked:false}));
+function letter(i){return ["ア","イ","ウ","エ"][i];}
+function diagramHTML(q){if(!q.diagram)return"";if(q.diagram==="SVG_LIST")return SVG_LIST;if(q.diagram==="SVG_BST")return SVG_BST;return q.diagram;}
+function render(){
+  quizEl.innerHTML="";
+  QUESTIONS.forEach((q,qi)=>{
+    const card=document.createElement('div');card.className='q';card.id='q'+qi;
+    card.innerHTML=`<div class="q-head"><span class="q-no">${q.no}</span><span class="badge ${q.lv}">${q.level}</span>${q.topic?`<span class="topic">${q.topic}</span>`:""}<span class="q-stamp" id="stamp${qi}"></span></div>
+    <div class="q-body"><p class="q-text">${q.text}</p>${diagramHTML(q)}${q.code?`<pre class="code">${q.code}</pre>`:""}${q.note?`<div class="data-note">${q.note}</div>`:""}
+    <div class="opts" id="opts${qi}">${q.opts.map((o,oi)=>`<div class="opt" data-q="${qi}" data-o="${oi}"><span class="key">${letter(oi)}</span><span class="txt">${o}</span></div>`).join("")}</div>
+    <div class="explain" id="exp${qi}"><h4>解説</h4><p>正解: <span class="ans">${letter(q.ans)}</span></p><p>${q.exp}</p></div></div>`;
+    quizEl.appendChild(card);
+  });
+  document.querySelectorAll('.opt').forEach(el=>{el.addEventListener('click',()=>{
+    const qi=+el.dataset.q,oi=+el.dataset.o;if(state[qi].locked)return;state[qi].picked=oi;
+    const box=document.getElementById('opts'+qi);box.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');
+  });});
+}
+function grade(){
+  let correct=0;
+  QUESTIONS.forEach((q,qi)=>{
+    state[qi].locked=true;const box=document.getElementById('opts'+qi);box.classList.add('locked');
+    const stamp=document.getElementById('stamp'+qi);const picked=state[qi].picked;
+    box.querySelectorAll('.opt').forEach(o=>{const oi=+o.dataset.o;o.classList.remove('sel');
+      if(oi===q.ans)o.classList.add('correct');if(oi===picked&&picked!==q.ans)o.classList.add('wrongpick');});
+    if(picked===q.ans){correct++;stamp.textContent="○";stamp.className="q-stamp show ok";}
+    else{stamp.textContent="×";stamp.className="q-stamp show ng";}
+    document.getElementById('exp'+qi).classList.add('show');
+  });
+  document.getElementById('sNum').textContent=correct;
+  document.getElementById('sBar').style.width=(correct/TOTAL*100)+"%";
+  const fin=document.getElementById('final');fin.classList.add('show');
+  document.getElementById('finalNum').textContent=correct+" / "+TOTAL;
+  const r=correct/TOTAL;let msg;
+  if(correct===TOTAL)msg="全問正解。OOPの連結リストも木の再帰も完璧。本番もこの精度で。";
+  else if(r>=0.875)msg="ほぼ完成。落とした問題の解説を声に出して説明できるか確認を。";
+  else if(r>=0.75)msg="合格圏。木の再帰の戻り値の扱いをあと一周で盤石。";
+  else if(r>=0.625)msg="あと少し。リストの矢印の付け替えと再帰の基底条件を重点的に。";
+  else if(r>=0.5)msg="半分。問8〜問10のOOPリストと問12の再帰の戻り値を図で手を動かす。";
+  else if(r>=0.3)msg="基礎は取れている。再帰は『基底→自分→部分木』の型を毎回声に出して。";
+  else msg="まず問1〜問7を確実に。基礎と再帰の型の取りこぼしが一番もったいない。";
+  document.getElementById('finalMsg').textContent=msg;
+  fin.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function reset(){
+  state.forEach(s=>{s.picked=null;s.locked=false;});
+  document.getElementById('sNum').textContent="–";document.getElementById('sBar').style.width="0%";
+  document.getElementById('final').classList.remove('show');render();window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('gradeBtn').addEventListener('click',grade);
+document.getElementById('resetBtn').addEventListener('click',reset);
+render();
+</script>
+</body>
+</html>

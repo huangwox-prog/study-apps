@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科目B 双方向リスト ─ 矢印の付け替え 激ムズ</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#1a1f2e; --muted:#5b6472;
+    --line:#e3e6ec; --line-strong:#cdd2db; --accent:#2563a8; --accent-soft:#eaf1f9;
+    --correct:#1f7a4d; --correct-soft:#e8f4ed; --wrong:#b4452f; --wrong-soft:#fbecea;
+    --code:#0f1530; --code-ink:#e7ecf5; --code-key:#8fb8ff; --code-mut:#7f8aa3;
+    --mono:'SFMono-Regular',Consolas,'Roboto Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:780px;margin:0 auto;padding:24px 18px 64px;}
+  header.top{display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px;}
+  header.top h1{font-size:16px;margin:0;letter-spacing:.03em;}
+  header.top .meta{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:22px;box-shadow:0 1px 2px rgba(20,30,50,.04);margin-bottom:18px;}
+  h2.sec{font-size:13px;font-family:var(--mono);color:var(--accent);letter-spacing:.05em;
+    margin:0 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px;}
+  p{font-size:14.5px;margin:0 0 10px;}
+  .small{font-size:13px;color:var(--muted);}
+  .codeblock{background:var(--code);color:var(--code-ink);border-radius:8px;
+    font-family:var(--mono);font-size:13px;line-height:1.95;padding:16px 16px;overflow-x:auto;}
+  .codeblock .k{color:var(--code-key);}
+  .codeblock .c{color:var(--code-mut);}
+  .codeblock .ln{display:block;white-space:pre;}
+  .codeblock .indent{padding-left:2.2em;}
+  .codeblock .indent2{padding-left:4.4em;}
+  select.blank{font-family:var(--mono);font-size:12.5px;background:#1b2447;color:#fff;
+    border:1.5px solid #44518a;border-radius:5px;padding:2px 6px;margin:0 2px;cursor:pointer;}
+  select.blank.ok{border-color:#3fbf7f;background:#173a2a;}
+  select.blank.ng{border-color:#e07a66;background:#3a1d18;}
+  .blab{color:#ffd479;font-weight:700;}
+  .orderq{margin-top:14px;border-top:1px dashed var(--line);padding-top:14px;}
+  .orderq .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line-strong);
+    border-radius:8px;padding:11px 13px;cursor:pointer;margin-top:8px;font-size:13.5px;
+    transition:border-color .15s,background .15s;font-family:var(--mono);}
+  .orderq .opt:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .orderq .opt.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .orderq .opt .lab{font-weight:700;flex-shrink:0;}
+  .orderq .opt.locked{cursor:default;}
+  .orderq .opt.res-ok{border-color:var(--correct);background:var(--correct-soft);}
+  .orderq .opt.res-ng{border-color:var(--wrong);background:var(--wrong-soft);}
+  .btnrow{margin-top:18px;display:flex;gap:10px;}
+  button.action{font-family:inherit;font-size:14px;font-weight:600;padding:11px 20px;
+    border-radius:8px;border:none;cursor:pointer;}
+  button.action:disabled{opacity:.4;cursor:not-allowed;}
+  button.primary{background:var(--ink);color:#fff;}
+  button.primary:not(:disabled):hover{background:#000;}
+  button.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .reveal{display:none;animation:fade .3s ease;}
+  .reveal.show{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .judge{font-family:var(--mono);font-size:13px;font-weight:700;margin:0 0 16px;padding:10px 13px;border-radius:7px;}
+  .judge.full{color:var(--correct);background:var(--correct-soft);}
+  .judge.part{color:var(--wrong);background:var(--wrong-soft);}
+  .ans{font-family:var(--mono);font-size:13px;background:#fafbfc;border:1px solid var(--line);
+    border-radius:7px;padding:12px 14px;margin:10px 0 16px;line-height:1.9;}
+  .ans b{color:var(--accent);}
+  .expl{font-size:14px;}
+  .expl h3{font-size:13px;font-family:var(--mono);color:var(--muted);letter-spacing:.04em;margin:18px 0 8px;}
+  .trap{border-left:3px solid var(--wrong);background:var(--wrong-soft);border-radius:0 7px 7px 0;
+    padding:12px 14px;font-size:13.5px;margin:10px 0;}
+  .trap b{color:var(--wrong);}
+  .tip{border-left:3px solid var(--correct);background:var(--correct-soft);border-radius:0 7px 7px 0;
+    padding:12px 14px;font-size:13.5px;margin:10px 0;}
+  .tip b{color:var(--correct);}
+  svg{display:block;max-width:100%;height:auto;margin:6px auto 2px;}
+  .cap{text-align:center;font-size:12px;color:var(--muted);font-family:var(--mono);margin:0 0 16px;}
+  .diagwrap{background:#fafbfc;border:1px solid var(--line);border-radius:8px;padding:14px 8px 6px;margin:8px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>科目B ─ 双方向リスト / 矢印の付け替え <span style="font-weight:400;color:var(--muted);">激ムズ</span></h1>
+    <span class="meta">REWIRE</span>
+  </header>
+
+  <!-- 前提 -->
+  <div class="card">
+    <h2 class="sec">クラス定義と前提</h2>
+    <p>双方向リストの各要素は次のクラス Node で表す。<span class="small">(値・前後2つの参照を持つ)</span></p>
+    <div class="codeblock" style="margin-bottom:12px;">
+<span class="ln"><span class="k">クラス</span> Node</span>
+<span class="ln indent">値 : 整数</span>
+<span class="ln indent">前 : Node    <span class="c">// 1つ前の要素への参照</span></span>
+<span class="ln indent">次 : Node    <span class="c">// 1つ次の要素への参照</span></span>
+    </div>
+    <p>このリストは両端に<b>番兵(ばんぺい)</b>を持つ。先頭番兵 <span class="small mono">先頭</span> と末尾番兵 <span class="small mono">末尾</span> は値を持たないダミー要素で、実データはその間に並ぶ。<b>すべての実ノードは必ず前と次を持つ</b>(端でも 未定義 にならない)ため、<b>ヌル判定が不要</b>になるのが番兵方式の利点。</p>
+    <div class="diagwrap">
+      <svg viewBox="0 0 720 90" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="13">
+        <defs>
+          <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#5b6472"/>
+          </marker>
+        </defs>
+        <!-- boxes -->
+        <g>
+          <rect x="10"  y="30" width="80" height="34" rx="5" fill="#eef0f4" stroke="#cdd2db"/>
+          <text x="50"  y="52" text-anchor="middle" fill="#5b6472">先頭</text>
+          <rect x="170" y="30" width="80" height="34" rx="5" fill="#fff" stroke="#2563a8"/>
+          <text x="210" y="52" text-anchor="middle" fill="#1a1f2e">N1</text>
+          <rect x="330" y="30" width="80" height="34" rx="5" fill="#fff" stroke="#2563a8"/>
+          <text x="370" y="52" text-anchor="middle" fill="#1a1f2e">N2</text>
+          <rect x="490" y="30" width="80" height="34" rx="5" fill="#fff" stroke="#2563a8"/>
+          <text x="530" y="52" text-anchor="middle" fill="#1a1f2e">N3</text>
+          <rect x="630" y="30" width="80" height="34" rx="5" fill="#eef0f4" stroke="#cdd2db"/>
+          <text x="670" y="52" text-anchor="middle" fill="#5b6472">末尾</text>
+        </g>
+        <!-- next arrows (上) -->
+        <line x1="90"  y1="40" x2="170" y2="40" stroke="#5b6472" marker-end="url(#ar)"/>
+        <line x1="250" y1="40" x2="330" y2="40" stroke="#5b6472" marker-end="url(#ar)"/>
+        <line x1="410" y1="40" x2="490" y2="40" stroke="#5b6472" marker-end="url(#ar)"/>
+        <line x1="570" y1="40" x2="630" y2="40" stroke="#5b6472" marker-end="url(#ar)"/>
+        <!-- prev arrows (下) -->
+        <line x1="170" y1="54" x2="90"  y2="54" stroke="#b0b7c3" marker-end="url(#ar)"/>
+        <line x1="330" y1="54" x2="250" y2="54" stroke="#b0b7c3" marker-end="url(#ar)"/>
+        <line x1="490" y1="54" x2="410" y2="54" stroke="#b0b7c3" marker-end="url(#ar)"/>
+        <line x1="630" y1="54" x2="570" y2="54" stroke="#b0b7c3" marker-end="url(#ar)"/>
+        <text x="130" y="20" text-anchor="middle" fill="#5b6472" font-size="11">次→</text>
+        <text x="130" y="84" text-anchor="middle" fill="#b0b7c3" font-size="11">←前</text>
+      </svg>
+    </div>
+    <p class="small">上段の矢印が「次」、下段が「前」。実ノードは N1〜N3。</p>
+  </div>
+
+  <!-- 設問 -->
+  <div class="card">
+    <h2 class="sec">設問</h2>
+    <p>手続 <span class="mono">move(curr, target)</span> は、リスト内の実ノード <span class="mono">curr</span> を取り外し、別の実ノード <span class="mono">target</span> の<b>直後</b>へ移動する。<span class="small">(curr と target は異なる実ノードとする)</span></p>
+    <p>空欄 <span class="blab">a</span>〜<span class="blab">d</span> を埋め、さらに最後の2行の<b>正しい順序</b>を選べ。</p>
+
+    <div class="codeblock">
+<span class="ln"><span class="k">○手続</span>: move(Node: curr, Node: target)</span>
+<span class="ln indent"><span class="c">// 手順1: curr をリストから切り離す</span></span>
+<span class="ln indent">curr.前.次 ← <select class="blank" id="sa"><option value=""></option><option>curr.次</option><option>curr.前</option><option>target.次</option><option>curr</option></select>   <span class="c">// <span class="blab">a</span></span></span>
+<span class="ln indent">curr.次.前 ← <select class="blank" id="sb"><option value=""></option><option>curr.前</option><option>curr.次</option><option>target</option><option>target.前</option></select>   <span class="c">// <span class="blab">b</span></span></span>
+<span class="ln indent"><span class="c">// 手順2: curr を target の直後へ挿入する</span></span>
+<span class="ln indent">curr.次 ← <select class="blank" id="sc"><option value=""></option><option>target.次</option><option>target</option><option>curr.前</option><option>target.前</option></select>   <span class="c">// <span class="blab">c</span></span></span>
+<span class="ln indent">curr.前 ← <select class="blank" id="sd"><option value=""></option><option>target</option><option>target.次</option><option>curr.次</option><option>target.前</option></select>   <span class="c">// <span class="blab">d</span></span></span>
+<span class="ln indent c">// ↓ この2行の順序が問題（設問の選択で確定）</span>
+<span class="ln indent" id="ordLines"><span class="c">（順序を下で選択）</span></span>
+    </div>
+
+    <div class="orderq" id="orderq">
+      <p class="small" style="margin-bottom:4px;">最後の2行の正しい順序は？</p>
+      <div class="opt" data-i="0">
+        <span class="lab">①</span>
+        <span>target.次.前 ← curr　→　target.次 ← curr</span>
+      </div>
+      <div class="opt" data-i="1">
+        <span class="lab">②</span>
+        <span>target.次 ← curr　→　target.次.前 ← curr</span>
+      </div>
+    </div>
+
+    <div class="btnrow"><button class="action primary" id="checkBtn" disabled>採点する</button></div>
+  </div>
+
+  <!-- 解説 -->
+  <div class="card reveal" id="reveal">
+    <h2 class="sec">解答・解説</h2>
+    <p class="judge" id="judge"></p>
+
+    <div class="ans">
+      <b>a</b> = curr.次　　<b>b</b> = curr.前　　<b>c</b> = target.次　　<b>d</b> = target<br>
+      <b>順序</b> = ①（target.次.前 ← curr を先、target.次 ← curr を後）
+    </div>
+
+    <div class="expl">
+      <h3>① 手順1：切り離し（番兵があるのでヌル判定ゼロ）</h3>
+      <p>curr の左隣と右隣を直結する。<span class="mono">curr.前.次 ← curr.次</span> で左隣の「次」を curr の右隣へ。<span class="mono">curr.次.前 ← curr.前</span> で右隣の「前」を curr の左隣へ。番兵のおかげで curr が端でも左隣・右隣は必ず存在するので、<b>「もし 未定義 なら」の場合分けが要らない</b>。これが番兵方式の最大の旨味。</p>
+
+      <h3>② 手順2：挿入（target と 旧target.次 の間に割り込む）</h3>
+      <p>つなぎ替える矢印は4本。<span class="mono">curr.次 ← target.次</span>(旧)、<span class="mono">curr.前 ← target</span>、<span class="mono">target.次.前 ← curr</span>、<span class="mono">target.次 ← curr</span>。</p>
+
+      <div class="diagwrap">
+        <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg" font-family="monospace" font-size="13">
+          <defs>
+            <marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#1f7a4d"/>
+            </marker>
+            <marker id="arg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#b0b7c3"/>
+            </marker>
+          </defs>
+          <rect x="30"  y="58" width="90" height="34" rx="5" fill="#eef0f4" stroke="#cdd2db"/>
+          <text x="75"  y="80" text-anchor="middle" fill="#5b6472">target</text>
+          <rect x="235" y="10" width="90" height="34" rx="5" fill="#fff" stroke="#1f7a4d" stroke-width="1.6"/>
+          <text x="280" y="32" text-anchor="middle" fill="#1a1f2e">curr</text>
+          <rect x="440" y="58" width="100" height="34" rx="5" fill="#eef0f4" stroke="#cdd2db"/>
+          <text x="490" y="80" text-anchor="middle" fill="#5b6472">旧target.次</text>
+          <!-- new arrows -->
+          <line x1="120" y1="66" x2="235" y2="40" stroke="#1f7a4d" stroke-width="1.6" marker-end="url(#ar2)"/>
+          <text x="150" y="48" fill="#1f7a4d" font-size="11">target.次←curr</text>
+          <line x1="240" y1="44" x2="118" y2="74" stroke="#1f7a4d" stroke-width="1.6" marker-end="url(#ar2)"/>
+          <text x="120" y="108" fill="#1f7a4d" font-size="11">curr.前←target</text>
+          <line x1="325" y1="40" x2="445" y2="66" stroke="#1f7a4d" stroke-width="1.6" marker-end="url(#ar2)"/>
+          <text x="345" y="46" fill="#1f7a4d" font-size="11">curr.次←target.次</text>
+          <line x1="442" y1="74" x2="322" y2="44" stroke="#1f7a4d" stroke-width="1.6" marker-end="url(#ar2)"/>
+          <text x="360" y="112" fill="#1f7a4d" font-size="11">target.次.前←curr</text>
+          <!-- old direct link greyed -->
+          <line x1="120" y1="86" x2="440" y2="86" stroke="#b0b7c3" stroke-dasharray="4 4" marker-end="url(#arg)"/>
+          <text x="250" y="134" fill="#b0b7c3" font-size="11">(旧: target ⇄ 旧target.次 の直結を断つ)</text>
+        </svg>
+      </div>
+      <p class="cap">target と 旧target.次 の間に curr を割り込ませる4本</p>
+
+      <h3>③ なぜ順序①でないと壊れるか（ここが本問の急所）</h3>
+      <div class="trap">
+        <b>罠：</b> <span class="mono">target.次 ← curr</span> を先にやると、その瞬間 <span class="mono">target.次</span> は <b>curr 自身</b>を指す。続く <span class="mono">target.次.前 ← curr</span> は実質 <span class="mono">curr.前 ← curr</span> になり、<b>curr が自分自身を前に持つ</b>壊れ方をする。<br><br>
+        さらに嫌らしいのは、この壊れ方は<b>「次」をたどる前向き走査では気づけない</b>こと。前向きには正しく並んで見えるのに、<b>「前」をたどる後ろ向き走査だけが破綻する</b>。実際に move(N3, target=N1) を順序②でやると、前向きは <span class="mono">N1,N3,N2,…</span> と正しく見えるのに、後ろ向きでは N3 が消える（N3.前 が N3 自身を指すため)。双方向リストのバグが見つけにくい典型。
+      </div>
+      <p>だから <span class="mono">target.次</span>(旧値)を参照し終えるまで <span class="mono">target.次</span> を書き換えてはいけない。順序①では、<span class="mono">target.次.前 ← curr</span> の時点ではまだ <span class="mono">target.次</span> が旧値なので正しく旧ノードの「前」を直せる。最後に <span class="mono">target.次 ← curr</span> で締める。</p>
+
+      <div class="tip">
+        <b>実務的な安全策：</b> 旧値を一時変数に退避すれば順序に悩まなくて済む。<br>
+        <span class="mono">tmp ← target.次　/　curr.次 ← tmp　/　curr.前 ← target　/　tmp.前 ← curr　/　target.次 ← curr</span><br>
+        「参照を上書きする前に、必要な旧値を退避する」── これがポインタ付け替え全般の鉄則。試験でも、どの参照がいつ書き換わるかを1行ずつ追えば順序トラップは必ず見抜ける。
+      </div>
+
+      <h3>④ 手順1と手順2の順序</h3>
+      <p>切り離し(手順1)は curr の<b>旧</b>前後を使う。挿入(手順2)で curr.前・curr.次 を上書きしてしまうので、<b>必ず切り離しを先</b>に。逆にすると旧リンクを失って切り離せなくなる。</p>
+    </div>
+
+    <div class="btnrow"><button class="action ghost" id="retry">もう一度（選び直す）</button></div>
+  </div>
+</div>
+
+<script>
+const ANS={sa:"curr.次",sb:"curr.前",sc:"target.次",sd:"target",order:0};
+const selects=["sa","sb","sc","sd"].map(id=>document.getElementById(id));
+const checkBtn=document.getElementById('checkBtn');
+const orderOpts=[...document.querySelectorAll('#orderq .opt')];
+let orderSel=null, locked=false;
+
+function refresh(){
+  const allFilled=selects.every(s=>s.value!=="") && orderSel!==null;
+  checkBtn.disabled=!allFilled || locked;
+}
+selects.forEach(s=>s.addEventListener('change',refresh));
+orderOpts.forEach(o=>o.addEventListener('click',()=>{
+  if(locked)return;
+  orderOpts.forEach(x=>x.classList.remove('selected'));
+  o.classList.add('selected');
+  orderSel=parseInt(o.dataset.i);
+  refresh();
+}));
+
+checkBtn.addEventListener('click',()=>{
+  if(locked)return;
+  locked=true;
+  let wrong=0;
+  selects.forEach(s=>{
+    const ok=(s.value===ANS[s.id]);
+    s.classList.add(ok?'ok':'ng');
+    s.disabled=true;
+    if(!ok)wrong++;
+  });
+  orderOpts.forEach(o=>{
+    o.classList.add('locked');
+    const i=parseInt(o.dataset.i);
+    if(i===ANS.order)o.classList.add('res-ok');
+    else if(i===orderSel)o.classList.add('res-ng');
+  });
+  if(orderSel!==ANS.order)wrong++;
+
+  const j=document.getElementById('judge');
+  if(wrong===0){j.className='judge full';j.textContent='◎ 全問正解 ── 矢印の付け替えと順序、両方クリア';}
+  else{j.className='judge part';j.textContent=`✕ ${wrong}箇所まちがい ── 赤い欄を解説と照らし合わせて、どの参照がいつ書き換わるか1行ずつ追う`;}
+
+  document.getElementById('reveal').classList.add('show');
+  checkBtn.disabled=true;
+  document.getElementById('reveal').scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+document.getElementById('retry').addEventListener('click',()=>{
+  locked=false;orderSel=null;
+  selects.forEach(s=>{s.value="";s.disabled=false;s.classList.remove('ok','ng');});
+  orderOpts.forEach(o=>{o.classList.remove('locked','res-ok','res-ng','selected');});
+  document.getElementById('reveal').classList.remove('show');
+  document.getElementById('judge').textContent="";
+  refresh();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+</script>
+</body>
+</html>

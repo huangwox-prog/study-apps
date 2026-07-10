@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科目B セキュリティ 実戦演習 ─ 本番仕様</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#1a1f2e; --muted:#5b6472;
+    --line:#e3e6ec; --line-strong:#cdd2db; --accent:#2563a8; --accent-soft:#eaf1f9;
+    --correct:#1f7a4d; --correct-soft:#e8f4ed; --wrong:#b4452f; --wrong-soft:#fbecea;
+    --mono:'SFMono-Regular',Consolas,'Roboto Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:740px;margin:0 auto;padding:24px 18px 64px;}
+  header.top{display:flex;align-items:baseline;justify-content:space-between;
+    border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:8px;}
+  header.top h1{font-size:16px;margin:0;letter-spacing:.04em;}
+  header.top .meta{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .progress{display:flex;gap:6px;margin:14px 0 22px;}
+  .progress .seg{flex:1;height:4px;border-radius:2px;background:var(--line-strong);transition:background .3s;}
+  .progress .seg.done{background:var(--accent);}
+  .progress .seg.current{background:var(--ink);}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:22px 22px 24px;box-shadow:0 1px 2px rgba(20,30,50,.04);}
+  .qhead{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .qnum{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);padding:3px 9px;border-radius:5px;letter-spacing:.05em;}
+  .qtag{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em;}
+  .qfmt{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:auto;}
+  .scenario{font-size:14.5px;margin:0 0 6px;}
+  .ask{font-size:15px;font-weight:600;margin:16px 0 18px;padding-top:14px;border-top:1px solid var(--line);}
+  .choices{display:flex;flex-direction:column;gap:9px;}
+  .choice{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line-strong);
+    border-radius:8px;padding:12px 14px;cursor:pointer;background:var(--surface);
+    transition:border-color .15s,background .15s;font-size:14.5px;}
+  .choice:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .choice.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .choice .lab{font-family:var(--mono);font-weight:700;flex-shrink:0;width:20px;text-align:center;color:var(--ink);}
+  .choice.locked{cursor:default;}
+  .choice.locked:hover{border-color:var(--line-strong);background:var(--surface);}
+  .choice.correct{border-color:var(--correct);background:var(--correct-soft);}
+  .choice.correct .lab{color:var(--correct);}
+  .choice.chosen-wrong{border-color:var(--wrong);background:var(--wrong-soft);}
+  .choice.chosen-wrong .lab{color:var(--wrong);}
+  .verdict-pill{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:700;
+    padding:2px 7px;border-radius:4px;flex-shrink:0;align-self:center;}
+  .verdict-pill.ok{color:var(--correct);background:#fff;border:1px solid var(--correct);}
+  .verdict-pill.ng{color:var(--wrong);background:#fff;border:1px solid var(--wrong);}
+  .btnrow{margin-top:18px;display:flex;gap:10px;}
+  button.action{font-family:inherit;font-size:14px;font-weight:600;padding:11px 20px;
+    border-radius:8px;border:none;cursor:pointer;transition:opacity .15s,background .15s;}
+  button.action:disabled{opacity:.4;cursor:not-allowed;}
+  button.primary{background:var(--ink);color:#fff;}
+  button.primary:not(:disabled):hover{background:#000;}
+  button.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .reveal{margin-top:20px;display:none;animation:fade .3s ease;}
+  .reveal.show{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .steps{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:16px;}
+  .steprow{display:grid;grid-template-columns:92px 1fr;border-bottom:1px solid var(--line);font-size:13.5px;}
+  .steprow:last-child{border-bottom:none;}
+  .steprow .k{background:#fafbfc;font-family:var(--mono);font-size:11px;color:var(--muted);
+    padding:9px 10px;letter-spacing:.03em;display:flex;align-items:center;border-right:1px solid var(--line);}
+  .steprow .v{padding:9px 12px;}
+  .steprow .v b{color:var(--accent);}
+  .noise{font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 0 14px;
+    padding:8px 11px;background:#fafbfc;border-left:3px solid var(--line-strong);border-radius:0 6px 6px 0;}
+  .why{font-size:13.5px;}
+  .why h4{font-size:12px;font-family:var(--mono);color:var(--muted);letter-spacing:.05em;margin:0 0 8px;font-weight:600;}
+  .why ul{margin:0;padding:0;list-style:none;}
+  .why li{padding:7px 0;border-top:1px dashed var(--line);display:flex;gap:9px;}
+  .why li:first-child{border-top:none;}
+  .why .tag{font-family:var(--mono);font-size:10.5px;font-weight:700;flex-shrink:0;
+    padding:1px 6px;border-radius:4px;height:fit-content;margin-top:2px;}
+  .tag.t-ok{color:var(--correct);background:var(--correct-soft);}
+  .tag.t-off{color:#8a6d1a;background:#fbf3dd;}
+  .tag.t-over{color:#7a3a8a;background:#f4e8f6;}
+  .tag.t-all{color:#b4452f;background:var(--wrong-soft);}
+  .tag.t-bluff{color:#3a5a8a;background:#e8eef6;}
+  .why .lab2{font-family:var(--mono);font-weight:700;flex-shrink:0;}
+  .result{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px 22px;text-align:center;}
+  .result .score{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--accent);line-height:1;}
+  .result .score small{font-size:18px;color:var(--muted);}
+  .result p{font-size:14px;color:var(--muted);margin:14px 0 0;}
+  .result .msg{font-size:15px;color:var(--ink);font-weight:600;margin:8px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>科目B ─ セキュリティ 実戦演習 <span style="font-weight:400;color:var(--muted);">本番仕様</span></h1>
+    <span class="meta">READ → SELECT → CHECK</span>
+  </header>
+  <div class="progress" id="progress"></div>
+  <div id="stage"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    tag:"標的型攻撃メール", fmt:"5択",
+    scenario:"P社の営業部では、毎週月曜の朝に週次の売上レポートをメールで各メンバーに共有する習慣がある。ある月曜、営業部のQさんは出社して受信箱を確認していたところ、「請求書の確認をお願いします」という件名のメールを受け取った。差出人の表示名は普段から取引のあるR社の担当者だったが、よく見るとメールアドレスのドメインがいつもとわずかに異なっていた。本文には「至急ご確認ください」とだけ書かれ、ZIP形式のファイルが添付されていた。営業部では各自がウイルス対策ソフトを導入しているが、定義ファイルの更新は個人任せになっている。Qさんは添付を開こうとしたが、R社からの請求書はいつもPDFで届いていたことを思い出し、手を止めた。",
+    ask:"このとき、Qさんが取るべき行動として最も適切なものはどれか。",
+    noise:"ノイズ:週次レポート/月曜の朝/ウイルス対策ソフトの更新が個人任せ ── どれも今“すべき行動”には直結しない。",
+    target:"自分の端末と社内ネットワーク(機密性・可用性)",
+    threat:"R社になりすました標的型攻撃メール(添付ファイルによるマルウェア感染)",
+    cia:"機密性 / 可用性",
+    answer:2,
+    choices:[
+      {t:"添付されたZIPファイルを開いて中身を確認し、本当にR社からの請求書かどうかを自分で判断する。", type:"off",
+       why:"開いた時点で感染しうる。確認のために開く、が最悪手。"},
+      {t:"念のため、そのメールに返信して「本物の請求書か」をR社担当者に問い合わせる。", type:"bluff",
+       why:"一見丁寧だが、差出人アドレスは偽物。返信は攻撃者に届く。確認になっていない。本物に聞くなら別経路(電話・既知のアドレス)。"},
+      {t:"添付ファイルを開かず、メールを情報システム部門(定められた窓口)に報告し、指示を仰ぐ。", type:"ok",
+       why:"不審メールは“自己判断せず報告”が原則。組織として他のメンバーへの注意喚起もできる。脅威にドンピシャ。"},
+      {t:"自分の端末のウイルス対策ソフトの定義ファイルを最新に更新してから、添付を開く。", type:"bluff",
+       why:"“最新にすれば安全”は誤り。未知のマルウェアは定義で防げない。そもそも開く前提が間違い。前回の「強める=正解」の罠。"},
+      {t:"メールを削除し、面倒なので特に誰にも報告しない。", type:"off",
+       why:"自分は防げても、同じ攻撃が他のメンバーにも届いている可能性。報告しないことで組織の被害を見逃す。"},
+    ]
+  },
+  {
+    tag:"認証 / 共有アカウント", fmt:"4択",
+    scenario:"S社の経理課では、会計システムにログインするためのIDとパスワードを、課のメンバー5名で1つの共有アカウントとして使い回している。これは数年前、当時の課長が「一人ずつアカウントを作るのは管理が面倒だ」と判断したためで、以来その運用が続いてきた。先日、会計システム上に身に覚えのない不正な振込データが作成されていたことが判明した。経理課ではただちに調査を行ったが、5名が同じアカウントを使っていたため、誰がそのデータを作成したのかを特定することができなかった。経理課のTさんは、この問題を根本から改善したいと考えている。",
+    ask:"再発防止と、操作者の追跡の両方の観点から、最も適切な対策はどれか。",
+    noise:"ノイズ:課長の判断の経緯/“数年前から”の運用 ── 経緯は理由説明で、対策の中身ではない。",
+    target:"会計データの完全性と、操作の追跡可能性(誰がやったか)",
+    threat:"共有アカウントによる責任追跡の不能",
+    cia:"完全性(+識別・追跡可能性)",
+    answer:1,
+    choices:[
+      {t:"会計システムの共有パスワードを、より複雑なものに変更し、定期的に変更する運用にする。", type:"bluff",
+       why:"パスワードを強くしても共有のままでは、結局“誰が操作したか”は分からない。設問の「追跡」に当たっていない。"},
+      {t:"メンバー全員に個別のアカウントを発行し、操作ログを記録・保管する。", type:"ok",
+       why:"個別IDで“誰が”を識別でき、ログで追跡もできる。問われた2点の両方にドンピシャ。"},
+      {t:"会計システムへのアクセスを、課長1名だけに限定する。", type:"over",
+       why:"5名の経理業務が1人に集中して回らない過剰対策。脅威は“追跡不能”であって“多人数”ではない。"},
+      {t:"共有アカウントのパスワードを課長だけが管理し、操作のたびにメンバーへ口頭で伝える。", type:"off",
+       why:"結局は同一アカウントで、誰が操作したか追えない。運用も非現実的。脅威に当たっていない。"},
+    ]
+  },
+  {
+    tag:"物理 / 媒体持ち出し", fmt:"5択",
+    scenario:"U社のコンサルタントVさんは、客先での打ち合わせ資料として、顧客の個人情報を含むファイルを保存したノートPCを日常的に社外へ持ち出している。ある日の帰宅途中、Vさんは電車内でそのノートPCの入ったかばんを座席に置き忘れ、紛失してしまった。すぐに鉄道会社へ届け出たが、PCは見つかっていない。問題のノートPCはWindowsのログインパスワードこそ設定されていたものの、ディスク全体の暗号化はされていなかった。U社では、これまでPCの社外持ち出しについて明確なルールを設けておらず、持ち出すかどうかは各自の判断に任されていた。情報システム部のWさんは、この件を受けて全社的な再発防止策を検討している。",
+    ask:"紛失時の情報漏えいリスクを下げる観点から、最も効果が高い対策はどれか。",
+    noise:"ノイズ:鉄道会社へ届け出た/打ち合わせ資料 ── 本文の急所は「ログインPWはあったが、ディスク暗号化はされていなかった」の一文。",
+    target:"ノートPC内の顧客個人情報(機密性)",
+    threat:"PC紛失時の情報漏えい(=拾った相手にディスクを読まれる)",
+    cia:"機密性",
+    answer:0,
+    choices:[
+      {t:"社外へ持ち出すノートPCのディスクを暗号化し、持ち出しの申請・記録を義務づけるルールを定める。", type:"ok",
+       why:"暗号化していれば、PCを拾われても中身は読めない。本文の穴(暗号化なし)に直接ふたをする。"},
+      {t:"全社員のノートPCに、より複雑なログインパスワードを設定させる。", type:"bluff",
+       why:"ディスクを抜く・別OSで起動すればログインPWは回避され中身は読める。本文が「ログインPWはあった」と書いた意味を読めていれば外せる。"},
+      {t:"ノートPCの社外への持ち出しを全面的に禁止する。", type:"over",
+       why:"客先作業が成立しなくなる過剰対策。脅威は“持ち出すこと”でなく“読まれること”。"},
+      {t:"紛失に備え、ノートPCに位置情報の追跡アプリを導入しておく。", type:"off",
+       why:"位置を追えても、中身が読まれるのは止められない。漏えいリスクそのものは下がらない。"},
+      {t:"Vさん本人に、今後かばんを置き忘れないよう注意喚起する。", type:"off",
+       why:"個人への注意は仕組みでなく、全社的な再発防止にならない。人はまたミスする前提で設計する。"},
+    ]
+  },
+  {
+    tag:"委託先 / アカウント管理", fmt:"4択",
+    scenario:"X社は、自社のWebサイトの保守運用を外部のY社に委託しており、Y社の担当者にはX社のサーバへアクセスするためのアカウントを発行していた。先日、X社とY社の保守契約が満了して終了したが、X社の情報システム部では、Y社担当者のアカウントを削除する手続きを行っていなかった。さらに調べてみると、X社には、これまで外部の委託先に発行したアカウントを一覧で管理する台帳が存在せず、どの業者にどんなアカウントを渡しているかは、担当者個人の記憶に頼っている状態だった。情報システム部はこの状況を問題視している。",
+    ask:"同様のリスクを今後“継続的に”防ぐために、最も適切な対策はどれか。",
+    noise:"ノイズ:Y社・Web保守という個別事情 ── 急所は「台帳が存在せず記憶頼み」=仕組みがないこと。設問は“継続的に”。",
+    target:"サーバとサイト(機密性)、および委託先アカウントの管理状態",
+    threat:"委託先アカウントの放置と、棚卸しできない管理不在",
+    cia:"機密性",
+    answer:1,
+    choices:[
+      {t:"今回残っていたY社担当者のアカウントを削除する。", type:"off",
+       why:"正しい対処だが“今回限り”。台帳がない根本は残るので、設問の“継続的に防ぐ”には当たっていない。FB頻出の罠。"},
+      {t:"委託先に発行したアカウントを台帳で一元管理し、契約終了時の削除と定期的な棚卸しを運用ルールとして定める。", type:"ok",
+       why:"仕組み化して、今後どの委託先でも放置を防げる。“継続的に”にドンピシャ。"},
+      {t:"Y社との保守契約を再開し、アカウントはそのまま有効にしておく。", type:"off",
+       why:"リスクを放置するだけ。論外。"},
+      {t:"外部委託をやめ、Webサイトの保守をすべて自社で行うようにする。", type:"over",
+       why:"体制ごと壊す過剰対策で非現実的。脅威の本体(管理の不在)とも無関係。"},
+    ]
+  },
+  {
+    tag:"インシデント初動 / 拡大防止", fmt:"5択",
+    scenario:"Z社の社員Aさんは、業務用PCの動作が急に重くなったことに気づいた。タスクマネージャを見ると、見覚えのないプログラムが起動しており、外部と頻繁に通信している様子だった。マルウェアに感染した疑いがある。Aさんの業務用PCは社内ネットワークに接続されたままで、部署の共有フォルダにもアクセスできる状態にある。Z社にはインシデント発生時の連絡体制として情報システム部のヘルプデスクが定められており、その連絡先はAさんも把握している。Aさんは、まず何をすべきか迷っている。",
+    ask:"被害の拡大を防ぐために、Aさんが“最初に”取るべき行動として最も適切なものはどれか。",
+    noise:"ノイズ:タスクマネージャ/連絡先を把握 ── 急所は「社内ネットワークに接続・共有フォルダにアクセス可」=放置すれば拡大する経路。",
+    target:"社内ネットワーク・共有フォルダ全体(可用性・完全性)",
+    threat:"マルウェアの社内への感染拡大",
+    cia:"可用性 / 完全性",
+    answer:0,
+    choices:[
+      {t:"PCをネットワークから切り離し(LANケーブルを抜く/Wi-Fiを切る)、その上で情報システム部に連絡する。", type:"ok",
+       why:"拡大はネットワーク経由で起きる。まず隔離して経路を断ち、報告して指示を仰ぐ。初動の原則。"},
+      {t:"PCの電源をすぐにシャットダウンする。", type:"bluff",
+       why:"一見“止める”で良さそうだが、調査に必要な揮発性の証拠が消える。拡大防止に直接効くのは電源断より“ネットワーク遮断”。"},
+      {t:"自分でウイルス対策ソフトのフルスキャンを実行し、駆除を試みる。", type:"off",
+       why:"ネットワークに繋いだままスキャンしている間も拡大しうる。自己判断の駆除は不適切。"},
+      {t:"感染したかもしれない旨を、共有フォルダにファイルを置いて全社員に知らせる。", type:"off",
+       why:"感染端末から共有フォルダへアクセスすること自体が拡大経路。連絡手段の選び方が誤り。"},
+      {t:"しばらく様子を見て、動作が元に戻らなければ報告する。", type:"off",
+       why:"様子見の間に拡大が進む。「最初に」「拡大を防ぐ」に真っ向から反する。"},
+    ]
+  }
+];
+
+const TAGLABEL = {
+  ok:["正解","t-ok"], off:["的外れ型","t-off"], over:["過剰型","t-over"],
+  all:["全部盛り型","t-all"], bluff:["ハッタリ型","t-bluff"],
+};
+const LETTERS = ["ア","イ","ウ","エ","オ"];
+
+let idx=0, selected=null, revealed=false, score=0;
+const stage=document.getElementById('stage');
+const prog=document.getElementById('progress');
+
+function renderProgress(){
+  prog.innerHTML='';
+  for(let i=0;i<QUESTIONS.length;i++){
+    const s=document.createElement('div');
+    s.className='seg'+(i<idx?' done':'')+(i===idx?' current':'');
+    prog.appendChild(s);
+  }
+}
+
+function renderQuestion(){
+  const q=QUESTIONS[idx];
+  renderProgress();
+  const choicesHTML=q.choices.map((c,i)=>`
+    <div class="choice" data-i="${i}">
+      <span class="lab">${LETTERS[i]}</span>
+      <span class="ctext">${c.t}</span>
+    </div>`).join('');
+  const whyHTML=q.choices.map((c,i)=>{
+    const [label,cls]=TAGLABEL[c.type];
+    return `<li><span class="tag ${cls}">${label}</span>
+      <span><span class="lab2">${LETTERS[i]}</span> ${c.why}</span></li>`;
+  }).join('');
+
+  stage.innerHTML=`
+  <div class="card">
+    <div class="qhead">
+      <span class="qnum">Q${idx+1} / ${QUESTIONS.length}</span>
+      <span class="qtag">${q.tag}</span>
+      <span class="qfmt">${q.fmt}</span>
+    </div>
+    <p class="scenario">${q.scenario}</p>
+    <p class="ask">${q.ask}</p>
+    <div class="choices" id="choices">${choicesHTML}</div>
+    <div class="btnrow"><button class="action primary" id="checkBtn" disabled>解答を確認</button></div>
+    <div class="reveal" id="reveal">
+      <p class="noise">${q.noise}</p>
+      <div class="steps">
+        <div class="steprow"><div class="k">①守る対象</div><div class="v">${q.target}</div></div>
+        <div class="steprow"><div class="k">②脅威</div><div class="v">${q.threat}</div></div>
+        <div class="steprow"><div class="k">③CIA</div><div class="v"><b>${q.cia}</b></div></div>
+        <div class="steprow"><div class="k">④判定</div><div class="v">正解は <b>${LETTERS[q.answer]}</b> ── ②の脅威に直接当たっているのはこれだけ。</div></div>
+      </div>
+      <div class="why"><h4>選択肢の切り分け</h4><ul>${whyHTML}</ul></div>
+      <div class="btnrow"><button class="action ghost" id="nextBtn">${idx<QUESTIONS.length-1?'次の問題 →':'結果を見る →'}</button></div>
+    </div>
+  </div>`;
+
+  selected=null; revealed=false;
+  const choiceEls=stage.querySelectorAll('.choice');
+  choiceEls.forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(revealed)return;
+      choiceEls.forEach(e=>e.classList.remove('selected'));
+      el.classList.add('selected');
+      selected=parseInt(el.dataset.i);
+      document.getElementById('checkBtn').disabled=false;
+    });
+  });
+  document.getElementById('checkBtn').addEventListener('click',doReveal);
+}
+
+function doReveal(){
+  if(selected===null||revealed)return;
+  revealed=true;
+  const q=QUESTIONS[idx];
+  const choiceEls=stage.querySelectorAll('.choice');
+  choiceEls.forEach((el,i)=>{
+    el.classList.add('locked');
+    el.classList.remove('selected');
+    if(i===q.answer){el.classList.add('correct');
+      el.insertAdjacentHTML('beforeend','<span class="verdict-pill ok">正解</span>');}
+    if(i===selected&&selected!==q.answer){el.classList.add('chosen-wrong');
+      el.insertAdjacentHTML('beforeend','<span class="verdict-pill ng">あなたの選択</span>');}
+  });
+  if(selected===q.answer)score++;
+  document.getElementById('checkBtn').disabled=true;
+  document.getElementById('reveal').classList.add('show');
+  document.getElementById('nextBtn').addEventListener('click',next);
+}
+
+function next(){
+  if(idx<QUESTIONS.length-1){idx++;renderQuestion();window.scrollTo({top:0,behavior:'smooth'});}
+  else renderResult();
+}
+
+function renderResult(){
+  idx=QUESTIONS.length;renderProgress();
+  let msg,sub;
+  const n=QUESTIONS.length;
+  if(score===n){msg="全問正解。本番ノイズに惑わされず急所を拾えてる。";sub="この読み方なら、長文でも勘なしで確定で取れる。";}
+  else if(score>=n-1){msg="ほぼ取れてる。";sub="外した1問、引っかけの型(的外れ/過剰/ハッタリ)のどれに引っかかったか確認を。";}
+  else if(score>=Math.ceil(n/2)){msg="半分は取れてる。読解で詰まってる。";sub="外した問題は、本文に戻って②脅威を1文で言えるか確認。言えれば選択肢は消える。";}
+  else{msg="まだ“強そう/正しそう”で選んでる兆候。";sub="先に守る対象→脅威を拾ってから選択肢を見る。本文の急所(ノイズ欄)を必ず読み直す。";}
+  stage.innerHTML=`
+  <div class="result">
+    <div class="score">${score}<small> / ${n}</small></div>
+    <p class="msg">${msg}</p>
+    <p>${sub}</p>
+    <div class="btnrow" style="justify-content:center;margin-top:20px;">
+      <button class="action ghost" id="retry">もう一度</button></div>
+  </div>`;
+  document.getElementById('retry').addEventListener('click',()=>{
+    idx=0;score=0;renderQuestion();window.scrollTo({top:0,behavior:'smooth'});});
+}
+
+renderQuestion();
+</script>
+</body>
+</html>

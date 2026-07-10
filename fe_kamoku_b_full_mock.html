@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科目B 通し1セット ─ 本番形式・IRT採点</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#1a1f2e; --muted:#5b6472;
+    --line:#e3e6ec; --line-strong:#cdd2db; --accent:#2563a8; --accent-soft:#eaf1f9;
+    --correct:#1f7a4d; --correct-soft:#e8f4ed; --wrong:#b4452f; --wrong-soft:#fbecea;
+    --miss:#b8860b; --miss-soft:#fbf3dd;
+    --code:#0f1530; --code-ink:#e7ecf5; --code-key:#8fb8ff; --code-mut:#7f8aa3;
+    --mono:'SFMono-Regular',Consolas,'Roboto Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:780px;margin:0 auto;padding:0 18px 80px;}
+  .sticky{position:sticky;top:0;z-index:30;background:var(--bg);
+    border-bottom:2px solid var(--ink);padding:12px 0 10px;margin-bottom:18px;}
+  .sticky .row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .sticky h1{font-size:15px;margin:0;letter-spacing:.03em;}
+  .timer{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);padding:4px 12px;border-radius:7px;}
+  .timer.warn{color:var(--wrong);background:var(--wrong-soft);}
+  .tctl{font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;
+    background:none;border:1px solid var(--line-strong);border-radius:5px;padding:3px 8px;}
+  .intro{font-size:13.5px;color:var(--muted);margin:0;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:20px 20px 22px;box-shadow:0 1px 2px rgba(20,30,50,.04);margin-bottom:16px;scroll-margin-top:90px;}
+  .qhead{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap;}
+  .qnum{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);padding:3px 9px;border-radius:5px;}
+  .cat{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .diff{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;margin-left:auto;}
+  .d-易{color:#1f7a4d;background:#e8f4ed;}
+  .d-中{color:#2563a8;background:#eaf1f9;}
+  .d-難{color:#8a6d1a;background:#fbf3dd;}
+  .d-最難{color:#b4452f;background:#fbecea;}
+  .flag{font-family:var(--mono);font-size:10.5px;cursor:pointer;border:1px solid var(--line-strong);
+    border-radius:5px;padding:2px 7px;color:var(--muted);background:none;}
+  .flag.on{color:var(--miss);border-color:var(--miss);background:var(--miss-soft);}
+  .scenario{font-size:14px;margin:0 0 10px;}
+  .ask{font-size:14.5px;font-weight:600;margin:12px 0 4px;}
+  .askhint{font-size:11.5px;color:var(--muted);font-family:var(--mono);margin:0 0 12px;}
+  .code{background:var(--code);color:var(--code-ink);border-radius:8px;font-family:var(--mono);
+    font-size:12.5px;line-height:1.9;padding:13px 14px;overflow-x:auto;margin:10px 0;white-space:pre;}
+  .code .k{color:var(--code-key);} .code .c{color:var(--code-mut);}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+  .opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line-strong);
+    border-radius:8px;padding:10px 12px;cursor:pointer;background:var(--surface);
+    transition:border-color .12s,background .12s;font-size:14px;}
+  .opt:hover{border-color:var(--accent);background:var(--accent-soft);}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft);}
+  .mk{flex-shrink:0;width:19px;height:19px;border:2px solid var(--line-strong);
+    display:flex;align-items:center;justify-content:center;margin-top:1px;
+    font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;}
+  .single .mk{border-radius:50%;}
+  .multi .mk{border-radius:5px;}
+  .opt.sel .mk{background:var(--accent);border-color:var(--accent);}
+  .opt.sel .mk::after{content:"●";font-size:9px;}
+  .multi .opt.sel .mk::after{content:"✓";font-size:11px;}
+  .opt-code{font-family:var(--mono);font-size:12px;white-space:pre;line-height:1.7;margin:0;}
+  .opt.locked{cursor:default;}
+  .opt.locked:hover{border-color:var(--line-strong);background:var(--surface);}
+  .opt.r-ok{border-color:var(--correct);background:var(--correct-soft);}
+  .opt.r-ok .mk{background:var(--correct);border-color:var(--correct);}
+  .opt.r-miss{border-color:var(--miss);background:var(--miss-soft);}
+  .opt.r-wrong{border-color:var(--wrong);background:var(--wrong-soft);}
+  .opt.r-wrong .mk{background:var(--wrong);border-color:var(--wrong);}
+  .rpill{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700;
+    padding:2px 6px;border-radius:4px;align-self:center;white-space:nowrap;}
+  .rpill.ok{color:var(--correct);border:1px solid var(--correct);}
+  .rpill.miss{color:var(--miss);border:1px solid var(--miss);}
+  .rpill.wrong{color:var(--wrong);border:1px solid var(--wrong);}
+  .expl{display:none;margin-top:14px;padding-top:13px;border-top:1px dashed var(--line);font-size:13.5px;}
+  .expl.show{display:block;}
+  .expl .qjudge{font-family:var(--mono);font-weight:700;font-size:12.5px;margin:0 0 8px;}
+  .qjudge.y{color:var(--correct);} .qjudge.n{color:var(--wrong);}
+  .submitbar{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 28%);
+    padding:20px 0 14px;display:flex;justify-content:center;z-index:25;}
+  button.grade{font-family:inherit;font-size:15px;font-weight:700;padding:13px 40px;border-radius:9px;
+    border:none;background:var(--ink);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(20,30,50,.18);}
+  button.grade:hover{background:#000;}
+  /* result */
+  .result{background:var(--surface);border:2px solid var(--ink);border-radius:12px;padding:26px 22px;margin-bottom:18px;scroll-margin-top:90px;}
+  .result h2{font-size:14px;font-family:var(--mono);letter-spacing:.05em;margin:0 0 16px;}
+  .scorebig{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .scorebig .num{font-family:var(--mono);font-size:46px;font-weight:700;line-height:1;}
+  .scorebig .num.pass{color:var(--correct);} .scorebig .num.fail{color:var(--wrong);}
+  .scorebig .verdict{font-size:15px;font-weight:700;font-family:var(--mono);}
+  .verdict.pass{color:var(--correct);} .verdict.fail{color:var(--wrong);}
+  .scoresub{font-size:13px;color:var(--muted);font-family:var(--mono);margin:0 0 18px;}
+  .gauge{height:30px;background:#eef0f4;border-radius:6px;position:relative;margin:8px 0 6px;overflow:visible;}
+  .gauge .pass-line{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);}
+  .gauge .pass-line span{position:absolute;top:-18px;left:-14px;font-family:var(--mono);font-size:10px;color:var(--ink);}
+  .gauge .range{position:absolute;top:0;bottom:0;background:var(--accent-soft);border-radius:6px;}
+  .gauge .you{position:absolute;top:-5px;bottom:-5px;width:4px;background:var(--accent);border-radius:2px;}
+  .gauge .you span{position:absolute;bottom:-19px;left:-16px;font-family:var(--mono);font-size:10px;color:var(--accent);font-weight:700;white-space:nowrap;}
+  .glabel{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:22px;}
+  .lesson{font-size:13.5px;background:#fafbfc;border-left:3px solid var(--accent);border-radius:0 7px 7px 0;padding:12px 14px;margin:16px 0 0;}
+  .lesson b{color:var(--accent);}
+  .breakdown{font-family:var(--mono);font-size:12px;margin:16px 0 0;display:flex;flex-wrap:wrap;gap:6px;}
+  .bd{padding:3px 8px;border-radius:5px;border:1px solid var(--line);}
+  .bd.y{color:var(--correct);background:var(--correct-soft);border-color:var(--correct-soft);}
+  .bd.n{color:var(--wrong);background:var(--wrong-soft);border-color:var(--wrong-soft);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sticky">
+    <div class="row">
+      <h1>科目B ─ 通し1セット <span style="font-weight:400;color:var(--muted);font-size:12px;">全12問</span></h1>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="tctl" id="tctl">一時停止</button>
+        <span class="timer" id="timer">100:00</span>
+      </div>
+    </div>
+    <p class="intro">本番同様、易しい問題から確実に。詰まったら「後で」を押して飛ばす。最後にIRTで採点。</p>
+  </div>
+
+  <div id="exam"></div>
+
+  <div class="submitbar"><button class="grade" id="gradeBtn">採点する（IRT）</button></div>
+
+  <div id="resultArea"></div>
+</div>
+
+<script>
+/* ---------- 問題データ ---------- */
+const Q=[
+ { n:1, type:'single', cat:'アルゴリズム', diff:'易',
+   scenario:'整数型の配列 data の中で、値 th より大きい要素の個数を返す。配列の添字は 1 から始まる。',
+   code:`<span class="k">○整数型</span>: countOver(整数型の配列: data, 整数型: th)
+  整数型: cnt, i
+  cnt ← 0
+  <span class="k">for</span> (i を 1 から dataの要素数 まで 1 ずつ増やす)
+    <span class="k">if</span> (data[i] が th より大きい)
+      cnt ← cnt + 1
+    <span class="k">endif</span>
+  <span class="k">endfor</span>
+  <span class="k">return</span> cnt
+
+data = {5, 12, 7, 12, 3, 9}　 th = 7`,
+   ask:'戻り値はいくつか。',
+   options:['2','3','4','5'], answer:1,
+   expl:'7 より大きいのは 12, 12, 9 の3個。7 は「より大きい」に含まれない(>であって≧でない)。' },
+
+ { n:2, type:'single', cat:'アルゴリズム', diff:'易',
+   scenario:'配列 a のうち、添字が偶数の要素だけを合計して返す。添字は 1 から始まる。',
+   code:`<span class="k">○整数型</span>: f(整数型の配列: a)
+  整数型: s, i
+  s ← 0
+  <span class="k">for</span> (i を 1 から aの要素数 まで 1 ずつ増やす)
+    <span class="k">if</span> (i が 2 で割り切れる)
+      s ← s + a[i]
+    <span class="k">endif</span>
+  <span class="k">endfor</span>
+  <span class="k">return</span> s
+
+a = {10, 20, 30, 40, 50}`,
+   ask:'戻り値はいくつか。',
+   options:['50','60','90','150'], answer:1,
+   expl:'偶数の添字は i=2, 4。a[2]=20, a[4]=40 で合計 60。1始まりの添字を取り違えると 90(奇数側)などになる。' },
+
+ { n:3, type:'multi', cat:'セキュリティ', diff:'中',
+   scenario:'A社では、社員が業務データを自宅で扱うために、私物のUSBメモリへコピーして持ち帰ることが黙認されてきた。先日、ある社員の私物USBメモリが紛失し、保存していた顧客データが漏えいした可能性が判明した。また別の社員は、社内で拾った出所不明のUSBメモリを、中身を確認しようとして自分の業務用PCに接続していたことも分かった。情報システム部は、外部媒体に関するリスクを下げる対策を検討している。',
+   ask:'適切な対策をすべて選べ。',
+   options:[
+     '業務データの外部媒体へのコピーは原則禁止し、必要な場合のみ申請のうえ、暗号化された会社管理の媒体を貸与する運用にする。',
+     '出所不明のUSBメモリを業務PCに接続しないよう周知し、必要に応じて利用できるUSBポートを技術的に制限する。',
+     '私物USBメモリの使用は黙認したまま、紛失した場合は社員個人の責任とする規程を作る。',
+     '情報漏えい対策として、全社員の私物スマートフォンを会社が預かり保管する。',
+     'USBメモリの記憶容量を、大容量のものに統一する。'],
+   answer:[0,1],
+   expl:'ア=会社管理＋暗号化で漏えい・経路の両方に当たる。イ=出所不明媒体の接続を断つ。ウ=責任転嫁で漏えいは止まらない。エ=無関係な過剰対策。オ=的外れ。' },
+
+ { n:4, type:'single', cat:'OOP（箱）', diff:'中',
+   scenario:'スタックを表すクラス Stack。push は要素を積み、pop は最後に積んだ要素を取り出して返す。要素は配列で保持し、個数 は現在の要素数(初期値0)。配列の添字は 1 から始まる。',
+   code:`<span class="k">クラス</span> Stack
+  要素 : 整数型の配列
+  個数 : 整数型
+
+  <span class="k">○push</span>(整数型: x)
+    個数 ← 個数 + 1
+    要素[個数] ← x
+
+  <span class="k">○整数型: pop</span>()
+    整数型: v
+    v ← 要素[個数]
+    個数 ← 個数 - 1
+    <span class="k">return</span> v
+
+<span class="c">// 操作（上から順に実行）</span>
+push(5)
+push(8)
+pop()
+push(3)
+pop()   ← この pop の戻り値は？`,
+   ask:'最後の pop() の戻り値はいくつか。',
+   options:['2','3','5','8'], answer:1,
+   expl:'push5→[5]、push8→[5,8]、pop→8返(個数1)、push3→[5,3]、pop→個数2の位置=3を返す。後入れ先出し(LIFO)。個数 が指す位置を上書きする点に注意。' },
+
+ { n:5, type:'single', cat:'アルゴリズム', diff:'中',
+   scenario:'配列 a に対して、隣り合う要素を先頭から1回だけ比較し、左が右より大きければ入れ替える(バブルソートの1回ぶん)。処理後の配列を返す。添字は 1 から始まる。',
+   code:`<span class="k">○整数型の配列</span>: onePass(整数型の配列: a)
+  整数型: i, tmp
+  <span class="k">for</span> (i を 1 から aの要素数 - 1 まで 1 ずつ増やす)
+    <span class="k">if</span> (a[i] が a[i+1] より大きい)
+      tmp ← a[i]
+      a[i] ← a[i+1]
+      a[i+1] ← tmp
+    <span class="k">endif</span>
+  <span class="k">endfor</span>
+  <span class="k">return</span> a
+
+a = {3, 1, 4, 2}`,
+   ask:'戻り値(処理後の配列)はどれか。',
+   options:['{1, 2, 3, 4}','{1, 3, 2, 4}','{1, 3, 4, 2}','{2, 1, 4, 3}'],
+   answer:1,
+   expl:'i=1:3>1で入替→{1,3,4,2}。i=2:3>4でない→そのまま。i=3:4>2で入替→{1,3,2,4}。1回通すと最大値が右端へ「浮かぶ」。完全に整列(={1,2,3,4})はしない。' },
+
+ { n:6, type:'multi', cat:'セキュリティ', diff:'中',
+   scenario:'B社は中堅の医療機器メーカーで、設計データと患者に関わる情報の両方を扱う。ある日、経理部のCさんが、取引先を装ったメールの添付ファイル(請求書を名乗るExcel)を開いたところ、ファイル内のマクロが実行され、PCがランサムウェアに感染した。感染は社内の共有サーバにも及び、一部ファイルが暗号化されて業務が半日停止した。バックアップから復旧できたが、調査の結果、(1)社員へのセキュリティ教育が数年間行われていなかった、(2)共有サーバへのアクセス権が全社員に広く付与されていた、(3)バックアップは取得していたが復旧手順を誰も試したことがなかった、ことが判明した。',
+   ask:'再発と被害拡大を抑える対策として適切なものをすべて選べ。',
+   options:[
+     '不審メールの見分け方と報告手順について、全社員を対象に定期的な教育・訓練を行う。',
+     '共有サーバへのアクセス権を、業務上必要な範囲に絞って付与し直す。',
+     'バックアップからの復旧手順を文書化し、定期的に復旧訓練を実施する。',
+     '業務効率を優先し、マクロ付きファイルは警告を出さず自動実行する設定にする。',
+     '感染時に備え、攻撃者と交渉して身代金を支払うための窓口を新設する。'],
+   answer:[0,1,2],
+   expl:'ア=原因(1)、イ=原因(2)で被害の横展開を抑える(最小権限)、ウ=原因(3)。エ=マクロ自動実行は感染経路を広げる逆効果。オ=身代金は復号の保証なく犯罪助長で論外。' },
+
+ { n:7, type:'single', cat:'OOP（箱）', diff:'難',
+   scenario:'単方向リストの要素クラス Node(値・次の参照を持つ)。手続 insertAfter(p, v) は、ノード p の直後に、値 v の新しいノードを挿入する。空欄を埋める2行の組合せとして正しいものはどれか。',
+   code:`<span class="k">クラス</span> Node
+  値 : 整数型
+  次 : Node
+
+<span class="k">○手続</span>: insertAfter(Node: p, 整数型: v)
+  Node: n ← Node の新しいインスタンス
+  n.値 ← v
+  ［ 空欄1 ］
+  ［ 空欄2 ］`,
+   ask:'空欄1・空欄2 に入る正しい組合せはどれか。',
+   options:[
+     '<pre class="opt-code">空欄1: n.次 ← p.次\n空欄2: p.次 ← n</pre>',
+     '<pre class="opt-code">空欄1: p.次 ← n\n空欄2: n.次 ← p.次</pre>',
+     '<pre class="opt-code">空欄1: n.次 ← n\n空欄2: p.次 ← n</pre>',
+     '<pre class="opt-code">空欄1: p.次 ← p.次\n空欄2: n.次 ← n</pre>'],
+   answer:0,
+   expl:'先に n.次 ← p.次 で旧・次を新ノードに引き継ぎ、その後 p.次 ← n でつなぐ。順序が逆(イ)だと、p.次 が先に n になり、n.次 ← p.次 が n.次 ← n となって自分自身を指す(リストが切れる)。「旧値を使い終える前に上書きしない」が鉄則。' },
+
+ { n:8, type:'single', cat:'アルゴリズム', diff:'難',
+   scenario:'次の再帰関数 g を考える。',
+   code:`<span class="k">○整数型</span>: g(整数型: n)
+  <span class="k">if</span> (n が 1 以下)
+    <span class="k">return</span> n
+  <span class="k">endif</span>
+  <span class="k">return</span> g(n - 1) + g(n - 2)`,
+   ask:'g(5) の戻り値はいくつか。',
+   options:['3','5','8','11'], answer:1,
+   expl:'g(0)=0, g(1)=1。ボトムアップで表を埋めると g(2)=1, g(3)=2, g(4)=3, g(5)=5(フィボナッチ)。上から呼び出しを全部追うと枝が爆発するので、表で下から積むのが速い。' },
+
+ { n:9, type:'multi', cat:'セキュリティ', diff:'難',
+   scenario:'D社の総務部のEさんに、社長を名乗る人物から「至急、ある取引先へ振り込んでほしい。振込先などの詳細はこのメールに返信して確認を取ってほしい」という旨のメールが届いた(いわゆるビジネスメール詐欺/BEC)。差出人の表示名は社長だったが、メールアドレスは社長が普段使うものと微妙に異なっていた。D社では、取引先への振込はEさん1人の操作だけで実行できる運用になっていた。Eさんは、指示に従うべきか迷っている。',
+   ask:'組織として、この種の詐欺による被害を防ぐ対策として適切なものをすべて選べ。',
+   options:[
+     '高額の振込や振込先の変更については、メール以外の手段(あらかじめ登録した電話番号への架電や対面)で、依頼者本人に内容を確認する手順を定める。',
+     '高額の振込は、申請者とは別の担当者の承認を必須とする(職務分掌・二重チェック)。',
+     '念のため、届いたメールにそのまま返信して、本物の社長からの依頼かどうかを問い合わせる。',
+     '社長からの指示は最優先とし、迷った場合は指示どおり速やかに振り込む規程にする。',
+     'メールの本文を暗号化して保存する運用にする。'],
+   answer:[0,1],
+   expl:'ア=別経路での本人確認がBECの肝。イ=単独実行をやめ二重チェック。ウ=なりすましアドレスへの返信は詐欺師に届くだけで確認にならない(典型的な罠)。エ=BECに無防備。オ=的外れ。' },
+
+ { n:10, type:'single', cat:'OOP（箱）', diff:'最難',
+   scenario:'両端に番兵を持つ双方向リスト(各ノードは 前・次 を持ち、実ノードは必ず前後が存在しヌルにならない)。手続 moveAfter(curr, target) は、実ノード curr を取り外して target の直後へ移す。手順1で curr を切り離した後、手順2で挿入する。手順2として正しいものはどれか。',
+   code:`<span class="c">// 手順1: 切り離し（番兵によりヌル判定不要）</span>
+curr.前.次 ← curr.次
+curr.次.前 ← curr.前
+<span class="c">// 手順2: target の直後へ挿入（順序が命）</span>
+［ ここ ］`,
+   ask:'手順2 として正しいものはどれか。',
+   options:[
+     '<pre class="opt-code">curr.次 ← target.次\ncurr.前 ← target\ntarget.次.前 ← curr\ntarget.次 ← curr</pre>',
+     '<pre class="opt-code">target.次 ← curr\ntarget.次.前 ← curr\ncurr.次 ← target.次\ncurr.前 ← target</pre>',
+     '<pre class="opt-code">curr.前 ← target\ntarget.次 ← curr\ntarget.次.前 ← curr\ncurr.次 ← target.次</pre>',
+     '<pre class="opt-code">target.次.前 ← curr\ntarget.次 ← curr\ncurr.次 ← target.次\ncurr.前 ← target</pre>'],
+   answer:0,
+   expl:'target.次(旧値)を参照し終えるまで target.次 を書き換えてはいけない。正解アは、curr.次・target.次.前 の両方で旧 target.次 を使い切ってから最後に target.次 ← curr で締める。イ/ウは target.次 ← curr を先に実行→以降の target.次 が curr 自身を指して破綻。この壊れ方は「次」をたどる前向き走査では気づけず、「前」をたどると初めて露見する。' },
+
+ { n:11, type:'multi', cat:'セキュリティ', diff:'難',
+   scenario:'F社は、顧客向けサービスのデータをクラウドのオブジェクトストレージに保管している。ある日、外部のセキュリティ研究者から「F社の保管領域がインターネットに公開状態になっており、誰でも顧客データを閲覧できる」との通報があった。調べると、開発担当者がテスト時にアクセス制限を一時的に外し、本番でも元に戻し忘れていたことが原因だった。さらに、誰がいつストレージの設定を変更したかの記録も残っていなかった。今後、こうした「設定ミスによる意図しない公開」を防ぐ対策を検討する。',
+   ask:'適切な対策をすべて選べ。',
+   options:[
+     '保管領域は既定で非公開とし、公開が必要な場合のみ申請・承認を経て明示的に許可する運用にする。',
+     'ストレージの設定変更を記録(ログ)に残し、公開状態になっていないかを定期的・自動的に点検する。',
+     'テスト環境と本番環境で、アクセス制限を外す操作を同じ手順・同じ権限で気軽に行えるようにして、作業の手間を減らす。',
+     '顧客データを暗号化して保管すれば、公開設定のままでも問題ないと判断する。',
+     '通報してきた外部の研究者は信用できないとして、特に対応しない。'],
+   answer:[0,1],
+   expl:'ア=デフォルト非公開＋承認制で設定ミスの公開を構造的に防ぐ。イ=変更記録と自動点検で「戻し忘れ」を検知。ウ=本番でも気軽に外せる=むしろ危険。エ=暗号化は公開設定そのものを防がないし「公開でも問題ない」は誤り(設問の脅威=意図しない公開には当たらない)。オ=放置で論外。エが“強い対策に見えて設問に当たらない”最大の引っかけ。' },
+
+ { n:12, type:'single', cat:'アルゴリズム', diff:'最難',
+   scenario:'次の再帰関数 h を考える。「÷ の商」は整数の商、「mod」は余りを表す。',
+   code:`<span class="k">○整数型</span>: h(整数型: n, 整数型: acc)
+  <span class="k">if</span> (n が 0 と等しい)
+    <span class="k">return</span> acc
+  <span class="k">endif</span>
+  <span class="k">return</span> h(n ÷ 2 の商, acc × 2 + (n mod 2))`,
+   ask:'h(13, 0) の戻り値はいくつか。',
+   options:['7','11','13','22'], answer:1,
+   expl:'呼び出しごとに (n, acc) を表で追う: (13,0)→(6,1)→(3,2)→(1,5)→(0,11)→return 11。これは 13 の2進数 1101 のビットを逆順に並べた 1011 = 11 を計算している。意味に気づかなくても、引数の表を1行ずつ正確に埋めれば必ず解ける。最難問は「捨てる」判断も正解。' },
+];
+
+/* ---------- IRT (2PL) ---------- */
+const ITEMS=[[1.3,-2.0],[1.3,-1.5],[1.2,-0.8],[1.2,-0.5],[1.1,-0.1],[1.0,0.2],
+             [1.0,0.4],[0.9,0.7],[0.9,0.9],[0.8,1.4],[0.8,1.1],[0.7,2.4]];
+function Pr(t,a,b){return 1/(1+Math.exp(-a*(t-b)));}
+function loglik(t,x){let s=0;for(let i=0;i<ITEMS.length;i++){let p=Pr(t,ITEMS[i][0],ITEMS[i][1]);p=Math.min(Math.max(p,1e-9),1-1e-9);s+=x[i]?Math.log(p):Math.log(1-p);}return s;}
+function mle(x){let best=-1e9,bt=0;for(let t=-4;t<=4.0001;t+=0.01){let l=loglik(t,x);if(l>best){best=l;bt=t;}}return bt;}
+function scaled(t){return Math.max(100,Math.min(1000,Math.round(600+125*t)));}
+
+/* ---------- レンダリング ---------- */
+const exam=document.getElementById('exam');
+const state=Q.map(q=>({sel: q.type==='multi'? new Set(): null, flag:false}));
+
+function render(){
+  exam.innerHTML=Q.map((q,qi)=>{
+    const opts=q.options.map((o,oi)=>`
+      <div class="opt" data-q="${qi}" data-o="${oi}">
+        <span class="mk"></span><span class="otext">${o}</span>
+      </div>`).join('');
+    return `<div class="card ${q.type}" id="q${qi}">
+      <div class="qhead">
+        <span class="qnum">問${q.n}</span>
+        <span class="cat">${q.cat}${q.type==='multi'?' ・ 複数選択':''}</span>
+        <button class="flag" data-flag="${qi}">後で</button>
+        <span class="diff d-${q.diff}">${q.diff}</span>
+      </div>
+      <p class="scenario">${q.scenario}</p>
+      ${q.code?`<div class="code">${q.code}</div>`:''}
+      <p class="ask">${q.ask}</p>
+      ${q.type==='multi'?'<p class="askhint">※ 正解は1つとは限らない。各選択肢を独立に判定。</p>':''}
+      <div class="opts">${opts}</div>
+      <div class="expl" id="expl${qi}"></div>
+    </div>`;
+  }).join('');
+
+  exam.querySelectorAll('.opt').forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(graded)return;
+      const qi=+el.dataset.q, oi=+el.dataset.o, q=Q[qi];
+      if(q.type==='multi'){
+        if(state[qi].sel.has(oi)){state[qi].sel.delete(oi);el.classList.remove('sel');}
+        else{state[qi].sel.add(oi);el.classList.add('sel');}
+      } else {
+        state[qi].sel=oi;
+        el.parentElement.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+        el.classList.add('sel');
+      }
+    });
+  });
+  exam.querySelectorAll('.flag').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const qi=+b.dataset.flag; state[qi].flag=!state[qi].flag;
+      b.classList.toggle('on',state[qi].flag);
+      b.textContent=state[qi].flag?'★後で':'後で';
+    });
+  });
+}
+
+/* ---------- タイマー ---------- */
+let remain=100*60, running=true, tid=null;
+const timerEl=document.getElementById('timer');
+function fmt(s){const m=Math.floor(s/60),x=s%60;return String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+function tick(){
+  if(!running)return;
+  remain--; if(remain<=0){remain=0;running=false;}
+  timerEl.textContent=fmt(remain);
+  timerEl.classList.toggle('warn',remain<=10*60);
+  if(remain<=0)timerEl.textContent='00:00';
+}
+tid=setInterval(tick,1000);
+document.getElementById('tctl').addEventListener('click',e=>{
+  running=!running; e.target.textContent=running?'一時停止':'再開';
+});
+
+/* ---------- 採点 ---------- */
+let graded=false;
+document.getElementById('gradeBtn').addEventListener('click',()=>{
+  if(graded)return; graded=true; running=false;
+  const x=[]; const bd=[];
+  Q.forEach((q,qi)=>{
+    const card=document.getElementById('q'+qi);
+    const opts=[...card.querySelectorAll('.opt')];
+    let correct;
+    if(q.type==='multi'){
+      const cset=new Set(q.answer);
+      let extra=0,miss=0;
+      opts.forEach((el,oi)=>{
+        el.classList.add('locked');el.classList.remove('sel');
+        const isC=cset.has(oi), isS=state[qi].sel.has(oi);
+        if(isC&&isS){el.classList.add('r-ok');el.insertAdjacentHTML('beforeend','<span class="rpill ok">適切✓</span>');}
+        else if(isC&&!isS){el.classList.add('r-miss');miss++;el.insertAdjacentHTML('beforeend','<span class="rpill miss">適切・選び逃し</span>');}
+        else if(!isC&&isS){el.classList.add('r-wrong');extra++;el.insertAdjacentHTML('beforeend','<span class="rpill wrong">不適切✗</span>');}
+      });
+      correct=(extra===0&&miss===0);
+    } else {
+      opts.forEach((el,oi)=>{
+        el.classList.add('locked');el.classList.remove('sel');
+        if(oi===q.answer){el.classList.add('r-ok');el.insertAdjacentHTML('beforeend','<span class="rpill ok">正解</span>');}
+        else if(oi===state[qi].sel){el.classList.add('r-wrong');el.insertAdjacentHTML('beforeend','<span class="rpill wrong">あなたの選択</span>');}
+      });
+      correct=(state[qi].sel===q.answer);
+    }
+    x.push(correct?1:0);
+    bd.push(`<span class="bd ${correct?'y':'n'}">問${q.n} ${correct?'○':'✕'}</span>`);
+    const ex=document.getElementById('expl'+qi);
+    ex.innerHTML=`<p class="qjudge ${correct?'y':'n'}">${correct?'○ 正解':'✕ 不正解'}</p>${q.expl}`;
+    ex.classList.add('show');
+  });
+
+  // IRT
+  const raw=x.reduce((a,b)=>a+b,0);
+  const theta=mle(x); const sc=scaled(theta);
+  // 同じ正答数での最高/最低（易しい順/難しい順）
+  const order=[...ITEMS.keys()].sort((i,j)=>ITEMS[i][1]-ITEMS[j][1]);
+  const best=Array(12).fill(0); order.slice(0,raw).forEach(i=>best[i]=1);
+  const worst=Array(12).fill(0); order.slice(12-raw).forEach(i=>worst[i]=1);
+  const scBest=scaled(mle(best)), scWorst=scaled(mle(worst));
+  const pass=sc>=600;
+
+  // ゲージ座標 (100..1000 を 0..100%)
+  const pos=v=>((v-100)/900*100);
+  const lo=Math.min(scWorst,sc), hi=Math.max(scBest,sc);
+
+  const lesson = pass
+    ? (sc-scWorst>40
+        ? `同じ <b>${raw}問正解</b>でも、もし当てたのが難問ばかりだったら <b>${scWorst}点</b>まで下がっていた。君は易しめを取れていたので <b>${sc}点</b>。<b>序盤の取りこぼしを防ぐ</b>戦略が効いている。`
+        : `<b>${sc}点</b>で合格圏。${raw}問正解。易しい問題を確実に取れている。`)
+    : `<b>${sc}点</b>(合格${600})。同じ${raw}問でも、易しい問題を優先して取れていれば最大 <b>${scBest}点</b>まで届いた。<b>難問より先に、易・中・セキュリティを固める</b>のが最短ルート。`;
+
+  document.getElementById('resultArea').innerHTML=`
+   <div class="result" id="resultCard">
+     <h2>採点結果（IRT 2PL推定）</h2>
+     <div class="scorebig">
+       <span class="num ${pass?'pass':'fail'}">${sc}</span>
+       <span class="verdict ${pass?'pass':'fail'}">${pass?'合格圏（600以上）':'不合格圏（600未満）'}</span>
+     </div>
+     <p class="scoresub">素点 ${raw} / 12 正解　・　推定能力 θ = ${theta.toFixed(2)}　・　合格基準 600</p>
+     <div class="gauge">
+       <div class="range" style="left:${pos(lo)}%;width:${pos(hi)-pos(lo)}%;"></div>
+       <div class="pass-line" style="left:${pos(600)}%;"><span>600</span></div>
+       <div class="you" style="left:${pos(sc)}%;"><span>あなた ${sc}</span></div>
+     </div>
+     <div class="glabel"><span>100</span><span>同じ${raw}正解の振れ幅 ${scWorst}〜${scBest}</span><span>1000</span></div>
+     <div class="lesson">${lesson}</div>
+     <div class="breakdown">${bd.join('')}</div>
+   </div>`;
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('gradeBtn').textContent='採点済み';
+  document.getElementById('gradeBtn').disabled=true;
+});
+
+render();
+</script>
+</body>
+</html>
