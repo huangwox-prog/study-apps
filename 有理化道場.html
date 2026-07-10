@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>有理化道場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFBF7; --grid:#DCE8EC; --ink:#26343F; --ink-soft:#5A6B77;
+  --pen-blue:#3B6EA5; --pen-blue-deep:#2C5480;
+  --red:#E0402A; --red-soft:#FBE9E5; --marker:#FFF3C1;
+  --card:#FFFFFF; --line:#E3E9E5; --radius:14px;
+  --shadow:0 2px 10px rgba(38,52,63,.08);
+  --fd:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif;
+  --fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:var(--fb);color:var(--ink);font-size:16px;line-height:1.65;
+  background:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),var(--paper);
+  background-size:22px 22px;
+}
+#app{max-width:560px;margin:0 auto;padding:16px 16px 46px;min-height:100vh}
+.header{display:flex;align-items:baseline;gap:10px;padding:8px 2px 12px}
+.header h1{font-family:var(--fd);font-weight:900;font-size:24px}
+.header h1 .roma{color:var(--red)}
+.header .tag{font-size:12px;color:var(--ink-soft)}
+
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px;position:relative}
+.bigbtn{width:100%;border:none;border-radius:var(--radius);padding:14px;font-family:var(--fd);font-weight:700;font-size:16px;cursor:pointer;box-shadow:var(--shadow);transition:transform .08s}
+.bigbtn:active{transform:scale(.98)}
+.bigbtn.blue{background:var(--pen-blue);color:#fff}
+.bigbtn.ghost{background:#fff;color:var(--pen-blue-deep);border:2px solid var(--pen-blue)}
+.bigbtn.redline{background:#fff;color:var(--red);border:2px solid var(--red)}
+.bigbtn:disabled{opacity:.4}
+.smallnote{font-size:12px;color:var(--ink-soft)}
+
+/* 級リスト */
+.kyurow{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1.5px dashed var(--line)}
+.kyurow:last-child{border-bottom:none}
+.kyubadge{font-family:var(--fd);font-weight:900;font-size:14px;color:var(--pen-blue-deep);min-width:38px}
+.kyurow.now .kyubadge{color:var(--red)}
+.kyuname{flex:1;font-size:13.5px}
+.kyurow.locked{opacity:.45}
+.gauge{display:flex;gap:4px}
+.gp{width:11px;height:11px;border-radius:50%;border:1.5px solid #C9D3CD;background:#fff}
+.gp.on{background:var(--red);border-color:var(--red)}
+.kyudone{font-family:var(--fd);font-weight:900;color:var(--red);font-size:12px;border:2px solid var(--red);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg)}
+
+/* クイズ共通 */
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.backbtn{border:none;background:transparent;color:var(--pen-blue-deep);font-family:var(--fd);font-weight:700;font-size:14px;cursor:pointer;padding:6px 4px}
+.qmid{flex:1;text-align:center;font-family:var(--fd);font-weight:700;font-size:14px;color:var(--ink-soft)}
+.qcnt{font-family:var(--fd);font-weight:700;font-size:13px;color:var(--pen-blue-deep)}
+.gaugebar{display:flex;gap:6px;justify-content:center;margin-bottom:14px;align-items:center}
+.gaugebar .lbl{font-family:var(--fd);font-weight:900;font-size:15px;color:var(--red);margin-right:4px}
+
+.qcard{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px 16px 20px;margin-bottom:12px;position:relative;text-align:center}
+.qlabel{position:absolute;top:-11px;left:14px;background:var(--pen-blue-deep);color:#fff;font-family:var(--fd);font-weight:700;font-size:12px;border-radius:99px;padding:2px 12px}
+.statement{font-size:13.5px;color:var(--ink-soft);margin-bottom:12px}
+.mathbig{font-size:26px;font-weight:700;letter-spacing:.02em}
+.markwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.markwrap svg{width:100px;height:100px;overflow:visible}
+.mark-o{stroke:var(--red);stroke-width:7;fill:none;stroke-linecap:round;stroke-dasharray:320;stroke-dashoffset:320;animation:draw .5s ease-out forwards;opacity:.9}
+.mark-x{stroke:var(--red);stroke-width:7;fill:none;stroke-linecap:round;stroke-dasharray:120;stroke-dashoffset:120;animation:draw .35s ease-out forwards;opacity:.9}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.mark-o,.mark-x{animation:none;stroke-dashoffset:0}*{transition:none!important;animation:none!important}}
+
+/* 数式表示（√・分数） */
+.sq{white-space:nowrap}
+.sq .rd{border-top:2.5px solid currentColor;padding:0 2px 0 1px}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px}
+.frac .fn{padding:0 8px 2px;border-bottom:2.5px solid currentColor;line-height:1.25}
+.frac .fdn{padding:2px 8px 0;line-height:1.25}
+
+/* 入力エリア */
+.answrap{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.anslabel{font-family:var(--fd);font-weight:700;font-size:12px;color:var(--ink-soft);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.ansdisp{display:flex;align-items:center;justify-content:center;min-height:74px;font-size:24px;font-weight:700;gap:0}
+.abox{min-width:90px;min-height:44px;border:2px dashed #C4CFD6;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;padding:4px 12px;cursor:pointer}
+.abox.active{border-color:var(--pen-blue);border-style:solid;background:#F3F8FD}
+.abox .ph{color:#B7C2C9;font-size:14px;font-weight:500}
+.fracin{display:inline-flex;flex-direction:column;align-items:center;gap:6px}
+.fracin .vinc{width:100%;height:3px;background:var(--ink);border-radius:2px}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.key{border:1.5px solid var(--line);background:#fff;border-radius:11px;font-family:var(--fd);font-weight:700;font-size:19px;padding:12px 0;cursor:pointer;color:var(--ink);box-shadow:0 1.5px 0 rgba(38,52,63,.10);transition:transform .06s}
+.key:active{transform:scale(.94)}
+.key.fn{background:#EEF4FA;color:var(--pen-blue-deep);font-size:16px}
+.key.warn{background:#FDF1EE;color:var(--red);font-size:16px}
+.key.sqk{font-size:20px}
+.submitbtn{grid-column:1/-1;border:none;border-radius:11px;background:var(--pen-blue);color:#fff;font-family:var(--fd);font-weight:700;font-size:17px;padding:14px 0;cursor:pointer;box-shadow:var(--shadow)}
+.submitbtn:active{transform:scale(.98)}
+.hint{margin-top:10px;background:var(--red-soft);border:1.5px solid #F2C4BB;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#9C2D1D;animation:pop .2s ease-out}
+
+.kaisetsu{background:var(--marker);border-radius:var(--radius);padding:15px 15px 13px;margin-bottom:12px;border:1.5px solid #EFDF9A;animation:pop .25s ease-out}
+.kaisetsu .kttl{font-family:var(--fd);font-weight:900;font-size:13px;color:#8A6D1A;margin-bottom:7px;letter-spacing:.06em}
+.kaisetsu .step{font-size:14.5px;padding:3px 0;display:flex;gap:8px;align-items:baseline}
+.kaisetsu .step .sn{font-family:var(--fd);font-weight:900;color:#B08A1E;font-size:12px;flex-shrink:0}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.nextbtn{width:100%;border:none;border-radius:var(--radius);background:var(--pen-blue);color:#fff;font-family:var(--fd);font-weight:700;font-size:16px;padding:14px;cursor:pointer;box-shadow:var(--shadow)}
+.gchange{font-family:var(--fd);font-weight:900;font-size:14px;text-align:center;margin-bottom:10px}
+.gchange.up{color:var(--pen-blue-deep)}
+.gchange.down{color:var(--red)}
+
+/* 結果・演出 */
+.center{text-align:center}
+.bighanko{font-family:var(--fd);font-weight:900;color:var(--red);border:4px solid var(--red);border-radius:50%;width:104px;height:104px;display:flex;align-items:center;justify-content:center;font-size:22px;transform:rotate(-14deg);margin:0 auto 14px;letter-spacing:.03em;background:rgba(224,64,42,.05);animation:stamp .35s cubic-bezier(.2,2.2,.6,1) both;flex-direction:column;line-height:1.2}
+@keyframes stamp{from{transform:rotate(-14deg) scale(2.1);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+.levelup{font-family:var(--fd);font-weight:900;font-size:26px;color:var(--red);text-align:center;animation:stamp .4s cubic-bezier(.2,2,.6,1) both;margin:6px 0}
+button:focus-visible{outline:3px solid var(--pen-blue);outline-offset:2px}
+.loading{padding:60px 0;text-align:center;color:var(--ink-soft);font-family:var(--fd)}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">読み込み中…</div></div>
+<script>
+"use strict";
+/* ============================================================
+   数式エンジン
+   式 = {t:[{c,r},...], d:int}  →  (Σ c√r) / d
+============================================================ */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}
+function simpRad(c,r){ // √の中から平方因数を出す
+  for(let f=Math.floor(Math.sqrt(r));f>=2;f--){
+    while(r%(f*f)===0){c*=f;r/=f*f}
+  }
+  return [c,r];
+}
+function norm(terms){ // 各項簡約＋同類項まとめ
+  const m={};
+  terms.forEach(t=>{const[c,r]=simpRad(t.c,t.r); m[r]=(m[r]||0)+c});
+  const out=[];
+  Object.keys(m).forEach(r=>{if(m[r]!==0)out.push({c:m[r],r:+r})});
+  out.sort((a,b)=>a.r-b.r);
+  return out.length?out:[{c:0,r:1}];
+}
+function mulT(A,B){
+  const out=[];
+  A.forEach(a=>B.forEach(b=>out.push({c:a.c*b.c,r:a.r*b.r})));
+  return norm(out);
+}
+function reduceExpr(terms,den){
+  let g=Math.abs(den);
+  terms.forEach(t=>g=gcd(g,t.c));
+  if(g>1){terms=terms.map(t=>({c:t.c/g,r:t.r}));den/=g}
+  if(den<0){den=-den;terms=terms.map(t=>({c:-t.c,r:t.r}))}
+  return {t:terms,d:den,g};
+}
+function exprVal(e){return e.t.reduce((s,x)=>s+x.c*Math.sqrt(x.r),0)/e.d}
+function exprEq(a,b){
+  if(a.d!==b.d||a.t.length!==b.t.length)return false;
+  return a.t.every((x,i)=>x.c===b.t[i].c&&x.r===b.t[i].r);
+}
+
+/* ---------- 表示 ---------- */
+function SQ(r){return `<span class="sq">√<span class="rd">${r}</span></span>`}
+function fmtTerms(terms0){
+  // 表示用：正の項を先に（√3−√2 の順で見せる）
+  const terms=[...terms0.filter(t=>t.c>0),...terms0.filter(t=>t.c<=0)];
+  let s="";
+  terms.forEach((t,i)=>{
+    const neg=t.c<0, ac=Math.abs(t.c);
+    s+= i===0 ? (neg?"−":"") : (neg?" − ":" + ");
+    if(t.r===1) s+=ac;
+    else s+=(ac===1?"":ac)+SQ(t.r);
+  });
+  return s;
+}
+function fmtExpr(e){
+  const n=fmtTerms(e.t);
+  if(e.d===1)return n;
+  return `<span class="frac"><span class="fn">${n}</span><span class="fdn">${e.d}</span></span>`;
+}
+function frac(nh,dh){return `<span class="frac"><span class="fn">${nh}</span><span class="fdn">${dh}</span></span>`}
+
+/* ============================================================
+   有理化ソルバー（答えと解説ステップを自動生成）
+   num,den は項リスト
+============================================================ */
+function solve(num,den){
+  const steps=[];
+  let n=norm(num.map(t=>({...t}))), d=norm(den.map(t=>({...t})));
+
+  if(d.length===1){
+    let t=d[0];
+    // 分母の√をまず簡単に
+    const[c0,r0]=[t.c,t.r];
+    if(r0>1){
+      const[c1,r1]=simpRad(1,r0);
+      if(c1>1){
+        steps.push(`分母の√を先に簡単に：${SQ(r0)} = ${c1}${r1>1?SQ(r1):""} → 分母は ${c0*c1}${r1>1?SQ(r1):""}`);
+        t={c:c0*c1,r:r1};
+      }
+      if(t.r>1){
+        steps.push(`分母と分子に ${SQ(t.r)} を掛ける（${SQ(t.r)}×${SQ(t.r)} = ${t.r} で√が消える）`);
+        n=mulT(n,[{c:1,r:t.r}]);
+        steps.push(`分子：${fmtTerms(n)}　／　分母：${t.c*t.r}`);
+        t={c:t.c*t.r,r:1};
+      }
+    }
+    const red=reduceExpr(n,t.c);
+    if(red.g>1)steps.push(`約分：分子と分母を ${red.g} で割る`);
+    steps.push(`答え：${fmtExpr(red)}`);
+    return {ans:{t:red.t,d:red.d},steps};
+  }
+
+  // 分母2項 → 共役を掛ける
+  const conj=[{...d[0]},{c:-d[1].c,r:d[1].r}];
+  steps.push(`分母が2項 → 符号を変えたペア <b>${fmtTerms(conj)}</b> を分母・分子に掛ける`);
+  const nd=mulT(d,conj);           // 有理数になる
+  steps.push(`分母：和と差の積 → ${fmtTerms(d)} × ${fmtTerms(conj)} = ${fmtTerms(nd)}`);
+  const nn=mulT(n,conj);
+  steps.push(`分子：${fmtTerms(n)} × ${fmtTerms(conj)} = ${fmtTerms(nn)}`);
+  const red=reduceExpr(nn,nd[0].c);
+  if(red.g>1)steps.push(`約分：分子と分母を ${red.g} で割る`);
+  steps.push(`答え：${fmtExpr(red)}`);
+  return {ans:{t:red.t,d:red.d},steps};
+}
+
+/* ============================================================
+   問題ジェネレータ（7級→1級）
+============================================================ */
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function T(c,r){return {c,r:r||1}}
+
+const LEVELS=[
+{kyu:"7級",name:"√のきほん",desc:"√×√＝中身、を体で覚える",gen(){
+  const kind=rnd([0,0,1,1,2]);
+  if(kind===0){ // √a×√a
+    const a=rnd([2,3,5,6,7,10,11,13]);
+    return {key:"A"+a, q:`${SQ(a)} × ${SQ(a)}`, st:"次の計算をしよう",
+      ans:{t:[T(a)],d:1},
+      steps:[`√の一番大事な性質：<b>${SQ(a)} × ${SQ(a)} = ${a}</b>（同じ√を掛けると中身が出てくる）`,
+             `${SQ(a)} は「2乗すると ${a} になる数」だから、2乗すればそのまま ${a}`,
+             `答え：${a}`]};
+  }
+  if(kind===1){ // (√a)²
+    const a=rnd([2,3,5,7,10,13,15]);
+    return {key:"B"+a, q:`( ${SQ(a)} )²`, st:"次の値を求めよう",
+      ans:{t:[T(a)],d:1},
+      steps:[`(${SQ(a)})² は ${SQ(a)} × ${SQ(a)} と同じこと`,
+             `同じ√どうしの掛け算 → 中身が出てくる`,
+             `答え：${a}`]};
+  }
+  const k=rnd([2,3,4,5,6,7,8,9]); // √(k²)
+  return {key:"C"+k, q:`${SQ(k*k)}`, st:"次の値を求めよう",
+    ans:{t:[T(k)],d:1},
+    steps:[`${SQ(k*k)} は「2乗すると ${k*k} になる正の数」`,
+           `${k}² = ${k*k} だから…`,
+           `答え：${k}（中身が2乗の数のとき、√は外れる）`]};
+}},
+{kyu:"6級",name:"√の中を簡単に",desc:"√12 = 2√3 の変形",gen(){
+  const[k,m]=rnd([[2,2],[2,3],[3,2],[2,5],[3,3],[4,2],[2,6],[3,5],[4,3],[5,2],[2,7],[5,3],[6,2]]);
+  const n=k*k*m;
+  return {key:"D"+n, q:`${SQ(n)}`, st:"√の中をできるだけ簡単にしよう",
+    ans:{t:[T(k,m)],d:1},
+    steps:[`${n} を「2乗の数 × 残り」に分ける：${n} = ${k*k} × ${m}`,
+           `${SQ(n)} = ${SQ(k*k)} × ${SQ(m)}`,
+           `${SQ(k*k)} = ${k} だから外に出せる`,
+           `答え：${k}${SQ(m)}`]};
+}},
+{kyu:"5級",name:"有理化のきほん",desc:"分母×分子に同じ√を掛ける",gen(){
+  const b=rnd([2,3,5,7]);
+  let a=rnd([1,2,3,4,5]); if(a%b===0)a++;
+  const s=solve([T(a)],[T(1,b)]);
+  return {key:`E${a}_${b}`, q:frac(String(a),SQ(b)), st:"分母を有理化しよう",
+    ans:s.ans, steps:s.steps};
+}},
+{kyu:"4級",name:"有理化＋約分",desc:"有理化したあと必ず約分チェック",gen(){
+  const[a,b]=rnd([[6,3],[10,5],[4,2],[12,3],[15,5],[9,3],[8,2],[10,2],[4,6],[2,6],[3,6],[6,2],[14,7]]);
+  const s=solve([T(a)],[T(1,b)]);
+  return {key:`F${a}_${b}`, q:frac(String(a),SQ(b)), st:"有理化して、できるだけ簡単な形にしよう",
+    ans:s.ans, steps:s.steps};
+}},
+{kyu:"3級",name:"√を整えてから有理化",desc:"まず分母の√を簡単に",gen(){
+  const[a,n]=rnd([[1,8],[1,12],[5,20],[6,18],[9,27],[4,8],[3,12],[7,28],[5,45],[8,32],[6,12],[10,50],[3,18],[5,12]]);
+  const s=solve([T(a)],[T(1,n)]);
+  return {key:`G${a}_${n}`, q:frac(String(a),SQ(n)), st:"有理化して、できるだけ簡単な形にしよう",
+    ans:s.ans, steps:s.steps};
+}},
+{kyu:"2級",name:"分母が2項",desc:"共役（符号ちがいペア）を掛ける",gen(){
+  const kind=rnd([0,0,1]);
+  let num,den,qd;
+  if(kind===0){ // c/(√a±√b)
+    const[a,b,c]=rnd([[3,2,1],[5,2,1],[5,3,2],[7,3,4],[6,2,2],[7,5,2],[5,3,1],[7,2,5]]);
+    const sg=rnd([1,-1]);
+    num=[T(c)]; den=[T(1,a),{c:sg,r:b}];
+  }else{ // c/(n±√b)
+    const[nn,b,c]=rnd([[2,3,1],[3,7,2],[1,2,1],[2,2,2],[3,5,4],[2,5,1],[1,3,2]]);
+    const sg=rnd([1,-1]);
+    num=[T(c)]; den=[T(nn),{c:sg,r:b}];
+  }
+  qd=fmtTerms(den);
+  const s=solve(num,den);
+  return {key:"H"+qd+num[0].c, q:frac(fmtTerms(num),qd), st:"分母を有理化しよう",
+    ans:s.ans, steps:s.steps};
+}},
+{kyu:"1級",name:"教科書仕上げ",desc:"分子にも√がある本番レベル",gen(){
+  const kind=rnd([0,1]);
+  let num,den;
+  if(kind===0){ // (√a±√b)/(√a∓√b)
+    const[a,b]=rnd([[3,2],[5,2],[5,3],[7,5],[7,3],[6,5]]);
+    const sg=rnd([1,-1]);
+    num=[T(1,a),{c:sg,r:b}]; den=[T(1,a),{c:-sg,r:b}];
+  }else{ // (√a±c)/(√a∓c)
+    const[a,c]=rnd([[3,1],[5,1],[2,1],[5,2],[7,2],[6,2],[7,1]]);
+    const sg=rnd([1,-1]);
+    num=[T(1,a),{c:sg*c,r:1}]; den=[T(1,a),{c:-sg*c,r:1}];
+  }
+  const s=solve(num,den);
+  return {key:"I"+fmtTerms(num)+fmtTerms(den), q:frac(fmtTerms(num),fmtTerms(den)), st:"分母を有理化して、できるだけ簡単な形にしよう",
+    ans:s.ans, steps:s.steps};
+}}
+];
+const GOAL=5;      // 昇級に必要なゲージ
+const PENALTY=2;   // 不正解でゲージ −2
+
+/* ============================================================
+   入力パッド（式ビルダー）
+   token: {t:'d',v} | {t:'sq'} | {t:'op',v:'+'|'−'}
+============================================================ */
+let inp={num:[],den:[],fracMode:false,active:"num"};
+function resetInput(){inp={num:[],den:[],fracMode:false,active:"num"}}
+function boxHTML(tokens){
+  if(!tokens.length)return "";
+  let h="",i=0;
+  while(i<tokens.length){
+    const t=tokens[i];
+    if(t.t==="op"){h+=` ${t.v} `;i++;continue}
+    if(t.t==="d"){h+=t.v;i++;continue}
+    // sq: 直後の数字列をまとめて radicand に
+    let rad="";i++;
+    while(i<tokens.length&&tokens[i].t==="d"){rad+=tokens[i].v;i++}
+    h+=`<span class="sq">√<span class="rd">${rad||"&nbsp;"}</span></span>`;
+  }
+  return h;
+}
+function renderInput(){
+  const numH=boxHTML(inp.num), denH=boxHTML(inp.den);
+  const nb=`<span class="abox ${inp.active==="num"?"active":""}" onclick="setBox('num')">${numH||'<span class="ph">'+(inp.fracMode?"分子":"ここに式を入力")+'</span>'}</span>`;
+  let disp;
+  if(inp.fracMode){
+    const db=`<span class="abox ${inp.active==="den"?"active":""}" onclick="setBox('den')">${denH||'<span class="ph">分母</span>'}</span>`;
+    disp=`<span class="fracin">${nb}<span class="vinc"></span>${db}</span>`;
+  }else disp=nb;
+  const el=document.getElementById("ansdisp");
+  if(el)el.innerHTML=disp;
+}
+function setBox(b){inp.active=b;renderInput()}
+function keyIn(k){
+  const box=inp[inp.active];
+  if(k==="C"){resetInput();renderInput();hideHint();return}
+  if(k==="⌫"){box.pop();renderInput();hideHint();return}
+  if(k==="frac"){
+    inp.fracMode=!inp.fracMode;
+    if(inp.fracMode)inp.active="den"; else {inp.den=[];inp.active="num"}
+    renderInput();return;
+  }
+  if(k==="√"){box.push({t:"sq"})}
+  else if(k==="+"||k==="−"){box.push({t:"op",v:k})}
+  else{box.push({t:"d",v:k})}
+  renderInput();hideHint();
+}
+function hideHint(){const h=document.getElementById("hint");if(h)h.remove()}
+function showHint(msg){
+  hideHint();
+  const w=document.getElementById("answrap");
+  w.insertAdjacentHTML("beforeend",`<div class="hint" id="hint">${msg}</div>`);
+}
+
+/* ---------- 入力のパース ---------- */
+function parseBox(tokens){
+  // return {terms, rawRads:[...], likeCombined:bool} or {err}
+  if(!tokens.length)return{err:"empty"};
+  const terms=[];let i=0;
+  while(i<tokens.length){
+    let sign=1;
+    if(tokens[i].t==="op"){
+      if(tokens[i].v==="−")sign=-1;
+      if(i===0&&tokens[i].v==="+")return{err:"式の最初に＋は置けないよ"};
+      if(i>0||tokens[i].v==="−"){/*ok*/}
+      i++;
+      if(i>=tokens.length)return{err:"符号のあとに数か√を入れよう"};
+      if(tokens[i].t==="op")return{err:"符号が2つ続いてるよ"};
+    }else if(terms.length>0){
+      return{err:"項と項の間には ＋ か − が必要だよ"};
+    }
+    let ds="";
+    while(i<tokens.length&&tokens[i].t==="d"){ds+=tokens[i].v;i++}
+    let rad=null;
+    if(i<tokens.length&&tokens[i].t==="sq"){
+      i++;let rs="";
+      while(i<tokens.length&&tokens[i].t==="d"){rs+=tokens[i].v;i++}
+      if(!rs)return{err:"√の中に数字を入れよう"};
+      rad=parseInt(rs,10);
+      if(rad===0)return{err:"√0 は使わないよ"};
+    }
+    if(!ds&&rad===null)return{err:"数字が入っていないところがあるよ"};
+    const coef=ds?parseInt(ds,10):1;
+    terms.push({c:sign*coef,r:rad===null?1:rad});
+  }
+  // 「まだ簡単にできる」判定：並び順ではなく中身で見る
+  let radNotSimplified=false;
+  terms.forEach(t=>{const[c]=simpRad(1,t.r);if(c>1)radNotSimplified=true});
+  const normed=norm(terms.map(t=>({...t})));
+  const combinable = normed.length<terms.length; // 同類項がまとめられる／打ち消せる
+  return {terms,normed,radNotSimplified,combinable};
+}
+function gradeInput(correct){
+  const pn=parseBox(inp.num);
+  if(pn.err)return{kind:"parse",msg:pn.err==="empty"?"式を入力してから「答える」を押そう":pn.err};
+  let denTerms=[{c:1,r:1}],pd=null,denRad=false,denComb=false;
+  if(inp.fracMode){
+    pd=parseBox(inp.den);
+    if(pd.err)return{kind:"parse",msg:pd.err==="empty"?"分母が空だよ（分数をやめるなら「分数」をもう一度）":("分母："+pd.err)};
+    denTerms=pd.normed;denRad=pd.radNotSimplified;denComb=pd.combinable;
+    if(denTerms.length>1||denTerms[0].r>1)
+      return{kind:"fix",msg:"分母にまだ√が残ってる！　有理化＝<b>分母から√を消す</b>こと。分母×分子に同じものを掛けてみよう"};
+    if(denTerms[0].c===0)return{kind:"parse",msg:"分母が 0 になってるよ"};
+  }
+  const den=denTerms[0].c;
+  const student={t:pn.normed,d:den};
+  const red=reduceExpr(pn.normed.map(t=>({...t})),den);
+  const sv=exprVal(student), cv=exprVal(correct);
+  const valOK=Math.abs(sv-cv)<1e-9;
+  if(!valOK)return{kind:"wrong"};
+  // 値は正しい。形もチェック
+  if(pn.radNotSimplified||denRad)
+    return{kind:"fix",msg:"値は合ってる！　でも√の中がまだ簡単にできる（√の中に2乗の数がかくれてないか見てみよう）"};
+  if(pn.combinable||denComb)
+    return{kind:"fix",msg:"値は合ってる！　同じ√どうしはまとめられるよ（例：√2＋√2 → 2√2）"};
+  if(red.g>1)
+    return{kind:"fix",msg:`値は合ってる！　でもまだ約分できるよ（分子と分母を ${red.g} で割れる）`};
+  if(den<0)
+    return{kind:"fix",msg:"値は合ってる！　マイナスは分母ではなく分子側につけよう"};
+  return{kind:"correct"};
+}
+
+/* ============================================================
+   状態・保存
+============================================================ */
+const SKEY="yurika-dojo-v1";
+let S={placed:false,level:0,gauge:0,shodan:false,solved:0,correct:0};
+let storageOK=true;
+async function load(){try{const r=await window.storage.get(SKEY);if(r&&r.value)S=Object.assign(S,JSON.parse(r.value))}catch(e){}}
+async function save(){try{await window.storage.set(SKEY,JSON.stringify(S))}catch(e){storageOK=false}}
+
+const app=document.getElementById("app");
+let ses=null; // {mode:'practice'|'diag'|'exam', prob, lastKey, list, idx, correct}
+
+/* ============================================================
+   画面：道場ホーム
+============================================================ */
+function home(){
+  ses=null;
+  const allClear=S.level>=LEVELS.length;
+  let rows="";
+  LEVELS.forEach((L,i)=>{
+    const state = i<S.level?"done" : i===S.level?"now":"locked";
+    const g = i===S.level?S.gauge : 0;
+    rows+=`<div class="kyurow ${state==="locked"?"locked":""} ${state==="now"?"now":""}">
+      <span class="kyubadge">${L.kyu}</span>
+      <span class="kyuname"><b>${L.name}</b><br><span class="smallnote">${L.desc}</span></span>
+      ${state==="done"?'<span class="kyudone">合格</span>':
+        `<span class="gauge">${Array.from({length:GOAL},(_,k)=>`<span class="gp ${k<g?"on":""}"></span>`).join("")}</span>`}
+    </div>`;
+  });
+  const acc=S.solved?Math.round(S.correct/S.solved*100):0;
+  app.innerHTML=`
+  <div class="header"><h1>有理化<span class="roma">道場</span></h1><div class="tag">√を制する者は三角比を制す</div></div>
+  ${!S.placed?`
+  <div class="card center">
+    <p style="font-family:var(--fd);font-weight:900;font-size:17px;margin-bottom:6px">まずは腕試し診断（6問）</p>
+    <p class="smallnote" style="margin-bottom:14px">今どこまでできるかチェックして、<br>ちょうどいい級からスタートするよ。<br>わからない問題は「わからない」でOK、正直が一番早い。</p>
+    <button class="bigbtn blue" onclick="startDiag()">診断をはじめる</button>
+  </div>`:`
+  <div class="card">
+    ${allClear&&S.shodan?`<div class="center"><div class="bighanko">初段<br>認定</div><p class="smallnote" style="margin-bottom:10px">全級制覇＋認定試験合格。有理化はもう武器だ。</p></div>`:""}
+    ${allClear&&!S.shodan?`<div class="center" style="margin-bottom:12px"><p style="font-family:var(--fd);font-weight:900;font-size:16px">1級までぜんぶ合格！</p><p class="smallnote">仕上げの認定試験（5問中4問で合格）に挑もう</p></div>`:""}
+    ${rows}
+  </div>
+  ${allClear?`
+    <button class="bigbtn ${S.shodan?"ghost":"blue"}" onclick="startExam()" style="margin-bottom:10px">${S.shodan?"認定試験にもう一度挑む":"初段認定試験に挑戦（5問）"}</button>
+    <button class="bigbtn ghost" onclick="startPractice(true)" style="margin-bottom:10px">腕ならし（3級〜1級ランダム）</button>
+  `:`
+    <button class="bigbtn blue" onclick="startPractice(false)" style="margin-bottom:10px">${LEVELS[S.level].kyu}の特訓をする</button>
+  `}
+  <button class="bigbtn redline" onclick="retake()" style="margin-bottom:10px">診断をやり直す（進捗リセット）</button>
+  <p class="smallnote center">これまで ${S.solved}問 ／ 正答率 ${acc}%　　正解＋1・まちがい−${PENALTY} の厳しめ設定${storageOK?"":"<br>※この環境では進捗が保存されません"}</p>
+  `}`;
+  window.scrollTo(0,0);
+}
+function retake(){S={placed:false,level:0,gauge:0,shodan:false,solved:0,correct:0};save();home()}
+
+/* ============================================================
+   共通：問題画面の描画
+============================================================ */
+function newProb(levelIdx){
+  let p,tries=0;
+  do{p=LEVELS[levelIdx].gen();tries++}while(ses.lastKey===p.key&&tries<10);
+  ses.lastKey=p.key;
+  p.lvl=levelIdx;
+  return p;
+}
+function drawProblem(topMid,cnt){
+  const p=ses.prob;
+  resetInput();
+  app.innerHTML=`
+  <div class="qtop">
+    <button class="backbtn" onclick="home()">← 道場へ</button>
+    <div class="qmid">${topMid}</div>
+    <div class="qcnt">${cnt}</div>
+  </div>
+  ${ses.mode==="practice"?`<div class="gaugebar"><span class="lbl">${LEVELS[S.level].kyu}</span>${Array.from({length:GOAL},(_,k)=>`<span class="gp ${k<S.gauge?"on":""}"></span>`).join("")}</div>`:""}
+  <div class="qcard">
+    <span class="qlabel">${LEVELS[p.lvl].kyu}レベル</span>
+    <div class="statement">${p.st}</div>
+    <div class="mathbig">${p.q}</div>
+    <div class="markwrap" id="markwrap"></div>
+  </div>
+  <div class="answrap" id="answrap">
+    <div class="anslabel"><span>こたえ（√や分数ボタンで組み立てる）</span></div>
+    <div class="ansdisp" id="ansdisp"></div>
+    <div class="pad">
+      <button class="key" onclick="keyIn('7')">7</button><button class="key" onclick="keyIn('8')">8</button><button class="key" onclick="keyIn('9')">9</button><button class="key warn" onclick="keyIn('⌫')">⌫</button>
+      <button class="key" onclick="keyIn('4')">4</button><button class="key" onclick="keyIn('5')">5</button><button class="key" onclick="keyIn('6')">6</button><button class="key warn" onclick="keyIn('C')">C</button>
+      <button class="key" onclick="keyIn('1')">1</button><button class="key" onclick="keyIn('2')">2</button><button class="key" onclick="keyIn('3')">3</button><button class="key sqk fn" onclick="keyIn('√')">√</button>
+      <button class="key" onclick="keyIn('0')">0</button><button class="key fn" onclick="keyIn('+')">＋</button><button class="key fn" onclick="keyIn('−')">−</button><button class="key fn" onclick="keyIn('frac')">分数</button>
+      <button class="submitbtn" onclick="submitAns()">答える</button>
+    </div>
+  </div>
+  ${ses.mode!=="practice"?`<button class="bigbtn ghost" onclick="giveUp()">わからない → 次へ</button>`:""}
+  <div id="after"></div>`;
+  renderInput();
+  window.scrollTo(0,0);
+}
+function lockPad(){document.querySelectorAll(".key,.submitbtn").forEach(b=>b.disabled=true)}
+function drawMark(ok){
+  document.getElementById("markwrap").innerHTML= ok
+   ?`<svg viewBox="0 0 100 100"><circle class="mark-o" cx="50" cy="50" r="42"/></svg>`
+   :`<svg viewBox="0 0 100 100"><path class="mark-x" d="M25 55 L45 75 L80 25" transform="rotate(8 50 50)"/></svg>`;
+}
+function stepsHTML(p,ttl){
+  return `<div class="kaisetsu"><div class="kttl">${ttl}</div>
+    ${p.steps.map((s,i)=>`<div class="step"><span class="sn">${i+1}</span><span>${s}</span></div>`).join("")}
+  </div>`;
+}
+
+/* ============================================================
+   特訓モード
+============================================================ */
+function startPractice(free){
+  ses={mode:"practice",free:!!free,lastKey:null};
+  nextPractice();
+}
+function nextPractice(){
+  const lvl = ses.free ? rnd([4,5,5,6,6]) : S.level;
+  ses.prob=newProb(lvl);
+  drawProblem(ses.free?"腕ならし":LEVELS[S.level].name, "");
+}
+function submitAns(){
+  const p=ses.prob;
+  const g=gradeInput(p.ans);
+  if(g.kind==="parse"||g.kind==="fix"){showHint(g.msg);return}
+  lockPad();hideHint();
+  const ok=g.kind==="correct";
+  drawMark(ok);
+  S.solved++;if(ok)S.correct++;
+
+  if(ses.mode==="practice"&&!ses.free){
+    let gtxt="";
+    if(ok){S.gauge++;gtxt=`<div class="gchange up">ゲージ ＋1</div>`}
+    else{const b=Math.min(PENALTY,S.gauge);S.gauge-=b;gtxt=`<div class="gchange down">ゲージ −${b}（厳しめ設定）</div>`}
+    const leveledUp = S.gauge>=GOAL;
+    save();
+    document.getElementById("after").innerHTML=`
+      ${gtxt}
+      ${stepsHTML(p, ok?"○ 正解！　手順を確認してダメ押し":"✗ ざんねん…　この手順を声に出して読もう")}
+      <button class="nextbtn" onclick="${leveledUp?"levelUp()":"nextPractice()"}">${leveledUp?"昇級！ →":"次の問題へ →"}</button>`;
+  }else{ // 腕ならし・診断/試験以外の自由モード
+    save();
+    document.getElementById("after").innerHTML=`
+      ${stepsHTML(p, ok?"○ 正解！":"✗ ざんねん…　手順を確認")}
+      <button class="nextbtn" onclick="nextPractice()">次の問題へ →</button>`;
+  }
+  document.querySelector(".nextbtn")?.focus();
+}
+function levelUp(){
+  S.level++;S.gauge=0;save();
+  const done=S.level>=LEVELS.length;
+  app.innerHTML=`
+  <div class="header"><h1>有理化<span class="roma">道場</span></h1></div>
+  <div class="card center">
+    <div class="bighanko">${done?"全級<br>制覇":LEVELS[S.level-1].kyu+"<br>合格"}</div>
+    ${done?`<div class="levelup">1級まで完全制覇！</div><p class="smallnote" style="margin-bottom:14px">残るは初段認定試験のみ。<br>教科書レベル5問、4問正解で合格だ。</p>
+      <button class="bigbtn blue" onclick="startExam()">初段認定試験に挑む</button>`
+    :`<div class="levelup">${LEVELS[S.level].kyu}に昇級！</div><p class="smallnote" style="margin-bottom:14px">次のテーマ：<b>${LEVELS[S.level].name}</b><br>${LEVELS[S.level].desc}</p>
+      <button class="bigbtn blue" onclick="startPractice(false)">そのまま特訓をつづける</button>`}
+    <div style="height:10px"></div>
+    <button class="bigbtn ghost" onclick="home()">道場にもどる</button>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   診断モード（6問 → 開始級を決定）
+============================================================ */
+function startDiag(){
+  ses={mode:"diag",lastKey:null,idx:0,results:[]};
+  // 6級〜1級から1問ずつ（レベル1〜6）
+  ses.list=[1,2,3,4,5,6].map(l=>{const p=LEVELS[l].gen();p.lvl=l;return p});
+  diagNext();
+}
+function diagNext(){
+  if(ses.idx>=ses.list.length){return diagResult()}
+  ses.prob=ses.list[ses.idx];
+  drawProblem("腕試し診断",`${ses.idx+1} / 6`);
+  // 診断では submit を差し替え
+  document.querySelector(".submitbtn").onclick=diagSubmit;
+}
+function diagSubmit(){
+  const p=ses.prob;
+  const g=gradeInput(p.ans);
+  if(g.kind==="parse"){showHint(g.msg);return}
+  // 診断は fix も不正解扱いにせず1回ヒント→2回目で判定、はややこしいので fix=惜しい○
+  const ok=(g.kind==="correct"||g.kind==="fix");
+  finishDiagQ(ok);
+}
+function giveUp(){finishDiagQ(false)}
+function finishDiagQ(ok){
+  lockPad();hideHint();drawMark(ok);
+  ses.results.push(ok);
+  const p=ses.prob;
+  document.getElementById("after").innerHTML=`
+    <div class="kaisetsu"><div class="kttl">${ok?"○ できてる！":"ここはこれから覚えればOK"}</div>
+      <div class="step"><span class="sn">答</span><span>${fmtExpr(p.ans)}</span></div>
+    </div>
+    <button class="nextbtn" onclick="ses.idx++;${ses.mode==="exam"?"examNext()":"diagNext()"}">次へ →</button>`;
+  document.querySelector(".nextbtn").focus();
+}
+function diagResult(){
+  // 最初に間違えた問題のレベルから開始（全問正解→1級から）
+  let start=6;
+  for(let i=0;i<ses.results.length;i++){if(!ses.results[i]){start=i===0?0:i;break}}
+  // i=0（6級問題ミス）→ 7級(0)から。i問目ミス → そのレベルから
+  S.placed=true;S.level=start;S.gauge=0;save();
+  const n=ses.results.filter(Boolean).length;
+  app.innerHTML=`
+  <div class="header"><h1>有理化<span class="roma">道場</span></h1></div>
+  <div class="card center">
+    <p style="font-family:var(--fd);font-weight:900;font-size:15px;color:var(--ink-soft)">診断結果：${n} / 6</p>
+    <div class="levelup">${LEVELS[start].kyu}からスタート！</div>
+    <p class="smallnote" style="margin-bottom:14px">最初のテーマは「<b>${LEVELS[start].name}</b>」。<br>${LEVELS[start].desc}。<br>各級ゲージ5つで昇級、まちがえると−${PENALTY}の厳しめ設定でいくよ。</p>
+    <button class="bigbtn blue" onclick="startPractice(false)">さっそく特訓開始</button>
+    <div style="height:10px"></div>
+    <button class="bigbtn ghost" onclick="home()">道場を見る</button>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   初段認定試験（5問・4問以上で合格）
+============================================================ */
+function startExam(){
+  ses={mode:"exam",lastKey:null,idx:0,results:[]};
+  ses.list=[4,5,5,6,6].map(l=>{const p=LEVELS[l].gen();p.lvl=l;return p});
+  examNext();
+}
+function examNext(){
+  if(ses.idx>=ses.list.length){return examResult()}
+  ses.prob=ses.list[ses.idx];
+  drawProblem("初段認定試験",`${ses.idx+1} / 5`);
+  document.querySelector(".submitbtn").onclick=examSubmit;
+}
+function examSubmit(){
+  const p=ses.prob;
+  const g=gradeInput(p.ans);
+  if(g.kind==="parse"){showHint(g.msg);return}
+  if(g.kind==="fix"){showHint(g.msg+"（試験中も直せばOK）");return}
+  finishDiagQ(g.kind==="correct");
+}
+function examResult(){
+  const n=ses.results.filter(Boolean).length;
+  const pass=n>=4;
+  if(pass){S.shodan=true;save()}
+  app.innerHTML=`
+  <div class="header"><h1>有理化<span class="roma">道場</span></h1></div>
+  <div class="card center">
+    ${pass?'<div class="bighanko">初段<br>認定</div>':""}
+    <p style="font-family:var(--fd);font-weight:900;font-size:15px;color:var(--ink-soft)">認定試験：${n} / 5</p>
+    <div class="levelup" style="${pass?"":"color:var(--pen-blue-deep)"}">${pass?"合格！！":"あと一歩…！"}</div>
+    <p class="smallnote" style="margin-bottom:14px">${pass?"教科書レベルの有理化は完成。<br>三角比で√が出てきても、もう怖くない。":"4問正解で合格。腕ならしで鍛えて再挑戦しよう。"}</p>
+    ${pass?"":'<button class="bigbtn blue" onclick="startExam()">もう一度挑戦</button><div style="height:10px"></div>'}
+    <button class="bigbtn ghost" onclick="home()">道場にもどる</button>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+/* ============================================================ */
+(async function(){await load();home()})();
+</script>
+</body>
+</html>

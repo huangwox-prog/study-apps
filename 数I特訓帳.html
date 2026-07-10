@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>数I 特訓帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFBF7;
+  --grid:#DCE8EC;
+  --ink:#26343F;
+  --ink-soft:#5A6B77;
+  --pen-blue:#3B6EA5;
+  --pen-blue-deep:#2C5480;
+  --red:#E0402A;
+  --red-soft:#FBE9E5;
+  --marker:#FFF3C1;
+  --green:#2E8B57;
+  --card:#FFFFFF;
+  --line:#E3E9E5;
+  --radius:14px;
+  --shadow:0 2px 10px rgba(38,52,63,.08);
+  --font-display:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif;
+  --font-body:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    var(--paper);
+  background-size:22px 22px;
+  font-size:16px;
+  line-height:1.65;
+}
+#app{max-width:560px;margin:0 auto;padding:16px 16px 60px;min-height:100%}
+
+/* ---------- header ---------- */
+.header{display:flex;align-items:baseline;gap:10px;padding:10px 2px 14px}
+.header h1{font-family:var(--font-display);font-weight:900;font-size:26px;letter-spacing:.02em}
+.header h1 .roma{color:var(--red)}
+.header .tagline{font-size:12px;color:var(--ink-soft)}
+
+/* ---------- home ---------- */
+.statsbar{
+  display:flex;gap:10px;margin-bottom:16px;
+}
+.statcard{
+  flex:1;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  padding:10px 12px;box-shadow:var(--shadow);
+}
+.statcard .num{font-family:var(--font-display);font-weight:900;font-size:22px;color:var(--pen-blue-deep)}
+.statcard .num b{color:var(--red)}
+.statcard .lbl{font-size:11px;color:var(--ink-soft)}
+.reviewrow{display:flex;gap:10px;margin-bottom:20px}
+.bigbtn{
+  flex:1;border:none;border-radius:var(--radius);padding:13px 10px;
+  font-family:var(--font-display);font-weight:700;font-size:15px;cursor:pointer;
+  box-shadow:var(--shadow);transition:transform .08s;
+}
+.bigbtn:active{transform:scale(.97)}
+.bigbtn.blue{background:var(--pen-blue);color:#fff}
+.bigbtn.red{background:#fff;color:var(--red);border:2px solid var(--red)}
+.bigbtn:disabled{opacity:.4;cursor:default}
+.bigbtn .sub{display:block;font-size:11px;font-weight:500;opacity:.85}
+
+.groupttl{
+  font-family:var(--font-display);font-weight:900;font-size:15px;
+  color:var(--pen-blue-deep);margin:22px 2px 10px;display:flex;align-items:center;gap:8px;
+}
+.groupttl::after{content:"";flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--pen-blue-deep) 0 6px,transparent 6px 11px);opacity:.35}
+
+.theme{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  padding:12px 14px;margin-bottom:9px;cursor:pointer;box-shadow:var(--shadow);
+  font-family:var(--font-body);position:relative;transition:transform .08s;
+}
+.theme:active{transform:scale(.985)}
+.theme .no{
+  font-family:var(--font-display);font-weight:700;font-size:12px;color:var(--ink-soft);
+  min-width:26px;
+}
+.theme .tinfo{flex:1;min-width:0}
+.theme .tname{font-weight:700;font-size:15px}
+.theme .tsub{font-size:11.5px;color:var(--ink-soft)}
+.theme .tprog{display:flex;gap:4px;margin-top:5px}
+.dot{width:9px;height:9px;border-radius:50%;border:1.5px solid #C9D3CD;background:#fff}
+.dot.on{background:var(--red);border-color:var(--red)}
+.hanko{
+  font-family:var(--font-display);font-weight:900;color:var(--red);
+  border:2.5px solid var(--red);border-radius:50%;width:44px;height:44px;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  transform:rotate(-12deg);opacity:.9;flex-shrink:0;letter-spacing:.05em;
+  background:rgba(224,64,42,.04);
+}
+
+/* ---------- quiz ---------- */
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.backbtn{
+  border:none;background:transparent;color:var(--pen-blue-deep);font-family:var(--font-display);
+  font-weight:700;font-size:14px;cursor:pointer;padding:6px 4px;
+}
+.qtheme{font-family:var(--font-display);font-weight:700;font-size:14px;flex:1;text-align:center;color:var(--ink-soft)}
+.qcount{font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--pen-blue-deep)}
+.progressline{height:6px;background:#E7EDE9;border-radius:99px;overflow:hidden;margin-bottom:18px}
+.progressline i{display:block;height:100%;background:var(--pen-blue);border-radius:99px;transition:width .3s}
+
+.qcard{
+  position:relative;background:var(--card);border:1.5px solid var(--line);
+  border-radius:var(--radius);padding:22px 18px;box-shadow:var(--shadow);margin-bottom:14px;
+}
+.qlabel{
+  position:absolute;top:-11px;left:14px;background:var(--pen-blue-deep);color:#fff;
+  font-family:var(--font-display);font-weight:700;font-size:12px;border-radius:99px;padding:2px 12px;
+}
+.qtext{font-size:17px;font-weight:500;white-space:pre-line}
+.qtext .m{font-family:var(--font-body);font-weight:700;font-size:19px;letter-spacing:.02em}
+
+.markwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.markwrap svg{width:110px;height:110px;overflow:visible}
+.mark-o{stroke:var(--red);stroke-width:7;fill:none;stroke-linecap:round;
+  stroke-dasharray:320;stroke-dashoffset:320;animation:draw .5s ease-out forwards;opacity:.9}
+.mark-x{stroke:var(--red);stroke-width:7;fill:none;stroke-linecap:round;
+  stroke-dasharray:120;stroke-dashoffset:120;animation:draw .35s ease-out forwards;opacity:.9}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){
+  .mark-o,.mark-x{animation:none;stroke-dashoffset:0}
+  *{transition:none!important}
+}
+
+.choices{display:flex;flex-direction:column;gap:9px}
+.choice{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--card);border:2px solid var(--line);border-radius:12px;
+  padding:13px 15px;font-size:16.5px;font-weight:500;cursor:pointer;
+  font-family:var(--font-body);transition:transform .08s,border-color .15s,background .15s;
+}
+.choice:active{transform:scale(.985)}
+.choice .ck{
+  font-family:var(--font-display);font-weight:700;font-size:12px;color:var(--ink-soft);
+  border:1.5px solid var(--line);border-radius:8px;min-width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.choice.correct{border-color:var(--red);background:var(--red-soft)}
+.choice.correct .ck{background:var(--red);border-color:var(--red);color:#fff}
+.choice.wrongpick{border-color:#B9C4CC;background:#F2F5F3;opacity:.75}
+.choice.dim{opacity:.45}
+.choice:disabled{cursor:default}
+
+.kaisetsu{
+  background:var(--marker);border-radius:var(--radius);padding:16px 16px 14px;margin-top:14px;
+  border:1.5px solid #EFDF9A;animation:pop .25s ease-out;
+}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.kaisetsu .kttl{
+  font-family:var(--font-display);font-weight:900;font-size:13px;color:#8A6D1A;margin-bottom:6px;
+  letter-spacing:.08em;
+}
+.kaisetsu .kbody{font-size:14.5px;white-space:pre-line}
+.nextbtn{
+  width:100%;margin-top:14px;border:none;border-radius:var(--radius);
+  background:var(--pen-blue);color:#fff;font-family:var(--font-display);font-weight:700;
+  font-size:16px;padding:14px;cursor:pointer;box-shadow:var(--shadow);transition:transform .08s;
+}
+.nextbtn:active{transform:scale(.98)}
+
+/* ---------- result ---------- */
+.result{
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  padding:34px 20px;box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;
+}
+.result .rthemettl{font-family:var(--font-display);font-weight:700;font-size:14px;color:var(--ink-soft)}
+.result .score{font-family:var(--font-display);font-weight:900;font-size:52px;color:var(--pen-blue-deep);margin:6px 0 2px}
+.result .score b{color:var(--red)}
+.result .msg{font-size:14.5px;color:var(--ink-soft);margin-bottom:20px;white-space:pre-line}
+.bighanko{
+  font-family:var(--font-display);font-weight:900;color:var(--red);
+  border:4px solid var(--red);border-radius:50%;width:96px;height:96px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  transform:rotate(-14deg);margin:0 auto 16px;letter-spacing:.05em;
+  background:rgba(224,64,42,.05);animation:stamp .35s cubic-bezier(.2,2.2,.6,1) both;
+}
+@keyframes stamp{from{transform:rotate(-14deg) scale(2.1);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+.rbtns{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+
+.loading{padding:60px 0;text-align:center;color:var(--ink-soft);font-family:var(--font-display)}
+button:focus-visible,.theme:focus-visible{outline:3px solid var(--pen-blue);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">読み込み中…</div></div>
+
+<script>
+/* =========================================================
+   問題データ  q:問題文  c:選択肢  a:正解index  e:解説
+========================================================= */
+const G1 = "第1章　数と式";
+const G2 = "第2章　集合と命題";
+
+const THEMES = [
+{id:"keisu", g:G1, name:"係数と次数", sub:"式のパーツの名前を覚える", probs:[
+ {q:"単項式 5x³ の「係数」はどれ？", c:["5","3","x","x³"], a:0,
+  e:"係数＝文字の前についている数字の部分。\n5x³ なら係数は 5、次数（xの個数）は 3。\n「係数＝数字、次数＝文字の個数」とセットで覚える。"},
+ {q:"単項式 −3a²b の「次数」は？", c:["3","2","1","−3"], a:0,
+  e:"次数＝掛けられている文字の総数。\na²b は a×a×b で文字が3個 → 次数は 3。\naの2乗だけ見て「2」と答えるのがよくあるミス。bの分も数える。"},
+ {q:"多項式 2x² + 3x − 5 の次数は？", c:["2","3","1","5"], a:0,
+  e:"多項式の次数＝いちばん次数が高い項に合わせる。\n2x²（次数2）、3x（次数1）、−5（次数0）→ 最大は 2。\nこれを「2次式」と呼ぶ。"}
+]},
+{id:"kobeki", g:G1, name:"降べきの順", sub:"次数の高い順に整理する", probs:[
+ {q:"3x + x² + 1 を降べきの順に並べると？", c:["x² + 3x + 1","1 + 3x + x²","3x + x² + 1","x² + 1 + 3x"], a:0,
+  e:"降べきの順＝次数の高い項から順に並べること。\nx²（2次）→ 3x（1次）→ 1（0次）の順。\n「降」＝くだる、つまり次数がだんだん下がる並び。"},
+ {q:"2 − x³ + 4x を降べきの順に並べると？", c:["−x³ + 4x + 2","x³ + 4x + 2","2 + 4x − x³","4x − x³ + 2"], a:0,
+  e:"符号ごと項を動かすのがポイント。\n−x³（3次）→ +4x（1次）→ +2（0次）。\nマイナスを置き忘れて x³ にしてしまうミスに注意。"},
+ {q:"x² + ax + b + x を「xについて」降べきの順に整理すると？", c:["x² + (a+1)x + b","x² + ax + x + b","(a+1)x + x² + b","x² + (a+b)x + 1"], a:0,
+  e:"「xについて」＝ a, b はただの数字扱い。\nxの1次の項は ax と x の2つ → まとめて (a+1)x。\n同じ次数の項は係数をまとめてから並べる。"}
+]},
+{id:"shisu", g:G1, name:"指数法則", sub:"累乗の計算ルール3点セット", probs:[
+ {q:"a³ × a⁴ = ？", c:["a⁷","a¹²","a¹","2a⁷"], a:0,
+  e:"掛け算 → 指数はたし算。\na³ × a⁴ = a³⁺⁴ = a⁷。\n(a×a×a)×(a×a×a×a) で a が7個、と考えれば納得できる。"},
+ {q:"(a²)³ = ？", c:["a⁶","a⁵","a⁸","a⁹"], a:0,
+  e:"累乗の累乗 → 指数は掛け算。\n(a²)³ = a²ˣ³ = a⁶。\na² を3回掛けるから 2+2+2 = 6 個、と考えてもOK。"},
+ {q:"(2a²b)³ = ？", c:["8a⁶b³","6a⁶b³","8a⁵b³","2a⁶b³"], a:0,
+  e:"カッコの中の全部に3乗がかかる。\n2³ = 8、(a²)³ = a⁶、b³。\n数字の 2 に3乗をかけ忘れて 2a⁶b³ とするのが定番ミス。"}
+]},
+{id:"tenkai1", g:G1, name:"展開① 基本", sub:"公式3つを体に入れる", probs:[
+ {q:"(x + 2)(x + 3) = ？", c:["x² + 5x + 6","x² + 6x + 5","x² + 5x + 5","x² + 6x + 6"], a:0,
+  e:"公式：(x+a)(x+b) = x² + (a+b)x + ab\n和：2+3 = 5 → 真ん中\n積：2×3 = 6 → 最後\n「和が真ん中、積が最後」。"},
+ {q:"(x + 4)² = ？", c:["x² + 8x + 16","x² + 4x + 16","x² + 8x + 8","x² + 16"], a:0,
+  e:"公式：(x+a)² = x² + 2ax + a²\n真ん中は 2×4 = 8x（2倍を忘れない！）\n最後は 4² = 16。\nx² + 16 と真ん中を消すのが最頻出ミス。"},
+ {q:"(x + 3)(x − 3) = ？", c:["x² − 9","x² + 9","x² − 6x − 9","x² − 3"], a:0,
+  e:"公式：(x+a)(x−a) = x² − a²（和と差の積）\n真ん中の項は +3x と −3x で消える。\nx² − 3² = x² − 9。"}
+]},
+{id:"tenkai2", g:G1, name:"展開② 練習", sub:"係数つきでも同じ公式", probs:[
+ {q:"(2x + 1)(x + 3) = ？", c:["2x² + 7x + 3","2x² + 6x + 3","2x² + 7x + 4","2x² + 5x + 3"], a:0,
+  e:"順番に掛けて4つの項を作る：\n2x·x = 2x²、2x·3 = 6x、1·x = x、1·3 = 3\n真ん中：6x + x = 7x → 2x² + 7x + 3。"},
+ {q:"(3x − 2)² = ？", c:["9x² − 12x + 4","9x² − 6x + 4","9x² + 12x + 4","9x² − 12x − 4"], a:0,
+  e:"(a−b)² = a² − 2ab + b²\na = 3x, b = 2 として：\n(3x)² = 9x²、2·3x·2 = 12x（マイナス）、2² = 4\n→ 9x² − 12x + 4。最後の +4 の符号に注意（2乗は必ずプラス）。"},
+ {q:"(2x + 5)(2x − 5) = ？", c:["4x² − 25","4x² + 25","2x² − 25","4x² − 10"], a:0,
+  e:"和と差の積：(a+b)(a−b) = a² − b²\na = 2x, b = 5 → (2x)² − 5² = 4x² − 25。\n(2x)² = 4x² を 2x² にしないこと。"}
+]},
+{id:"tenkai3", g:G1, name:"展開③ 応用", sub:"置き換え・組み合わせの工夫", probs:[
+ {q:"(x + y + 1)(x + y − 1) = ？", c:["x² + 2xy + y² − 1","x² + y² − 1","x² + 2xy + y² + 1","x² − 2xy + y² − 1"], a:0,
+  e:"x + y = A と置き換えると (A+1)(A−1) = A² − 1。\nA² = (x+y)² = x² + 2xy + y²\n→ x² + 2xy + y² − 1。\n「共通のかたまりを1文字に置く」が応用展開の合言葉。"},
+ {q:"(x + 1)(x − 1)(x² + 1) = ？", c:["x⁴ − 1","x⁴ + 1","x⁴ − 2x² + 1","x⁴ − x² − 1"], a:0,
+  e:"計算しやすいペアから先に：\n(x+1)(x−1) = x² − 1\n次に (x²−1)(x²+1) → これも和と差の積！\n= (x²)² − 1 = x⁴ − 1。"},
+ {q:"(a + b)²(a − b)² = ？", c:["a⁴ − 2a²b² + b⁴","a⁴ + b⁴","a⁴ − a²b² + b⁴","a⁴ − 2ab + b⁴"], a:0,
+  e:"順に展開せず、先にペアを組み替える：\n(a+b)(a−b) = a² − b² だから\n全体 = (a² − b²)² = a⁴ − 2a²b² + b⁴。\n「2乗どうしはまとめてから2乗」で計算量が激減する。"}
+]},
+{id:"insu1", g:G1, name:"因数分解① 基本", sub:"展開の逆再生", probs:[
+ {q:"x² + 7x + 12 を因数分解すると？", c:["(x+3)(x+4)","(x+2)(x+6)","(x+1)(x+12)","(x+3)(x+5)"], a:0,
+  e:"「足して7、掛けて12」の2数を探す。\n3+4 = 7 ✓、3×4 = 12 ✓ → (x+3)(x+4)。\n候補は掛けて12になるペア（1,12 / 2,6 / 3,4）から絞る。"},
+ {q:"x² − 9 を因数分解すると？", c:["(x+3)(x−3)","(x−3)²","(x+9)(x−1)","(x−3)(x−3)"], a:0,
+  e:"2乗 − 2乗 の形 → 和と差の積。\nx² − 3² = (x+3)(x−3)。\n「−」でつながった2乗2つを見たら即この形。"},
+ {q:"x² − 6x + 9 を因数分解すると？", c:["(x−3)²","(x+3)²","(x−3)(x+3)","(x−9)(x+3)"], a:0,
+  e:"「掛けて9、足して−6」→ −3 と −3。\n同じ数が2回 → (x−3)²。\n最後の項が2乗数（9 = 3²）で真ん中がその2倍（6 = 2×3）なら2乗の形を疑う。"}
+]},
+{id:"tasuki", g:G1, name:"因数分解② たすき掛け", sub:"x²の係数が1じゃないとき", probs:[
+ {q:"2x² + 7x + 3 を因数分解すると？", c:["(2x+1)(x+3)","(2x+3)(x+1)","(2x−1)(x−3)","(x+1)(x+3)"], a:0,
+  e:"たすき掛け：\n2 ＼ 1 → 1×1 = 1\n1 ／ 3 → 2×3 = 6\n斜めの和 1 + 6 = 7 ✓（真ん中と一致）\n→ (2x+1)(x+3)。"},
+ {q:"3x² − 5x − 2 を因数分解すると？", c:["(3x+1)(x−2)","(3x−1)(x+2)","(3x−2)(x+1)","(3x+2)(x−1)"], a:0,
+  e:"たすき掛け：\n3 ＼ 1 → 1×1 = 1\n1 ／ −2 → 3×(−2) = −6\n斜めの和 1 + (−6) = −5 ✓\n→ (3x+1)(x−2)。符号の組み合わせは「積が−2、斜めの和が−5」で試す。"},
+ {q:"6x² + x − 2 を因数分解すると？", c:["(2x−1)(3x+2)","(2x+1)(3x−2)","(6x−1)(x+2)","(3x−1)(2x+2)"], a:0,
+  e:"たすき掛け：\n2 ＼ −1 → 3×(−1) = −3\n3 ／ 2 → 2×2 = 4\n斜めの和 −3 + 4 = 1 ✓\n→ (2x−1)(3x+2)。6 = 2×3 と 2 = 1×2 の組み合わせを総当たりで試す。"}
+]},
+{id:"insu3", g:G1, name:"因数分解③ 応用", sub:"共通因数・置き換え・2段構え", probs:[
+ {q:"2ax² − 8a を因数分解すると？", c:["2a(x+2)(x−2)","2a(x−2)²","2(ax+2)(ax−2)","a(2x+4)(x−2)"], a:0,
+  e:"手順①：まず共通因数をくくる → 2a(x² − 4)\n手順②：カッコの中がまだ分解できる → x² − 4 = (x+2)(x−2)\n→ 2a(x+2)(x−2)。\n「共通因数が最優先、そのあと中身をチェック」。"},
+ {q:"x² + 2xy + y² − 1 を因数分解すると？", c:["(x+y+1)(x+y−1)","(x+y−1)²","(x+1)(x+y−1)","(x−y+1)(x−y−1)"], a:0,
+  e:"前の3項がかたまり：x² + 2xy + y² = (x+y)²\n→ (x+y)² − 1 → 2乗−2乗の形！\n= (x+y+1)(x+y−1)。\n展開③でやった置き換えの逆再生。"},
+ {q:"x⁴ − 5x² + 4 を因数分解すると？", c:["(x+1)(x−1)(x+2)(x−2)","(x²+1)(x²+4)","(x+1)²(x−2)²","(x²−1)(x²+4)"], a:0,
+  e:"x² = A と置くと A² − 5A + 4 = (A−1)(A−4)\n→ (x²−1)(x²−4)\nさらに両方分解できる！\n= (x+1)(x−1)(x+2)(x−2)。\n「分解したあと、まだ割れないか必ず確認」。"}
+]},
+{id:"zettaichi", g:G1, name:"絶対値", sub:"数直線上の「距離」", probs:[
+ {q:"|−5| = ？", c:["5","−5","0","±5"], a:0,
+  e:"絶対値＝0からの距離。距離だから必ず0以上。\n−5 は 0 から 5 の距離 → |−5| = 5。"},
+ {q:"|3 − 7| = ？", c:["4","−4","10","3"], a:0,
+  e:"まず中身を計算：3 − 7 = −4\n次に絶対値：|−4| = 4。\n「中身を先に計算 → マイナスなら符号を外す」の2ステップ。"},
+ {q:"x < 0 のとき、|x| = ？", c:["−x","x","0","x²"], a:0,
+  e:"x が負のとき、マイナスをつけるとプラスになる。\n例：x = −3 なら |−3| = 3 = −(−3) = −x ✓\n「|x| = −x」は見た目が負っぽいけど、x自体が負だから −x は正。\nここは口頭試問でも狙われやすい説明ポイント。"}
+]},
+{id:"yurika", g:G1, name:"ルートの有理化", sub:"分母から√を消す", probs:[
+ {q:"1/√2 を有理化すると？", c:["√2/2","2/√2","√2","1/2"], a:0,
+  e:"分母と分子に同じ √2 を掛ける：\n(1×√2)/(√2×√2) = √2/2\n√2×√2 = 2 になるのがポイント。分母に√を残さない形が完成形。"},
+ {q:"6/√3 を有理化すると？", c:["2√3","3√2","6√3","√3/2"], a:0,
+  e:"分母分子に √3 を掛ける：\n6√3/(√3×√3) = 6√3/3 = 2√3\n最後に約分（6÷3）を忘れずに。約分し忘れの 6√3/3 のままだと減点対象。"},
+ {q:"1/(√3 + √2) を有理化すると？", c:["√3 − √2","√3 + √2","1","(√3+√2)/5"], a:0,
+  e:"分母が2項のときは「符号を変えたペア」を掛ける：\n(√3−√2)/{(√3+√2)(√3−√2)}\n分母は和と差の積 → 3 − 2 = 1\n→ √3 − √2。展開の公式が有理化で再登場する。"}
+]},
+{id:"korabo", g:G1, name:"因数分解×ルート", sub:"式の値は「まとめてから代入」", probs:[
+ {q:"x = √3 + 1 のとき、x² − 2x + 1 の値は？", c:["3","4","2√3","√3"], a:0,
+  e:"そのまま代入せず、先に因数分解：\nx² − 2x + 1 = (x − 1)²\nx − 1 = √3 だから (√3)² = 3。\n「代入は最後、まず式を整える」が鉄則。"},
+ {q:"x = √5 + 2, y = √5 − 2 のとき、xy の値は？", c:["1","3","5","4√5"], a:0,
+  e:"和と差の積の形！\nxy = (√5+2)(√5−2) = 5 − 4 = 1\nこのペア（共役な数）は「積がきれいな整数になる」のが持ち味。"},
+ {q:"x = √5 + 2, y = √5 − 2 のとき、x² − y² の値は？", c:["8√5","4√5","20","8"], a:0,
+  e:"x² − y² = (x+y)(x−y) と分解してから：\nx + y = 2√5、x − y = 4\n→ 2√5 × 4 = 8√5\nx² と y² を別々に計算するより圧倒的に速い。"}
+]},
+{id:"nijukongo", g:G1, name:"二重根号", sub:"√の中の√を外す", probs:[
+ {q:"√(3 + 2√2) を簡単にすると？", c:["√2 + 1","√3 + √2","2 + √2","√5"], a:0,
+  e:"「足して3、掛けて2」の2数を探す → 2 と 1\n√(3+2√2) = √2 + √1 = √2 + 1\n検算：(√2+1)² = 2 + 2√2 + 1 = 3 + 2√2 ✓"},
+ {q:"√(7 − 2√10) を簡単にすると？", c:["√5 − √2","√5 + √2","√7 − √10","√2 − √5"], a:0,
+  e:"「足して7、掛けて10」→ 5 と 2\nマイナスの場合は 大 − 小 の順：√5 − √2\n√2 − √5 だと負の数になってしまう（√は0以上）ので順番が大事。"},
+ {q:"√(4 + 2√3) を簡単にすると？", c:["√3 + 1","2 + √3","√2 + √2","√3 + √2"], a:0,
+  e:"「足して4、掛けて3」→ 3 と 1\n√3 + √1 = √3 + 1\n真ん中が「2√」の形になっていることを必ず確認してから公式を使う。"}
+]},
+{id:"futoshiki1", g:G1, name:"一次不等式①", sub:"基本操作と符号反転", probs:[
+ {q:"x + 3 > 5 を解くと？", c:["x > 2","x > 8","x < 2","x ≧ 2"], a:0,
+  e:"方程式と同じように移項：x > 5 − 3 → x > 2\n足し算・引き算の移項では不等号の向きは変わらない。"},
+ {q:"−3x > 6 を解くと？", c:["x < −2","x > −2","x < 2","x > 2"], a:0,
+  e:"両辺を −3 で割る → 不等号の向きが逆転！\nx < −2\n「負の数で割る（掛ける）ときだけ向きが変わる」— 一次不等式で一番大事なルール。"},
+ {q:"2x ≦ 8 を解くと？", c:["x ≦ 4","x ≧ 4","x < 4","x ≦ 6"], a:0,
+  e:"両辺を +2 で割るだけ：x ≦ 4\n正の数で割るときは向きはそのまま。\n≦ と < の区別（イコール込みかどうか）もそのまま維持する。"}
+]},
+{id:"futoshiki2", g:G1, name:"一次不等式②", sub:"移項・カッコ・分数", probs:[
+ {q:"3x − 2 < x + 4 を解くと？", c:["x < 3","x > 3","x < 1","x < 6"], a:0,
+  e:"xを左、数字を右に移項：\n3x − x < 4 + 2 → 2x < 6 → x < 3\n正の数2で割るので向きはそのまま。"},
+ {q:"2(x − 1) ≧ x + 3 を解くと？", c:["x ≧ 5","x ≧ 1","x ≦ 5","x ≧ 3"], a:0,
+  e:"まずカッコを展開：2x − 2 ≧ x + 3\n移項：2x − x ≧ 3 + 2 → x ≧ 5\n「展開 → 移項 → 割る」の3ステップはいつも同じ。"},
+ {q:"x/2 − 1 > x/3 を解くと？", c:["x > 6","x < 6","x > 3","x > 2"], a:0,
+  e:"分母の最小公倍数 6 を全体に掛けて分数を消す：\n3x − 6 > 2x → x > 6\n「−1 にも6を掛ける」のを忘れないこと。分数消しの掛け忘れが最多ミス。"}
+]},
+{id:"futoshiki3", g:G1, name:"一次不等式③ 連立", sub:"2つの範囲の重なり", probs:[
+ {q:"x > 2 かつ x < 5 を同時に満たす範囲は？", c:["2 < x < 5","x < 2, 5 < x","x > 2","解なし"], a:0,
+  e:"数直線をかいて重なった部分を取る。\n2より大きく、かつ5より小さい → 2 < x < 5\n連立不等式＝「両方OKなゾーン」。"},
+ {q:"x ≧ 1 かつ x > 3 を同時に満たす範囲は？", c:["x > 3","x ≧ 1","1 ≦ x ≦ 3","x ≧ 3"], a:0,
+  e:"数直線で重なるのは「厳しいほう」：\nx ≧ 1 の範囲のうち、x > 3 も満たすのは x > 3 だけ。\n「かつ」は狭いほうが勝つ。3を含むかどうか（> と ≧）にも注意。"},
+ {q:"x < 1 かつ x > 4 を同時に満たす範囲は？", c:["解なし","1 < x < 4","x < 1","x > 4"], a:0,
+  e:"数直線で見ると、2つの範囲はまったく重ならない。\n→ 解なし\n「解なし」も立派な答え。重なりゼロを見抜けるかが問われる。"}
+]},
+{id:"futoshiki4", g:G1, name:"一次不等式④ 応用", sub:"文章題と整数解", probs:[
+ {q:"1個120円のりんごをx個と100円の袋を1つ買い、合計を1000円以下にしたい。買えるりんごは最大何個？", c:["7個","8個","9個","6個"], a:0,
+  e:"不等式を立てる：120x + 100 ≦ 1000\n120x ≦ 900 → x ≦ 7.5\nりんごは整数個だから最大 7個。\n「解いた範囲から、条件（整数・個数）に合うものを選ぶ」まで含めて1問。"},
+ {q:"2 < x < 6 を満たす整数xは全部で何個？", c:["3個","4個","5個","2個"], a:0,
+  e:"あてはまる整数を書き出す：3, 4, 5 → 3個\n2 と 6 は「<」なので含まない。\n端を含むか含まないかで個数が変わるので、必ず数直線で確認。"},
+ {q:"不等式 5 − 2x ≧ −3 を解くと？", c:["x ≦ 4","x ≧ 4","x ≦ −4","x ≧ −4"], a:0,
+  e:"−2x ≧ −8 → 両辺を −2 で割る → 向きが逆転\nx ≦ 4\n移項して 5 + 3 ≧ 2x → 8 ≧ 2x → 4 ≧ x とすれば符号反転を回避できる。好きなほうで。"}
+]},
+{id:"zetta_eq1", g:G1, name:"絶対値の方程式・不等式① 基本", sub:"|x|の3パターン", probs:[
+ {q:"|x| = 3 の解は？", c:["x = ±3","x = 3","x = −3","解なし"], a:0,
+  e:"0からの距離が3の点は 2つ ある：3 と −3\n→ x = ±3\n「= のときは2つに割れる」。"},
+ {q:"|x| < 2 の解は？", c:["−2 < x < 2","x < 2","x < ±2","x < −2, 2 < x"], a:0,
+  e:"0からの距離が2未満 → 0の近くのゾーン\n→ −2 < x < 2\n「< は内側（はさまれる）」。"},
+ {q:"|x| ≧ 5 の解は？", c:["x ≦ −5, 5 ≦ x","−5 ≦ x ≦ 5","x ≧ 5","x ≧ ±5"], a:0,
+  e:"0からの距離が5以上 → 0から遠いゾーン\n→ x ≦ −5 または 5 ≦ x\n「> は外側（2つに割れる）」。\n内側 / 外側 のイメージを数直線とセットで覚える。"}
+]},
+{id:"zetta_eq2", g:G1, name:"絶対値の方程式・不等式② 応用", sub:"|x−a| は「aからの距離」", probs:[
+ {q:"|x − 2| = 5 の解は？", c:["x = 7, −3","x = ±5","x = 7","x = 3, −7"], a:0,
+  e:"x − 2 = ±5 と2つに割る：\nx − 2 = 5 → x = 7\nx − 2 = −5 → x = −3\n意味で考えると「2からの距離が5の点」＝ 2+5 と 2−5。"},
+ {q:"|x + 1| < 3 の解は？", c:["−4 < x < 2","−3 < x < 3","−2 < x < 4","x < 2"], a:0,
+  e:"< は内側：−3 < x + 1 < 3\n全体から1を引く：−4 < x < 2\n「はさんでから、全部の辺に同じ操作」。"},
+ {q:"|x − 3| ≧ 1 の解は？", c:["x ≦ 2, 4 ≦ x","2 ≦ x ≦ 4","x ≧ 4","x ≦ 2"], a:0,
+  e:"≧ は外側：x − 3 ≦ −1 または 1 ≦ x − 3\n→ x ≦ 2 または 4 ≦ x\n「3からの距離が1以上」＝ 3の近く（2〜4）以外、とイメージでも確認。"}
+]},
+{id:"zetta_eq3", g:G1, name:"絶対値の方程式・不等式③", sub:"係数つき・2つの絶対値", probs:[
+ {q:"|2x − 1| = 5 の解は？", c:["x = 3, −2","x = ±3","x = 2, −3","x = ±5/2"], a:0,
+  e:"2x − 1 = ±5 と割る：\n2x − 1 = 5 → 2x = 6 → x = 3\n2x − 1 = −5 → 2x = −4 → x = −2\n中身が 2x でも手順は同じ。最後に2で割るだけ。"},
+ {q:"|2x + 1| ≦ 3 の解は？", c:["−2 ≦ x ≦ 1","−1 ≦ x ≦ 2","−3 ≦ x ≦ 3","x ≦ 1"], a:0,
+  e:"≦ は内側：−3 ≦ 2x + 1 ≦ 3\n1を引く：−4 ≦ 2x ≦ 2\n2で割る：−2 ≦ x ≦ 1\n3辺全部に同じ操作をするのがコツ。"},
+ {q:"|x − 1| + |x − 3| = 4 の解は？", c:["x = 0, 4","x = 2","x = 1, 3","解なし"], a:0,
+  e:"場合分けで解く（1と3が境目）：\n① x < 1：(1−x)+(3−x) = 4−2x = 4 → x = 0 ✓\n② 1 ≦ x ≦ 3：(x−1)+(3−x) = 2 ≠ 4 → なし\n③ x > 3：(x−1)+(x−3) = 2x−4 = 4 → x = 4 ✓\n→ x = 0, 4。「境目で区切って場合分け」が2つ絶対値の定石。"}
+]},
+{id:"shugo1", g:G2, name:"集合①", sub:"記号 ∈・⊂・∅ を覚える", probs:[
+ {q:"A = {1, 2, 3} のとき、「2はAの要素」を記号で書くと？", c:["2 ∈ A","2 ⊂ A","A ∈ 2","2 ∪ A"], a:0,
+  e:"∈ ＝「要素として入っている」\n2 ∈ A（2はAに属する）\n⊂ は集合どうしの記号なので、要素1個には使わない。ここの使い分けが最初の関門。"},
+ {q:"{1, 2} と {1, 2, 3} の関係を記号で書くと？", c:["{1,2} ⊂ {1,2,3}","{1,2} ∈ {1,2,3}","{1,2} = {1,2,3}","{1,2,3} ⊂ {1,2}"], a:0,
+  e:"⊂ ＝「部分集合」（中身が全部含まれている）\n{1,2} の要素はどちらも {1,2,3} に入っている → ⊂\n集合 対 集合 は ⊂、要素 対 集合 は ∈。"},
+ {q:"要素を1つももたない集合を何という？", c:["空集合（∅）","補集合","全体集合","部分集合"], a:0,
+  e:"空集合、記号は ∅（または { }）。\n「∅ はすべての集合の部分集合」という性質もセットで覚えておくと命題の単元で効いてくる。"}
+]},
+{id:"shugo2", g:G2, name:"集合②", sub:"共通部分 ∩ と和集合 ∪", probs:[
+ {q:"A = {1,2,3,4}, B = {3,4,5} のとき、A ∩ B = ？", c:["{3, 4}","{1,2,3,4,5}","{1, 2}","{5}"], a:0,
+  e:"∩（共通部分）＝ 両方に入っている 要素だけ。\n3 と 4 はどちらにもいる → {3, 4}\n∩ は「アンド（かつ）」のイメージ。"},
+ {q:"A = {1,2,3,4}, B = {3,4,5} のとき、A ∪ B = ？", c:["{1,2,3,4,5}","{3, 4}","{1,2,5}","{1,2,3,4,3,4,5}"], a:0,
+  e:"∪（和集合）＝ どちらかに入っていれば 全部集める。\n{1,2,3,4,5}\n重複する 3, 4 は1回だけ書く。∪ は「オア（または）」のイメージ。"},
+ {q:"A = {2, 4, 6}, B = {1, 3, 5} のとき、A ∩ B = ？", c:["∅","{0}","{1,2,3,4,5,6}","{2, 3}"], a:0,
+  e:"共通する要素が1つもない → A ∩ B = ∅（空集合）\n「共通なし＝∅」と即答できるように。{0} は「0という要素をもつ集合」なので別物。"}
+]},
+{id:"shugo3", g:G2, name:"集合③", sub:"補集合とド・モルガンの法則", probs:[
+ {q:"全体集合 U = {1,2,…,10}、A = {偶数} のとき、Aの補集合 Ā は？", c:["{1,3,5,7,9}","{2,4,6,8,10}","∅","U"], a:0,
+  e:"補集合 Ā ＝ 全体のうち Aに入っていない もの。\n偶数以外 → 奇数 {1,3,5,7,9}。\n補集合は「全体集合が何か」を必ず確認してから。"},
+ {q:"ド・モルガンの法則で、(A ∪ B) の補集合 = ？", c:["Ā ∩ B̄","Ā ∪ B̄","A ∩ B","Ā"], a:0,
+  e:"ド・モルガン：バーを分配すると ∪ と ∩ がひっくり返る。\n(A∪B)の補集合 = Ā ∩ B̄\n(A∩B)の補集合 = Ā ∪ B̄\n「バーを割ると記号が反転」— 命題の「否定」でも同じ形が出る超重要法則。"},
+ {q:"A ∩ Ā = ？", c:["∅","U","A","Ā"], a:0,
+  e:"「Aに入っていて、かつAに入っていない」ものは存在しない → ∅\nついでに A ∪ Ā = U（全体）もセットで覚える。\n自分と自分の補集合は、重なりゼロ・合わせて全体。"}
+]},
+{id:"shugo4", g:G2, name:"集合④", sub:"要素の個数 n(A)", probs:[
+ {q:"n(A) = 10, n(B) = 8, n(A∩B) = 3 のとき、n(A∪B) = ？", c:["15","18","21","13"], a:0,
+  e:"公式：n(A∪B) = n(A) + n(B) − n(A∩B)\n= 10 + 8 − 3 = 15\nそのまま足すと重なり部分を2回数えてしまうので、1回分引く。ベン図をかくと一目瞭然。"},
+ {q:"100以下の自然数のうち、3の倍数は何個？", c:["33個","30個","34個","3個"], a:0,
+  e:"100 ÷ 3 = 33.3… → 33個\n（3×33 = 99 まで入る）\n「割って小数点以下を切り捨て」が倍数の個数の求め方。"},
+ {q:"100以下の自然数のうち、3の倍数かつ5の倍数は何個？", c:["6個","15個","20個","10個"], a:0,
+  e:"3の倍数かつ5の倍数 ＝ 15の倍数（最小公倍数！）\n100 ÷ 15 = 6.6… → 6個\n「かつ＝最小公倍数の倍数」に読み替えるのがポイント。"}
+]},
+{id:"meidai1", g:G2, name:"命題①", sub:"真・偽と反例", probs:[
+ {q:"命題「x = 2 ならば x² = 4」の真偽は？", c:["真","偽","どちらともいえない","xによる"], a:0,
+  e:"x = 2 を入れると必ず x² = 4 になる → 真\n「ならば」の命題は、仮定を満たすすべての場合で成り立てば真。"},
+ {q:"命題「x² = 4 ならば x = 2」の真偽は？", c:["偽（反例：x = −2）","真","偽（反例：x = 2）","偽（反例：x = 4）"], a:0,
+  e:"x = −2 でも x² = 4 になるのに、x = 2 ではない → 偽\nこの「成り立たない例」を 反例 という。\nさっきの問題と向きが逆なだけで真偽が変わる — これが命題の面白いところ。"},
+ {q:"命題が「偽」であることを示すには何を挙げればよい？", c:["反例を1つ","証明を1つ","例を3つ","公式を1つ"], a:0,
+  e:"偽の証明は 反例1つで十分。\n逆に「真」を示すには、すべての場合で成り立つ証明が必要。\n「真は全部、偽は1つ」— この非対称性を口頭試問で説明できると強い。"}
+]},
+{id:"meidai2", g:G2, name:"命題②", sub:"条件と集合の対応", probs:[
+ {q:"条件 p, q の真理集合を P, Q とする。「p ⇒ q が真」と同じ意味なのは？", c:["P ⊂ Q","Q ⊂ P","P = Q","P ∩ Q = ∅"], a:0,
+  e:"p ⇒ q が真 ⟺ P ⊂ Q\n「pを満たすものは全部qも満たす」＝「Pの中身は全部Qに入っている」。\n命題を集合の絵（ベン図）に翻訳できると、必要・十分条件が一気に楽になる。"},
+ {q:"命題「xが4の倍数 ならば xは2の倍数」の真偽は？", c:["真","偽（反例：x = 4）","偽（反例：x = 2）","どちらともいえない"], a:0,
+  e:"4の倍数（4, 8, 12,…）はすべて2の倍数 → 真\n集合で見ると {4の倍数} ⊂ {2の倍数}。\n小さい（厳しい）集合 ⊂ 大きい（ゆるい）集合、の関係。"},
+ {q:"命題「xが2の倍数 ならば xは4の倍数」の真偽は？", c:["偽（反例：x = 2）","真","偽（反例：x = 4）","偽（反例：x = 8）"], a:0,
+  e:"x = 2 は2の倍数だが4の倍数ではない → 偽\n反例は「仮定は満たすのに結論を満たさない」もの。\nx = 4 は結論も満たしてしまうので反例にならない — ここを混同しやすい。"}
+]},
+{id:"meidai3", g:G2, name:"命題③", sub:"必要条件・十分条件", probs:[
+ {q:"「x = 2」は「x² = 4」であるための？", c:["十分条件","必要条件","必要十分条件","どちらでもない"], a:0,
+  e:"x=2 ⇒ x²=4 は真（→ 向きOK）\nx²=4 ⇒ x=2 は偽（← 向きNG、反例 x=−2）\n「⇒ が真になる側（矢の根元）が十分条件」。\n覚え方：「十分 ⇒ 必要」（矢は十分から必要へ飛ぶ）。"},
+ {q:"「x² = 4」は「x = 2」であるための？", c:["必要条件","十分条件","必要十分条件","どちらでもない"], a:0,
+  e:"前の問題の逆側。矢を受ける側（矢の先）が 必要条件。\nx=2 ⇒ x²=4 の矢の先にいるので、x²=4 は必要条件。\n1つの命題で「根元＝十分・先＝必要」を両方言えるように。"},
+ {q:"「x = 3」は「x² = 9 かつ x > 0」であるための？", c:["必要十分条件","必要条件","十分条件","どちらでもない"], a:0,
+  e:"→：x=3 なら x²=9 かつ x>0 ✓\n←：x²=9 なら x=±3、さらに x>0 で x=3 だけ ✓\n両方向とも真 → 必要十分条件（⟺）。\n両向きをそれぞれチェックするのが判定の手順。"}
+]},
+{id:"meidai4", g:G2, name:"命題④", sub:"逆・裏・対偶", probs:[
+ {q:"命題「p ⇒ q」の 逆 は？", c:["q ⇒ p","p̄ ⇒ q̄","q̄ ⇒ p̄","p ⇒ q̄"], a:0,
+  e:"逆＝向きをひっくり返す → q ⇒ p\n裏＝両方を否定 → p̄ ⇒ q̄\n対偶＝ひっくり返して否定 → q̄ ⇒ p̄\n3つセットで図にして覚える。"},
+ {q:"命題「p ⇒ q」の 対偶 は？", c:["q̄ ⇒ p̄","q ⇒ p","p̄ ⇒ q̄","p̄ ⇒ q"], a:0,
+  e:"対偶＝逆にして、さらに両方否定 → q̄ ⇒ p̄\n「逆＋裏＝対偶」という位置関係。\n順番（q̄が先）と否定（両方にバー）の2点セットを確認。"},
+ {q:"もとの命題と必ず真偽が一致するのはどれ？", c:["対偶","逆","裏","どれも一致しない"], a:0,
+  e:"命題とその 対偶 は真偽が必ず一致する。\n逆と裏は一致するとは限らない（たまたま一致することはある）。\nこの性質があるから「対偶を証明すれば元も証明したことになる」— 次のテーマにつながる。"}
+]},
+{id:"meidai5", g:G2, name:"命題⑤", sub:"対偶証明と否定の法則", probs:[
+ {q:"「n² が偶数 ⇒ n は偶数」の対偶は？", c:["nが奇数 ⇒ n²は奇数","nが偶数 ⇒ n²は偶数","n²が奇数 ⇒ nは偶数","nが奇数 ⇒ n²は偶数"], a:0,
+  e:"対偶＝入れ替えて両方否定。\n「偶数でない」＝「奇数」（整数の話なので）\n→ nが奇数 ⇒ n²は奇数\nこちらは n = 2k+1 とおけば直接計算で証明できる。"},
+ {q:"対偶「nが奇数 ⇒ n²は奇数」を証明できた。このとき言えることは？", c:["もとの命題も真","もとの命題は偽","逆も真","何も言えない"], a:0,
+  e:"対偶ともとの命題は真偽が一致する\n→ 対偶が真なら、もとの「n²が偶数 ⇒ nは偶数」も真。\n直接証明しにくい命題は対偶に切り替える — これが 対偶証明法。"},
+ {q:"「p かつ q」の否定は？", c:["p̄ または q̄","p̄ かつ q̄","p または q","p̄"], a:0,
+  e:"ド・モルガンの法則（命題版）：\n「かつ」の否定 → 「または」＋両方否定\n「または」の否定 → 「かつ」＋両方否定\n集合③でやった (A∩B)の補集合 = Ā∪B̄ とまったく同じ構造。"}
+]},
+{id:"meidai6", g:G2, name:"命題⑥", sub:"「すべて」と「ある」の否定", probs:[
+ {q:"「すべての x について p」の否定は？", c:["ある x について p̄","すべての x について p̄","ある x について p","p̄"], a:0,
+  e:"「すべて」の否定 → 「ある（少なくとも1つ）」＋中身を否定\n全員がpを満たす、のウソは「1人でも満たさないやつがいる」こと。\n全部を否定する必要はない — ここが直感とズレやすい。"},
+ {q:"「ある x について x² < 0」の真偽は？（xは実数）", c:["偽","真","xによる","判定できない"], a:0,
+  e:"実数の2乗は必ず 0以上。\nx² < 0 になる実数は1つも存在しない → 偽\n「ある〜」の命題は、1つでも見つかれば真、1つもなければ偽。"},
+ {q:"「x > 0 かつ y > 0」の否定は？", c:["x ≦ 0 または y ≦ 0","x < 0 かつ y < 0","x ≦ 0 かつ y ≦ 0","x < 0 または y < 0"], a:0,
+  e:"ド・モルガン：「かつ」→「または」\nさらに「x > 0」の否定は「x ≦ 0」（イコールが入る！）\n→ x ≦ 0 または y ≦ 0\n「>の否定は≦」— イコールの行き先を忘れないこと。"}
+]},
+{id:"hairiho", g:G2, name:"背理法", sub:"「仮に…とすると矛盾」の型", probs:[
+ {q:"背理法とはどんな証明法？", c:["結論を否定して矛盾を導く","例を3つ挙げる","対偶を証明する","逆を証明する"], a:0,
+  e:"背理法：\n① 証明したい結論を 否定して仮定する\n② その仮定から話を進めて 矛盾 を導く\n③ よって仮定が間違い → もとの結論が正しい\n「わざと逆を信じてみて、破綻させる」作戦。"},
+ {q:"「√2 は無理数である」を背理法で証明するとき、最初に仮定することは？", c:["√2 が有理数である","√2 が無理数である","√2 = 1.41…","√2 が整数である"], a:0,
+  e:"結論「無理数」の否定 → 「有理数である」と仮定。\nそこから √2 = q/p（既約分数）とおいて進めると、\n「pもqも偶数」となり既約に矛盾 → 仮定が誤り → 無理数。\nこの証明は口頭試問の超定番なので流れごと覚える価値あり。"},
+ {q:"「a + √2 が無理数」（aは有理数）を背理法で示すとき、仮定するのは？", c:["a + √2 が有理数","a が無理数","√2 が有理数","a + √2 が整数"], a:0,
+  e:"結論の否定 → 「a + √2 は有理数」と仮定。\nすると √2 = (a+√2) − a ＝ 有理数 − 有理数 ＝ 有理数\nこれは「√2は無理数」という事実に矛盾！\n→ a + √2 は無理数。既知の事実にぶつけて矛盾させるパターン。"}
+]}
+];
+
+/* =========================================================
+   状態・保存
+========================================================= */
+const app = document.getElementById("app");
+let progress = {};      // {themeId:{best:n, cleared:bool}}
+let wrongIds = [];      // "themeId-probIndex"
+let session = null;     // {list:[{tid,pi}], idx, correct, mode, title}
+
+const SKEY = "sugaku1-tokkun-v1";
+let storageOK = true;
+
+async function loadState(){
+  try{
+    const r = await window.storage.get(SKEY);
+    if(r && r.value){
+      const d = JSON.parse(r.value);
+      progress = d.progress || {};
+      wrongIds = d.wrongIds || [];
+    }
+  }catch(e){ /* 初回は無いだけ */ }
+}
+async function saveState(){
+  try{
+    await window.storage.set(SKEY, JSON.stringify({progress, wrongIds}));
+  }catch(e){ storageOK = false; }
+}
+
+/* =========================================================
+   ユーティリティ
+========================================================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length-1; i > 0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function themeById(id){return THEMES.find(t=>t.id===id)}
+function allProbRefs(){
+  const out = [];
+  THEMES.forEach(t=>t.probs.forEach((p,i)=>out.push({tid:t.id,pi:i})));
+  return out;
+}
+
+/* =========================================================
+   ホーム画面
+========================================================= */
+function renderHome(){
+  const total = THEMES.length;
+  const clearedCount = THEMES.filter(t=>progress[t.id] && progress[t.id].cleared).length;
+  const wrongCount = wrongIds.length;
+
+  let html = `
+  <div class="header">
+    <h1>数<span class="roma">I</span> 特訓帳</h1>
+    <div class="tagline">解いて・○つけて・覚える</div>
+  </div>
+  <div class="statsbar">
+    <div class="statcard"><div class="num"><b>${clearedCount}</b> / ${total}</div><div class="lbl">合格スタンプ</div></div>
+    <div class="statcard"><div class="num">${wrongCount}</div><div class="lbl">復習まちの問題</div></div>
+  </div>
+  <div class="reviewrow">
+    <button class="bigbtn blue" onclick="startRandom()">ランダム10問<span class="sub">全テーマからテスト</span></button>
+    <button class="bigbtn red" onclick="startWrong()" ${wrongCount===0?"disabled":""}>苦手だけ復習<span class="sub">${wrongCount===0?"間違えた問題なし":"まちがえた"+wrongCount+"問"}</span></button>
+  </div>`;
+
+  let curG = "";
+  let no = 0;
+  THEMES.forEach(t=>{
+    no++;
+    if(t.g !== curG){
+      curG = t.g;
+      html += `<div class="groupttl">${esc(curG)}</div>`;
+    }
+    const pr = progress[t.id] || {best:0, cleared:false};
+    const dots = t.probs.map((_,i)=>`<span class="dot ${i < pr.best ? "on":""}"></span>`).join("");
+    html += `
+    <button class="theme" onclick="startTheme('${t.id}')">
+      <span class="no">${String(no).padStart(2,"0")}</span>
+      <span class="tinfo">
+        <div class="tname">${esc(t.name)}</div>
+        <div class="tsub">${esc(t.sub)}</div>
+        <div class="tprog">${dots}</div>
+      </span>
+      ${pr.cleared ? '<span class="hanko">合格</span>':''}
+    </button>`;
+  });
+
+  if(!storageOK){
+    html += `<p style="font-size:12px;color:var(--ink-soft);margin-top:14px">※ この環境では進捗の保存ができないため、閉じるとリセットされます。</p>`;
+  }
+  app.innerHTML = html;
+  window.scrollTo(0,0);
+}
+
+/* =========================================================
+   クイズ開始
+========================================================= */
+function startTheme(tid){
+  const t = themeById(tid);
+  session = {
+    mode:"theme", tid,
+    title:t.name,
+    list:t.probs.map((_,i)=>({tid,pi:i})),
+    idx:0, correct:0
+  };
+  renderQuestion();
+}
+function startRandom(){
+  session = {
+    mode:"random",
+    title:"ランダム10問テスト",
+    list:shuffle(allProbRefs()).slice(0,10),
+    idx:0, correct:0
+  };
+  renderQuestion();
+}
+function startWrong(){
+  if(wrongIds.length===0) return;
+  const list = wrongIds.map(k=>{
+    const [tid,pi] = k.split("|");
+    return {tid, pi:Number(pi)};
+  });
+  session = {
+    mode:"wrong",
+    title:"苦手復習",
+    list:shuffle(list),
+    idx:0, correct:0
+  };
+  renderQuestion();
+}
+
+/* =========================================================
+   問題画面
+========================================================= */
+function renderQuestion(){
+  const s = session;
+  const ref = s.list[s.idx];
+  const t = themeById(ref.tid);
+  const p = t.probs[ref.pi];
+
+  // 選択肢シャッフル
+  const order = shuffle(p.c.map((_,i)=>i));
+  s.currentOrder = order;
+
+  const pct = Math.round(s.idx / s.list.length * 100);
+  const marks = ["ア","イ","ウ","エ"];
+
+  app.innerHTML = `
+  <div class="qtop">
+    <button class="backbtn" onclick="confirmQuit()">← やめる</button>
+    <div class="qtheme">${esc(s.title)}${s.mode!=="theme" ? "｜"+esc(t.name):""}</div>
+    <div class="qcount">${s.idx+1} / ${s.list.length}</div>
+  </div>
+  <div class="progressline"><i style="width:${pct}%"></i></div>
+  <div class="qcard" id="qcard">
+    <span class="qlabel">問 ${s.idx+1}</span>
+    <div class="qtext m">${esc(p.q)}</div>
+    <div class="markwrap" id="markwrap"></div>
+  </div>
+  <div class="choices" id="choices">
+    ${order.map((ci,vi)=>`
+      <button class="choice" data-ci="${ci}" onclick="answer(${ci},this)">
+        <span class="ck">${marks[vi]}</span><span>${esc(p.c[ci])}</span>
+      </button>`).join("")}
+  </div>
+  <div id="after"></div>`;
+  window.scrollTo(0,0);
+}
+
+function answer(ci, btn){
+  const s = session;
+  const ref = s.list[s.idx];
+  const t = themeById(ref.tid);
+  const p = t.probs[ref.pi];
+  const ok = ci === p.a;
+  const key = ref.tid + "|" + ref.pi;
+
+  // ボタン確定表示
+  document.querySelectorAll(".choice").forEach(b=>{
+    b.disabled = true;
+    const bci = Number(b.dataset.ci);
+    if(bci === p.a) b.classList.add("correct");
+    else if(b === btn) b.classList.add("wrongpick");
+    else b.classList.add("dim");
+  });
+
+  // ○ / ✓ の赤ペンアニメ
+  const mw = document.getElementById("markwrap");
+  if(ok){
+    s.correct++;
+    mw.innerHTML = `<svg viewBox="0 0 100 100"><circle class="mark-o" cx="50" cy="50" r="42"/></svg>`;
+    // 正解 → 苦手リストから外す
+    wrongIds = wrongIds.filter(k=>k!==key);
+  }else{
+    mw.innerHTML = `<svg viewBox="0 0 100 100"><path class="mark-x" d="M25 55 L45 75 L80 25" transform="rotate(8 50 50)"/></svg>`;
+    if(!wrongIds.includes(key)) wrongIds.push(key);
+  }
+  saveState();
+
+  // 解説＋次へ
+  const last = s.idx === s.list.length - 1;
+  document.getElementById("after").innerHTML = `
+    <div class="kaisetsu">
+      <div class="kttl">${ok ? "○ 正解！　解説でダメ押し":"惜しい！　ここで覚えれば勝ち"}</div>
+      <div class="kbody">${esc(p.e)}</div>
+    </div>
+    <button class="nextbtn" onclick="next()">${last ? "結果を見る":"次の問題へ →"}</button>`;
+  document.querySelector(".nextbtn").focus();
+}
+
+function next(){
+  session.idx++;
+  if(session.idx >= session.list.length) renderResult();
+  else renderQuestion();
+}
+
+function confirmQuit(){
+  renderHome();
+}
+
+/* =========================================================
+   結果画面
+========================================================= */
+function renderResult(){
+  const s = session;
+  const n = s.list.length;
+  const perfect = s.correct === n;
+
+  // テーマモードなら進捗更新
+  if(s.mode === "theme"){
+    const pr = progress[s.tid] || {best:0, cleared:false};
+    pr.best = Math.max(pr.best, s.correct);
+    if(perfect) pr.cleared = true;
+    progress[s.tid] = pr;
+    saveState();
+  }
+
+  let msg;
+  if(perfect) msg = "全問正解！この調子で次のテーマへ。";
+  else if(s.correct >= n*0.6) msg = "あと少し！間違えた問題は\n「苦手だけ復習」に入ったよ。";
+  else msg = "解説を読んだ今がチャンス。\nもう1周すると定着率が段違い。";
+
+  app.innerHTML = `
+  <div class="header"><h1>数<span class="roma">I</span> 特訓帳</h1></div>
+  <div class="result">
+    ${perfect ? '<div class="bighanko">合格</div>':''}
+    <div class="rthemettl">${esc(s.title)}</div>
+    <div class="score"><b>${s.correct}</b> / ${n}</div>
+    <div class="msg">${esc(msg)}</div>
+    <div class="rbtns">
+      ${!perfect ? `<button class="bigbtn red" onclick="retry()">もう一回挑戦</button>`:""}
+      <button class="bigbtn blue" onclick="renderHome()">テーマ一覧にもどる</button>
+    </div>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+function retry(){
+  const s = session;
+  if(s.mode === "theme") startTheme(s.tid);
+  else if(s.mode === "random") startRandom();
+  else startWrong();
+}
+
+/* ========================================================= */
+(async function init(){
+  await loadState();
+  renderHome();
+})();
+</script>
+</body>
+</html>
