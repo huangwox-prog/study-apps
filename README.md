@@ -1,36 +1,37 @@
-# study-apps 📚
+# study-apps
 
-高校生が生成AI(Claude)と夜な夜な作っている、自分専用の学習アプリ置き場。
+生成AI(Claude)との対話で自作している、自分専用の学習アプリ集です。
+市販の問題集では自分の苦手分野に合わせた反復ができないため、
+苦手な単元・形式に絞った練習アプリを自分で設計し、日々の学習に使っています。
 
-市販の問題集は俺の苦手を知らない。だったら苦手なところだけ無限に出てくる問題集を作ればいい、というだけの話。
+## アプリを使う
 
-## 使い方
+**→ [アプリ目次ページ](https://huangwox-prog.github.io/study-apps/)**
 
-### → **[アプリ目次ページを開く](https://huangwox-prog.github.io/study-apps/)** ←
+学習にはこちらの目次ページを使用してください。このページ(github.com)はソースコードの保管場所です。
 
-勉強はここから。今いるこのページ(github.com)はコードの倉庫なので、見ても筋肉痛にしかならない。
-
-## 中身
+## 収録アプリ
 
 ### 数学Ⅰ(総合型選抜・口頭試問対策)
-- [数Ⅰ特訓帳](https://huangwox-prog.github.io/study-apps/sugaku1-tokkun.html) — 数と式・集合と命題 全31テーマ93問。全問正解すると合格ハンコが押される。押されるまで寝ない
-- [有理化道場](https://huangwox-prog.github.io/study-apps/yurika-dojo.html) — 分母にルートがいたら消す。それだけを延々と
-- [一次不等式特訓](https://huangwox-prog.github.io/study-apps/ichiji-futoshiki.html) — マイナスで割ったら不等号が裏返る。体で覚える
-- [絶対値特訓](https://huangwox-prog.github.io/study-apps/zettaichi.html) — 場合分けから逃げない
+- [数Ⅰ特訓帳](https://huangwox-prog.github.io/study-apps/sugaku1-tokkun.html) — 数と式・集合と命題 全31テーマ93問。苦手問題の復習機能つき
+- [有理化道場](https://huangwox-prog.github.io/study-apps/yurika-dojo.html) — ルートの有理化を基礎から段階的に練習
+- [一次不等式特訓](https://huangwox-prog.github.io/study-apps/ichiji-futoshiki.html) — 負の数で割る際の不等号の向きを重点練習
+- [絶対値特訓](https://huangwox-prog.github.io/study-apps/zettaichi.html) — 絶対値を含む方程式・不等式の場合分け練習
 
-### 基本情報技術者 FE 科目B(7/31 リベンジ予定)
-- [通し1セット(本番形式・IRT採点)](https://huangwox-prog.github.io/study-apps/fe_kamoku_b_full_mock.html) — 週1回の実力測定用。IRTなので簡単な問題を落とすと容赦なく削られる
+### 基本情報技術者試験 FE 科目B
+- [通し1セット(本番形式・IRT採点)](https://huangwox-prog.github.io/study-apps/fe_kamoku_b_full_mock.html) — 週1回の実力測定用
 - [模擬試験 全16問](https://huangwox-prog.github.io/study-apps/FE_kamokuB_mogi16.html)
-- [難問演習 全16問](https://huangwox-prog.github.io/study-apps/FE_kamokuB_hard16.html) — 心を折りに来るやつ
+- [難問演習 全16問](https://huangwox-prog.github.io/study-apps/FE_kamokuB_hard16.html)
 - [模擬試験 v3](https://huangwox-prog.github.io/study-apps/FE_kamokuB_mogi_v3.html)
-- [模擬試験(初代)](https://huangwox-prog.github.io/study-apps/FE_kamokuB_mogi.html) — すべてはここから始まった
-- [セキュリティ実戦演習(複数選択)](https://huangwox-prog.github.io/study-apps/fe_kamoku_b_security_mock_v3.html)
+- [模擬試験(初代)](https://huangwox-prog.github.io/study-apps/FE_kamokuB_mogi.html)
+- [セキュリティ実戦演習(複数選択対応)](https://huangwox-prog.github.io/study-apps/fe_kamoku_b_security_mock_v3.html)
 - [セキュリティ実戦演習(本番仕様)](https://huangwox-prog.github.io/study-apps/fe_kamoku_b_security_mock_v2.html)
-- [セキュリティ実戦演習](https://huangwox-prog.github.io/study-apps/fe_kamoku_b_security_mock.html) — 守る対象→脅威→CIA→消す
-- [双方向リスト 矢印の付け替え(激ムズ)](https://huangwox-prog.github.io/study-apps/fe_dll_pointer_rewire.html) — ポインタの付け替え順を1回でも間違えるとリストが宇宙に消える
+- [セキュリティ実戦演習](https://huangwox-prog.github.io/study-apps/fe_kamoku_b_security_mock.html)
+- [双方向リスト ポインタ付け替え演習](https://huangwox-prog.github.io/study-apps/fe_dll_pointer_rewire.html)
 - [オブジェクト指向・リスト構造 3問](https://huangwox-prog.github.io/study-apps/fe_oop_linkedlist_3.html)
 
-## なぜ作っているのか
+## 制作について
 
-総合型選抜の数学Ⅰ口頭試問と基本情報技術者試験のため。
-それと、自分で作ったもので自分の成績が上がるのは、単純に気分がいいから。
+作りたい問題の単元・形式・採点方法を自分で決めて生成AIに指示し、
+完成したものを実際に解いて検証、修正の指示を繰り返して仕上げています。
+自分の学習状況に合わせて、新しいアプリや改修を随時追加しています。
