@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>二次関数 実戦攻略</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAFBF7; --grid:#DCE8EC; --ink:#26343F; --ink-soft:#5A6B77;
+  --pen-blue:#3B6EA5; --pen-blue-deep:#2C5480;
+  --red:#E0402A; --red-soft:#FBE9E5; --marker:#FFF3C1;
+  --card:#FFFFFF; --line:#E3E9E5; --radius:14px;
+  --shadow:0 2px 10px rgba(38,52,63,.08);
+  --fd:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif;
+  --fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:var(--fb);color:var(--ink);font-size:16px;line-height:1.65;
+  background:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),var(--paper);
+  background-size:22px 22px;
+}
+#app{max-width:560px;margin:0 auto;padding:16px 16px 46px;min-height:100vh}
+.header{display:flex;align-items:baseline;gap:10px;padding:8px 2px 12px}
+.header h1{font-family:var(--fd);font-weight:900;font-size:23px}
+.header h1 .roma{color:var(--red)}
+.header .tag{font-size:12px;color:var(--ink-soft)}
+
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;position:relative}
+.bigbtn{width:100%;border:none;border-radius:var(--radius);padding:14px;font-family:var(--fd);font-weight:700;font-size:16px;cursor:pointer;box-shadow:var(--shadow);transition:transform .08s;margin-bottom:10px}
+.bigbtn:active{transform:scale(.98)}
+.bigbtn.blue{background:var(--pen-blue);color:#fff}
+.bigbtn.ghost{background:#fff;color:var(--pen-blue-deep);border:2px solid var(--pen-blue)}
+.bigbtn:disabled{opacity:.4}
+.smallnote{font-size:12px;color:var(--ink-soft)}
+
+.secttl{font-family:var(--fd);font-weight:900;font-size:14px;color:var(--pen-blue-deep);margin:16px 2px 8px;display:flex;align-items:center;gap:8px}
+.secttl::after{content:"";flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--pen-blue-deep) 0 6px,transparent 6px 11px);opacity:.35}
+.chrow{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1.5px dashed var(--line);width:100%;background:none;border-left:none;border-right:none;border-top:none;text-align:left;cursor:pointer;font-family:var(--fb)}
+.chrow:last-child{border-bottom:none}
+.chbadge{font-family:var(--fd);font-weight:900;font-size:12px;color:var(--pen-blue-deep);min-width:40px}
+.chname{flex:1;font-size:13.5px}
+.chname b{font-size:14px}
+.chname .sub{font-size:11px;color:var(--ink-soft);display:block}
+.gauge{display:flex;gap:3px;flex-wrap:wrap;max-width:110px;justify-content:flex-end}
+.gp{width:10px;height:10px;border-radius:50%;border:1.5px solid #C9D3CD;background:#fff}
+.gp.on{background:var(--red);border-color:var(--red)}
+.chdone{font-family:var(--fd);font-weight:900;color:var(--red);font-size:11px;border:2px solid var(--red);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transform:rotate(-12deg);flex-shrink:0}
+
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.backbtn{border:none;background:transparent;color:var(--pen-blue-deep);font-family:var(--fd);font-weight:700;font-size:14px;cursor:pointer;padding:6px 4px}
+.qmid{flex:1;text-align:center;font-family:var(--fd);font-weight:700;font-size:13px;color:var(--ink-soft)}
+.qcnt{font-family:var(--fd);font-weight:700;font-size:13px;color:var(--pen-blue-deep)}
+.gaugebar{display:flex;gap:5px;justify-content:center;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.gaugebar .lbl{font-family:var(--fd);font-weight:900;font-size:14px;color:var(--red);margin-right:4px}
+
+.qcard{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 16px 18px;margin-bottom:12px;position:relative;text-align:center}
+.qlabel{position:absolute;top:-11px;left:14px;background:var(--pen-blue-deep);color:#fff;font-family:var(--fd);font-weight:700;font-size:12px;border-radius:99px;padding:2px 12px}
+.statement{font-size:13.5px;color:var(--ink-soft);margin-bottom:10px}
+.mathbig{font-size:22px;font-weight:700;letter-spacing:.02em}
+.markwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
+.markwrap svg{width:100px;height:100px;overflow:visible}
+.mark-o{stroke:var(--red);stroke-width:7;fill:none;stroke-linecap:round;stroke-dasharray:320;stroke-dashoffset:320;animation:draw .5s ease-out forwards;opacity:.9}
+.mark-x{stroke:var(--red);stroke-width:7;fill:none;stroke-linecap:round;stroke-dasharray:120;stroke-dashoffset:120;animation:draw .35s ease-out forwards;opacity:.9}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.mark-o,.mark-x{animation:none;stroke-dashoffset:0}*{transition:none!important;animation:none!important}}
+
+.choices{display:flex;flex-direction:column;gap:9px}
+.choice{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:12px 15px;font-size:15.5px;font-weight:500;cursor:pointer;font-family:var(--fb);transition:transform .08s,border-color .15s,background .15s}
+.choice:active{transform:scale(.985)}
+.choice .ck{font-family:var(--fd);font-weight:700;font-size:12px;color:var(--ink-soft);border:1.5px solid var(--line);border-radius:8px;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.choice.correct{border-color:var(--red);background:var(--red-soft)}
+.choice.correct .ck{background:var(--red);border-color:var(--red);color:#fff}
+.choice.wrongpick{border-color:#B9C4CC;background:#F2F5F3;opacity:.75}
+.choice.dim{opacity:.45}
+.choice:disabled{cursor:default}
+
+.gwrap{display:flex;justify-content:center;margin:8px 0}
+.gwrap svg{max-width:100%;height:auto;touch-action:manipulation}
+.gline{stroke:#D5E2E8;stroke-width:1}
+.gaxis{stroke:#6B7B87;stroke-width:1.8}
+.gcurve{stroke:#3B6EA5;stroke-width:3;fill:none}
+.gcurve.ans{stroke:#E0402A;stroke-dasharray:6 5}
+.gdot{fill:#E0402A}
+.gdot.user{fill:#3B6EA5}
+.glat{fill:transparent;cursor:pointer}
+.glat:hover{fill:rgba(59,110,165,.15)}
+.dirrow{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.dirbtn{flex:1;max-width:160px;border:2px solid var(--line);background:#fff;border-radius:11px;font-family:var(--fd);font-weight:700;font-size:14px;padding:10px 0;cursor:pointer;color:var(--ink)}
+.dirbtn.sel{border-color:var(--pen-blue);background:#EFF6FC;color:var(--pen-blue-deep)}
+.gstatus{font-size:13px;color:var(--ink-soft);text-align:center;margin-bottom:8px}
+.submitbtn{width:100%;border:none;border-radius:11px;background:var(--pen-blue);color:#fff;font-family:var(--fd);font-weight:700;font-size:17px;padding:14px 0;cursor:pointer;box-shadow:var(--shadow)}
+.submitbtn:active{transform:scale(.98)}
+.submitbtn:disabled{opacity:.4}
+
+.kaisetsu{background:var(--marker);border-radius:var(--radius);padding:15px 15px 13px;margin-bottom:12px;border:1.5px solid #EFDF9A;animation:pop .25s ease-out;text-align:left}
+.kaisetsu .kttl{font-family:var(--fd);font-weight:900;font-size:13px;color:#8A6D1A;margin-bottom:7px;letter-spacing:.06em}
+.kaisetsu .step{font-size:14.5px;padding:3px 0;display:flex;gap:8px;align-items:baseline}
+.kaisetsu .step .sn{font-family:var(--fd);font-weight:900;color:#B08A1E;font-size:12px;flex-shrink:0}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.nextbtn{width:100%;border:none;border-radius:var(--radius);background:var(--pen-blue);color:#fff;font-family:var(--fd);font-weight:700;font-size:16px;padding:14px;cursor:pointer;box-shadow:var(--shadow)}
+.gchange{font-family:var(--fd);font-weight:900;font-size:14px;text-align:center;margin-bottom:10px}
+.gchange.up{color:var(--pen-blue-deep)}
+.gchange.down{color:var(--red)}
+
+.lesson{background:#F2F8FD;border:1.5px solid #C9DEF0;border-radius:var(--radius);padding:18px 16px;margin-bottom:12px}
+.lesson .lttl{font-family:var(--fd);font-weight:900;font-size:14px;color:var(--pen-blue-deep);margin-bottom:8px}
+.lesson .lex{font-size:19px;font-weight:700;text-align:center;margin:10px 0 12px}
+.lesson .step{font-size:14.5px;padding:3px 0;display:flex;gap:8px;align-items:baseline}
+.lesson .step .sn{font-family:var(--fd);font-weight:900;color:var(--pen-blue-deep);font-size:12px;flex-shrink:0}
+
+.center{text-align:center}
+.bighanko{font-family:var(--fd);font-weight:900;color:var(--red);border:4px solid var(--red);border-radius:50%;width:104px;height:104px;display:flex;align-items:center;justify-content:center;font-size:20px;transform:rotate(-14deg);margin:0 auto 14px;letter-spacing:.03em;background:rgba(224,64,42,.05);animation:stamp .35s cubic-bezier(.2,2.2,.6,1) both;flex-direction:column;line-height:1.2}
+@keyframes stamp{from{transform:rotate(-14deg) scale(2.1);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+.levelup{font-family:var(--fd);font-weight:900;font-size:23px;color:var(--red);text-align:center;animation:stamp .4s cubic-bezier(.2,2,.6,1) both;margin:6px 0}
+button:focus-visible{outline:3px solid var(--pen-blue);outline-offset:2px}
+.loading{padding:60px 0;text-align:center;color:var(--ink-soft);font-family:var(--fd)}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">読み込み中…</div></div>
+<script>
+"use strict";
+/* ============================================================ */
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const ri=(lo,hi)=>lo+Math.floor(Math.random()*(hi-lo+1));
+const NZ=(lo,hi)=>{let v=ri(lo,hi);while(v===0)v=ri(lo,hi);return v};
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+function quadStr(a,b,c){
+  let s = a===1?"x²": a===-1?"−x²": (a<0?"−":"")+Math.abs(a)+"x²";
+  if(b!==0) s += (b>0?" + ":" − ") + (Math.abs(b)===1?"":Math.abs(b)) + "x";
+  if(c!==0) s += (c>0?" + ":" − ") + Math.abs(c);
+  return s;
+}
+function vertStr(a,p,q){
+  let head = a===1?"": a===-1?"−": (a<0?"−":"")+Math.abs(a);
+  let core = p===0 ? "x²" : "(x "+(p>0?"−":"+")+" "+Math.abs(p)+")²";
+  let s = head+core;
+  if(q!==0) s += (q>0?" + ":" − ")+Math.abs(q);
+  return s;
+}
+function coordStr(p,q){return "( "+p+" , "+q+" )"}
+function uniq4(correct, dists){
+  const out=[correct];
+  for(const d of dists){ if(!out.includes(d)) out.push(d); if(out.length===4)break; }
+  const fillers=["どれもあてはまらない","この中に正解はない","判断できない"];
+  let fi=0;
+  while(out.length<4&&fi<fillers.length){
+    if(!out.includes(fillers[fi]))out.push(fillers[fi]);
+    fi++;
+  }
+  return out;
+}
+
+/* ---------- グラフSVG ---------- */
+const GW=390, CELL=30;
+const X2S=x=>(x+6)*CELL, Y2S=y=>(6-y)*CELL;
+function gridSVG(inner, interactive){
+  let g="";
+  for(let i=-6;i<=6;i++){
+    g+=`<line class="gline" x1="${X2S(i)}" y1="0" x2="${X2S(i)}" y2="${GW}"/>`;
+    g+=`<line class="gline" x1="0" y1="${Y2S(i)}" x2="${GW}" y2="${Y2S(i)}"/>`;
+  }
+  g+=`<line class="gaxis" x1="${X2S(0)}" y1="0" x2="${X2S(0)}" y2="${GW}"/>`;
+  g+=`<line class="gaxis" x1="0" y1="${Y2S(0)}" x2="${GW}" y2="${Y2S(0)}"/>`;
+  for(let i=-5;i<=5;i++){
+    if(i===0)continue;
+    g+=`<text x="${X2S(i)}" y="${Y2S(0)+16}" font-size="10" fill="#8A99A3" text-anchor="middle">${i}</text>`;
+    g+=`<text x="${X2S(0)-6}" y="${Y2S(i)+4}" font-size="10" fill="#8A99A3" text-anchor="end">${i}</text>`;
+  }
+  let lat="";
+  if(interactive){
+    for(let x=-5;x<=5;x++)for(let y=-5;y<=5;y++){
+      lat+=`<circle class="glat" cx="${X2S(x)}" cy="${Y2S(y)}" r="13" onclick="pickVertex(${x},${y})"/>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${GW} ${GW}" width="330">${g}${inner}${lat}</svg>`;
+}
+function parabolaPath(a,p,q){
+  let d="",first=true;
+  for(let x=-6;x<=6.01;x+=0.2){
+    const y=a*(x-p)*(x-p)+q;
+    if(y<-7||y>7){first=true;continue}
+    d+=(first?"M":"L")+X2S(x).toFixed(1)+","+Y2S(y).toFixed(1)+" ";
+    first=false;
+  }
+  return d;
+}
+
+/* ============================================================
+   19章：各章 lesson（手本）＋ gen（問題生成）
+============================================================ */
+const CHAPTERS=[
+
+/* 0 */ {no:"1",name:"上に凸・下に凸",sub:"係数の符号で判定",tier:"基本",
+lesson:{ex:"y = −3x² + 2x + 5",steps:[
+ "見るのは x² の前の数字だけ → −3",
+ "マイナス → 上に凸（山 ∩ の形）",
+ "プラスなら下に凸（谷 U の形）。b や c は位置を変えるだけで向きに関係なし"]},
+gen(){
+  const a=rnd([1,2,3,-1,-2,-3]);
+  const b=ri(-4,4), c=ri(-5,5);
+  const up=a<0;
+  return {type:"mc",key:"c1"+a+b+c,
+    st:"このグラフは上に凸？下に凸？",
+    q:"y = "+quadStr(a,b,c),
+    choices:[up?"上に凸（山の形）":"下に凸（谷の形）", up?"下に凸（谷の形）":"上に凸（山の形)","どちらでもない","係数だけでは分からない"],
+    steps:["x² の係数："+(a>0?"+":"")+a,
+           a>0?"プラス → 下に凸（谷）":"マイナス → 上に凸（山）",
+           "b, c は向きに関係ない"]};
+}},
+
+/* 1 */ {no:"2",name:"頂点の読み取り①",sub:"頂点形から座標を出す",tier:"基本",
+lesson:{ex:"y = (x − 3)² + 2",steps:[
+ "頂点のx座標：カッコの中を0にするx → x−3=0 → x=3（符号がひっくり返る）",
+ "頂点のy座標：うしろの数字そのまま → 2",
+ "頂点 ( 3 , 2 )。「xは反転・yはそのまま」"]},
+gen(){
+  const p=NZ(-5,5), q=NZ(-5,5);
+  const a=rnd([1,1,1,-1,2]);
+  return {type:"mc",key:"c2"+a+p+q,
+    st:"このグラフの頂点の座標は？",
+    q:"y = "+vertStr(a,p,q),
+    choices:uniq4(coordStr(p,q),[coordStr(-p,q),coordStr(p,-q),coordStr(-p,-q),coordStr(q,p)]),
+    steps:["x座標：カッコの中=0 → x = "+p+"（符号反転）",
+           "y座標：うしろの数字そのまま → "+q,
+           "頂点 "+coordStr(p,q)]};
+}},
+
+/* 2 */ {no:"3",name:"頂点の読み取り②",sub:"展開形→平方完成して頂点",tier:"実戦",
+lesson:{ex:"y = x² − 4x + 7",steps:[
+ "展開形のままでは頂点が見えない → 平方完成する",
+ "−4÷2=−2、(−2)²=4 → y = (x−2)² − 4 + 7 = (x−2)² + 3",
+ "頂点 ( 2 , 3 )"]},
+gen(){
+  const p=NZ(-4,4);
+  const q=ri(-6,6);
+  const b=-2*p, c=p*p+q;
+  return {type:"mc",key:"c3"+b+"_"+c,
+    st:"このグラフの頂点の座標は？（平方完成してから）",
+    q:"y = "+quadStr(1,b,c),
+    choices:uniq4(coordStr(p,q),[coordStr(-p,q),coordStr(p,c),coordStr(-p,-q)]),
+    steps:["平方完成："+b+"÷2 = "+(b/2)+"、("+(b/2)+")² = "+(p*p),
+           "y = (x "+(p>0?"−":"+")+" "+Math.abs(p)+")² − "+(p*p)+" "+(c>=0?"+ "+c:"− "+Math.abs(c))+" = "+vertStr(1,p,q),
+           "頂点 "+coordStr(p,q)+"（xは反転・yはそのまま）"]};
+}},
+
+/* 3 */ {no:"4",name:"平方完成①",sub:"x²+bx+c 型（係数1）",tier:"基本",
+lesson:{ex:"y = x² + 6x + 2",steps:[
+ "① 真ん中の6を2で割る → 3",
+ "② 2乗する → 9",
+ "③ +9 と −9 を両方置く：x²+6x+9 −9+2",
+ "④ 前3つをまとめる：(x+3)² −9+2",
+ "⑤ 残りを計算：y = (x+3)² − 7"]},
+gen(){
+  const h=NZ(-4,4);
+  const c=ri(-6,8);
+  const b=-2*h, q=c-h*h;
+  return {type:"mc",key:"c4"+b+"_"+c,
+    st:"平方完成すると？",
+    q:"y = "+quadStr(1,b,c),
+    choices:uniq4("y = "+vertStr(1,h,q),["y = "+vertStr(1,-h,q),"y = "+vertStr(1,h,c+h*h),"y = "+vertStr(1,h,c)]),
+    steps:["① "+b+"÷2 = "+(b/2),
+           "② ("+(b/2)+")² = "+(h*h),
+           "③ +"+(h*h)+" と −"+(h*h)+" を両方置く",
+           "④ (x "+(h>0?"−":"+")+" "+Math.abs(h)+")² にまとめる",
+           "⑤ −"+(h*h)+" "+(c>=0?"+ "+c:"− "+Math.abs(c))+" = "+q+"　→　y = "+vertStr(1,h,q)]};
+}},
+
+/* 4 */ {no:"5",name:"平方完成②",sub:"係数つき・マイナスつき",tier:"実戦",
+lesson:{ex:"y = −2x² + 8x + 1",steps:[
+ "① xの項だけ −2 でくくる：y = −2(x² − 4x) + 1（符号に注意：−2×(−4x)=+8x）",
+ "② カッコの中を平方完成：(x−2)² − 4",
+ "③ 外の −2 を配る：−2(x−2)² + 8 + 1",
+ "④ y = −2(x−2)² + 9　頂点 ( 2 , 9 )"]},
+gen(){
+  const a=rnd([2,3,-1,-2]);
+  const h=NZ(-3,3);
+  const q=ri(-6,6);
+  const b=-2*a*h, c=a*h*h+q;
+  return {type:"mc",key:"c5"+a+"_"+b+"_"+c,
+    st:"平方完成すると？",
+    q:"y = "+quadStr(a,b,c),
+    choices:uniq4("y = "+vertStr(a,h,q),["y = "+vertStr(a,-h,q),"y = "+vertStr(a,h,c-h*h===q?q+1:c-h*h),"y = "+vertStr(a,h,q+2*a*h*h)]),
+    steps:["① xの項だけ "+a+" でくくる：y = "+a+"( x² "+(-2*h>0?"+ ":"− ")+Math.abs(2*h)+"x ) "+(c>=0?"+ "+c:"− "+Math.abs(c)),
+           "② カッコの中を平方完成：(x "+(h>0?"−":"+")+" "+Math.abs(h)+")² − "+(h*h),
+           "③ 外の "+a+" を配る："+a+"×(−"+(h*h)+") = "+(-a*h*h),
+           "④ "+(-a*h*h)+" "+(c>=0?"+ "+c:"− "+Math.abs(c))+" = "+q+"　→　y = "+vertStr(a,h,q)]};
+}},
+
+/* 5 */ {no:"6",name:"平行移動①",sub:"y=x² を動かす基本",tier:"基本",
+lesson:{ex:"y=x² を x軸方向に +2、y軸方向に −3 移動",steps:[
+ "x軸方向 +2 → カッコの中は符号を反転して (x − 2)²",
+ "y軸方向 −3 → うしろにそのまま −3",
+ "y = (x−2)² − 3。正の方向＝右・上、負の方向＝左・下"]},
+gen(){
+  const p=NZ(-4,4), q=NZ(-4,4);
+  const kind=rnd([0,1]);
+  const mv=(pp,qq)=>"x軸方向に "+(pp>0?"+":"")+pp+"、y軸方向に "+(qq>0?"+":"")+qq;
+  if(kind===0){
+    return {type:"mc",key:"c6a"+p+q,
+      st:"y=x² のグラフをどれだけ平行移動したもの？",
+      q:"y = "+vertStr(1,p,q),
+      choices:uniq4(mv(p,q),[mv(-p,q),mv(p,-q),mv(-p,-q)]),
+      steps:["x軸方向：カッコの中の符号を反転 → "+(p>0?"+":"")+p,
+             "y軸方向：うしろの数字そのまま → "+(q>0?"+":"")+q]};
+  }
+  return {type:"mc",key:"c6b"+p+q,
+    st:"y=x² を「x軸方向に "+(p>0?"+":"")+p+"、y軸方向に "+(q>0?"+":"")+q+"」平行移動した式は？",
+    q:"y = x²",
+    choices:uniq4("y = "+vertStr(1,p,q),["y = "+vertStr(1,-p,q),"y = "+vertStr(1,p,-q),"y = "+vertStr(1,-p,-q)]),
+    steps:["x軸方向 "+(p>0?"+":"")+p+" → (x "+(p>0?"−":"+")+" "+Math.abs(p)+")²（符号反転）",
+           "y軸方向 "+(q>0?"+":"")+q+" → うしろにそのまま",
+           "y = "+vertStr(1,p,q)]};
+}},
+
+/* 6 */ {no:"7",name:"平行移動②",sub:"一般の放物線を動かす（実戦）",tier:"実戦",
+lesson:{ex:"y = x²−2x+3 を x軸方向に+2、y軸方向に−1 移動した式は？",steps:[
+ "① まず平方完成：y = (x−1)² + 2　頂点 (1, 2)",
+ "② 頂点を移動：(1+2, 2−1) = (3, 1)",
+ "③ 新しい頂点で式を作る：y = (x−3)² + 1",
+ "「グラフの移動＝頂点の移動」と考えるのがコツ"]},
+gen(){
+  const p=ri(-2,2), q=ri(-3,3);
+  const dx=NZ(-3,3), dy=NZ(-3,3);
+  const b=-2*p, c=p*p+q;
+  const np=p+dx, nq=q+dy;
+  return {type:"mc",key:"c7"+b+"_"+c+"_"+dx+"_"+dy,
+    _dbg:{p,q,dx,dy},
+    st:"y = "+quadStr(1,b,c)+" を x軸方向に "+(dx>0?"+":"")+dx+"、y軸方向に "+(dy>0?"+":"")+dy+" 平行移動した式は？",
+    q:"y = "+quadStr(1,b,c),
+    choices:uniq4("y = "+vertStr(1,np,nq),["y = "+vertStr(1,p-dx,nq),"y = "+vertStr(1,np,q-dy),"y = "+vertStr(1,p-dx,q-dy)]),
+    steps:["① 平方完成：y = "+vertStr(1,p,q)+"　頂点 "+coordStr(p,q),
+           "② 頂点を移動：( "+p+" "+(dx>0?"+":"−")+" "+Math.abs(dx)+" , "+q+" "+(dy>0?"+":"−")+" "+Math.abs(dy)+" ) = "+coordStr(np,nq),
+           "③ 新しい頂点で式を作る：y = "+vertStr(1,np,nq)]};
+}},
+
+/* 7 */ {no:"8",name:"対称移動①",sub:"x軸・y軸・原点で折り返す",tier:"基本",
+lesson:{ex:"y = (x−1)² + 2 を x軸に関して対称移動",steps:[
+ "x軸対称 = 上下ひっくり返す → 式全体の符号が反転：y = −(x−1)² − 2",
+ "y軸対称 = 左右ひっくり返す → xを−xに：y = (x+1)² + 2（カッコの中の符号だけ反転）",
+ "原点対称 = 両方 → y = −(x+1)² − 2",
+ "覚え方：x軸→yが反転、y軸→xが反転、原点→両方反転"]},
+gen(){
+  const a=rnd([1,-1,2,-2]);
+  const p=NZ(-3,3), q=NZ(-4,4);
+  const axis=rnd(["x","y","o"]);
+  const fx="y = "+vertStr(-a,p,-q);   // x軸対称
+  const fy="y = "+vertStr(a,-p,q);    // y軸対称
+  const fo="y = "+vertStr(-a,-p,-q);  // 原点対称
+  const axisName=axis==="x"?"x軸":axis==="y"?"y軸":"原点";
+  const cor=axis==="x"?fx:axis==="y"?fy:fo;
+  const others=[fx,fy,fo].filter(s=>s!==cor);
+  return {type:"mc",key:"c8"+a+p+q+axis,
+    _dbg:{a,p,q,axis},
+    st:axisName+"に関して対称移動した式は？",
+    q:"y = "+vertStr(a,p,q),
+    choices:uniq4(cor,[...others,"y = "+vertStr(-a,p,q)]),
+    steps:["x軸対称 → yを−yに ＝ 式全体の符号反転",
+           "y軸対称 → xを−xに ＝ カッコの中の符号反転（頂点が左右反対へ）",
+           "原点対称 → 両方反転",
+           axisName+"対称の答え："+cor]};
+}},
+
+/* 8 */ {no:"9",name:"対称移動②",sub:"展開形のまま折り返す（実戦）",tier:"実戦",
+lesson:{ex:"y = x² − 4x + 3 を x軸に関して対称移動",steps:[
+ "x軸対称：yを−yに → −y = x²−4x+3 → 両辺に−1を掛けて y = −x² + 4x − 3（全部の符号が反転）",
+ "y軸対称：xを−xに → y = (−x)²−4(−x)+3 = x² + 4x + 3（xの項だけ符号反転）",
+ "原点対称：両方 → y = −x² − 4x − 3（x²と定数の符号が反転）"]},
+gen(){
+  const b=NZ(-6,6), c=NZ(-6,6);
+  const axis=rnd(["x","y","o"]);
+  const fx="y = "+quadStr(-1,-b,-c);
+  const fy="y = "+quadStr(1,-b,c);
+  const fo="y = "+quadStr(-1,b,-c);
+  const axisName=axis==="x"?"x軸":axis==="y"?"y軸":"原点";
+  const cor=axis==="x"?fx:axis==="y"?fy:fo;
+  const others=[fx,fy,fo].filter(s=>s!==cor);
+  return {type:"mc",key:"c9"+b+"_"+c+axis,
+    _dbg:{b,c,axis},
+    st:axisName+"に関して対称移動した式は？",
+    q:"y = "+quadStr(1,b,c),
+    choices:uniq4(cor,[...others,"y = "+quadStr(-1,b,c)]),
+    steps:["x軸対称：y→−y ＝ 右辺ぜんぶの符号反転",
+           "y軸対称：x→−x ＝ xの項（1乗の項）だけ符号反転（x²は(−x)²=x²で変わらない）",
+           "原点対称：両方の操作 ＝ x²と定数の符号反転",
+           axisName+"対称の答え："+cor]};
+}},
+
+/* 9 */ {no:"10",name:"グラフを読む",sub:"グラフから式を選ぶ",tier:"実戦",
+lesson:{ex:"グラフから式を選ぶ手順",steps:[
+ "① 赤い点（頂点）の座標を読む",
+ "② 谷（下に凸）ならx²の係数プラス、山（上に凸）ならマイナス",
+ "③ 頂点(p,q) → y = ±(x−p)²+q に入れる（xの符号は反転）"]},
+gen(){
+  const a=rnd([1,-1]);
+  const p=NZ(-3,3), q=NZ(-3,3);
+  const svg=gridSVG(`<path class="gcurve" d="${parabolaPath(a,p,q)}"/><circle class="gdot" cx="${X2S(p)}" cy="${Y2S(q)}" r="5"/>`,false);
+  return {type:"mc",key:"c10"+a+p+q,
+    st:"このグラフの式はどれ？（赤い点が頂点）",
+    q:`<div class="gwrap">${svg}</div>`,
+    qIsHtml:true,
+    choices:uniq4("y = "+vertStr(a,p,q),["y = "+vertStr(-a,p,q),"y = "+vertStr(a,-p,q),"y = "+vertStr(a,p,-q)]),
+    steps:["頂点 "+coordStr(p,q),
+           a>0?"下に凸 → 係数プラス":"上に凸 → 係数マイナス",
+           "y = "+vertStr(a,p,q)]};
+}},
+
+/* 10 */ {no:"11",name:"グラフを描く①",sub:"頂点形から描く",tier:"基本",
+lesson:{ex:"y = (x−2)² + 1 を描く",steps:[
+ "① 頂点 (2, 1) を読み取ってタップ",
+ "② 係数プラス → 下に凸（谷）を選ぶ",
+ "③ 判定を押すと、正解の曲線（赤点線）と重ねて確認できる"]},
+gen(){
+  const a=rnd([1,-1]);
+  const p=ri(-3,3), q=ri(-3,3);
+  return {type:"graph",key:"c11"+a+p+q,
+    st:"グラフを描こう：①頂点をタップ ②向きを選ぶ ③判定",
+    tex:"y = "+vertStr(a,p,q), a,p,q,
+    steps:["頂点は "+coordStr(p,q)+"（xは符号反転・yはそのまま）",
+           a>0?"係数プラス → 下に凸（谷）":"係数マイナス → 上に凸（山）"]};
+}},
+
+/* 11 */ {no:"12",name:"グラフを描く②",sub:"展開形→平方完成して描く",tier:"実戦",
+lesson:{ex:"y = x² + 2x − 1 を描く",steps:[
+ "① まず平方完成：y = (x+1)² − 2",
+ "② 頂点 (−1, −2) をタップ",
+ "③ 係数プラス → 下に凸を選んで判定"]},
+gen(){
+  const a=rnd([1,-1]);
+  const p=ri(-3,3), q=ri(-3,3);
+  const b=-2*a*p, c=a*p*p+q;
+  return {type:"graph",key:"c12"+a+p+q,
+    st:"グラフを描こう（まず平方完成）：①頂点をタップ ②向き ③判定",
+    tex:"y = "+quadStr(a,b,c), a,p,q,
+    steps:["平方完成：y = "+vertStr(a,p,q),
+           "頂点 "+coordStr(p,q),
+           a>0?"係数プラス → 下に凸":"係数マイナス → 上に凸"]};
+}},
+
+/* 12 */ {no:"13",name:"最大・最小①",sub:"頂点がそのまま答え",tier:"基本",
+lesson:{ex:"y = x² − 4x + 5 の最小値は？",steps:[
+ "① 平方完成：y = (x−2)² + 1",
+ "② 下に凸 → 頂点が一番低い＝最小値",
+ "③ x = 2 のとき最小値 1（xの値もセットで答える）"]},
+gen(){
+  const a=rnd([1,1,-1,-1,2,-2]);
+  const p=rnd([-4,-3,-2,-1,1,2,3,4]);
+  let q=ri(-6,6);
+  while(q===p||q===-p)q=ri(-6,6);
+  const isMin=a>0;
+  const kindV=rnd([0,1]);
+  const tex = kindV===0 ? "y = "+vertStr(a,p,q) : "y = "+quadStr(a,-2*a*p,a*p*p+q);
+  const cor="x = "+p+" のとき"+(isMin?"最小値 ":"最大値 ")+q;
+  return {type:"mc",key:"c13"+a+p+q+kindV,
+    st:"この関数の最大値または最小値を求めよ（xの範囲は実数全体）",
+    q:tex,
+    choices:uniq4(cor,[
+      "x = "+p+" のとき"+(isMin?"最大値 ":"最小値 ")+q,
+      "x = "+q+" のとき"+(isMin?"最小値 ":"最大値 ")+p,
+      "x = "+(-p)+" のとき"+(isMin?"最小値 ":"最大値 ")+q]),
+    steps:[kindV===1?"平方完成：y = "+vertStr(a,p,q):"すでに頂点の形",
+           "頂点 "+coordStr(p,q)+"、"+(a>0?"下に凸 → 頂点が最小値":"上に凸 → 頂点が最大値"),
+           cor]};
+}},
+
+/* 13 */ {no:"14",name:"最大・最小②",sub:"範囲つき：頂点が中か外か",tier:"実戦",
+lesson:{ex:"y = x²−4x+5（3 ≦ x ≦ 5）の最大・最小",steps:[
+ "① 平方完成：y=(x−2)²+1　頂点(2,1)",
+ "② 頂点の x=2 は範囲 3〜5 の外 → 頂点は使えない",
+ "③ 両端を計算：x=3で y=2、x=5で y=10",
+ "④ x=3 のとき最小値 2、x=5 のとき最大値 10"]},
+gen(){
+  const p=ri(-2,4);
+  const q=ri(-5,3);
+  const inside=Math.random()<0.5;
+  let L,R,yl,yr;
+  const f=x=>(x-p)*(x-p)+q;
+  let guard=0;
+  do{
+    if(inside){L=p-ri(1,2);R=p+ri(1,3)}
+    else{L=p+ri(1,2);R=L+ri(2,3)}
+    yl=f(L);yr=f(R);
+    guard++;
+  }while(yl===yr&&guard<20);
+  if(yl===yr){R=R+1;yr=f(R)}
+  let minX,minY,maxX,maxY;
+  if(L<=p&&p<=R){minX=p;minY=q}
+  else{ if(yl<yr){minX=L;minY=yl}else{minX=R;minY=yr} }
+  if(yl>yr){maxX=L;maxY=yl}else{maxX=R;maxY=yr}
+  const fmtMM=(x1,v1,x2,v2)=>"x = "+x1+" のとき最小値 "+v1+"、x = "+x2+" のとき最大値 "+v2;
+  const otherX = maxX===L?R:L, otherY = maxX===L?yr:yl;
+  const vtxX = (L<=p&&p<=R)? (p===0?1:-p) : p;
+  const cor = fmtMM(minX,minY,maxX,maxY);
+  const w1  = fmtMM(minX,minY,otherX,otherY);
+  const w2  = "x = "+maxX+" のとき最小値 "+maxY+"、x = "+minX+" のとき最大値 "+minY;
+  const w3  = fmtMM(vtxX,q,maxX,maxY);
+  const b=-2*p,c=p*p+q;
+  return {type:"mc",key:"c14"+p+q+L+R,
+    st:"範囲 "+L+" ≦ x ≦ "+R+" における最大値・最小値は？",
+    q:"y = "+quadStr(1,b,c),
+    choices:uniq4(cor,[w1,w2,w3]),
+    steps:["平方完成：y = "+vertStr(1,p,q)+"　頂点 "+coordStr(p,q)+"、下に凸",
+           "頂点の x = "+p+" は範囲の"+(L<=p&&p<=R?"中 → 頂点が最小値":"外 → 頂点は使えない"),
+           "両端：x="+L+" で y="+yl+"、x="+R+" で y="+yr,
+           "答え："+cor]};
+}},
+
+/* 14 */ {no:"15",name:"最大・最小③",sub:"文字aを含む実戦問題",tier:"実戦",
+lesson:{ex:"y = −2x²+12x+a（0≦x≦4）の最大値が4のとき a は？",steps:[
+ "① 平方完成：y = −2(x−3)² + 18 + a　頂点 (3, 18+a)",
+ "② 上に凸で、頂点の x=3 は範囲の中 → 頂点が最大値",
+ "③ 最大値 = 18+a。条件「最大値が4」と＝でつなぐ：18+a = 4",
+ "④ a = 4 − 18 = −14"]},
+gen(){
+  const s=rnd([1,-1,2,-2]);
+  const p=NZ(-3,4)>0?ri(1,4):ri(1,4); // 正の頂点にして範囲を作りやすく
+  const V=ri(-6,8);
+  const b=-2*s*p;
+  const t=-s*p*p;              // 頂点のy = a + t
+  const aCorr=V-t;             // a = V − t
+  const L=Math.max(0,p-ri(1,2)), R=p+ri(1,2);
+  const isMax=s<0;
+  const d1=V+t, d2=-aCorr, d3=V;
+  return {type:"mc",key:"c15"+s+p+V+L+R,
+    _dbg:{s,b,aCorr,L,R,V,isMax},
+    st:"y = "+quadStr(s,b,0)+" + a（"+L+" ≦ x ≦ "+R+"）の"+(isMax?"最大値":"最小値")+"が "+V+" のとき、a の値は？",
+    q:"y = "+quadStr(s,b,0)+" + a",
+    choices:uniq4("a = "+aCorr,["a = "+d1,"a = "+d2,"a = "+d3]),
+    steps:["① 平方完成：y = "+(s===1?"":s===-1?"−":s)+"(x − "+p+")² + a "+(t>=0?"+ "+t:"− "+Math.abs(t))+"　頂点 ( "+p+" , a "+(t>=0?"+ "+t:"− "+Math.abs(t))+" )",
+           "② "+(s>0?"下に凸":"上に凸")+"で、頂点の x="+p+" は範囲 "+L+"〜"+R+" の中 → 頂点が"+(isMax?"最大値":"最小値"),
+           "③ "+(isMax?"最大値":"最小値")+" = a "+(t>=0?"+ "+t:"− "+Math.abs(t))+"。条件と＝でつなぐ：a "+(t>=0?"+ "+t:"− "+Math.abs(t))+" = "+V,
+           "④ a = "+V+" "+(t>=0?"− "+t:"+ "+Math.abs(t))+" = "+aCorr]};
+}},
+
+/* 15 */ {no:"16",name:"二次方程式①",sub:"因数分解で解く",tier:"基本",
+lesson:{ex:"x² − 5x + 6 = 0",steps:[
+ "① 足して−5、掛けて6 → −2 と −3",
+ "② (x−2)(x−3) = 0",
+ "③ 掛けて0 → どちらかが0：x = 2, 3"]},
+gen(){
+  let r1=rnd([-5,-4,-3,-2,-1,1,2,3,4,5]);
+  let r2=rnd([-5,-4,-3,-2,-1,1,2,3,4,5]);
+  while(r2===r1||r2===-r1)r2=rnd([-5,-4,-3,-2,-1,1,2,3,4,5]);
+  if(r1>r2)[r1,r2]=[r2,r1];
+  const b=-(r1+r2), c=r1*r2;
+  return {type:"mc",key:"c16"+r1+"_"+r2,
+    st:"この二次方程式を解け",
+    q:quadStr(1,b,c)+" = 0",
+    choices:uniq4("x = "+r1+", "+r2,["x = "+(-r2)+", "+(-r1),"x = "+r1+", "+(-r2),"x = "+(-r1)+", "+r2]),
+    steps:["足して "+(r1+r2)+"、掛けて "+c+" → "+r1+" と "+r2,
+           "(x "+(r1>0?"− ":"+ ")+Math.abs(r1)+")(x "+(r2>0?"− ":"+ ")+Math.abs(r2)+") = 0",
+           "x = "+r1+", "+r2]};
+}},
+
+/* 16 */ {no:"17",name:"二次方程式②",sub:"解の公式＋√の簡単化",tier:"実戦",
+lesson:{ex:"x² − 4x − 1 = 0",steps:[
+ "① 因数分解できない → 解の公式：x = (−b±√(b²−4ac))/2a",
+ "② b²−4ac = 16+4 = 20",
+ "③ x = (4±√20)/2。√20 = 2√5",
+ "④ x = (4±2√5)/2 = 2 ± √5（全部2で約分）"]},
+gen(){
+  const pool=[[ -4,-1],[ -4,1],[ -2,-1],[ -2,-4],[ -6,4],[ -6,6],[ 2,-2],[ 2,-4],[ 4,1],[ 4,-3],[ -8,8],[ 6,3]];
+  const[b,c]=rnd(pool);
+  const h=-b/2;
+  const D4=h*h-c;
+  let k=1,m=D4;
+  for(let f=Math.floor(Math.sqrt(m));f>=2;f--){while(m%(f*f)===0){k*=f;m/=f*f}}
+  const rootTxt=(k===1?"":k)+"√"+m;
+  const cor="x = "+h+" ± "+rootTxt;
+  return {type:"mc",key:"c17"+b+"_"+c,
+    st:"この二次方程式を解け（因数分解できないタイプ）",
+    q:quadStr(1,b,c)+" = 0",
+    choices:uniq4(cor,["x = "+(-h)+" ± "+rootTxt,"x = "+h+" ± √"+(D4*4),"x = "+h+" ± "+rootTxt.replace("√","2√")==="x = "+h+" ± "+rootTxt?"x = "+h+" ± √"+(D4+1):"x = "+h+" ± 2"+rootTxt]),
+    steps:["解の公式（a=1, b="+b+", c="+c+"）",
+           "b²−4ac = "+(b*b)+" − "+(4*c<0?"(−"+Math.abs(4*c)+")":4*c)+" = "+(b*b-4*c),
+           "x = ( "+(-b)+" ± √"+(b*b-4*c)+" ) / 2",
+           "√"+(b*b-4*c)+" = 2"+(k===1?"":"×"+k)+"√"+m+"（4=2²を外に出す）",
+           "全部2で約分：x = "+h+" ± "+rootTxt]};
+}},
+
+/* 17 */ {no:"18",name:"二次不等式①",sub:"内側か外側か",tier:"基本",
+lesson:{ex:"x² − 5x + 6 > 0",steps:[
+ "① =0 を解く：(x−2)(x−3)=0 → x=2, 3",
+ "② 下に凸の谷が x=2 と x=3 で地面（x軸）に触れる",
+ "③ 谷底（2と3の間）だけ地面より下、それ以外は上",
+ "④ 「>0」は地面より上 → 外側 → x < 2, 3 < x（「<0」なら内側 2<x<3）"]},
+gen(){
+  const r1=ri(-4,1); let r2=r1+ri(1,4);
+  if(r2===-r1)r2=r2+1;
+  const b=-(r1+r2), c=r1*r2;
+  const gt=Math.random()<0.5;
+  const eq=Math.random()<0.4;
+  const sym=gt?(eq?"≧":">"):(eq?"≦":"<");
+  const inner = eq? (r1+" ≦ x ≦ "+r2) : (r1+" < x < "+r2);
+  const outer = eq? ("x ≦ "+r1+",  "+r2+" ≦ x") : ("x < "+r1+",  "+r2+" < x");
+  const cor = gt? outer : inner;
+  const wrongInner = gt? inner : outer;
+  return {type:"mc",key:"c18"+r1+"_"+r2+sym,
+    st:"この二次不等式を解け",
+    q:quadStr(1,b,c)+" "+sym+" 0",
+    choices:uniq4(cor,[wrongInner,
+      (gt? "x < "+(-r2)+",  "+(-r1)+" < x" : (-r2)+" < x < "+(-r1)),
+      "すべての実数"]),
+    steps:["=0 を解く：x = "+r1+", "+r2,
+           "下に凸の谷、谷底（"+r1+"と"+r2+"の間）だけ地面より下",
+           gt?"「"+sym+"0」＝地面より上 → 外側 → "+cor:"「"+sym+"0」＝地面より下 → 内側 → "+cor,
+           eq?"「＝つき」なので端の点も含める（≦ ≧）":"「＝なし」なので端は含めない"]};
+}},
+
+/* 18 */ {no:"19",name:"二次不等式②",sub:"解なし・すべての実数（実戦）",tier:"実戦",
+lesson:{ex:"(x−2)² > 0 と x²+2x+3 > 0",steps:[
+ "(x−2)² は2乗 → x=2のとき0、それ以外は必ずプラス → 「>0」の答えは x=2 以外のすべての実数",
+ "(x−2)² ≧ 0 なら → すべての実数（0も含めてOK）、< 0 なら → 解なし（2乗は負にならない）",
+ "x²+2x+3 は判別式 b²−4ac = 4−12 = −8 < 0 → 地面に触れない → ずっと浮いてる",
+ "→ 「>0」はすべての実数、「<0」は解なし。グラフが地面に触れるかで判断"]},
+gen(){
+  const kind=rnd([0,0,1]);
+  if(kind===0){ // (x−r)² 型
+    const r=NZ(-4,4);
+    const sym=rnd([">","≧","<","≦"]);
+    const opts=["すべての実数","解なし","x = "+r+" 以外のすべての実数","x = "+r+" だけ"];
+    const cor= sym===">"? opts[2] : sym==="≧"? opts[0] : sym==="<"? opts[1] : opts[3];
+    const b=-2*r,c=r*r;
+    return {type:"mc",key:"c19a"+r+sym,
+      st:"この二次不等式を解け（左辺を因数分解すると見える）",
+      q:quadStr(1,b,c)+" "+sym+" 0",
+      choices:uniq4(cor,opts.filter(o=>o!==cor)),
+      steps:["因数分解すると (x "+(r>0?"−":"+")+" "+Math.abs(r)+")² "+sym+" 0",
+             "2乗は「x="+r+"のとき0、それ以外は必ずプラス」",
+             sym===">"?"プラスになる場所 → x="+r+"以外ぜんぶ":
+             sym==="≧"?"0以上になる場所 → 0も含めてすべての実数":
+             sym==="<"?"マイナスになる場所 → 存在しない → 解なし":
+             "0以下になる場所 → 0になる x="+r+" だけ"]};
+  }
+  // 判別式<0 型
+  const pool=[[2,3],[2,5],[-2,3],[4,5],[-4,6],[2,2],[-2,2],[4,7]];
+  const[b,c]=rnd(pool); // D=b²−4c<0 を満たす組
+  const gt=Math.random()<0.5;
+  const sym=gt?">":"<";
+  const cor=gt?"すべての実数":"解なし";
+  const h=-b/2;
+  return {type:"mc",key:"c19b"+b+"_"+c+sym,
+    st:"この二次不等式を解け（まず判別式を見る）",
+    q:quadStr(1,b,c)+" "+sym+" 0",
+    choices:uniq4(cor,[gt?"解なし":"すべての実数","x = "+h+" 以外のすべての実数","x = "+h+" だけ"]),
+    steps:["判別式 b²−4ac = "+(b*b)+" − "+(4*c)+" = "+(b*b-4*c)+" ＜ 0",
+           "判別式がマイナス → x軸と交わらない → 下に凸のグラフがずっと地面より上に浮いてる",
+           gt?"「>0」＝地面より上 → 常に成り立つ → すべての実数":"「<0」＝地面より下 → 一度もない → 解なし"]};
+}}
+];
+
+const GOAL=5;
+const PENALTY=1;
+const EXAM_CHAPS=[2,4,6,8,9,11,13,14,15,16,17,18]; // 実戦寄り12章
+const EXAM_PASS=10;
+
+/* ============================================================ */
+const SKEY="nijikansu2-v1";
+let S={gauges:Array(CHAPTERS.length).fill(0),cleared:Array(CHAPTERS.length).fill(false),sotsugyo:false,solved:0,correct:0};
+let storageOK=true;
+async function load(){try{const r=await window.storage.get(SKEY);if(r&&r.value){const d=JSON.parse(r.value);S=Object.assign(S,d);
+  if(!Array.isArray(S.gauges)||S.gauges.length!==CHAPTERS.length)S.gauges=Array(CHAPTERS.length).fill(0);
+  if(!Array.isArray(S.cleared)||S.cleared.length!==CHAPTERS.length)S.cleared=Array(CHAPTERS.length).fill(false);
+}}catch(e){}}
+async function save(){try{await window.storage.set(SKEY,JSON.stringify(S))}catch(e){storageOK=false}}
+
+const app=document.getElementById("app");
+let ses=null;
+let gsel={p:null,q:null,dir:null};
+
+function home(){
+  ses=null;
+  const doneCount=S.cleared.filter(Boolean).length;
+  const allClear=doneCount===CHAPTERS.length;
+  let basic="",jitsu="";
+  CHAPTERS.forEach((ch,i)=>{
+    const row=`<button class="chrow" onclick="startCh(${i})">
+      <span class="chbadge">第${ch.no}章</span>
+      <span class="chname"><b>${esc(ch.name)}</b><span class="sub">${esc(ch.sub)}</span></span>
+      ${S.cleared[i]?'<span class="chdone">修了</span>':
+        `<span class="gauge">${Array.from({length:GOAL},(_,k)=>`<span class="gp ${k<S.gauges[i]?"on":""}"></span>`).join("")}</span>`}
+    </button>`;
+    if(ch.tier==="基本")basic+=row;else jitsu+=row;
+  });
+  const acc=S.solved?Math.round(S.correct/S.solved*100):0;
+  app.innerHTML=`
+  <div class="header"><h1>二次関数<span class="roma">実戦攻略</span></h1><div class="tag">基本＋実戦の全19章｜対称移動・文字入り対応</div></div>
+  ${S.sotsugyo?`<div class="card center"><div class="bighanko">実戦<br>制覇</div><p class="smallnote">卒業試験合格済み。教科書の二次関数は完全装備。</p></div>`:""}
+  <div class="secttl">基本の章（超基礎から）</div>
+  <div class="card">${basic}</div>
+  <div class="secttl">実戦の章（教科書の実践レベル）</div>
+  <div class="card">${jitsu}</div>
+  ${allClear?`<button class="bigbtn ${S.sotsugyo?"ghost":"blue"}" onclick="startExam()">${S.sotsugyo?"卒業試験にもう一度挑む":"卒業試験（12問・"+EXAM_PASS+"問で合格）"}</button>`:
+   `<p class="smallnote center" style="margin-bottom:10px">全19章修了で卒業試験が解放（あと${CHAPTERS.length-doneCount}章）</p>`}
+  <p class="smallnote center">各章、最初に手本つき。正解＋1・まちがい−${PENALTY}、${GOAL}ポイントで修了<br>これまで ${S.solved}問 ／ 正答率 ${acc}%${storageOK?"":"<br>※この環境では進捗が保存されません"}</p>`;
+  window.scrollTo(0,0);
+}
+
+/* ---------- 手本（レッスン） ---------- */
+function startCh(ci){
+  ses={mode:"ch",ci,lastKey:null};
+  const ch=CHAPTERS[ci];
+  app.innerHTML=`
+  <div class="qtop">
+    <button class="backbtn" onclick="home()">← もどる</button>
+    <div class="qmid">第${ch.no}章　${esc(ch.name)}</div>
+    <div class="qcnt"></div>
+  </div>
+  <div class="lesson">
+    <div class="lttl">手本：解き方をまず1回見る</div>
+    <div class="lex">${esc(ch.lesson.ex)}</div>
+    ${ch.lesson.steps.map((s,i)=>`<div class="step"><span class="sn">${i+1}</span><span>${esc(s)}</span></div>`).join("")}
+  </div>
+  <button class="bigbtn blue" onclick="nextQ()">問題をはじめる</button>
+  <button class="bigbtn ghost" onclick="home()">章一覧にもどる</button>`;
+  window.scrollTo(0,0);
+}
+
+function newProb(ci){
+  let p,tries=0;
+  do{p=CHAPTERS[ci].gen();tries++}while(ses&&ses.lastKey===p.key&&tries<12);
+  if(ses)ses.lastKey=p.key;
+  p.ci=ci;
+  return p;
+}
+function nextQ(){
+  ses.prob=newProb(ses.ci);
+  drawProblem();
+}
+
+function drawProblem(){
+  ses.locked=false;
+  const p=ses.prob;
+  const ch=CHAPTERS[p.ci];
+  const gaugeHtml = ses.mode==="ch"
+    ?`<div class="gaugebar"><span class="lbl">第${ch.no}章</span>${Array.from({length:GOAL},(_,k)=>`<span class="gp ${k<S.gauges[p.ci]?"on":""}"></span>`).join("")}</div>`:"";
+  const cnt = ses.mode==="exam"?`${ses.idx+1} / ${ses.list.length}`:"";
+  let body="";
+  if(p.type==="mc"){
+    const order=shuffle(p.choices.map((_,i)=>i));
+    const marks=["ア","イ","ウ","エ"];
+    body=`<div class="choices">${order.map((ci2,vi)=>`
+      <button class="choice" data-ci="${ci2}" onclick="answerMC(${ci2},this)">
+        <span class="ck">${marks[vi]}</span><span>${p.choices[ci2]}</span>
+      </button>`).join("")}</div>`;
+  }else{
+    gsel={p:null,q:null,dir:null};
+    body=`
+    <div class="gwrap" id="gwrap">${gridSVG(``,true)}</div>
+    <div class="gstatus" id="gstatus">頂点の位置をタップしてね</div>
+    <div class="dirrow">
+      <button class="dirbtn" id="dirU" onclick="pickDir(-1)">上に凸（山）</button>
+      <button class="dirbtn" id="dirD" onclick="pickDir(1)">下に凸（谷）</button>
+    </div>
+    <button class="submitbtn" id="gsub" onclick="answerGraph()" disabled>判定する</button>`;
+  }
+  app.innerHTML=`
+  <div class="qtop">
+    <button class="backbtn" onclick="home()">← もどる</button>
+    <div class="qmid">${ses.mode==="exam"?"卒業試験":"第"+ch.no+"章　"+esc(ch.name)}</div>
+    <div class="qcnt">${cnt}</div>
+  </div>
+  ${gaugeHtml}
+  <div class="qcard">
+    <span class="qlabel">${ch.tier}</span>
+    <div class="statement">${esc(p.st)}</div>
+    ${p.qIsHtml? p.q : (p.q?`<div class="mathbig">${esc(p.q)}</div>`:"")}
+    ${p.type==="graph"?`<div class="mathbig" style="margin-top:4px">${esc(p.tex)}</div>`:""}
+    <div class="markwrap" id="markwrap"></div>
+  </div>
+  ${body}
+  <div id="after"></div>`;
+  window.scrollTo(0,0);
+}
+
+/* ---------- グラフ入力 ---------- */
+function pickVertex(x,y){
+  if(ses.locked)return;
+  gsel.p=x;gsel.q=y;
+  redrawUserGraph();
+}
+function pickDir(d){
+  if(ses.locked)return;
+  gsel.dir=d;
+  document.getElementById("dirU").classList.toggle("sel",d===-1);
+  document.getElementById("dirD").classList.toggle("sel",d===1);
+  redrawUserGraph();
+}
+function redrawUserGraph(){
+  let inner="";
+  if(gsel.p!==null){
+    inner+=`<circle class="gdot user" cx="${X2S(gsel.p)}" cy="${Y2S(gsel.q)}" r="6"/>`;
+    if(gsel.dir!==null)inner+=`<path class="gcurve" d="${parabolaPath(gsel.dir,gsel.p,gsel.q)}"/>`;
+  }
+  document.getElementById("gwrap").innerHTML=gridSVG(inner,!ses.locked);
+  const st=document.getElementById("gstatus");
+  if(gsel.p===null)st.textContent="頂点の位置をタップしてね";
+  else if(gsel.dir===null)st.textContent=`頂点 ( ${gsel.p} , ${gsel.q} ) ← 次は向きを選ぼう`;
+  else st.textContent=`頂点 ( ${gsel.p} , ${gsel.q} )・${gsel.dir>0?"下に凸":"上に凸"}　→ 判定へ`;
+  document.getElementById("gsub").disabled=!(gsel.p!==null&&gsel.dir!==null);
+}
+function answerGraph(){
+  const p=ses.prob;
+  ses.locked=true;
+  const ok = gsel.p===p.p && gsel.q===p.q && gsel.dir===p.a;
+  let inner=`<path class="gcurve ans" d="${parabolaPath(p.a,p.p,p.q)}"/><circle class="gdot" cx="${X2S(p.p)}" cy="${Y2S(p.q)}" r="5"/>`;
+  if(gsel.p!==null){
+    inner+=`<circle class="gdot user" cx="${X2S(gsel.p)}" cy="${Y2S(gsel.q)}" r="6"/>`;
+    if(gsel.dir!==null)inner+=`<path class="gcurve" d="${parabolaPath(gsel.dir,gsel.p,gsel.q)}" opacity="0.5"/>`;
+  }
+  document.getElementById("gwrap").innerHTML=gridSVG(inner,false);
+  document.getElementById("gsub").disabled=true;
+  document.getElementById("gstatus").textContent= ok?"赤の点線＝正解の曲線とピッタリ一致！":"赤の点線が正解の曲線（青が君の答え）";
+  finish(ok);
+}
+function answerMC(ci,btn){
+  if(ses.locked)return;
+  ses.locked=true;
+  document.querySelectorAll(".choice").forEach(b=>{
+    b.disabled=true;
+    const bci=Number(b.dataset.ci);
+    if(bci===0)b.classList.add("correct");
+    else if(b===btn)b.classList.add("wrongpick");
+    else b.classList.add("dim");
+  });
+  finish(ci===0);
+}
+
+function finish(ok){
+  const p=ses.prob;
+  document.getElementById("markwrap").innerHTML= ok
+   ?`<svg viewBox="0 0 100 100"><circle class="mark-o" cx="50" cy="50" r="42"/></svg>`
+   :`<svg viewBox="0 0 100 100"><path class="mark-x" d="M25 55 L45 75 L80 25" transform="rotate(8 50 50)"/></svg>`;
+  S.solved++;if(ok)S.correct++;
+  const stepsHtml=`<div class="kaisetsu"><div class="kttl">${ok?"○ 正解！　手順でダメ押し":"✗ おしい！　この手順を声に出して読もう"}</div>
+    ${p.steps.map((s,i)=>`<div class="step"><span class="sn">${i+1}</span><span>${s}</span></div>`).join("")}</div>`;
+  if(ses.mode==="ch"){
+    let gtxt="";
+    if(ok){S.gauges[p.ci]=Math.min(GOAL,S.gauges[p.ci]+1);gtxt=`<div class="gchange up">ゲージ ＋1</div>`}
+    else{const b2=Math.min(PENALTY,S.gauges[p.ci]);S.gauges[p.ci]-=b2;gtxt=`<div class="gchange down">ゲージ −${b2}</div>`}
+    const clearNow = S.gauges[p.ci]>=GOAL && !S.cleared[p.ci];
+    if(clearNow)S.cleared[p.ci]=true;
+    save();
+    document.getElementById("after").innerHTML=`
+      ${gtxt}${stepsHtml}
+      <button class="nextbtn" onclick="${clearNow?"chClear()":"nextQ()"}">${clearNow?"章クリア！ →":"次の問題へ →"}</button>`;
+  }else{
+    ses.results.push(ok);
+    save();
+    document.getElementById("after").innerHTML=`
+      ${stepsHtml}
+      <button class="nextbtn" onclick="examNext()">次へ →</button>`;
+  }
+  document.querySelector(".nextbtn")?.focus();
+}
+function chClear(){
+  const ci=ses.prob.ci;
+  const doneCount=S.cleared.filter(Boolean).length;
+  const allClear=doneCount===CHAPTERS.length;
+  app.innerHTML=`
+  <div class="header"><h1>二次関数<span class="roma">実戦攻略</span></h1></div>
+  <div class="card center">
+    <div class="bighanko">第${CHAPTERS[ci].no}章<br>修了</div>
+    <div class="levelup">「${esc(CHAPTERS[ci].name)}」クリア！</div>
+    ${allClear?`<p class="smallnote" style="margin-bottom:14px">全19章制覇！　卒業試験が解放された。</p>
+      <button class="bigbtn blue" onclick="startExam()">卒業試験に挑む</button>`:
+      `<p class="smallnote" style="margin-bottom:14px">残り ${CHAPTERS.length-doneCount}章。</p>
+      <button class="bigbtn blue" onclick="home()">章一覧にもどる</button>`}
+    <button class="bigbtn ghost" onclick="startCh(${ci})">この章をもう少し練習する</button>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+/* ---------- 卒業試験 ---------- */
+function startExam(){
+  ses={mode:"exam",idx:0,results:[],lastKey:null};
+  ses.list=EXAM_CHAPS.slice();
+  examDraw();
+}
+function examDraw(){
+  ses.prob=newProb(ses.list[ses.idx]);
+  drawProblem();
+}
+function examNext(){
+  ses.idx++;
+  if(ses.idx>=ses.list.length)return examResult();
+  examDraw();
+}
+function examResult(){
+  const n=ses.results.filter(Boolean).length;
+  const pass=n>=EXAM_PASS;
+  if(pass){S.sotsugyo=true;save()}
+  app.innerHTML=`
+  <div class="header"><h1>二次関数<span class="roma">卒業試験</span></h1></div>
+  <div class="card center">
+    ${pass?'<div class="bighanko">実戦<br>制覇</div>':""}
+    <p style="font-family:var(--fd);font-weight:900;font-size:15px;color:var(--ink-soft)">結果：${n} / ${ses.list.length}</p>
+    <div class="levelup" style="${pass?"":"color:var(--pen-blue-deep)"}">${pass?"合格！！":"あと一歩…！"}</div>
+    <p class="smallnote" style="margin-bottom:14px">${pass?"対称移動も文字入りも込みで、教科書の二次関数は完成。":EXAM_PASS+"問正解で合格。弱い章を特訓してから再挑戦しよう。"}</p>
+    ${pass?"":'<button class="bigbtn blue" onclick="startExam()">もう一度挑戦</button>'}
+    <button class="bigbtn ghost" onclick="home()">章一覧にもどる</button>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+(async function(){await load();home()})();
+</script>
+</body>
+</html>
