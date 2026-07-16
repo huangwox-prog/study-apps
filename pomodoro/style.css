@@ -1,0 +1,223 @@
+:root {
+  --bg: #f4f2ee;
+  --surface: #ffffff;
+  --text: #2b2a28;
+  --text-dim: #8a8781;
+  --accent: #e0663f;
+  --accent-soft: #f4d4c6;
+  --short: #4f8a6d;
+  --short-soft: #d3e6da;
+  --long: #4a6fa5;
+  --long-soft: #d6e0ef;
+  --track: #e8e5df;
+  --shadow: 0 20px 50px -20px rgba(43, 42, 40, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1b19;
+    --surface: #262421;
+    --text: #f2efe9;
+    --text-dim: #9c988f;
+    --accent: #f0805a;
+    --accent-soft: #4a2e22;
+    --short: #6bb08a;
+    --short-soft: #234034;
+    --long: #7ea1d6;
+    --long-soft: #24334a;
+    --track: #34322e;
+    --shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  font-family: -apple-system, "Hiragino Sans", "Yu Gothic", "Segoe UI", system-ui, sans-serif;
+  color: var(--text);
+  transition: background 0.4s ease;
+}
+
+.app {
+  width: min(380px, 90vw);
+  background: var(--surface);
+  border-radius: 28px;
+  padding: 28px 28px 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  transition: background 0.4s ease;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--track);
+  padding: 4px;
+  border-radius: 999px;
+  width: 100%;
+}
+
+.mode-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.mode-tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.timer-ring {
+  position: relative;
+  width: 240px;
+  height: 240px;
+}
+
+.ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-track {
+  fill: none;
+  stroke: var(--track);
+  stroke-width: 10;
+}
+
+.ring-progress {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 565.48;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.9s linear, stroke 0.3s ease;
+}
+
+.app[data-mode="short"] .ring-progress { stroke: var(--short); }
+.app[data-mode="long"] .ring-progress { stroke: var(--long); }
+
+.time-display {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+#time {
+  font-size: 3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.session-label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.btn:active { transform: scale(0.94); }
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 14px 40px;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px -8px var(--accent);
+}
+
+.app[data-mode="short"] .btn-primary { background: var(--short); box-shadow: 0 10px 24px -8px var(--short); }
+.app[data-mode="long"] .btn-primary { background: var(--long); box-shadow: 0 10px 24px -8px var(--long); }
+
+.btn-ghost {
+  background: var(--track);
+  color: var(--text);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 4px;
+  border-top: 1px solid var(--track);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.stat-name {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--track);
+  transition: background 0.3s ease;
+}
+
+.dot.filled {
+  background: var(--accent);
+}

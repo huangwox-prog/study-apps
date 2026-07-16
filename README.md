@@ -12,6 +12,9 @@
 
 ## 収録アプリ
 
+### 学習ツール
+- [ポモドーロタイマー](https://huangwox-prog.github.io/study-apps/pomodoro/) — 作業25分・小休憩5分・長休憩15分。集中セッション数を自動記録
+
 ### 数学Ⅰ(総合型選抜・口頭試問対策)
 - [二次関数 実戦攻略](https://huangwox-prog.github.io/study-apps/nijikansu-jissen.html) — 平方完成・最大最小など二次関数の実戦演習
 - [数Ⅰ特訓帳](https://huangwox-prog.github.io/study-apps/sugaku1-tokkun.html) — 数と式・集合と命題 全31テーマ93問。苦手問題の復習機能つき

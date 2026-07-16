@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ポモドーロタイマー</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app" data-mode="work">
+    <header class="mode-tabs">
+      <button class="mode-tab active" data-mode="work">作業</button>
+      <button class="mode-tab" data-mode="short">小休憩</button>
+      <button class="mode-tab" data-mode="long">長休憩</button>
+    </header>
+
+    <div class="timer-ring">
+      <svg viewBox="0 0 200 200" class="ring-svg">
+        <circle class="ring-track" cx="100" cy="100" r="90" />
+        <circle class="ring-progress" cx="100" cy="100" r="90" />
+      </svg>
+      <div class="time-display">
+        <span id="time">25:00</span>
+        <span class="session-label" id="sessionLabel">作業セッション</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="resetBtn" class="btn btn-ghost" title="リセット">↺</button>
+      <button id="startBtn" class="btn btn-primary">開始</button>
+      <button id="skipBtn" class="btn btn-ghost" title="スキップ">⏭</button>
+    </div>
+
+    <footer class="stats">
+      <div class="stat">
+        <span class="stat-value" id="completedCount">0</span>
+        <span class="stat-name">完了セッション</span>
+      </div>
+      <div class="dots" id="cycleDots"></div>
+      <div class="stat">
+        <span class="stat-value" id="totalMinutes">0</span>
+        <span class="stat-name">集中分数</span>
+      </div>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
