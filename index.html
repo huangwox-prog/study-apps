@@ -77,6 +77,46 @@
   a.app span.desc{display:block; font-size:.82rem; color:var(--ink-dim); margin-top:4px;}
   a.app em{display:block; font-style:normal; font-size:.68rem; color:rgba(169,177,207,.7); margin-top:7px; letter-spacing:.02em;}
 
+  /* ===== 旗艦アプリ(本気で作った方) ===== */
+  .flagship-wrap{margin:38px 4px 0;}
+  .flagship-tag{
+    display:inline-flex; align-items:center; gap:6px; font-size:.7rem; font-weight:700;
+    letter-spacing:.1em; color:#0e1220; background:linear-gradient(90deg,#bcd0ff,#9fe8d4);
+    padding:4px 12px; border-radius:999px; margin-bottom:12px;
+  }
+  a.flagship{
+    position:relative; display:block; overflow:hidden; text-decoration:none; color:inherit;
+    padding:26px 24px 24px; border-radius:22px;
+    background:
+      radial-gradient(420px 220px at var(--mx,20%) var(--my,0%), rgba(147,160,232,.35), transparent 70%),
+      linear-gradient(160deg, rgba(147,160,232,.14), rgba(143,217,196,.10));
+    border:1px solid rgba(147,160,232,.35);
+    backdrop-filter:blur(22px) saturate(150%); -webkit-backdrop-filter:blur(22px) saturate(150%);
+    box-shadow:0 20px 60px -20px rgba(147,160,232,.35);
+    transition:transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s cubic-bezier(.16,1,.3,1), border-color .5s ease;
+  }
+  a.flagship:hover{
+    transform:translateY(-4px);
+    border-color:rgba(147,160,232,.7);
+    box-shadow:0 26px 70px -18px rgba(147,160,232,.55), 0 0 60px -10px rgba(147,160,232,.4);
+  }
+  a.flagship h3{margin:0; font-size:1.28rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:10px;}
+  a.flagship h3 .arrow{margin-left:auto; font-size:1rem; opacity:.5; transition:transform .4s cubic-bezier(.16,1,.3,1), opacity .4s ease;}
+  a.flagship:hover h3 .arrow{transform:translateX(4px); opacity:1;}
+  a.flagship p.lead{margin:10px 0 0; font-size:.88rem; color:var(--ink-dim); max-width:520px;}
+  a.flagship .feat-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;}
+  a.flagship .feat{
+    font-size:.7rem; color:#dfe4ff; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.14); padding:4px 11px; border-radius:999px;
+  }
+  a.flagship em{display:block; font-style:normal; font-size:.68rem; color:rgba(169,177,207,.6); margin-top:16px;}
+
+  .subgroup-head{
+    display:flex; align-items:center; gap:8px; margin:20px 4px 10px;
+  }
+  .subgroup-head span.label{font-size:.76rem; color:var(--ink-dim); font-weight:600;}
+  .subgroup-head span.line{flex:1; height:1px; background:var(--line);}
+
   footer{position:relative; z-index:1; max-width:760px; margin:20px auto 0; padding:22px 20px 44px; font-size:.78rem; color:var(--ink-dim); text-align:center; border-top:1px solid var(--line);}
   footer a{color:#bcc6ff; text-decoration:none;}
   footer a:hover{text-decoration:underline;}
@@ -103,13 +143,24 @@
     </a>
   </div>
 
-  <div class="section-head"><span class="dot" style="background:var(--c-math)"></span><h2>数学Ⅰ（総合型選抜・口頭試問対策）</h2><span class="count">5</span></div>
-  <div class="grid">
-    <a class="app" data-c="math" href="math-app/">
-      <b>数学Ⅰ 総合学習アプリ<span class="arrow">→</span></b>
-      <span class="desc">数と式・二次関数・三角比を統合。単元進行・グラフ描画・模試生成・習熟度管理つき</span>
-      <em>制作: 2026年7月10日</em>
+  <div class="flagship-wrap">
+    <span class="flagship-tag">★ FLAGSHIP</span>
+    <a class="flagship" href="math-app/" id="flagshipCard">
+      <h3>数学Ⅰ 総合学習アプリ<span class="arrow">→</span></h3>
+      <p class="lead">数と式・二次関数・三角比を1本に統合。単元ごとの診断からレッスン、演習、確認テストまでを一気通貫で設計した、本気で作り込んだ学習エンジン。</p>
+      <div class="feat-row">
+        <span class="feat">単元進行管理</span>
+        <span class="feat">グラフ描画</span>
+        <span class="feat">模試自動生成</span>
+        <span class="feat">習熟度トラッキング</span>
+      </div>
+      <em>制作: 2026年7月10日〜　継続開発中</em>
     </a>
+  </div>
+
+  <div class="subgroup-head"><span class="label">弱点克服のために作った単発アプリ</span><span class="line"></span></div>
+  <div class="section-head" style="margin-top:8px;"><span class="dot" style="background:var(--c-math)"></span><h2>数学Ⅰ（総合型選抜・口頭試問対策）</h2><span class="count">4</span></div>
+  <div class="grid">
     <a class="app" data-c="math" href="nijikansu-jissen.html">
       <b>二次関数 実戦攻略<span class="arrow">→</span></b>
       <span class="desc">数Ⅰ第2章。平方完成から最大最小・グラフまで実戦形式で</span>
@@ -137,7 +188,8 @@
     </a>
   </div>
 
-  <div class="section-head"><span class="dot" style="background:var(--c-fe)"></span><h2>基本情報技術者試験（FE 科目B）</h2><span class="count">10</span></div>
+  <div class="subgroup-head"><span class="label">弱点克服のために作った単発アプリ</span><span class="line"></span></div>
+  <div class="section-head" style="margin-top:8px;"><span class="dot" style="background:var(--c-fe)"></span><h2>基本情報技術者試験（FE 科目B）</h2><span class="count">10</span></div>
   <div class="grid">
     <a class="app" data-c="fe" href="fe_kamoku_b_full_mock.html">
       <b>通し1セット（本番形式・IRT採点）<span class="arrow">→</span></b>
@@ -198,7 +250,7 @@
 </footer>
 
 <script>
-  document.querySelectorAll('a.app').forEach(el=>{
+  document.querySelectorAll('a.app, a.flagship').forEach(el=>{
     el.addEventListener('pointermove', e=>{
       const r = el.getBoundingClientRect();
       el.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');

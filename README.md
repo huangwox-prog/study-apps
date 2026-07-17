@@ -15,8 +15,10 @@
 ### 学習ツール
 - [ポモドーロタイマー](https://huangwox-prog.github.io/study-apps/pomodoro/) — 作業25分・小休憩5分・長休憩15分。集中セッション数を自動記録
 
-### 数学Ⅰ(総合型選抜・口頭試問対策)
-- [数学Ⅰ 総合学習アプリ](https://huangwox-prog.github.io/study-apps/math-app/) — 数と式・二次関数・三角比を統合したReact製アプリ。グラフ描画・模試生成・習熟度管理つき（[ソースコード](https://github.com/huangwox-prog/study-apps/tree/main/math-app-src)）
+### ★ FLAGSHIP
+- [数学Ⅰ 総合学習アプリ](https://huangwox-prog.github.io/study-apps/math-app/) — 数と式・二次関数・三角比を統合したReact製アプリ。単元進行・グラフ描画・模試生成・習熟度管理つき。他の単発アプリと違い、要件定義から設計してコンポーネント単位で組み上げた本命プロジェクト（[ソースコード](https://github.com/huangwox-prog/study-apps/tree/main/math-app-src)）
+
+### 数学Ⅰ(弱点克服のための単発アプリ)
 - [二次関数 実戦攻略](https://huangwox-prog.github.io/study-apps/nijikansu-jissen.html) — 平方完成・最大最小など二次関数の実戦演習
 - [数Ⅰ特訓帳](https://huangwox-prog.github.io/study-apps/sugaku1-tokkun.html) — 数と式・集合と命題 全31テーマ93問。苦手問題の復習機能つき
 - [有理化道場](https://huangwox-prog.github.io/study-apps/yurika-dojo.html) — ルートの有理化を基礎から段階的に練習
