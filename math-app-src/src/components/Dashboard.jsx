@@ -42,8 +42,11 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam }) {
       {categories.map((cat) => {
         const catUnits = units.filter((u) => u.category === cat);
         return (
-          <section key={cat} style={{ marginBottom: 32 }}>
-            <h2 style={{ marginBottom: 14 }}>{CATEGORY_LABELS[cat]}</h2>
+          <section key={cat} className={`cat-${cat}`} style={{ marginBottom: 32 }}>
+            <h2 style={{ marginBottom: 14, display: "flex", alignItems: "center" }}>
+              <span className="cat-dot" />
+              {CATEGORY_LABELS[cat]}
+            </h2>
             <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {catUnits.map((unit, i) => {
                 const p = progress.units[unit.id];
@@ -69,8 +72,8 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam }) {
                         width: 34, height: 34, borderRadius: 10, flexShrink: 0,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontWeight: 700, fontSize: "0.9rem",
-                        background: mastery >= 70 ? "var(--success-soft)" : "var(--surface-2)",
-                        color: mastery >= 70 ? "var(--success)" : "var(--text-tertiary)",
+                        background: mastery >= 70 ? "var(--success-soft)" : "var(--accent-soft)",
+                        color: mastery >= 70 ? "var(--success)" : "var(--accent)",
                         transition: "background var(--dur) var(--ease)",
                       }}
                     >

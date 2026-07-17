@@ -16,6 +16,7 @@ export default function App() {
   }, []);
 
   let content = null;
+  let shellClass = "app-shell";
   if (view.screen === "home") {
     content = (
       <Dashboard
@@ -27,6 +28,8 @@ export default function App() {
     );
   } else if (view.screen === "unit") {
     const unit = ALL_UNITS.find((u) => u.id === view.unitId);
+    // 単元画面はカテゴリカラーのアクセントで統一する
+    shellClass = `app-shell cat-${unit.category}`;
     content = (
       <UnitFlow
         key={view.unitId}
@@ -42,5 +45,5 @@ export default function App() {
     );
   }
 
-  return <div className="app-shell">{content}</div>;
+  return <div className={shellClass}>{content}</div>;
 }

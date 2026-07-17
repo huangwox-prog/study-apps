@@ -1,33 +1,51 @@
-/* ============ デザイントークン ============ */
+/* ============ デザイントークン(Liquid Glass) ============ */
 :root {
-  /* ニュートラルベース(ライト) */
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --surface-2: #f4f4f2;
-  --border: #e7e5e2;
-  --border-strong: #d6d3cf;
-  --text: #1c1c1a;
-  --text-secondary: #55534e;
-  --text-tertiary: #8f8c85;
+  /* ベース(ライト): すりガラス越しに淡いグラデーションが透ける */
+  --bg: #eef0f7;
+  --text: #1b1c22;
+  --text-secondary: #4e5160;
+  --text-tertiary: #878a9a;
 
-  /* アクセント:深みのあるインディゴ + 落ち着いたセージグリーン */
-  --accent: #4a5588;
-  --accent-hover: #3d4775;
-  --accent-soft: #eceef6;
+  /* ガラス面 */
+  --glass: rgba(255, 255, 255, 0.52);
+  --glass-strong: rgba(255, 255, 255, 0.7);
+  --glass-soft: rgba(255, 255, 255, 0.32);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-border-soft: rgba(255, 255, 255, 0.4);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --glass-blur: 22px;
+
+  /* デフォルトアクセント(インディゴ)。カテゴリで上書きされる */
+  --accent: #4f5fc4;
+  --accent-hover: #4353b5;
+  --accent-soft: rgba(79, 95, 196, 0.13);
+  --accent-glow: rgba(79, 95, 196, 0.35);
   --accent-text: #ffffff;
-  --success: #57755c;
-  --success-soft: #eaf0eb;
-  --warn: #9a6b4f;
-  --warn-soft: #f5ede7;
-  --error: #96524f;
-  --error-soft: #f6ecea;
 
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 1px 3px rgba(28, 28, 26, 0.06);
-  --shadow: 0 4px 16px -4px rgba(28, 28, 26, 0.1);
-  --shadow-lg: 0 12px 40px -12px rgba(28, 28, 26, 0.18);
+  /* カテゴリカラー: 数と式=ブルー / 二次関数=バイオレット / 三角比=ティール */
+  --cat-ns: #3d6bc9;
+  --cat-ns-soft: rgba(61, 107, 201, 0.13);
+  --cat-ns-glow: rgba(61, 107, 201, 0.38);
+  --cat-qf: #8955c0;
+  --cat-qf-soft: rgba(137, 85, 192, 0.13);
+  --cat-qf-glow: rgba(137, 85, 192, 0.38);
+  --cat-tri: #1f8f80;
+  --cat-tri-soft: rgba(31, 143, 128, 0.14);
+  --cat-tri-glow: rgba(31, 143, 128, 0.38);
+
+  --success: #3d8a5a;
+  --success-soft: rgba(61, 138, 90, 0.14);
+  --warn: #a5702f;
+  --warn-soft: rgba(165, 112, 47, 0.14);
+  --error: #b0504c;
+  --error-soft: rgba(176, 80, 76, 0.13);
+
+  --radius-sm: 12px;
+  --radius: 18px;
+  --radius-lg: 26px;
+  --shadow-sm: 0 2px 8px rgba(30, 32, 50, 0.07);
+  --shadow: 0 8px 28px -8px rgba(30, 32, 50, 0.16);
+  --shadow-lg: 0 18px 50px -16px rgba(30, 32, 50, 0.28);
 
   /* なめらかモーション */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -41,31 +59,51 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #17171a;
-    --surface: #202024;
-    --surface-2: #2a2a2f;
-    --border: #34343a;
-    --border-strong: #45454d;
-    --text: #ececea;
-    --text-secondary: #b3b1ac;
-    --text-tertiary: #7d7b76;
+    --bg: #101018;
+    --text: #ececf2;
+    --text-secondary: #b0b2c0;
+    --text-tertiary: #797c8e;
 
-    --accent: #8b96cc;
-    --accent-hover: #9da8d8;
-    --accent-soft: #2b2e3d;
-    --accent-text: #17171a;
-    --success: #8fb096;
-    --success-soft: #26302a;
-    --warn: #c49a7e;
-    --warn-soft: #362c24;
-    --error: #c48884;
-    --error-soft: #372827;
+    --glass: rgba(28, 29, 40, 0.5);
+    --glass-strong: rgba(36, 37, 50, 0.66);
+    --glass-soft: rgba(24, 25, 36, 0.34);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-border-soft: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.22);
 
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 12px 40px -12px rgba(0, 0, 0, 0.55);
+    --accent: #93a0e8;
+    --accent-hover: #a5b1f0;
+    --accent-soft: rgba(147, 160, 232, 0.16);
+    --accent-glow: rgba(147, 160, 232, 0.4);
+    --accent-text: #12131c;
+
+    --cat-ns: #7ba3ee;
+    --cat-ns-soft: rgba(123, 163, 238, 0.16);
+    --cat-ns-glow: rgba(123, 163, 238, 0.42);
+    --cat-qf: #bd93e8;
+    --cat-qf-soft: rgba(189, 147, 232, 0.16);
+    --cat-qf-glow: rgba(189, 147, 232, 0.42);
+    --cat-tri: #5cc2b2;
+    --cat-tri-soft: rgba(92, 194, 178, 0.16);
+    --cat-tri-glow: rgba(92, 194, 178, 0.42);
+
+    --success: #7fbe97;
+    --success-soft: rgba(127, 190, 151, 0.16);
+    --warn: #cfa168;
+    --warn-soft: rgba(207, 161, 104, 0.16);
+    --error: #d08a86;
+    --error-soft: rgba(208, 138, 134, 0.15);
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow: 0 8px 28px -8px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 18px 50px -16px rgba(0, 0, 0, 0.65);
   }
 }
+
+/* カテゴリごとのアクセント上書き: 要素に .cat-ns / .cat-qf / .cat-tri を付ける */
+.cat-ns { --accent: var(--cat-ns); --accent-hover: var(--cat-ns); --accent-soft: var(--cat-ns-soft); --accent-glow: var(--cat-ns-glow); }
+.cat-qf { --accent: var(--cat-qf); --accent-hover: var(--cat-qf); --accent-soft: var(--cat-qf-soft); --accent-glow: var(--cat-qf-glow); }
+.cat-tri { --accent: var(--cat-tri); --accent-hover: var(--cat-tri); --accent-soft: var(--cat-tri-soft); --accent-glow: var(--cat-tri-glow); }
 
 /* ============ リセット & ベース ============ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -79,7 +117,32 @@ body {
   font-size: 1.0625rem;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
   transition: background var(--dur) var(--ease);
+}
+
+/* 背景に滲む色のブロブ(ガラス越しに透ける光) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(42% 38% at 12% 8%, rgba(61, 107, 201, 0.2), transparent 70%),
+    radial-gradient(46% 42% at 88% 22%, rgba(137, 85, 192, 0.18), transparent 70%),
+    radial-gradient(50% 44% at 22% 92%, rgba(31, 143, 128, 0.17), transparent 70%),
+    radial-gradient(36% 34% at 78% 78%, rgba(214, 143, 96, 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before {
+    background:
+      radial-gradient(42% 38% at 12% 8%, rgba(83, 118, 210, 0.24), transparent 70%),
+      radial-gradient(46% 42% at 88% 22%, rgba(146, 96, 205, 0.2), transparent 70%),
+      radial-gradient(50% 44% at 22% 92%, rgba(38, 150, 134, 0.18), transparent 70%),
+      radial-gradient(36% 34% at 78% 78%, rgba(190, 120, 80, 0.1), transparent 70%);
+  }
 }
 
 button {
@@ -115,6 +178,17 @@ h3 { font-size: 1.1rem; font-weight: 650; }
 .text-secondary { color: var(--text-secondary); }
 .text-tertiary { color: var(--text-tertiary); font-size: 0.9rem; }
 
+/* カテゴリ見出しのカラードット */
+.cat-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  margin-right: 10px;
+}
+
 /* 数式 */
 .math {
   font-family: var(--font-math);
@@ -139,25 +213,52 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   padding: 0 0.15em 0 0.05em;
 }
 
-/* ============ カード ============ */
+/* ============ ガラスカード ============ */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  position: relative;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  border: 1px solid var(--glass-border-soft);
   border-radius: var(--radius);
   padding: 24px;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 0.5px var(--glass-border-soft);
   transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
     border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 
+/* 上端をなでる光の反射 */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(168deg, rgba(255, 255, 255, 0.22), transparent 38%);
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card::before {
+    background: linear-gradient(168deg, rgba(255, 255, 255, 0.07), transparent 38%);
+  }
+}
+
+/* ホバーでアクセントカラーに縁取られて光る */
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow);
-  border-color: var(--border-strong);
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 10px 36px -8px var(--accent-glow),
+    inset 0 1px 0 var(--glass-highlight);
 }
 
 /* ============ ボタン ============ */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -165,50 +266,70 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   font-size: 1rem;
   font-weight: 600;
   padding: 12px 26px;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease),
-    box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+    box-shadow var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
 }
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.45; cursor: default; }
 .btn:disabled:active { transform: none; }
 
 .btn-primary {
-  background: var(--accent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, white), var(--accent));
   color: var(--accent-text);
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 6px 20px -6px var(--accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-primary:hover:not(:disabled) {
+  box-shadow:
+    0 8px 26px -6px var(--accent-glow),
+    0 0 0 1px var(--accent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
 
 .btn-secondary {
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid var(--glass-border);
   color: var(--text);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
 }
-.btn-secondary:hover:not(:disabled) { background: var(--surface-2); }
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent-glow);
+}
 
 .btn-ghost {
   color: var(--text-secondary);
   padding: 8px 14px;
+  border-radius: 999px;
 }
-.btn-ghost:hover { color: var(--text); background: var(--surface-2); border-radius: var(--radius-sm); }
+.btn-ghost:hover { color: var(--text); background: var(--glass-soft); }
 
 .btn-lg { font-size: 1.08rem; padding: 15px 34px; }
 
 /* ============ 進捗バー ============ */
 .progress-track {
   height: 8px;
-  background: var(--surface-2);
+  background: var(--glass-soft);
+  border: 0.5px solid var(--glass-border-soft);
   border-radius: 999px;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background: var(--accent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 75%, white), var(--accent));
   border-radius: 999px;
+  box-shadow: 0 0 8px var(--accent-glow);
   transition: width var(--dur-slow) var(--ease), background var(--dur) var(--ease);
 }
-.progress-fill.complete { background: var(--success); }
+.progress-fill.complete {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--success) 75%, white), var(--success));
+  box-shadow: 0 0 8px var(--success-soft);
+}
 
 /* ============ 選択肢 ============ */
 .choice-list { display: flex; flex-direction: column; gap: 12px; }
@@ -220,17 +341,20 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   width: 100%;
   text-align: left;
   padding: 16px 20px;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
+  background: var(--glass-soft);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1.5px solid var(--glass-border-soft);
   border-radius: var(--radius);
   font-size: 1.05rem;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
   transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease),
     transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
 .choice:hover:not(:disabled) {
   border-color: var(--accent);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 18px -6px var(--accent-glow), inset 0 1px 0 var(--glass-highlight);
 }
 .choice:disabled { cursor: default; }
 
@@ -241,30 +365,36 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: var(--surface-2);
+  border-radius: 10px;
+  background: var(--glass-strong);
+  border: 0.5px solid var(--glass-border-soft);
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-secondary);
   transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 
-.choice.selected { border-color: var(--accent); background: var(--accent-soft); }
-.choice.selected .choice-key { background: var(--accent); color: var(--accent-text); }
+.choice.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 18px -6px var(--accent-glow);
+}
+.choice.selected .choice-key { background: var(--accent); color: var(--accent-text); border-color: transparent; }
 
 .choice.correct {
   border-color: var(--success);
   background: var(--success-soft);
+  box-shadow: 0 0 0 1px var(--success), 0 4px 20px -6px var(--success-soft);
   animation: pulse-ok var(--dur-slow) var(--ease);
 }
-.choice.correct .choice-key { background: var(--success); color: #fff; }
+.choice.correct .choice-key { background: var(--success); color: #fff; border-color: transparent; }
 
 .choice.wrong {
   border-color: var(--error);
   background: var(--error-soft);
   animation: shake 0.4s var(--ease);
 }
-.choice.wrong .choice-key { background: var(--error); color: #fff; }
+.choice.wrong .choice-key { background: var(--error); color: #fff; border-color: transparent; }
 
 @keyframes pulse-ok {
   0% { transform: scale(1); }
@@ -282,10 +412,20 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   border-radius: var(--radius);
   padding: 18px 22px;
   margin-top: 18px;
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
   animation: feedback-in var(--dur) var(--ease) both;
 }
-.feedback.ok { background: var(--success-soft); border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); }
-.feedback.ng { background: var(--error-soft); border: 1px solid color-mix(in srgb, var(--error) 30%, transparent); }
+.feedback.ok {
+  background: var(--success-soft);
+  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+.feedback.ng {
+  background: var(--error-soft);
+  border: 1px solid color-mix(in srgb, var(--error) 35%, transparent);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
 
 .feedback .feedback-title {
   font-weight: 700;
@@ -306,17 +446,23 @@ h3 { font-size: 1.1rem; font-weight: 650; }
 /* ============ 数式入力パッド ============ */
 .mathpad-display {
   min-height: 64px;
-  background: var(--surface);
-  border: 1.5px solid var(--border-strong);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border: 1.5px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 14px 18px;
   font-size: 1.5rem;
   display: flex;
   align-items: center;
   overflow-x: auto;
-  transition: border-color var(--dur-fast) var(--ease);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
-.mathpad-display:focus-within, .mathpad-display.active { border-color: var(--accent); }
+.mathpad-display:focus-within, .mathpad-display.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 18px -8px var(--accent-glow);
+}
 .mathpad-display .cursor {
   display: inline-block;
   width: 2px;
@@ -335,21 +481,28 @@ h3 { font-size: 1.1rem; font-weight: 650; }
 }
 .pad-key {
   padding: 13px 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid var(--glass-border-soft);
   border-radius: var(--radius-sm);
   font-size: 1.12rem;
   font-family: var(--font-math);
   font-weight: 500;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
   transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease),
-    border-color var(--dur-fast) var(--ease);
+    border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
-.pad-key:hover { background: var(--surface-2); border-color: var(--border-strong); }
+.pad-key:hover {
+  background: var(--glass-strong);
+  border-color: var(--accent);
+  box-shadow: 0 3px 14px -6px var(--accent-glow), inset 0 1px 0 var(--glass-highlight);
+}
 .pad-key:active { transform: scale(0.93); }
-.pad-key.pad-op { background: var(--surface-2); }
+.pad-key.pad-op { background: var(--accent-soft); }
 .pad-key.pad-danger { color: var(--error); }
 
-/* ============ ドット/バッジ ============ */
+/* ============ バッジ ============ */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -358,14 +511,16 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   font-weight: 650;
   padding: 4px 12px;
   border-radius: 999px;
-  background: var(--surface-2);
+  background: var(--glass-strong);
+  border: 0.5px solid var(--glass-border-soft);
   color: var(--text-secondary);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
-.badge.accent { background: var(--accent-soft); color: var(--accent); }
-.badge.ok { background: var(--success-soft); color: var(--success); }
+.badge.accent { background: var(--accent-soft); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+.badge.ok { background: var(--success-soft); color: var(--success); border-color: color-mix(in srgb, var(--success) 30%, transparent); }
 
 /* ============ その他 ============ */
-.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.divider { height: 1px; background: var(--glass-border-soft); margin: 20px 0; }
 
 .top-bar {
   display: flex;
@@ -387,3 +542,10 @@ h3 { font-size: 1.1rem; font-weight: 650; }
 .fade-stagger > *:nth-child(8) { animation-delay: 0.3s; }
 
 ::selection { background: var(--accent-soft); }
+
+/* backdrop-filter未対応ブラウザへのフォールバック */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card, .choice, .btn-secondary, .mathpad-display, .pad-key, .badge, .feedback {
+    background: var(--glass-strong);
+  }
+}

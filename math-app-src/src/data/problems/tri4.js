@@ -225,5 +225,31 @@ export default {
       answer: 0,
       exp: "3辺→角は余弦定理の変形 `cos A=frac(b^2+c^2-a^2,2bc)` の出番。",
     },
+    {
+      id: "tri4-t9", type: "choice", level: 3,
+      q: "【応用】3辺が `3, 5, 7` の三角形の、いちばん大きい角の大きさは?",
+      choices: ["`120°`", "`150°`", "`135°`", "`90°`"],
+      answer: 0,
+      exp: "最大角は最大辺7の向かい。`cos θ=frac(9+25-49,2×3×5)=frac(-15,30)=-frac(1,2)` → `120°`。",
+    },
+    {
+      id: "tri4-t10", type: "choice", level: 3,
+      q: "【応用】`b=2, c=3, cos A=frac(1,3)` のとき、辺 `a` は?",
+      choices: ["`3`", "`sqrt(13)`", "`sqrt(11)`", "`sqrt(17)`"],
+      answer: 0,
+      exp: "`a^2=4+9-2×2×3×frac(1,3)=13-4=9` → `a=3`。cosの値が直接与えられても使い方は同じ。",
+    },
+    {
+      id: "tri4-t11", type: "choice", level: 3,
+      q: "【応用】`A=60°, B=45°` の三角形で、辺の比 `a:b` は?",
+      choices: [
+        "`sqrt(3):sqrt(2)`",
+        "`sqrt(2):sqrt(3)`",
+        "`3:2`",
+        "`2:sqrt(3)`",
+      ],
+      answer: 0,
+      exp: "正弦定理より `a:b=sin A:sin B=frac(sqrt(3),2):frac(1,sqrt(2))=sqrt(3):sqrt(2)`。辺の比はsinの比。",
+    },
   ],
 };

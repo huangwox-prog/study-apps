@@ -109,6 +109,11 @@ export default function UnitFlow({ unit, progress, onExit }) {
           <button className="btn btn-primary btn-lg" onClick={() => setStage("diag")}>
             診断をはじめる
           </button>
+          <div style={{ marginTop: 18 }}>
+            <button className="btn btn-ghost" onClick={() => setStage("practice")}>
+              診断をスキップして演習へ →
+            </button>
+          </div>
         </div>
       </div>
     );
