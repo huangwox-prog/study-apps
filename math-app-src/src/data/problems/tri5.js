@@ -44,6 +44,7 @@ export default {
         "`S=frac(1,2)a sin A`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "2辺とその間の角のsin: `S=frac(1,2)bc sin A`。",
     },
     {
@@ -51,6 +52,7 @@ export default {
       q: "`b=4, c=5, A=30°` の三角形の面積は?",
       choices: ["`5`", "`10`", "`5sqrt(3)`", "`frac(5,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×4×5×sin 30°=10×frac(1,2)=5`。",
     },
     {
@@ -63,6 +65,7 @@ export default {
         "`frac(sqrt(3),2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×2×3×frac(sqrt(3),2)=frac(3sqrt(3),2)`。",
     },
     {
@@ -70,6 +73,7 @@ export default {
       q: "`b=3, c=4, A=120°` の三角形の面積は?",
       choices: ["`3sqrt(3)`", "`6`", "`-3sqrt(3)`", "`6sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin 120°=frac(sqrt(3),2)` なので `S=frac(1,2)×12×frac(sqrt(3),2)=3sqrt(3)`。鈍角でも正。",
     },
     {
@@ -82,6 +86,7 @@ export default {
         "面積は求められない",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "「余弦定理→相互関係→面積公式」の3ステップが定番。",
     },
   ],
@@ -91,6 +96,7 @@ export default {
       q: "`b=6, c=4, A=30°` の三角形の面積は?",
       choices: ["`6`", "`12`", "`6sqrt(3)`", "`3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×6×4×frac(1,2)=6`。",
     },
     {
@@ -98,6 +104,7 @@ export default {
       q: "`b=5, c=8, A=90°` の三角形の面積は?(`sin 90°=1`)",
       choices: ["`20`", "`40`", "`10`", "`20sqrt(2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×5×8×1=20`。直角三角形の面積そのもの。",
     },
     {
@@ -105,6 +112,7 @@ export default {
       q: "`b=2, c=2, A=45°` の三角形の面積は?",
       choices: ["`sqrt(2)`", "`2`", "`2sqrt(2)`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×2×2×frac(1,sqrt(2))=frac(2,sqrt(2))=sqrt(2)`。",
     },
     {
@@ -112,6 +120,7 @@ export default {
       q: "`a=3, b=4, C=60°` の三角形の面積は?",
       choices: ["`3sqrt(3)`", "`6`", "`6sqrt(3)`", "`frac(3sqrt(3),2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "間の角がCなので `S=frac(1,2)ab sin C=frac(1,2)×12×frac(sqrt(3),2)=3sqrt(3)`。",
     },
     {
@@ -119,6 +128,7 @@ export default {
       q: "`b=4, c=6, A=135°` の三角形の面積は?",
       choices: ["`6sqrt(2)`", "`12sqrt(2)`", "`6`", "`12`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin 135°=frac(1,sqrt(2))`: `S=frac(1,2)×24×frac(1,sqrt(2))=frac(12,sqrt(2))=6sqrt(2)`。",
     },
     {
@@ -126,6 +136,7 @@ export default {
       q: "面積が `3sqrt(3)`、`b=4, A=60°` のとき、辺 `c` は?",
       choices: ["`3`", "`6`", "`2sqrt(3)`", "`4`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`3sqrt(3)=frac(1,2)×4×c×frac(sqrt(3),2)=c sqrt(3)` → `c=3`。公式を逆向きに使う。",
     },
     {
@@ -138,6 +149,7 @@ export default {
         "`frac(15sqrt(3),2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`A=120°` なので `sin A=frac(sqrt(3),2)`。`S=frac(1,2)×5×3×frac(sqrt(3),2)=frac(15sqrt(3),4)`。",
     },
     {
@@ -150,6 +162,7 @@ export default {
         "`frac(sqrt(15),4)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin^2 A=1-frac(49,64)=frac(15,64)` → `sin A=frac(sqrt(15),8)`。",
     },
     {
@@ -162,6 +175,7 @@ export default {
         "`frac(3sqrt(15),8)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×3×4×frac(sqrt(15),8)=frac(12sqrt(15),16)=frac(3sqrt(15),4)`。",
     },
     {
@@ -169,6 +183,7 @@ export default {
       q: "1辺が4の正三角形の面積は?",
       choices: ["`4sqrt(3)`", "`8sqrt(3)`", "`4`", "`16sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×4×4×sin 60°=8×frac(sqrt(3),2)=4sqrt(3)`。",
     },
   ],
@@ -178,6 +193,7 @@ export default {
       q: "`b=8, c=5, A=30°` の三角形の面積は?",
       choices: ["`10`", "`20`", "`10sqrt(3)`", "`5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×8×5×frac(1,2)=10`。",
     },
     {
@@ -185,6 +201,7 @@ export default {
       q: "`b=3, c=4, A=60°` の三角形の面積は?",
       choices: ["`3sqrt(3)`", "`6`", "`6sqrt(3)`", "`3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×12×frac(sqrt(3),2)=3sqrt(3)`。",
     },
     {
@@ -192,6 +209,7 @@ export default {
       q: "`a=sqrt(2), b=sqrt(2), C=135°` の三角形の面積は?",
       choices: ["`frac(1,sqrt(2))`", "`1`", "`sqrt(2)`", "`frac(1,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×sqrt(2)×sqrt(2)×frac(1,sqrt(2))=frac(2,2sqrt(2))=frac(1,sqrt(2))`。",
     },
     {
@@ -199,6 +217,7 @@ export default {
       q: "面積が6、`b=3, c=8` のとき、`sin A` は?",
       choices: ["`frac(1,2)`", "`frac(1,4)`", "`frac(sqrt(3),2)`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`6=frac(1,2)×3×8×sin A=12 sin A` → `sin A=frac(1,2)`。",
     },
     {
@@ -206,6 +225,7 @@ export default {
       q: "1辺が2の正三角形の面積は?",
       choices: ["`sqrt(3)`", "`2sqrt(3)`", "`frac(sqrt(3),2)`", "`2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×2×2×frac(sqrt(3),2)=sqrt(3)`。",
     },
     {
@@ -218,6 +238,7 @@ export default {
         "`frac(sqrt(21),2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×2×3×sin 60°=3×frac(sqrt(3),2)=frac(3sqrt(3),2)`。",
     },
     {
@@ -225,6 +246,7 @@ export default {
       q: "`b=5, c=4, A=120°` の三角形の面積は?",
       choices: ["`5sqrt(3)`", "`10sqrt(3)`", "`5`", "`10`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×20×frac(sqrt(3),2)=5sqrt(3)`。",
     },
     {
@@ -237,6 +259,7 @@ export default {
         "どの角でもよい",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "使う2辺の「間の角」でなければならない。ここを取り違えると面積が変わってしまう。",
     },
     {
@@ -244,6 +267,7 @@ export default {
       q: "【応用】3辺が `3, 4, 5` の直角三角形の、内接円の半径は?",
       choices: ["`1`", "`2`", "`frac(1,2)`", "`frac(3,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "面積は `frac(1,2)×3×4=6`。内接円の半径 `r` を使うと `S=frac(1,2)r(a+b+c)` → `6=frac(1,2)r×12=6r` → `r=1`。",
     },
     {
@@ -251,6 +275,7 @@ export default {
       q: "【応用】隣り合う2辺が `4, 6` で、その間の角が `60°` の平行四辺形の面積は?",
       choices: ["`12sqrt(3)`", "`6sqrt(3)`", "`24sqrt(3)`", "`12`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "平行四辺形は対角線で合同な三角形2つに分かれる: `S=2×frac(1,2)×4×6×sin 60°=24×frac(sqrt(3),2)=12sqrt(3)`。",
     },
     {
@@ -263,6 +288,7 @@ export default {
         "`90°`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "`3sqrt(3)=frac(1,2)×12×sin A` → `sin A=frac(sqrt(3),2)`。sinの方程式なので `A=60°, 120°` の2つ。",
     },
   ],

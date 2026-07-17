@@ -41,6 +41,7 @@ export default {
       q: "`y=(x-1)^2+2` の最小値は?",
       choices: ["`x=1` で最小値 2", "`x=2` で最小値 1", "`x=1` で最小値 0", "最小値はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "下に凸なので頂点 `(1, 2)` で最小値 2。",
     },
     {
@@ -48,6 +49,7 @@ export default {
       q: "`y=-(x+2)^2+5` の最大値は?",
       choices: ["`x=-2` で最大値 5", "`x=2` で最大値 5", "`x=-2` で最大値 `-5`", "最大値はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "上に凸なので頂点 `(-2, 5)` で最大値 5。",
     },
     {
@@ -55,6 +57,7 @@ export default {
       q: "`y=x^2-4x+1` の最小値は?",
       choices: ["`-3`", "`1`", "`-4`", "`2`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "平方完成: `(x-2)^2-3`。`x=2` で最小値 `-3`。",
     },
     {
@@ -62,6 +65,7 @@ export default {
       q: "`y=(x-1)^2+2`(`0≤x≤3`)の最大値は?",
       choices: ["`x=3` で最大値 6", "`x=0` で最大値 3", "`x=1` で最大値 2", "最大値はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "軸 `x=1` から遠い端は `x=3`。`y=(3-1)^2+2=6`。",
     },
     {
@@ -69,6 +73,7 @@ export default {
       q: "`y=x^2+2x` の最小値は?",
       choices: ["`-1`", "`0`", "`1`", "`-2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+1)^2-1` なので `x=-1` で最小値 `-1`。",
     },
   ],
@@ -78,6 +83,7 @@ export default {
       q: "`y=x^2+3` の最小値は?",
       choices: ["`3`", "`0`", "`-3`", "最小値はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `(0, 3)` で最小値 3。",
     },
     {
@@ -85,6 +91,7 @@ export default {
       q: "`y=-(x-3)^2+4` の最大値は?",
       choices: ["`4`", "`3`", "`-4`", "最大値はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "上に凸で頂点 `(3, 4)`。最大値 4。",
     },
     {
@@ -92,6 +99,7 @@ export default {
       q: "`y=(x+2)^2-5` の最小値をとる `x` は?",
       choices: ["`x=-2`", "`x=2`", "`x=-5`", "`x=0`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点の `x` 座標 `-2` で最小になる。",
     },
     {
@@ -104,6 +112,7 @@ export default {
         "`x=1` で最大値 2",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "下に凸のグラフは上に無限にのびるので最大値はない。あるのは最小値 0。",
     },
     {
@@ -111,6 +120,7 @@ export default {
       q: "`y=x^2-6x+10` の最小値は?",
       choices: ["`1`", "`10`", "`-9`", "`3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-3)^2+1`。`x=3` で最小値 1。",
     },
     {
@@ -118,6 +128,7 @@ export default {
       q: "`y=-x^2+4x-1` の最大値は?",
       choices: ["`3`", "`-1`", "`4`", "`2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-(x-2)^2+3`。上に凸で `x=2` のとき最大値 3。",
     },
     {
@@ -130,6 +141,7 @@ export default {
         "最小値 3、最大値 9",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `x=0` は範囲外。範囲の両端 `x=1, 3` で決まり、最小 1・最大 9。",
     },
     {
@@ -137,6 +149,7 @@ export default {
       q: "`y=(x-2)^2-1`(`0≤x≤3`)の最大値は?",
       choices: ["`x=0` で最大値 3", "`x=3` で最大値 0", "`x=2` で最大値 `-1`", "最大値はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "軸 `x=2` から遠いのは `x=0`。`y=(0-2)^2-1=3`。",
     },
     {
@@ -149,6 +162,7 @@ export default {
         "最小値 0、最大値 6",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-1)^2+2`。頂点 `x=1` は範囲内で最小値 2。軸から遠い端 `x=3` で最大値 6。",
     },
     {
@@ -161,6 +175,7 @@ export default {
         "最大値 2、最小値はない",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-(x-1)^2+2`。上に凸で頂点 `x=1`(範囲内)が最大値 2。遠い端 `x=-1` で `y=-1-2+1=-2` が最小。",
     },
     {
@@ -173,6 +188,7 @@ export default {
         "最小値はない",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "軸 `x=a` が範囲より右にあるので、範囲内では右端 `x=2` が軸に一番近く、そこで最小。",
     },
     {
@@ -185,6 +201,7 @@ export default {
         "`x=1` で `(1-a)^2+1`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "軸が範囲内にあるので頂点で最小値 1 をとる。場合分けの「真ん中」のパターン。",
     },
   ],
@@ -194,6 +211,7 @@ export default {
       q: "`y=(x-5)^2-3` の最小値は?",
       choices: ["`-3`", "`5`", "`3`", "`-5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `(5, -3)` で最小値 `-3`。",
     },
     {
@@ -201,6 +219,7 @@ export default {
       q: "`y=x^2+4x+9` の最小値は?",
       choices: ["`5`", "`9`", "`-4`", "`4`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+2)^2+5`。最小値 5。",
     },
     {
@@ -208,6 +227,7 @@ export default {
       q: "`y=-x^2+6x-5` の最大値は?",
       choices: ["`4`", "`-5`", "`3`", "`6`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-(x-3)^2+4`。`x=3` で最大値 4。",
     },
     {
@@ -215,6 +235,7 @@ export default {
       q: "`y=x^2`(`-2≤x≤1`)の最大値は?",
       choices: ["`x=-2` で 4", "`x=1` で 1", "`x=0` で 0", "最大値はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "軸 `x=0` から遠い端は `x=-2`。`y=4` が最大。",
     },
     {
@@ -222,6 +243,7 @@ export default {
       q: "`y=(x-1)^2-2`(`2≤x≤4`)の最小値は?",
       choices: ["`x=2` で `-1`", "`x=1` で `-2`", "`x=4` で 7", "`x=2` で 1"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `x=1` は範囲外(左)。範囲内で軸に一番近い `x=2` で最小値 `(2-1)^2-2=-1`。",
     },
     {
@@ -234,6 +256,7 @@ export default {
         "最大値 5、最小値 `-4`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-2)^2-3`。頂点 `x=2`(範囲内)で最小 `-3`。軸から遠い端 `x=5` で `y=9-3=6` が最大。",
     },
     {
@@ -241,6 +264,7 @@ export default {
       q: "`y=-2x^2+4x`(`0≤x≤3`)の最大値は?",
       choices: ["`x=1` で 2", "`x=3` で `-6`", "`x=0` で 0", "`x=2` で 0"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-2(x-1)^2+2`。上に凸で頂点 `x=1` が範囲内なので最大値 2。",
     },
     {
@@ -253,6 +277,7 @@ export default {
         "最小値はない",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "軸 `x=a` が範囲より左なので、範囲内では左端 `x=0` が軸に一番近く、そこで最小。",
     },
   ],

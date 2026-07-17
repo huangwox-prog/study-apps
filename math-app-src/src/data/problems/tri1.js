@@ -40,6 +40,7 @@ export default {
       q: "直角三角形で、斜辺5・θの対辺3・隣辺4のとき、`sin θ` の値は?",
       choices: ["`frac(3,5)`", "`frac(4,5)`", "`frac(3,4)`", "`frac(5,3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin θ=frac(対辺,斜辺)=frac(3,5)`。",
     },
     {
@@ -47,6 +48,7 @@ export default {
       q: "`sin 30°` の値は?",
       choices: ["`frac(1,2)`", "`frac(sqrt(3),2)`", "`frac(1,sqrt(2))`", "`sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "1:2:sqrt(3) の三角定規から `sin 30°=frac(1,2)`。",
     },
     {
@@ -54,6 +56,7 @@ export default {
       q: "`tan 45°` の値は?",
       choices: ["`1`", "`frac(1,sqrt(2))`", "`sqrt(2)`", "`frac(1,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "45°の直角二等辺三角形では対辺=隣辺なので `tan 45°=1`。",
     },
     {
@@ -61,6 +64,7 @@ export default {
       q: "`cos 60°` の値は?",
       choices: ["`frac(1,2)`", "`frac(sqrt(3),2)`", "`frac(1,sqrt(2))`", "`frac(1,sqrt(3))`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 60°=frac(1,2)`。`sin 30°` と同じ値になる。",
     },
     {
@@ -68,6 +72,7 @@ export default {
       q: "斜辺10、θ=30° の直角三角形の高さ(θの対辺)は?",
       choices: ["`5`", "`5sqrt(3)`", "`10`", "`frac(10,sqrt(3))`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "対辺 = 斜辺 × sin θ = `10×frac(1,2)=5`。",
     },
   ],
@@ -77,6 +82,7 @@ export default {
       q: "直角三角形で、斜辺13・θの対辺5・隣辺12のとき、`cos θ` は?",
       choices: ["`frac(12,13)`", "`frac(5,13)`", "`frac(5,12)`", "`frac(12,5)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos θ=frac(隣辺,斜辺)=frac(12,13)`。",
     },
     {
@@ -84,6 +90,7 @@ export default {
       q: "同じ三角形(斜辺13・対辺5・隣辺12)で `tan θ` は?",
       choices: ["`frac(5,12)`", "`frac(12,5)`", "`frac(5,13)`", "`frac(12,13)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan θ=frac(対辺,隣辺)=frac(5,12)`。",
     },
     {
@@ -91,6 +98,7 @@ export default {
       q: "`cos 30°` の値は?",
       choices: ["`frac(sqrt(3),2)`", "`frac(1,2)`", "`frac(1,sqrt(3))`", "`frac(1,sqrt(2))`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 30°=frac(sqrt(3),2)`。",
     },
     {
@@ -98,6 +106,7 @@ export default {
       q: "`sin 45°` の値は?",
       choices: ["`frac(1,sqrt(2))`", "`frac(1,2)`", "`frac(sqrt(3),2)`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "1:1:sqrt(2) の三角形から `frac(1,sqrt(2))`(`=frac(sqrt(2),2)` と書いても同じ)。",
     },
     {
@@ -105,6 +114,7 @@ export default {
       q: "`tan 60°` の値は?",
       choices: ["`sqrt(3)`", "`frac(1,sqrt(3))`", "`frac(sqrt(3),2)`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan 60°=frac(sqrt(3),1)=sqrt(3)`。",
     },
     {
@@ -112,6 +122,7 @@ export default {
       q: "`sin 60°×cos 30°` の値は?",
       choices: ["`frac(3,4)`", "`frac(1,2)`", "`frac(sqrt(3),2)`", "`frac(1,4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(sqrt(3),2)×frac(sqrt(3),2)=frac(3,4)`。",
     },
     {
@@ -119,6 +130,7 @@ export default {
       q: "斜辺8、θ=60° の直角三角形の、θの隣辺の長さは?",
       choices: ["`4`", "`4sqrt(3)`", "`8`", "`2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "隣辺 = 斜辺 × cos 60° = `8×frac(1,2)=4`。",
     },
     {
@@ -126,6 +138,7 @@ export default {
       q: "水平距離6m の地点から見上げる角が30°のとき、目の高さから測った建物の高さは?",
       choices: ["`2sqrt(3)` m", "`6sqrt(3)` m", "`3` m", "`3sqrt(3)` m"],
       answer: 0,
+      mistakeType: "calc",
       exp: "高さ = 隣辺 × tan 30° = `6×frac(1,sqrt(3))=frac(6,sqrt(3))=2sqrt(3)` m。",
     },
     {
@@ -133,6 +146,7 @@ export default {
       q: "`sin 30°+cos 60°` の値は?",
       choices: ["`1`", "`frac(1,2)`", "`frac(sqrt(3)+1,2)`", "`sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(1,2)+frac(1,2)=1`。",
     },
     {
@@ -140,6 +154,7 @@ export default {
       q: "`tan 30°×tan 60°` の値は?",
       choices: ["`1`", "`sqrt(3)`", "`frac(1,3)`", "`3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(1,sqrt(3))×sqrt(3)=1`。30°と60°のtanは逆数の関係。",
     },
     {
@@ -147,6 +162,7 @@ export default {
       q: "`sin^2 45°+cos^2 45°` の値は?",
       choices: ["`1`", "`frac(1,2)`", "`sqrt(2)`", "`2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(1,2)+frac(1,2)=1`。実はどの角でも `sin^2 θ+cos^2 θ=1`(次の単元で学ぶ)。",
     },
     {
@@ -154,6 +170,7 @@ export default {
       q: "地面から45°で見上げたとき塔の先端が見え、塔までの水平距離は12m。目の高さを1.5mとすると塔の高さは?",
       choices: ["`13.5` m", "`12` m", "`12sqrt(3)` m", "`10.5` m"],
       answer: 0,
+      mistakeType: "calc",
       exp: "目の高さから上の部分は `12 tan 45°=12` m。目の高さ1.5mを足して 13.5m。",
     },
   ],
@@ -163,6 +180,7 @@ export default {
       q: "直角三角形で、斜辺25・θの対辺7・隣辺24のとき、`sin θ` は?",
       choices: ["`frac(7,25)`", "`frac(24,25)`", "`frac(7,24)`", "`frac(25,7)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin θ=frac(対辺,斜辺)=frac(7,25)`。",
     },
     {
@@ -170,6 +188,7 @@ export default {
       q: "`sin 60°` の値は?",
       choices: ["`frac(sqrt(3),2)`", "`frac(1,2)`", "`frac(1,sqrt(2))`", "`sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin 60°=frac(sqrt(3),2)`。",
     },
     {
@@ -177,6 +196,7 @@ export default {
       q: "`cos 45°` の値は?",
       choices: ["`frac(1,sqrt(2))`", "`frac(1,2)`", "`frac(sqrt(3),2)`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 45°=frac(1,sqrt(2))`。",
     },
     {
@@ -184,6 +204,7 @@ export default {
       q: "`tan 30°` の値は?",
       choices: ["`frac(1,sqrt(3))`", "`sqrt(3)`", "`frac(1,2)`", "`frac(sqrt(3),2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan 30°=frac(1,sqrt(3))`。",
     },
     {
@@ -191,6 +212,7 @@ export default {
       q: "斜辺6、θ=45° の直角三角形の、θの対辺の長さは?",
       choices: ["`3sqrt(2)`", "`3`", "`6sqrt(2)`", "`2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "対辺 = `6 sin 45° = 6×frac(1,sqrt(2)) = frac(6,sqrt(2)) = 3sqrt(2)`。",
     },
     {
@@ -198,6 +220,7 @@ export default {
       q: "`sin 30°×cos 30°` の値は?",
       choices: ["`frac(sqrt(3),4)`", "`frac(3,4)`", "`frac(1,4)`", "`frac(sqrt(3),2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(1,2)×frac(sqrt(3),2)=frac(sqrt(3),4)`。",
     },
     {
@@ -205,6 +228,7 @@ export default {
       q: "水平距離9mの地点から見上げる角が60°のとき、目の高さから測った高さは?",
       choices: ["`9sqrt(3)` m", "`3sqrt(3)` m", "`9` m", "`frac(9,sqrt(3))` m"],
       answer: 0,
+      mistakeType: "calc",
       exp: "高さ = `9 tan 60° = 9sqrt(3)` m。",
     },
     {
@@ -212,6 +236,7 @@ export default {
       q: "`tan 45°+sin 90°` はいくつ?(`sin 90°=1` とする)",
       choices: ["`2`", "`1`", "`frac(3,2)`", "`sqrt(2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`1+1=2`。90°の三角比は次の単元(鈍角への拡張)で正式に学ぶ。",
     },
   ],

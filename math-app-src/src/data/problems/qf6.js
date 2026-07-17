@@ -39,6 +39,7 @@ export default {
       q: "`y=x^2-3x+2` のグラフと `x` 軸の共有点の `x` 座標は?",
       choices: ["`x=1, 2`", "`x=-1, -2`", "`x=3, 2`", "共有点なし"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x^2-3x+2=0` → `(x-1)(x-2)=0` → `x=1, 2`。",
     },
     {
@@ -46,6 +47,7 @@ export default {
       q: "`y=x^2-2x+1` のグラフと `x` 軸の関係は?",
       choices: ["1点で接する", "2点で交わる", "共有点なし", "3点で交わる"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`D=4-4=0` なので接する。`(x-1)^2=0` で接点は `(1, 0)`。",
     },
     {
@@ -53,6 +55,7 @@ export default {
       q: "`y=x^2+x+1` のグラフと `x` 軸の共有点の個数は?",
       choices: ["0個", "1個", "2個", "3個"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`D=1-4=-3<0` なので共有点なし。グラフはx軸より上に浮いている。",
     },
     {
@@ -60,6 +63,7 @@ export default {
       q: "`y=x^2+4x+k` のグラフが `x` 軸に接するときの `k` は?",
       choices: ["`k=4`", "`k=2`", "`k=-4`", "`k=16`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "接する条件は `D=0`: `16-4k=0` より `k=4`。",
     },
     {
@@ -72,6 +76,7 @@ export default {
         "`(0, 3)` と `(0, -2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-3)(x+2)=0` より `x=3, -2`。共有点は `y=0` の点なので `(3,0), (-2,0)`。",
     },
   ],
@@ -81,6 +86,7 @@ export default {
       q: "`y=x^2-4` のグラフと `x` 軸の共有点の `x` 座標は?",
       choices: ["`x=±2`", "`x=4`", "`x=±4`", "`x=2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x^2-4=0` → `x=±2`。",
     },
     {
@@ -88,6 +94,7 @@ export default {
       q: "`y=x^2-5x` のグラフと `x` 軸の共有点の `x` 座標は?",
       choices: ["`x=0, 5`", "`x=5`", "`x=±5`", "`x=0, -5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x(x-5)=0` → `x=0, 5`。原点も共有点。",
     },
     {
@@ -95,6 +102,7 @@ export default {
       q: "グラフが `x` 軸と2点で交わるのは、判別式 D がどんなとき?",
       choices: ["`D>0`", "`D=0`", "`D<0`", "`D≥0`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D>0` ⇔ 異なる2つの実数解 ⇔ 2点で交わる。",
     },
     {
@@ -102,6 +110,7 @@ export default {
       q: "`y=x^2+2x-3` のグラフと `x` 軸の共有点の `x` 座標は?",
       choices: ["`x=1, -3`", "`x=-1, 3`", "`x=1, 3`", "`x=-1, -3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-1)(x+3)=0` → `x=1, -3`。",
     },
     {
@@ -114,6 +123,7 @@ export default {
         "`(9, 0)` で接する",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "`(x-3)^2=0` で重解 `x=3`。1点 `(3, 0)` で接する。",
     },
     {
@@ -121,6 +131,7 @@ export default {
       q: "`y=x^2-2x+3` のグラフと `x` 軸の共有点の個数は?",
       choices: ["0個", "1個", "2個", "判別できない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`D=4-12=-8<0` で共有点なし。",
     },
     {
@@ -133,6 +144,7 @@ export default {
         "`x=-3, -1`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "因数分解できないので解の公式: `x=frac(-3±sqrt(5),2)`。",
     },
     {
@@ -140,6 +152,7 @@ export default {
       q: "`y=-x^2+4x-4` のグラフと `x` 軸の関係は?",
       choices: ["`(2, 0)` で接する", "2点で交わる", "共有点なし", "`(−2, 0)` で接する"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-x^2+4x-4=0` → `x^2-4x+4=0` → `(x-2)^2=0`。接点 `(2, 0)`。",
     },
     {
@@ -147,6 +160,7 @@ export default {
       q: "`y=x^2-2x+k` のグラフが `x` 軸と異なる2点で交わるときの `k` の範囲は?",
       choices: ["`k<1`", "`k>1`", "`k≤1`", "`k<4`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=4-4k>0` より `k<1`。",
     },
     {
@@ -154,6 +168,7 @@ export default {
       q: "`y=x^2+kx+9` のグラフが `x` 軸に接するときの `k` は?",
       choices: ["`k=±6`", "`k=6`", "`k=±3`", "`k=±9`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`D=k^2-36=0` より `k=±6`。両方あることに注意。",
     },
     {
@@ -161,6 +176,7 @@ export default {
       q: "`y=x^2+2x+k+2` のグラフが `x` 軸と共有点をもたないときの `k` の範囲は?",
       choices: ["`k>-1`", "`k<-1`", "`k>1`", "`k<1`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=4-4(k+2)<0` → `4-4k-8<0` → `-4k<4` → `k>-1`。",
     },
     {
@@ -173,6 +189,7 @@ export default {
         "`y=x^2+4x+3`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "解が `x=1, 3` になるのは `(x-1)(x-3)=0`。展開すると `y=x^2-4x+3`。",
     },
   ],
@@ -182,6 +199,7 @@ export default {
       q: "`y=x^2-9` のグラフと `x` 軸の共有点の `x` 座標は?",
       choices: ["`x=±3`", "`x=9`", "`x=3`", "`x=±9`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x^2=9` → `x=±3`。",
     },
     {
@@ -189,6 +207,7 @@ export default {
       q: "`y=x^2-x-12` のグラフと `x` 軸の共有点の `x` 座標は?",
       choices: ["`x=4, -3`", "`x=-4, 3`", "`x=6, -2`", "`x=12, -1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-4)(x+3)=0` → `x=4, -3`。",
     },
     {
@@ -196,6 +215,7 @@ export default {
       q: "`y=x^2+6x+9` のグラフと `x` 軸の関係は?",
       choices: ["`(-3, 0)` で接する", "`(3, 0)` で接する", "2点で交わる", "共有点なし"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+3)^2=0` で接点 `(-3, 0)`。",
     },
     {
@@ -203,6 +223,7 @@ export default {
       q: "`y=2x^2+x+1` のグラフと `x` 軸の共有点の個数は?",
       choices: ["0個", "1個", "2個", "判別できない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`D=1-8=-7<0` で共有点なし。",
     },
     {
@@ -210,6 +231,7 @@ export default {
       q: "`y=x^2-4x+2` のグラフと `x` 軸の共有点の `x` 座標は?",
       choices: ["`x=2±sqrt(2)`", "`x=-2±sqrt(2)`", "`x=4±sqrt(2)`", "共有点なし"],
       answer: 0,
+      mistakeType: "formula",
       exp: "解の公式: `x=frac(4±sqrt(16-8),2)=2±sqrt(2)`。",
     },
     {
@@ -217,6 +239,7 @@ export default {
       q: "`y=x^2-8x+k` のグラフが `x` 軸に接するときの `k` は?",
       choices: ["`k=16`", "`k=8`", "`k=-16`", "`k=64`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`D=64-4k=0` → `k=16`。",
     },
     {
@@ -229,6 +252,7 @@ export default {
         "`k≤frac(9,4)`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=9-4k>0` → `k<frac(9,4)`。",
     },
     {
@@ -241,6 +265,7 @@ export default {
         "`y=(x-2)(x-5)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "解が `x=-2, 5` になるのは `(x+2)(x-5)=0`。",
     },
     {
@@ -248,6 +273,7 @@ export default {
       q: "【応用】放物線 `y=x^2-4x+3` が `x` 軸から切り取る線分の長さは?",
       choices: ["`2`", "`4`", "`3`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "共有点は `(x-1)(x-3)=0` より `x=1, 3`。切り取る線分の長さは `3-1=2`。",
     },
     {
@@ -260,6 +286,7 @@ export default {
         "`y=-2(x-1)(x-3)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`y=a(x-1)(x-3)` とおいて `(0, 6)` を代入: `6=a×(-1)×(-3)=3a` → `a=2`。",
     },
     {
@@ -267,6 +294,7 @@ export default {
       q: "【応用】`y=x^2+2x+k` のグラフが `x` 軸の負の部分と異なる2点で交わるときの `k` の範囲は?",
       choices: ["`0<k<1`", "`k<1`", "`k>0`", "`k<0`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "条件は3つ: `D>0` より `k<1`、軸 `x=-1<0` はOK、`f(0)=k>0`。合わせて `0<k<1`。",
     },
   ],

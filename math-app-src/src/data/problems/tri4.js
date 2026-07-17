@@ -46,6 +46,7 @@ export default {
         "`a sin A=2R`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "`frac(a,sin A)=frac(b,sin B)=frac(c,sin C)=2R`。辺が分子。",
     },
     {
@@ -53,6 +54,7 @@ export default {
       q: "三角形ABCで `A=30°, a=4` のとき、外接円の半径 R は?",
       choices: ["`4`", "`2`", "`8`", "`4sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2R=frac(a,sin A)=frac(4,frac(1,2))=8` → `R=4`。",
     },
     {
@@ -60,6 +62,7 @@ export default {
       q: "余弦定理 `a^2=b^2+c^2-2bc cos A` で、`b=3, c=5, A=60°` のとき `a` は?",
       choices: ["`sqrt(19)`", "`sqrt(34)`", "`4`", "`sqrt(15)`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`a^2=9+25-30×frac(1,2)=19`。",
     },
     {
@@ -67,6 +70,7 @@ export default {
       q: "3辺が `a=7, b=5, c=3` の三角形で、`cos A` は?",
       choices: ["`-frac(1,2)`", "`frac(1,2)`", "`frac(11,14)`", "`-frac(11,14)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos A=frac(25+9-49,2×5×3)=frac(-15,30)=-frac(1,2)`。Aは120°の鈍角。",
     },
     {
@@ -74,6 +78,7 @@ export default {
       q: "「2辺とその間の角」がわかっているとき、残りの辺を求めるのに使うのは?",
       choices: ["余弦定理", "正弦定理", "三平方の定理", "相互関係"],
       answer: 0,
+      mistakeType: "formula",
       exp: "2辺と間の角→向かいの辺、は余弦定理の典型パターン。",
     },
   ],
@@ -83,6 +88,7 @@ export default {
       q: "三角形ABCで `A=45°, a=sqrt(2)` のとき、外接円の半径 R は?",
       choices: ["`1`", "`2`", "`sqrt(2)`", "`frac(1,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2R=frac(sqrt(2),sin 45°)=frac(sqrt(2),frac(1,sqrt(2)))=2` → `R=1`。",
     },
     {
@@ -90,6 +96,7 @@ export default {
       q: "`A=30°, B=45°, a=2` のとき、辺 `b` は?",
       choices: ["`2sqrt(2)`", "`sqrt(2)`", "`2sqrt(3)`", "`4`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "正弦定理: `b=frac(a sin B,sin A)=frac(2×frac(1,sqrt(2)),frac(1,2))=2sqrt(2)`。",
     },
     {
@@ -97,6 +104,7 @@ export default {
       q: "`b=2, c=3, A=60°` のとき、辺 `a` は?",
       choices: ["`sqrt(7)`", "`sqrt(13)`", "`sqrt(19)`", "`5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`a^2=4+9-2×2×3×frac(1,2)=13-6=7` → `a=sqrt(7)`。",
     },
     {
@@ -109,6 +117,7 @@ export default {
         "`frac(a^2-b^2-c^2,2bc)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "分子は「はさむ2辺の2乗の和−向かいの辺の2乗」。",
     },
     {
@@ -116,6 +125,7 @@ export default {
       q: "`a=sqrt(2), B=105°, C=30°` のとき、角 A は?",
       choices: ["`45°`", "`30°`", "`60°`", "`75°`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "内角の和は180°: `A=180°-105°-30°=45°`。定理の前にまず角の和を確認。",
     },
     {
@@ -123,6 +133,7 @@ export default {
       q: "`b=4, c=5, A=120°` のとき、辺 `a` は?",
       choices: ["`sqrt(61)`", "`sqrt(21)`", "`sqrt(41)`", "`9`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 120°=-frac(1,2)` に注意: `a^2=16+25-2×4×5×(-frac(1,2))=41+20=61`。",
     },
     {
@@ -130,6 +141,7 @@ export default {
       q: "3辺が `a=sqrt(7), b=2, c=3` のとき、角 A は?",
       choices: ["`60°`", "`30°`", "`45°`", "`120°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos A=frac(4+9-7,2×2×3)=frac(6,12)=frac(1,2)` → `A=60°`。",
     },
     {
@@ -137,6 +149,7 @@ export default {
       q: "`A=60°, a=3` の三角形の外接円の半径 R は?",
       choices: ["`sqrt(3)`", "`3`", "`frac(3,2)`", "`2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2R=frac(3,sin 60°)=frac(3,frac(sqrt(3),2))=frac(6,sqrt(3))=2sqrt(3)` → `R=sqrt(3)`。",
     },
     {
@@ -144,6 +157,7 @@ export default {
       q: "3辺が `a=13, b=8, c=7` のとき、角 A は?",
       choices: ["`120°`", "`60°`", "`135°`", "`90°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos A=frac(64+49-169,2×8×7)=frac(-56,112)=-frac(1,2)` → `A=120°`。",
     },
     {
@@ -151,6 +165,7 @@ export default {
       q: "`a=2, b=2sqrt(3), A=30°` のとき、角 B は?(Bは鋭角とする)",
       choices: ["`60°`", "`45°`", "`90°`", "`30°`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "正弦定理: `sin B=frac(b sin A,a)=frac(2sqrt(3)×frac(1,2),2)=frac(sqrt(3),2)` → 鋭角なら `B=60°`。",
     },
     {
@@ -158,6 +173,7 @@ export default {
       q: "3辺が `a=5, b=4, c=3` の三角形はどんな三角形?",
       choices: ["`A=90°` の直角三角形", "鋭角三角形", "鈍角三角形", "正三角形"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos A=frac(16+9-25,24)=0` → `A=90°`。3:4:5の直角三角形。",
     },
     {
@@ -165,6 +181,7 @@ export default {
       q: "`b=3, c=4` で、`a` がどんな値なら角Aが鈍角になる?",
       choices: ["`a^2>25` のとき", "`a^2<25` のとき", "`a>7` のとき", "`a=5` のとき"],
       answer: 0,
+      mistakeType: "calc",
       exp: "Aが鈍角 ⇔ `cos A<0` ⇔ `b^2+c^2-a^2<0` ⇔ `a^2>9+16=25`。",
     },
   ],
@@ -174,6 +191,7 @@ export default {
       q: "`A=30°, a=5` の三角形の外接円の半径 R は?",
       choices: ["`5`", "`10`", "`frac(5,2)`", "`5sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2R=frac(5,frac(1,2))=10` → `R=5`。",
     },
     {
@@ -181,6 +199,7 @@ export default {
       q: "`A=45°, C=30°, c=sqrt(2)` のとき、辺 `a` は?",
       choices: ["`2`", "`sqrt(2)`", "`2sqrt(2)`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`a=frac(c sin A,sin C)=frac(sqrt(2)×frac(1,sqrt(2)),frac(1,2))=2`。",
     },
     {
@@ -188,6 +207,7 @@ export default {
       q: "`b=1, c=2, A=60°` のとき、辺 `a` は?",
       choices: ["`sqrt(3)`", "`sqrt(5)`", "`sqrt(7)`", "`3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`a^2=1+4-2×1×2×frac(1,2)=3` → `a=sqrt(3)`。",
     },
     {
@@ -195,6 +215,7 @@ export default {
       q: "`b=3, c=sqrt(2), A=135°` のとき、辺 `a` は?",
       choices: ["`sqrt(17)`", "`sqrt(5)`", "`sqrt(11)`", "`sqrt(23)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 135°=-frac(1,sqrt(2))`: `a^2=9+2-2×3×sqrt(2)×(-frac(1,sqrt(2)))=11+6=17`。",
     },
     {
@@ -202,6 +223,7 @@ export default {
       q: "3辺が `a=sqrt(13), b=3, c=4` のとき、角 A は?",
       choices: ["`60°`", "`30°`", "`45°`", "`120°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos A=frac(9+16-13,2×3×4)=frac(12,24)=frac(1,2)` → `A=60°`。",
     },
     {
@@ -209,6 +231,7 @@ export default {
       q: "3辺が `a=sqrt(7), b=1, c=2` のとき、角 A は?",
       choices: ["`120°`", "`60°`", "`90°`", "`150°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos A=frac(1+4-7,2×1×2)=frac(-2,4)=-frac(1,2)` → `A=120°`。",
     },
     {
@@ -216,6 +239,7 @@ export default {
       q: "`a=6, A=60°, B=45°` のとき、辺 `b` は?",
       choices: ["`2sqrt(6)`", "`3sqrt(2)`", "`4sqrt(3)`", "`6sqrt(2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`b=frac(a sin B,sin A)=frac(6×frac(1,sqrt(2)),frac(sqrt(3),2))=frac(12,sqrt(6))=2sqrt(6)`。",
     },
     {
@@ -223,6 +247,7 @@ export default {
       q: "「3辺の長さがすべてわかっている」とき、角を求めるのに使うのは?",
       choices: ["余弦定理", "正弦定理", "三平方の定理", "面積公式"],
       answer: 0,
+      mistakeType: "formula",
       exp: "3辺→角は余弦定理の変形 `cos A=frac(b^2+c^2-a^2,2bc)` の出番。",
     },
     {
@@ -230,6 +255,7 @@ export default {
       q: "【応用】3辺が `3, 5, 7` の三角形の、いちばん大きい角の大きさは?",
       choices: ["`120°`", "`150°`", "`135°`", "`90°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "最大角は最大辺7の向かい。`cos θ=frac(9+25-49,2×3×5)=frac(-15,30)=-frac(1,2)` → `120°`。",
     },
     {
@@ -237,6 +263,7 @@ export default {
       q: "【応用】`b=2, c=3, cos A=frac(1,3)` のとき、辺 `a` は?",
       choices: ["`3`", "`sqrt(13)`", "`sqrt(11)`", "`sqrt(17)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`a^2=4+9-2×2×3×frac(1,3)=13-4=9` → `a=3`。cosの値が直接与えられても使い方は同じ。",
     },
     {
@@ -249,6 +276,7 @@ export default {
         "`2:sqrt(3)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "正弦定理より `a:b=sin A:sin B=frac(sqrt(3),2):frac(1,sqrt(2))=sqrt(3):sqrt(2)`。辺の比はsinの比。",
     },
   ],

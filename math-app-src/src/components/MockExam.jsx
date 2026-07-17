@@ -2,8 +2,9 @@
 import React, { useMemo, useState } from "react";
 import MathText from "./MathText.jsx";
 import { generateExam, gradeExam } from "../logic/examGenerator.js";
-import { saveExamResult } from "../logic/storage.js";
+import { saveExamResult, recordMistakes } from "../logic/storage.js";
 import { shuffledChoiceOrder } from "../logic/shuffle.js";
+import MistakeTags from "./MistakeTags.jsx";
 
 const CATEGORY_LABELS = { ns: "数と式", qf: "二次関数", tri: "三角比" };
 
@@ -25,6 +26,16 @@ export default function MockExam({ examSet, units, onExit }) {
       byCategory: r.byCategory,
       date: new Date().toISOString(),
     });
+    // 間違えた問題のミスタイプを弱点分析に記録
+    recordMistakes(
+      r.detail
+        .filter((d) => !d.ok)
+        .map((d) => ({
+          qid: questions[d.index].id,
+          unitId: questions[d.index].unitId,
+          type: questions[d.index].mistakeType,
+        }))
+    );
     setResult(r);
     setPhase("result");
   };
@@ -250,6 +261,7 @@ export default function MockExam({ examSet, units, onExit }) {
                 <p className="text-secondary" style={{ fontSize: "0.95rem" }}>
                   <MathText text={wq.exp} />
                 </p>
+                <MistakeTags qid={wq.id} initialType={wq.mistakeType} />
               </div>
             );
           })}

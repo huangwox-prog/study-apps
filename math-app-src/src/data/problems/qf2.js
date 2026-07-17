@@ -41,6 +41,7 @@ export default {
       q: "`x^2+4x` を平方完成すると?",
       choices: ["`(x+2)^2-4`", "`(x+2)^2`", "`(x+4)^2-16`", "`(x+2)^2+4`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "4の半分の2を使い、`(x+2)^2` から余分な `2^2=4` を引く。",
     },
     {
@@ -48,6 +49,7 @@ export default {
       q: "`y=x^2-6x+5` を平方完成すると?",
       choices: ["`y=(x-3)^2-4`", "`y=(x-3)^2+5`", "`y=(x-6)^2-31`", "`y=(x-3)^2-9`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`(x-3)^2-9+5 = (x-3)^2-4`。",
     },
     {
@@ -55,6 +57,7 @@ export default {
       q: "`y=x^2+2x+3` のグラフの頂点は?",
       choices: ["`(-1, 2)`", "`(1, 2)`", "`(-1, 3)`", "`(-2, 3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`y=(x+1)^2-1+3=(x+1)^2+2`。頂点は `(-1, 2)`。",
     },
     {
@@ -67,6 +70,7 @@ export default {
         "`(x+frac(3,2))^2-frac(3,2)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "3の半分は `frac(3,2)`、その2乗 `frac(9,4)` を引く。奇数の係数でも半分にするだけ。",
     },
     {
@@ -74,6 +78,7 @@ export default {
       q: "`y=2x^2+4x+5` を平方完成すると?",
       choices: ["`y=2(x+1)^2+3`", "`y=2(x+2)^2-3`", "`y=2(x+1)^2+5`", "`y=(x+2)^2+1`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "2でくくって `2(x^2+2x)+5=2{(x+1)^2-1}+5=2(x+1)^2+3`。",
     },
   ],
@@ -83,6 +88,7 @@ export default {
       q: "`x^2+2x` を平方完成すると?",
       choices: ["`(x+1)^2-1`", "`(x+1)^2`", "`(x+2)^2-4`", "`(x+1)^2+1`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "2の半分は1。`(x+1)^2-1`。",
     },
     {
@@ -90,6 +96,7 @@ export default {
       q: "`x^2-8x` を平方完成すると?",
       choices: ["`(x-4)^2-16`", "`(x-8)^2-64`", "`(x-4)^2+16`", "`(x+4)^2-16`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "-8の半分は-4。`(x-4)^2-16`。",
     },
     {
@@ -97,6 +104,7 @@ export default {
       q: "`y=x^2+6x+10` を平方完成すると?",
       choices: ["`y=(x+3)^2+1`", "`y=(x+3)^2-1`", "`y=(x+6)^2-26`", "`y=(x+3)^2+10`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`(x+3)^2-9+10=(x+3)^2+1`。",
     },
     {
@@ -104,6 +112,7 @@ export default {
       q: "`y=x^2-4x+3` のグラフの頂点は?",
       choices: ["`(2, -1)`", "`(-2, -1)`", "`(2, 1)`", "`(4, 3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`y=(x-2)^2-4+3=(x-2)^2-1`。頂点 `(2, -1)`。",
     },
     {
@@ -111,6 +120,7 @@ export default {
       q: "`y=x^2+10x+21` を平方完成すると?",
       choices: ["`y=(x+5)^2-4`", "`y=(x+5)^2+4`", "`y=(x+10)^2-79`", "`y=(x+5)^2-25`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`(x+5)^2-25+21=(x+5)^2-4`。",
     },
     {
@@ -123,6 +133,7 @@ export default {
         "`y=(x-frac(1,2))^2+frac(5,4)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "-1の半分は `-frac(1,2)`、2乗は `frac(1,4)`。`(x-frac(1,2))^2-frac(1,4)+1`。",
     },
     {
@@ -135,6 +146,7 @@ export default {
         "頂点 `(-4, 7)`、軸 `x=-4`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+2)^2-4+7=(x+2)^2+3`。頂点 `(-2, 3)`、軸 `x=-2`。",
     },
     {
@@ -147,6 +159,7 @@ export default {
         "`y=2(x-2)^2-8`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "`2(x^2-4x)+3=2{(x-2)^2-4}+3=2(x-2)^2-5`。",
     },
     {
@@ -154,6 +167,7 @@ export default {
       q: "`y=3x^2+6x+1` のグラフの頂点は?",
       choices: ["`(-1, -2)`", "`(1, -2)`", "`(-1, 2)`", "`(-3, 1)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`3(x^2+2x)+1=3{(x+1)^2-1}+1=3(x+1)^2-2`。頂点 `(-1, -2)`。",
     },
     {
@@ -166,6 +180,7 @@ export default {
         "`y=(x-2)^2+3`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "-1でくくる: `-(x^2-4x)-1=-{(x-2)^2-4}-1=-(x-2)^2+4-1=-(x-2)^2+3`。",
     },
     {
@@ -173,6 +188,7 @@ export default {
       q: "`y=-2x^2-4x+1` のグラフの頂点は?",
       choices: ["`(-1, 3)`", "`(1, 3)`", "`(-1, -3)`", "`(-2, 1)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-2(x^2+2x)+1=-2{(x+1)^2-1}+1=-2(x+1)^2+3`。頂点 `(-1, 3)`。",
     },
     {
@@ -185,6 +201,7 @@ export default {
         "`y=frac(1,2)(x-1)^2+frac(5,2)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "`frac(1,2)(x^2-4x)+3=frac(1,2){(x-2)^2-4}+3=frac(1,2)(x-2)^2+1`。",
     },
   ],
@@ -194,6 +211,7 @@ export default {
       q: "`x^2-2x` を平方完成すると?",
       choices: ["`(x-1)^2-1`", "`(x-1)^2`", "`(x-2)^2-4`", "`(x-1)^2+1`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "-2の半分は-1。`(x-1)^2-1`。",
     },
     {
@@ -201,6 +219,7 @@ export default {
       q: "`y=x^2+8x+9` を平方完成すると?",
       choices: ["`y=(x+4)^2-7`", "`y=(x+4)^2+7`", "`y=(x+8)^2-55`", "`y=(x+4)^2-16`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`(x+4)^2-16+9=(x+4)^2-7`。",
     },
     {
@@ -208,6 +227,7 @@ export default {
       q: "`y=x^2-6x+2` のグラフの頂点は?",
       choices: ["`(3, -7)`", "`(-3, -7)`", "`(3, 7)`", "`(6, 2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-3)^2-9+2=(x-3)^2-7`。頂点 `(3, -7)`。",
     },
     {
@@ -220,6 +240,7 @@ export default {
         "`y=(x+frac(5,2))^2-frac(25,4)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "`(x+frac(5,2))^2-frac(25,4)+4=(x+frac(5,2))^2-frac(9,4)`。",
     },
     {
@@ -232,6 +253,7 @@ export default {
         "`y=(x+4)^2-11`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "`2(x^2+4x)+5=2{(x+2)^2-4}+5=2(x+2)^2-3`。",
     },
     {
@@ -239,6 +261,7 @@ export default {
       q: "`y=-x^2+6x-4` のグラフの頂点は?",
       choices: ["`(3, 5)`", "`(-3, 5)`", "`(3, -5)`", "`(6, -4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-(x^2-6x)-4=-{(x-3)^2-9}-4=-(x-3)^2+5`。頂点 `(3, 5)`。",
     },
     {
@@ -246,6 +269,7 @@ export default {
       q: "`y=3x^2-6x+5` のグラフの軸は?",
       choices: ["直線 `x=1`", "直線 `x=-1`", "直線 `x=3`", "直線 `x=2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`3(x^2-2x)+5=3(x-1)^2+2`。軸は `x=1`。",
     },
     {
@@ -253,6 +277,7 @@ export default {
       q: "`y=-2x^2+8x-3` の頂点は?",
       choices: ["`(2, 5)`", "`(-2, 5)`", "`(2, -5)`", "`(4, -3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-2(x^2-4x)-3=-2{(x-2)^2-4}-3=-2(x-2)^2+5`。頂点 `(2, 5)`。",
     },
   ],

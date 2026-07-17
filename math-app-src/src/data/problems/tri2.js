@@ -40,6 +40,7 @@ export default {
       q: "`sin^2 θ+cos^2 θ` の値は?",
       choices: ["`1`", "`0`", "`tan θ`", "θによって変わる"],
       answer: 0,
+      mistakeType: "formula",
       exp: "相互関係の基本公式。どんな θ でも常に 1。",
     },
     {
@@ -52,6 +53,7 @@ export default {
         "`sin θ+cos θ`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan θ=frac(sin θ,cos θ)`。",
     },
     {
@@ -59,6 +61,7 @@ export default {
       q: "θ が鋭角で `sin θ=frac(3,5)` のとき、`cos θ` は?",
       choices: ["`frac(4,5)`", "`frac(3,4)`", "`frac(2,5)`", "`frac(5,4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos^2 θ=1-frac(9,25)=frac(16,25)`。鋭角なので正の `frac(4,5)`。",
     },
     {
@@ -66,6 +69,7 @@ export default {
       q: "θ が鋭角で `sin θ=frac(3,5)`、`cos θ=frac(4,5)` のとき、`tan θ` は?",
       choices: ["`frac(3,4)`", "`frac(4,3)`", "`frac(3,5)`", "`frac(12,25)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan θ=frac(sin θ,cos θ)=frac(3,4)`。",
     },
     {
@@ -78,6 +82,7 @@ export default {
         "`1`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "3つ目の相互関係: `1+tan^2 θ=frac(1,cos^2 θ)`。",
     },
   ],
@@ -87,6 +92,7 @@ export default {
       q: "`sin^2 40°+cos^2 40°` の値は?",
       choices: ["`1`", "`40`", "`frac(1,2)`", "計算できない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "どんな角度でも `sin^2 θ+cos^2 θ=1`。値を知らない角でも使える。",
     },
     {
@@ -94,6 +100,7 @@ export default {
       q: "θ が鋭角で `cos θ=frac(1,2)` のとき、`sin θ` は?",
       choices: ["`frac(sqrt(3),2)`", "`frac(1,2)`", "`frac(1,4)`", "`frac(3,4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin^2 θ=1-frac(1,4)=frac(3,4)`。鋭角なので `sin θ=frac(sqrt(3),2)`。",
     },
     {
@@ -101,6 +108,7 @@ export default {
       q: "`sin θ=frac(1,sqrt(2))`、`cos θ=frac(1,sqrt(2))` のとき `tan θ` は?",
       choices: ["`1`", "`frac(1,2)`", "`sqrt(2)`", "`2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan θ=frac(sin θ,cos θ)=1`。(これは45°の三角比)",
     },
     {
@@ -108,6 +116,7 @@ export default {
       q: "θ が鋭角で `sin θ=frac(5,13)` のとき、`cos θ` は?",
       choices: ["`frac(12,13)`", "`frac(5,12)`", "`frac(8,13)`", "`frac(13,12)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos^2 θ=1-frac(25,169)=frac(144,169)` → `cos θ=frac(12,13)`。",
     },
     {
@@ -115,6 +124,7 @@ export default {
       q: "θ が鋭角で `sin θ=frac(5,13)` のとき、`tan θ` は?",
       choices: ["`frac(5,12)`", "`frac(12,5)`", "`frac(5,13)`", "`frac(13,5)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos θ=frac(12,13)` なので `tan θ=frac(5,13)÷frac(12,13)=frac(5,12)`。",
     },
     {
@@ -127,6 +137,7 @@ export default {
         "`frac(sqrt(5),2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin^2 θ=1-frac(4,9)=frac(5,9)` → `sin θ=frac(sqrt(5),3)`。",
     },
     {
@@ -134,6 +145,7 @@ export default {
       q: "θ が鋭角で `tan θ=1` のとき、`cos θ` は?",
       choices: ["`frac(1,sqrt(2))`", "`1`", "`frac(1,2)`", "`sqrt(2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(1,cos^2 θ)=1+1=2` → `cos^2 θ=frac(1,2)` → `cos θ=frac(1,sqrt(2))`。",
     },
     {
@@ -146,6 +158,7 @@ export default {
         "`frac(1,2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(1,cos^2 θ)=1+4=5` → `cos θ=frac(1,sqrt(5))`。",
     },
     {
@@ -158,6 +171,7 @@ export default {
         "`frac(4,5)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin θ=tan θ×cos θ=2×frac(1,sqrt(5))=frac(2,sqrt(5))`。",
     },
     {
@@ -170,6 +184,7 @@ export default {
         "`2sin θcos θ`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "展開すると `sin^2 θ+2sin θcos θ+cos^2 θ`。前後の和は1なので `1+2sin θcos θ`。",
     },
     {
@@ -177,6 +192,7 @@ export default {
       q: "`sin θ+cos θ=frac(sqrt(6),2)` のとき、`sin θcos θ` の値は?",
       choices: ["`frac(1,4)`", "`frac(1,2)`", "`frac(3,4)`", "`frac(sqrt(6),4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "両辺2乗: `1+2sin θcos θ=frac(6,4)` → `2sin θcos θ=frac(1,2)` → `sin θcos θ=frac(1,4)`。",
     },
     {
@@ -184,6 +200,7 @@ export default {
       q: "`(1-sin θ)(1+sin θ)` と等しいのは?",
       choices: ["`cos^2 θ`", "`sin^2 θ`", "`1`", "`tan^2 θ`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "和と差の積で `1-sin^2 θ`。相互関係から `cos^2 θ`。",
     },
   ],
@@ -193,6 +210,7 @@ export default {
       q: "θ が鋭角で `sin θ=frac(4,5)` のとき、`cos θ` は?",
       choices: ["`frac(3,5)`", "`frac(4,3)`", "`frac(1,5)`", "`frac(3,4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos^2 θ=1-frac(16,25)=frac(9,25)` → `frac(3,5)`。",
     },
     {
@@ -200,6 +218,7 @@ export default {
       q: "θ が鋭角で `sin θ=frac(4,5)` のとき、`tan θ` は?",
       choices: ["`frac(4,3)`", "`frac(3,4)`", "`frac(4,5)`", "`frac(5,3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan θ=frac(4,5)÷frac(3,5)=frac(4,3)`。",
     },
     {
@@ -212,6 +231,7 @@ export default {
         "`frac(sqrt(2),3)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin^2 θ=1-frac(1,9)=frac(8,9)` → `sin θ=frac(2sqrt(2),3)`。",
     },
     {
@@ -224,6 +244,7 @@ export default {
         "`frac(1,2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(1,cos^2 θ)=1+frac(1,4)=frac(5,4)` → `cos^2 θ=frac(4,5)` → `cos θ=frac(2,sqrt(5))`。",
     },
     {
@@ -231,6 +252,7 @@ export default {
       q: "`tan θ×cos θ` と等しいのは?",
       choices: ["`sin θ`", "`cos θ`", "`1`", "`tan θ`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(sin θ,cos θ)×cos θ=sin θ`。",
     },
     {
@@ -238,6 +260,7 @@ export default {
       q: "`sin^2 25°+cos^2 25°+1` の値は?",
       choices: ["`2`", "`1`", "`0`", "`25`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin^2 25°+cos^2 25°=1` なので `1+1=2`。",
     },
     {
@@ -245,6 +268,7 @@ export default {
       q: "`sin θ+cos θ=frac(1,2)` のとき、`sin θcos θ` の値は?",
       choices: ["`-frac(3,8)`", "`frac(3,8)`", "`-frac(1,4)`", "`frac(1,8)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "2乗して `1+2sin θcos θ=frac(1,4)` → `sin θcos θ=-frac(3,8)`。",
     },
     {
@@ -252,6 +276,7 @@ export default {
       q: "`(sin θ-cos θ)^2+2sin θcos θ` を簡単にすると?",
       choices: ["`1`", "`0`", "`2sin θcos θ`", "`cos^2 θ`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "展開すると `sin^2 θ-2sin θcos θ+cos^2 θ+2sin θcos θ=sin^2 θ+cos^2 θ=1`。",
     },
   ],

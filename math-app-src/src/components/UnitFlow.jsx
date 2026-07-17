@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import Quiz from "./Quiz.jsx";
 import Lesson from "./Lesson.jsx";
 import MathText from "./MathText.jsx";
+import ExplainMode from "./ExplainMode.jsx";
+import MistakeTags from "./MistakeTags.jsx";
 import { tallyResults } from "../logic/grading.js";
 import { diagPassed, masteryFromTest } from "../logic/mastery.js";
-import { updateUnitProgress } from "../logic/storage.js";
+import { updateUnitProgress, recordMistakes } from "../logic/storage.js";
 
 export default function UnitFlow({ unit, progress, onExit }) {
   // 初回は診断から。すでに履歴がある単元はメニューから。
@@ -43,6 +45,12 @@ export default function UnitFlow({ unit, progress, onExit }) {
   const finishTest = (results) => {
     const tally = tallyResults(results);
     const mastery = masteryFromTest(tally.correct, tally.total);
+    // 間違えた問題のミスタイプを弱点分析に記録
+    recordMistakes(
+      results
+        .filter((r) => !r.correct)
+        .map((r) => ({ qid: r.qid, unitId: unit.id, type: r.question.mistakeType }))
+    );
     updateUnitProgress(unit.id, {
       mastery,
       status: "completed",
@@ -74,6 +82,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
             ["diag-intro", "診断テストを受ける", "5問で今の力をチェック(高得点ならスキップも選べる)"],
             ["lesson", "解き方の解説を読む", "基本の考え方をゆっくり確認"],
             ["practice", "演習をする", "超基礎から章末レベルまで段階的に"],
+            ["explain", "説明の練習をする", "「なぜその解き方?」を自分の言葉で説明してみる"],
             ["test-intro", "確認テストを受ける", "習熟度%を測定して記録する"],
           ].map(([key, label, desc]) => (
             <button
@@ -182,6 +191,15 @@ export default function UnitFlow({ unit, progress, onExit }) {
       <Lesson
         unit={unit}
         onStart={() => setStage("practice")}
+        onExit={hasHistory ? () => setStage("menu") : onExit}
+      />
+    );
+  }
+
+  if (stage === "explain") {
+    return (
+      <ExplainMode
+        unit={unit}
         onExit={hasHistory ? () => setStage("menu") : onExit}
       />
     );
@@ -306,6 +324,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
                   <p className="text-secondary">
                     <MathText text={r.question.exp} />
                   </p>
+                  <MistakeTags qid={r.qid} initialType={r.question.mistakeType} />
                 </div>
               ))}
             </div>

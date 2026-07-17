@@ -41,6 +41,7 @@ export default {
       q: "`sin 150°` の値は?",
       choices: ["`frac(1,2)`", "`-frac(1,2)`", "`frac(sqrt(3),2)`", "`-frac(sqrt(3),2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin 150°=sin(180°-30°)=sin 30°=frac(1,2)`。sinは鈍角でも正。",
     },
     {
@@ -48,6 +49,7 @@ export default {
       q: "`cos 120°` の値は?",
       choices: ["`-frac(1,2)`", "`frac(1,2)`", "`-frac(sqrt(3),2)`", "`frac(sqrt(3),2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 120°=-cos 60°=-frac(1,2)`。cosは鈍角で負になる。",
     },
     {
@@ -55,6 +57,7 @@ export default {
       q: "`tan 135°` の値は?",
       choices: ["`-1`", "`1`", "`-sqrt(3)`", "`frac(1,sqrt(3))`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan 135°=-tan 45°=-1`。",
     },
     {
@@ -62,6 +65,7 @@ export default {
       q: "`0°≤θ≤180°` のとき、方程式 `sin θ=frac(1,2)` の解は?",
       choices: ["`θ=30°, 150°`", "`θ=30°`", "`θ=60°, 120°`", "`θ=150°`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "sinが同じ値になる角は θ と 180°−θ の2つ: 30°と150°。",
     },
     {
@@ -69,6 +73,7 @@ export default {
       q: "θ が鈍角のとき、`cos θ` の符号は?",
       choices: ["負", "正", "0", "角度による"],
       answer: 0,
+      mistakeType: "sign",
       exp: "鈍角では半円の左半分にあるので `x` 座標=cosは負。",
     },
   ],
@@ -78,6 +83,7 @@ export default {
       q: "`sin 90°` の値は?",
       choices: ["`1`", "`0`", "`frac(1,2)`", "定義されない"],
       answer: 0,
+      mistakeType: "formula",
       exp: "半円の頂点 `(0, 1)` の `y` 座標なので 1。",
     },
     {
@@ -85,6 +91,7 @@ export default {
       q: "`cos 180°` の値は?",
       choices: ["`-1`", "`1`", "`0`", "定義されない"],
       answer: 0,
+      mistakeType: "formula",
       exp: "点 `(-1, 0)` の `x` 座標なので -1。",
     },
     {
@@ -92,6 +99,7 @@ export default {
       q: "`sin 120°` の値は?",
       choices: ["`frac(sqrt(3),2)`", "`-frac(sqrt(3),2)`", "`frac(1,2)`", "`-frac(1,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin 120°=sin 60°=frac(sqrt(3),2)`。",
     },
     {
@@ -104,6 +112,7 @@ export default {
         "`-1`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 135°=-cos 45°=-frac(1,sqrt(2))`。",
     },
     {
@@ -111,6 +120,7 @@ export default {
       q: "`tan 120°` の値は?",
       choices: ["`-sqrt(3)`", "`sqrt(3)`", "`-frac(1,sqrt(3))`", "`-1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan 120°=-tan 60°=-sqrt(3)`。",
     },
     {
@@ -118,6 +128,7 @@ export default {
       q: "`sin 135°+cos 45°` の値は?",
       choices: ["`sqrt(2)`", "`0`", "`1`", "`frac(2,sqrt(2))+1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin 135°=frac(1,sqrt(2))`、`cos 45°=frac(1,sqrt(2))`。和は `frac(2,sqrt(2))=sqrt(2)`。",
     },
     {
@@ -125,6 +136,7 @@ export default {
       q: "`0°≤θ≤180°` のとき、方程式 `cos θ=-frac(1,2)` の解は?",
       choices: ["`θ=120°`", "`θ=60°`", "`θ=120°, 60°`", "`θ=150°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "cosが `-frac(1,2)` になるのは `θ=120°` のみ。cosの方程式の解は1つ。",
     },
     {
@@ -132,6 +144,7 @@ export default {
       q: "`0°≤θ≤180°` のとき、方程式 `sin θ=frac(sqrt(3),2)` の解は?",
       choices: ["`θ=60°, 120°`", "`θ=60°`", "`θ=30°, 150°`", "`θ=120°`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`sin 60°=sin 120°=frac(sqrt(3),2)` なので2つ。",
     },
     {
@@ -139,6 +152,7 @@ export default {
       q: "θ が鈍角で `sin θ=frac(3,5)` のとき、`cos θ` は?",
       choices: ["`-frac(4,5)`", "`frac(4,5)`", "`-frac(3,4)`", "`frac(3,4)`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`cos^2 θ=frac(16,25)`。鈍角なのでcosは負: `-frac(4,5)`。相互関係は鈍角でも使える。",
     },
     {
@@ -146,6 +160,7 @@ export default {
       q: "θ が鈍角で `sin θ=frac(3,5)` のとき、`tan θ` は?",
       choices: ["`-frac(3,4)`", "`frac(3,4)`", "`-frac(4,3)`", "`frac(4,3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan θ=frac(3,5)÷(-frac(4,5))=-frac(3,4)`。",
     },
     {
@@ -153,6 +168,7 @@ export default {
       q: "`0°≤θ≤180°` のとき、方程式 `tan θ=-1` の解は?",
       choices: ["`θ=135°`", "`θ=45°`", "`θ=135°, 45°`", "`θ=120°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "tanが負になるのは鈍角。`tan 135°=-tan 45°=-1`。",
     },
     {
@@ -160,6 +176,7 @@ export default {
       q: "`sin 130°` と等しいのは?",
       choices: ["`sin 50°`", "`cos 50°`", "`-sin 50°`", "`cos 130°`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`sin(180°-50°)=sin 50°`。数値を知らなくても公式で言い換えられる。",
     },
   ],
@@ -169,6 +186,7 @@ export default {
       q: "`sin 180°` の値は?",
       choices: ["`0`", "`1`", "`-1`", "定義されない"],
       answer: 0,
+      mistakeType: "formula",
       exp: "点 `(-1, 0)` の `y` 座標なので 0。",
     },
     {
@@ -181,6 +199,7 @@ export default {
         "`frac(1,2)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos 150°=-cos 30°=-frac(sqrt(3),2)`。",
     },
     {
@@ -193,6 +212,7 @@ export default {
         "`1`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin 135°=sin 45°=frac(1,sqrt(2))`。",
     },
     {
@@ -205,6 +225,7 @@ export default {
         "`-1`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`tan 150°=-tan 30°=-frac(1,sqrt(3))`。",
     },
     {
@@ -212,6 +233,7 @@ export default {
       q: "`0°≤θ≤180°` のとき、方程式 `sin θ=1` の解は?",
       choices: ["`θ=90°`", "`θ=0°`", "`θ=90°, 180°`", "`θ=45°, 135°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "sinが最大値1をとるのは `θ=90°` だけ。",
     },
     {
@@ -219,6 +241,7 @@ export default {
       q: "`0°≤θ≤180°` のとき、方程式 `cos θ=frac(sqrt(3),2)` の解は?",
       choices: ["`θ=30°`", "`θ=150°`", "`θ=30°, 150°`", "`θ=60°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "cosが正なので鋭角: `θ=30°` のみ。",
     },
     {
@@ -226,6 +249,7 @@ export default {
       q: "θ が鈍角で `cos θ=-frac(5,13)` のとき、`sin θ` は?",
       choices: ["`frac(12,13)`", "`-frac(12,13)`", "`frac(5,12)`", "`-frac(12,5)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sin^2 θ=1-frac(25,169)=frac(144,169)`。sinは0°〜180°で常に0以上なので `frac(12,13)`。",
     },
     {
@@ -233,6 +257,7 @@ export default {
       q: "`cos 100°` と等しいのは?",
       choices: ["`-cos 80°`", "`cos 80°`", "`sin 80°`", "`-sin 100°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`cos(180°-80°)=-cos 80°`。",
     },
   ],

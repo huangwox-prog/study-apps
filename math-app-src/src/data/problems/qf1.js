@@ -38,6 +38,7 @@ export default {
       q: "`y=x^2` のグラフの頂点は?",
       choices: ["原点 `(0, 0)`", "`(1, 1)`", "`(0, 1)`", "`(1, 0)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`y=x^2` は原点を頂点とする基本の放物線。",
     },
     {
@@ -45,6 +46,7 @@ export default {
       q: "`y=2x^2` のグラフはどんな形?",
       choices: ["下に凸の放物線", "上に凸の放物線", "直線", "円"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x^2` の係数 2 が正なので下に凸(∪の形)。",
     },
     {
@@ -52,6 +54,7 @@ export default {
       q: "`y=-x^2` のグラフはどんな形?",
       choices: ["上に凸の放物線", "下に凸の放物線", "`y=x^2` と同じ", "直線"],
       answer: 0,
+      mistakeType: "calc",
       exp: "係数 -1 が負なので上に凸(∩の形)。",
     },
     {
@@ -59,6 +62,7 @@ export default {
       q: "`y=(x-2)^2+1` のグラフの頂点は?",
       choices: ["`(2, 1)`", "`(-2, 1)`", "`(2, -1)`", "`(-2, -1)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`y=a(x-p)^2+q` の頂点は `(p, q)`。ここでは `(2, 1)`。",
     },
     {
@@ -66,6 +70,7 @@ export default {
       q: "`y=(x+1)^2-3` のグラフの頂点は?",
       choices: ["`(-1, -3)`", "`(1, -3)`", "`(1, 3)`", "`(-1, 3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+1)=(x-(-1))` なので頂点の `x` 座標は -1。頂点は `(-1, -3)`。",
     },
   ],
@@ -75,6 +80,7 @@ export default {
       q: "`y=x^2` のグラフの軸は?",
       choices: ["直線 `x=0`(y軸)", "直線 `y=0`(x軸)", "直線 `x=1`", "軸はない"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `(0,0)` を通る縦の直線 `x=0`(y軸)が軸。",
     },
     {
@@ -87,6 +93,7 @@ export default {
         "どちらも上に凸",
       ],
       answer: 0,
+      mistakeType: "sign",
       exp: "係数の符号で凸の向きが決まる。正なら下に凸、負なら上に凸。",
     },
     {
@@ -94,12 +101,14 @@ export default {
       q: "`y=x^2+2` のグラフの頂点は?",
       choices: ["`(0, 2)`", "`(2, 0)`", "`(0, -2)`", "`(-2, 0)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`y=(x-0)^2+2` とみると頂点は `(0, 2)`。`y=x^2` を上に2動かした形。",
     },
     {
       id: "qf1-p4", type: "graph", level: 1,
       q: "`y=x^2` のグラフをかこう。(頂点をタップで指定して、凸の向きを選ぶ)",
       vertex: [0, 0], dir: 1,
+      mistakeType: "calc",
       exp: "頂点は原点 `(0, 0)`、係数1は正なので下に凸。",
     },
     {
@@ -107,6 +116,7 @@ export default {
       q: "`y=(x-1)^2` のグラフの頂点は?",
       choices: ["`(1, 0)`", "`(-1, 0)`", "`(0, 1)`", "`(0, -1)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`q=0` の形。頂点は `(1, 0)`。",
     },
     {
@@ -119,12 +129,14 @@ export default {
         "頂点 `(3, -2)`、軸 `x=3`",
       ],
       answer: 0,
+      mistakeType: "sign",
       exp: "カッコ内の符号は逆になる: 頂点 `(-2, 3)`。軸は頂点を通る縦線 `x=-2`。",
     },
     {
       id: "qf1-p7", type: "graph", level: 2,
       q: "`y=(x-2)^2-3` のグラフをかこう。",
       vertex: [2, -3], dir: 1,
+      mistakeType: "calc",
       exp: "頂点は `(2, -3)`、係数1は正なので下に凸。",
     },
     {
@@ -137,12 +149,14 @@ export default {
         "頂点 `(1, -4)` で上に凸",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点は `(1, 4)`。先頭のマイナスで上に凸。",
     },
     {
       id: "qf1-p9", type: "graph", level: 3,
       q: "`y=-(x+2)^2+3` のグラフをかこう。",
       vertex: [-2, 3], dir: -1,
+      mistakeType: "sign",
       exp: "頂点は `(-2, 3)`(カッコ内の符号は逆)。マイナスがついているので上に凸。",
     },
     {
@@ -150,12 +164,14 @@ export default {
       q: "`y=2(x-3)^2-5` のグラフの軸は?",
       choices: ["直線 `x=3`", "直線 `x=-3`", "直線 `x=2`", "直線 `y=-5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `(3, -5)` を通る縦線 `x=3` が軸。係数2は開き具合にしか影響しない。",
     },
     {
       id: "qf1-p11", type: "graph", level: 3,
       q: "`y=(x+3)^2-2` のグラフをかこう。",
       vertex: [-3, -2], dir: 1,
+      mistakeType: "calc",
       exp: "頂点は `(-3, -2)`、下に凸。",
     },
     {
@@ -168,6 +184,7 @@ export default {
         "`y=-(x-2)^2+1`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `(2, -1)` → `(x-2)^2` と `-1`。上に凸 → 先頭にマイナス。",
     },
   ],
@@ -177,6 +194,7 @@ export default {
       q: "`y=-2x^2` のグラフはどんな形?",
       choices: ["上に凸の放物線", "下に凸の放物線", "直線", "双曲線"],
       answer: 0,
+      mistakeType: "calc",
       exp: "係数 -2 が負なので上に凸。",
     },
     {
@@ -184,6 +202,7 @@ export default {
       q: "`y=(x-4)^2+2` のグラフの頂点は?",
       choices: ["`(4, 2)`", "`(-4, 2)`", "`(4, -2)`", "`(2, 4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点は `(4, 2)`。",
     },
     {
@@ -191,12 +210,14 @@ export default {
       q: "`y=(x+3)^2` のグラフの頂点は?",
       choices: ["`(-3, 0)`", "`(3, 0)`", "`(0, 3)`", "`(0, -3)`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "カッコ内の符号は逆: 頂点 `(-3, 0)`。",
     },
     {
       id: "qf1-t4", type: "graph",
       q: "`y=(x-1)^2+2` のグラフをかこう。",
       vertex: [1, 2], dir: 1,
+      mistakeType: "calc",
       exp: "頂点 `(1, 2)`、下に凸。",
     },
     {
@@ -204,12 +225,14 @@ export default {
       q: "`y=-3(x+1)^2-2` のグラフの軸は?",
       choices: ["直線 `x=-1`", "直線 `x=1`", "直線 `x=-3`", "直線 `y=-2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `(-1, -2)` を通る縦線 `x=-1`。",
     },
     {
       id: "qf1-t6", type: "graph",
       q: "`y=-(x-3)^2+1` のグラフをかこう。",
       vertex: [3, 1], dir: -1,
+      mistakeType: "calc",
       exp: "頂点 `(3, 1)`、マイナスがつくので上に凸。",
     },
     {
@@ -222,6 +245,7 @@ export default {
         "`y=2x^2` は上に凸になる",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "係数の絶対値が大きいほどグラフは細くなる。",
     },
     {
@@ -234,6 +258,7 @@ export default {
         "`y=(x+1)^2-3`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "頂点 `(-1, 3)` なので `(x+1)^2` と `+3`。",
     },
   ],

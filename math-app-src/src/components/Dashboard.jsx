@@ -2,6 +2,8 @@
 import React from "react";
 import { masteryLabel, overallProgress } from "../logic/mastery.js";
 import { EXAM_SETS } from "../logic/examGenerator.js";
+import { summarizeMistakes } from "../logic/weakness.js";
+import WeakSpots from "./WeakSpots.jsx";
 
 const CATEGORY_LABELS = {
   ns: "数と式",
@@ -9,7 +11,7 @@ const CATEGORY_LABELS = {
   tri: "三角比",
 };
 
-export default function Dashboard({ units, progress, onOpenUnit, onOpenExam }) {
+export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onOpenReview }) {
   const overall = overallProgress(units, progress.units);
   const completedCount = units.filter(
     (u) => (progress.units[u.id]?.mastery ?? 0) >= 70
@@ -38,6 +40,11 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam }) {
           </p>
         </div>
       </header>
+
+      {/* サイドパネルが隠れる狭い画面でだけ表示(広い画面では右レールに表示される) */}
+      <div className="mobile-only" style={{ marginBottom: 32 }}>
+        <WeakSpots summary={summarizeMistakes(progress)} onOpenReview={onOpenReview} />
+      </div>
 
       {categories.map((cat) => {
         const catUnits = units.filter((u) => u.category === cat);

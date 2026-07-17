@@ -40,6 +40,7 @@ export default {
       q: "方程式 `x^2=9` の解は?",
       choices: ["`x=±3`", "`x=3`", "`x=81`", "`x=±9`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "2乗して9になる数は 3 と -3。±を忘れずに。",
     },
     {
@@ -47,6 +48,7 @@ export default {
       q: "方程式 `x^2-5x+6=0` の解は?",
       choices: ["`x=2, 3`", "`x=-2, -3`", "`x=1, 6`", "`x=5, 6`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-2)(x-3)=0` より `x=2, 3`。",
     },
     {
@@ -59,6 +61,7 @@ export default {
         "`x=-3±sqrt(5)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "解の公式: `x=frac(-3±sqrt(9-4),2)=frac(-3±sqrt(5),2)`。",
     },
     {
@@ -66,6 +69,7 @@ export default {
       q: "方程式 `x^2+2x+3=0` の実数解の個数は?",
       choices: ["0個", "1個", "2個", "3個"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=2^2-4×1×3=-8<0` なので実数解なし。",
     },
     {
@@ -78,6 +82,7 @@ export default {
         "`x=frac(3,2), 1`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(2x-1)(x-1)=0` より `x=frac(1,2), 1`。",
     },
   ],
@@ -87,6 +92,7 @@ export default {
       q: "方程式 `x^2=16` の解は?",
       choices: ["`x=±4`", "`x=4`", "`x=8`", "`x=±8`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x=±4`。",
     },
     {
@@ -94,6 +100,7 @@ export default {
       q: "方程式 `(x-1)(x+3)=0` の解は?",
       choices: ["`x=1, -3`", "`x=-1, 3`", "`x=1, 3`", "`x=-1, -3`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "各因数=0 とおく: `x=1` または `x=-3`。符号はカッコの中と逆。",
     },
     {
@@ -101,6 +108,7 @@ export default {
       q: "方程式 `x^2-4x=0` の解は?",
       choices: ["`x=0, 4`", "`x=4`", "`x=±4`", "`x=0, -4`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`x(x-4)=0` より `x=0, 4`。`x=0` を落とさないこと。",
     },
     {
@@ -108,6 +116,7 @@ export default {
       q: "方程式 `x^2+7x+12=0` の解は?",
       choices: ["`x=-3, -4`", "`x=3, 4`", "`x=-2, -6`", "`x=-1, -12`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+3)(x+4)=0` より `x=-3, -4`。",
     },
     {
@@ -115,6 +124,7 @@ export default {
       q: "方程式 `x^2-x-6=0` の解は?",
       choices: ["`x=3, -2`", "`x=-3, 2`", "`x=6, -1`", "`x=1, -6`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-3)(x+2)=0` より `x=3, -2`。",
     },
     {
@@ -122,6 +132,7 @@ export default {
       q: "方程式 `x^2-6x+9=0` の解は?",
       choices: ["`x=3`(重解)", "`x=±3`", "`x=3, -3`", "`x=9`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`(x-3)^2=0` より `x=3` の重解。解は1つだけ。",
     },
     {
@@ -134,6 +145,7 @@ export default {
         "`x=-1±sqrt(5)`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "解の公式: `x=frac(-1±sqrt(1+4),2)=frac(-1±sqrt(5),2)`。",
     },
     {
@@ -141,6 +153,7 @@ export default {
       q: "方程式 `x^2-4x+1=0` の解は?",
       choices: ["`x=2±sqrt(3)`", "`x=-2±sqrt(3)`", "`x=4±sqrt(3)`", "`x=2±sqrt(5)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x=frac(4±sqrt(16-4),2)=frac(4±2sqrt(3),2)=2±sqrt(3)`。約分を忘れずに。",
     },
     {
@@ -153,6 +166,7 @@ export default {
         "`x=frac(-5±sqrt(33),4)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x=frac(-5±sqrt(25-8),4)=frac(-5±sqrt(17),4)`。分母は `2a=4`。",
     },
     {
@@ -160,6 +174,7 @@ export default {
       q: "方程式 `x^2+4x+k=0` が重解をもつときの `k` の値は?",
       choices: ["`k=4`", "`k=2`", "`k=-4`", "`k=16`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "重解の条件は `D=0`: `16-4k=0` より `k=4`。",
     },
     {
@@ -172,6 +187,7 @@ export default {
         "`k<9`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=9-4k>0` より `k<frac(9,4)`。",
     },
     {
@@ -184,6 +200,7 @@ export default {
         "`x=3, -1`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(3x+1)(x-1)=0` より `x=-frac(1,3), 1`。",
     },
   ],
@@ -193,6 +210,7 @@ export default {
       q: "方程式 `x^2=25` の解は?",
       choices: ["`x=±5`", "`x=5`", "`x=±25`", "`x=12.5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x=±5`。",
     },
     {
@@ -200,6 +218,7 @@ export default {
       q: "方程式 `x^2+8x+15=0` の解は?",
       choices: ["`x=-3, -5`", "`x=3, 5`", "`x=-1, -15`", "`x=-3, 5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+3)(x+5)=0` より `x=-3, -5`。",
     },
     {
@@ -207,6 +226,7 @@ export default {
       q: "方程式 `x^2-2x-8=0` の解は?",
       choices: ["`x=4, -2`", "`x=-4, 2`", "`x=8, -1`", "`x=2, 4`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-4)(x+2)=0` より `x=4, -2`。",
     },
     {
@@ -219,6 +239,7 @@ export default {
         "`x=frac(-5±sqrt(17),4)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x=frac(-5±sqrt(25-8),2)=frac(-5±sqrt(17),2)`。",
     },
     {
@@ -226,6 +247,7 @@ export default {
       q: "方程式 `x^2-6x+2=0` の解は?",
       choices: ["`x=3±sqrt(7)`", "`x=-3±sqrt(7)`", "`x=6±sqrt(7)`", "`x=3±sqrt(11)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x=frac(6±sqrt(36-8),2)=frac(6±2sqrt(7),2)=3±sqrt(7)`。",
     },
     {
@@ -233,6 +255,7 @@ export default {
       q: "方程式 `x^2-4x+5=0` の実数解の個数は?",
       choices: ["0個", "1個", "2個", "判別できない"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=16-20=-4<0` なので実数解なし。",
     },
     {
@@ -245,6 +268,7 @@ export default {
         "`x=frac(1,2), 2`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(2x-1)(x+2)=0` より `x=frac(1,2), -2`。",
     },
     {
@@ -252,6 +276,7 @@ export default {
       q: "方程式 `x^2-6x+k=0` が重解をもつときの `k` は?",
       choices: ["`k=9`", "`k=6`", "`k=-9`", "`k=36`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=36-4k=0` より `k=9`。",
     },
     {
@@ -264,6 +289,7 @@ export default {
         "`a=-7`、もう1つの解は `x=3`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x=2` を代入: `4+2a+6=0` → `a=-5`。方程式は `x^2-5x+6=0` → `(x-2)(x-3)=0` でもう1つの解は 3。",
     },
     {
@@ -276,6 +302,7 @@ export default {
         "`k=1`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "`frac(D,4)=(k+1)^2-k^2=2k+1=0` より `k=-frac(1,2)`。b が偶数の形は `frac(D,4)` を使うと計算がラク。",
     },
     {
@@ -283,6 +310,7 @@ export default {
       q: "【応用】縦が横より3cm長い長方形の面積が40cm²のとき、横の長さは?",
       choices: ["`5` cm", "`8` cm", "`4` cm", "`10` cm"],
       answer: 0,
+      mistakeType: "read",
       exp: "横を `x` とすると `x(x+3)=40` → `x^2+3x-40=0` → `(x+8)(x-5)=0`。長さは正なので `x=5`。",
     },
   ],

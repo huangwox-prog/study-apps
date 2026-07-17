@@ -39,6 +39,7 @@ export default {
       q: "塔から30m離れた地点で塔の先端の仰角が60°のとき、目の高さから測った塔の高さは?",
       choices: ["`30sqrt(3)` m", "`10sqrt(3)` m", "`30` m", "`15sqrt(3)` m"],
       answer: 0,
+      mistakeType: "read",
       exp: "高さ = `30 tan 60°=30sqrt(3)` m。",
     },
     {
@@ -46,6 +47,7 @@ export default {
       q: "三角形の面積が12、底辺が6のとき、高さは?",
       choices: ["`4`", "`2`", "`6`", "`3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`12=frac(1,2)×6×h` → `h=4`。",
     },
     {
@@ -53,6 +55,7 @@ export default {
       q: "`AB=3, AC=4, A=60°` の三角形ABCの辺BCは?",
       choices: ["`sqrt(13)`", "`sqrt(7)`", "`5`", "`sqrt(37)`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "余弦定理: `BC^2=9+16-2×3×4×frac(1,2)=13`。",
     },
     {
@@ -65,6 +68,7 @@ export default {
         "求められない",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "対角線で分割し、それぞれに面積公式を使って合計する。",
     },
     {
@@ -72,6 +76,7 @@ export default {
       q: "気球から地上の点を見下ろす角(俯角)が30°、水平距離が `60sqrt(3)` m のとき、気球の高さは?",
       choices: ["`60` m", "`180` m", "`60sqrt(3)` m", "`30sqrt(3)` m"],
       answer: 0,
+      mistakeType: "read",
       exp: "高さ = `60sqrt(3)×tan 30°=60sqrt(3)×frac(1,sqrt(3))=60` m。",
     },
   ],
@@ -81,6 +86,7 @@ export default {
       q: "ビルから50m離れた地点で屋上の仰角が45°のとき、目の高さから測ったビルの高さは?",
       choices: ["`50` m", "`50sqrt(3)` m", "`25` m", "`50sqrt(2)` m"],
       answer: 0,
+      mistakeType: "read",
       exp: "`50 tan 45°=50` m。45°なら高さ=距離。",
     },
     {
@@ -93,6 +99,7 @@ export default {
         "`6+1.5` m",
       ],
       answer: 0,
+      mistakeType: "read",
       exp: "`12 tan 30°=frac(12,sqrt(3))=4sqrt(3)`。目の高さを足して `4sqrt(3)+1.5` m。",
     },
     {
@@ -100,6 +107,7 @@ export default {
       q: "三角形の面積が10、底辺が5のとき、その底辺に対する高さは?",
       choices: ["`4`", "`2`", "`5`", "`8`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`10=frac(1,2)×5×h` → `h=4`。",
     },
     {
@@ -107,6 +115,7 @@ export default {
       q: "`AB=5, AC=8, A=60°` の三角形ABCの面積は?",
       choices: ["`10sqrt(3)`", "`20sqrt(3)`", "`10`", "`20`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×5×8×frac(sqrt(3),2)=10sqrt(3)`。",
     },
     {
@@ -114,6 +123,7 @@ export default {
       q: "`AB=5, AC=8, A=60°` の三角形ABCの辺BCは?",
       choices: ["`7`", "`sqrt(89)`", "`sqrt(129)`", "`3sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`BC^2=25+64-2×5×8×frac(1,2)=89-40=49` → `BC=7`。",
     },
     {
@@ -126,6 +136,7 @@ export default {
         "`2sqrt(3)`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×BC×h` → `h=frac(2S,BC)=frac(20sqrt(3),7)`。面積を2通りに表す技。",
     },
     {
@@ -133,6 +144,7 @@ export default {
       q: "川の対岸の点Cを、岸のA・B(AB=100m)から見たら `∠CAB=75°, ∠CBA=45°` だった。`∠ACB` は?",
       choices: ["`60°`", "`45°`", "`30°`", "`75°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "内角の和: `180°-75°-45°=60°`。まず残りの角から。",
     },
     {
@@ -145,6 +157,7 @@ export default {
         "`50sqrt(2)` m",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "正弦定理: `frac(AC,sin B)=frac(AB,sin C)` → `AC=frac(100×frac(1,sqrt(2)),frac(sqrt(3),2))=frac(200,sqrt(6))=frac(100sqrt(2),sqrt(3))`。",
     },
     {
@@ -152,6 +165,7 @@ export default {
       q: "円に内接する四角形ABCDで `∠A=120°` のとき、`∠C` は?",
       choices: ["`60°`", "`120°`", "`90°`", "`30°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "円に内接する四角形の対角の和は180°: `∠C=180°-120°=60°`。",
     },
     {
@@ -159,6 +173,7 @@ export default {
       q: "四角形ABCDを対角線ACで分けると、三角形ABCの面積が `6sqrt(3)`、三角形ACDの面積が `4sqrt(3)`。四角形の面積は?",
       choices: ["`10sqrt(3)`", "`24sqrt(3)`", "`2sqrt(3)`", "`10`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "2つの三角形の和: `6sqrt(3)+4sqrt(3)=10sqrt(3)`。",
     },
   ],
@@ -173,6 +188,7 @@ export default {
         "`40` m",
       ],
       answer: 0,
+      mistakeType: "read",
       exp: "`40 tan 30°=frac(40,sqrt(3))` m(`=frac(40sqrt(3),3)` m)。",
     },
     {
@@ -180,6 +196,7 @@ export default {
       q: "`AB=4, AC=6, A=30°` の三角形ABCの面積は?",
       choices: ["`6`", "`12`", "`6sqrt(3)`", "`3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`S=frac(1,2)×4×6×frac(1,2)=6`。",
     },
     {
@@ -187,6 +204,7 @@ export default {
       q: "`AB=2, AC=3, A=60°` の三角形ABCの辺BCは?",
       choices: ["`sqrt(7)`", "`sqrt(19)`", "`sqrt(13)`", "`5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`BC^2=4+9-2×2×3×frac(1,2)=7`。",
     },
     {
@@ -194,6 +212,7 @@ export default {
       q: "面積が `9sqrt(3)`、底辺BCが6の三角形で、Aから辺BCへの高さは?",
       choices: ["`3sqrt(3)`", "`sqrt(3)`", "`6sqrt(3)`", "`frac(3sqrt(3),2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`h=frac(2S,BC)=frac(18sqrt(3),6)=3sqrt(3)`。",
     },
     {
@@ -201,6 +220,7 @@ export default {
       q: "2地点A・B(AB=60m)から点Cを見ると `∠CAB=45°, ∠CBA=75°`。`∠ACB` は?",
       choices: ["`60°`", "`45°`", "`75°`", "`30°`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`180°-45°-75°=60°`。",
     },
     {
@@ -213,6 +233,7 @@ export default {
         "`frac(60sqrt(3),sqrt(2))` m",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "正弦定理: `BC=frac(AB sin A,sin C)=frac(60×frac(1,sqrt(2)),frac(sqrt(3),2))=frac(120,sqrt(6))=frac(60sqrt(2),sqrt(3))`。",
     },
     {
@@ -220,6 +241,7 @@ export default {
       q: "1辺が6の正三角形の、1つの頂点から対辺への高さは?",
       choices: ["`3sqrt(3)`", "`6sqrt(3)`", "`3`", "`2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`h=6 sin 60°=6×frac(sqrt(3),2)=3sqrt(3)`。",
     },
     {
@@ -227,6 +249,7 @@ export default {
       q: "四角形ABCDを対角線BDで分けたら、三角形ABDの面積が8、三角形BCDの面積が `4sqrt(2)`。四角形の面積は?",
       choices: ["`8+4sqrt(2)`", "`12sqrt(2)`", "`32sqrt(2)`", "`12`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "そのまま足すだけ: `8+4sqrt(2)`。",
     },
     {
@@ -234,6 +257,7 @@ export default {
       q: "【応用】円に内接する四角形ABCDで `AB=2, BC=3, ∠ABC=120°` のとき、対角線ACは?",
       choices: ["`sqrt(19)`", "`sqrt(7)`", "`sqrt(13)`", "`5`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "三角形ABCで余弦定理: `AC^2=4+9-2×2×3×(-frac(1,2))=13+6=19`。",
     },
     {
@@ -241,6 +265,7 @@ export default {
       q: "【応用】前問の円に内接する四角形ABCD(`∠ABC=120°`)で、`∠ADC` は?",
       choices: ["`60°`", "`120°`", "`90°`", "`30°`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "円に内接する四角形の対角の和は `180°`: `∠ADC=180°-120°=60°`。三角形ACDでさらに余弦定理を使う流れが章末の定番。",
     },
     {
@@ -253,6 +278,7 @@ export default {
         "`20(sqrt(3)+1)` m",
       ],
       answer: 0,
+      mistakeType: "read",
       exp: "高さを `h` とすると、遠い地点から塔までは `frac(h,tan 30°)=sqrt(3)h`、近い地点からは `h`。差が60mなので `sqrt(3)h-h=60` → `h=frac(60,sqrt(3)-1)=30(sqrt(3)+1)`。",
     },
   ],

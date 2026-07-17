@@ -41,6 +41,7 @@ export default {
       q: "`2x(x+3)` を展開すると?",
       choices: ["`2x^2+6x`", "`2x^2+3`", "`2x^2+6`", "`2x+6x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "分配法則で `2x×x=2x^2`、`2x×3=6x`。中の項ぜんぶにかける。",
     },
     {
@@ -48,6 +49,7 @@ export default {
       q: "`(x+1)(x+2)` を展開すると?",
       choices: ["`x^2+3x+2`", "`x^2+2x+2`", "`x^2+3x+3`", "`x^2+2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+a)(x+b)=x^2+(a+b)x+ab`。和が3、積が2なので `x^2+3x+2`。",
     },
     {
@@ -55,6 +57,7 @@ export default {
       q: "`(x+3)^2` を展開すると?",
       choices: ["`x^2+6x+9`", "`x^2+9`", "`x^2+3x+9`", "`x^2+6x+6`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(a+b)^2=a^2+2ab+b^2`。真ん中の `2×x×3=6x` を忘れずに。",
     },
     {
@@ -62,6 +65,7 @@ export default {
       q: "`(x+2)(x-2)` を展開すると?",
       choices: ["`x^2-4`", "`x^2+4`", "`x^2-4x-4`", "`x^2-2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "和と差の積は2乗の差: `(a+b)(a-b)=a^2-b^2` で `x^2-4`。",
     },
     {
@@ -69,6 +73,7 @@ export default {
       q: "`(2x+1)(x+3)` を展開すると?",
       choices: ["`2x^2+7x+3`", "`2x^2+6x+3`", "`2x^2+7x+4`", "`2x^2+5x+3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2x×x=2x^2`、`2x×3+1×x=7x`、`1×3=3`。",
     },
   ],
@@ -78,6 +83,7 @@ export default {
       q: "`3(x+2)` を展開すると?",
       choices: ["`3x+6`", "`3x+2`", "`3x+5`", "`x+6`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "3を中の項ぜんぶにかける: `3x+6`。",
     },
     {
@@ -85,30 +91,35 @@ export default {
       q: "`x(x-5)` を展開すると?",
       choices: ["`x^2-5x`", "`x^2-5`", "`x^2+5x`", "`2x-5x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x×x=x^2`、`x×(-5)=-5x`。",
     },
     {
       id: "ns2-p3", type: "input", mode: "expand", level: 1,
       q: "`(x+1)(x+3)` を展開せよ。(入力パッドで式を作ろう)",
       answer: "x^2+4x+3",
+      mistakeType: "calc",
       exp: "`(x+a)(x+b)=x^2+(a+b)x+ab`。和が4、積が3なので `x^2+4x+3`。",
     },
     {
       id: "ns2-p4", type: "input", mode: "expand", level: 1,
       q: "`(x+2)(x+5)` を展開せよ。",
       answer: "x^2+7x+10",
+      mistakeType: "calc",
       exp: "和が `2+5=7`、積が `2×5=10` なので `x^2+7x+10`。",
     },
     {
       id: "ns2-p5", type: "input", mode: "expand", level: 2,
       q: "`(x-4)^2` を展開せよ。",
       answer: "x^2-8x+16",
+      mistakeType: "calc",
       exp: "`(a-b)^2=a^2-2ab+b^2`。`x^2-8x+16`。真ん中の項を忘れずに。",
     },
     {
       id: "ns2-p6", type: "input", mode: "expand", level: 2,
       q: "`(x+5)(x-5)` を展開せよ。",
       answer: "x^2-25",
+      mistakeType: "calc",
       exp: "和と差の積: `x^2-5^2 = x^2-25`。",
     },
     {
@@ -116,12 +127,14 @@ export default {
       q: "`(x-2)(x+6)` を展開すると?",
       choices: ["`x^2+4x-12`", "`x^2-4x-12`", "`x^2+4x+12`", "`x^2+8x-12`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "和が `-2+6=4`、積が `-2×6=-12` なので `x^2+4x-12`。",
     },
     {
       id: "ns2-p8", type: "input", mode: "expand", level: 2,
       q: "`(2x+3)^2` を展開せよ。",
       answer: "4x^2+12x+9",
+      mistakeType: "calc",
       exp: "`(2x)^2=4x^2`、`2×2x×3=12x`、`3^2=9`。先頭も2乗するのを忘れずに。",
     },
     {
@@ -129,6 +142,7 @@ export default {
       q: "`(3x-1)(2x+5)` を展開すると?",
       choices: ["`6x^2+13x-5`", "`6x^2-13x-5`", "`6x^2+17x-5`", "`6x^2+13x+5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`3x×2x=6x^2`、`3x×5+(-1)×2x=15x-2x=13x`、`-1×5=-5`。",
     },
     {
@@ -141,6 +155,7 @@ export default {
         "`a^2+b^2+c^2+2abc`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "3項の2乗の公式。それぞれの2乗と、2項ずつの積の2倍が全部出てくる。",
     },
     {
@@ -153,12 +168,14 @@ export default {
         "`x^2-2xy+y^2-9`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x+y=A` とおくと `(A-3)(A+3)=A^2-9`。`A^2=(x+y)^2=x^2+2xy+y^2` なので `x^2+2xy+y^2-9`。",
     },
     {
       id: "ns2-p12", type: "input", mode: "expand", level: 3,
       q: "`2(x+3)(x-3)` を展開せよ。",
       answer: "2x^2-18",
+      mistakeType: "calc",
       exp: "まず `(x+3)(x-3)=x^2-9`、それを2倍して `2x^2-18`。",
     },
   ],
@@ -168,18 +185,21 @@ export default {
       q: "`4x(x-2)` を展開すると?",
       choices: ["`4x^2-8x`", "`4x^2-8`", "`4x^2-2`", "`4x-8x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`4x×x=4x^2`、`4x×(-2)=-8x`。",
     },
     {
       id: "ns2-t2", type: "input", mode: "expand",
       q: "`(x+4)(x+2)` を展開せよ。",
       answer: "x^2+6x+8",
+      mistakeType: "calc",
       exp: "和が6、積が8なので `x^2+6x+8`。",
     },
     {
       id: "ns2-t3", type: "input", mode: "expand",
       q: "`(x+6)^2` を展開せよ。",
       answer: "x^2+12x+36",
+      mistakeType: "calc",
       exp: "`(a+b)^2=a^2+2ab+b^2` で `x^2+12x+36`。",
     },
     {
@@ -187,6 +207,7 @@ export default {
       q: "`(x-3)(x+3)` を展開すると?",
       choices: ["`x^2-9`", "`x^2+9`", "`x^2-6x-9`", "`x^2-3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "和と差の積: `x^2-9`。",
     },
     {
@@ -194,6 +215,7 @@ export default {
       q: "`(x-2)(x-7)` を展開すると?",
       choices: ["`x^2-9x+14`", "`x^2+9x+14`", "`x^2-9x-14`", "`x^2-5x+14`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "和が `-2+(-7)=-9`、積が `(-2)×(-7)=14`。",
     },
     {
@@ -201,6 +223,7 @@ export default {
       q: "`(3x+2)^2` を展開すると?",
       choices: ["`9x^2+12x+4`", "`9x^2+6x+4`", "`3x^2+12x+4`", "`9x^2+12x+2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(3x)^2=9x^2`、`2×3x×2=12x`、`2^2=4`。",
     },
     {
@@ -208,6 +231,7 @@ export default {
       q: "`(2x-3)(3x+4)` を展開すると?",
       choices: ["`6x^2-x-12`", "`6x^2+x-12`", "`6x^2-x+12`", "`6x^2-17x-12`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`6x^2 + (8x-9x) -12 = 6x^2-x-12`。",
     },
     {
@@ -220,6 +244,7 @@ export default {
         "`a^2+b^2+2ab+4`",
       ],
       answer: 0,
+      mistakeType: "formula",
       exp: "`(a+b+c)^2` の公式で `c=-2`: 各2乗 `a^2+b^2+4` と `2ab`、`2b×(-2)=-4b`、`2×(-2)×a=-4a`。",
     },
   ],

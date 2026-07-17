@@ -41,6 +41,7 @@ export default {
       q: "不等式 `x^2-5x+6<0` の解は?",
       choices: ["`2<x<3`", "`x<2, 3<x`", "`x<3`", "`-3<x<-2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-2)(x-3)<0`。下に凸で `y<0` は交点の間: `2<x<3`。",
     },
     {
@@ -48,6 +49,7 @@ export default {
       q: "不等式 `x^2-x-2>0` の解は?",
       choices: ["`x<-1, 2<x`", "`-1<x<2`", "`x>2`", "`x<-2, 1<x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+1)(x-2)>0`。`y>0` は交点の外側: `x<-1` または `x>2`。",
     },
     {
@@ -55,6 +57,7 @@ export default {
       q: "不等式 `x^2-4≤0` の解は?",
       choices: ["`-2≤x≤2`", "`x≤±2`", "`x≤-2, 2≤x`", "`x≤2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+2)(x-2)≤0` → 間で等号つき: `-2≤x≤2`。",
     },
     {
@@ -62,6 +65,7 @@ export default {
       q: "不等式 `x^2+1>0` の解は?",
       choices: ["すべての実数", "解なし", "`x>-1`", "`x>1`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`x^2≥0` なので `x^2+1` は常に正。どんな `x` でも成り立つ。",
     },
     {
@@ -69,6 +73,7 @@ export default {
       q: "不等式 `(x-1)^2≤0` の解は?",
       choices: ["`x=1` のみ", "すべての実数", "解なし", "`x≤1`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "2乗は0以上なので、`≤0` になれるのは `=0` のとき、つまり `x=1` だけ。",
     },
   ],
@@ -78,6 +83,7 @@ export default {
       q: "不等式 `(x-1)(x-4)<0` の解は?",
       choices: ["`1<x<4`", "`x<1, 4<x`", "`x<4`", "`-4<x<-1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`<0` は交点の間: `1<x<4`。",
     },
     {
@@ -85,6 +91,7 @@ export default {
       q: "不等式 `(x+2)(x-3)>0` の解は?",
       choices: ["`x<-2, 3<x`", "`-2<x<3`", "`x>3`", "`x<2, 3<x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`>0` は交点の外側: `x<-2` または `x>3`。",
     },
     {
@@ -92,6 +99,7 @@ export default {
       q: "不等式 `x^2-9<0` の解は?",
       choices: ["`-3<x<3`", "`x<±3`", "`x<-3, 3<x`", "`x<3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+3)(x-3)<0` → `-3<x<3`。",
     },
     {
@@ -99,6 +107,7 @@ export default {
       q: "不等式 `x^2≥4` の解は?",
       choices: ["`x≤-2, 2≤x`", "`-2≤x≤2`", "`x≥2`", "`x≥±2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x^2-4≥0` → `(x+2)(x-2)≥0` → 外側で等号つき。`x≥2` だけでは半分しか拾えていない。",
     },
     {
@@ -106,6 +115,7 @@ export default {
       q: "不等式 `x^2-7x+10≤0` の解は?",
       choices: ["`2≤x≤5`", "`x≤2, 5≤x`", "`2<x<5`", "`-5≤x≤-2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x-2)(x-5)≤0` → `2≤x≤5`。",
     },
     {
@@ -113,6 +123,7 @@ export default {
       q: "不等式 `x^2+2x-8>0` の解は?",
       choices: ["`x<-4, 2<x`", "`-4<x<2`", "`x>2`", "`x<-2, 4<x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+4)(x-2)>0` → 外側: `x<-4` または `x>2`。",
     },
     {
@@ -125,6 +136,7 @@ export default {
         "`1<x<2`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(2x-1)(x-2)<0` → 境目は `x=frac(1,2), 2` → 間で `frac(1,2)<x<2`。",
     },
     {
@@ -132,6 +144,7 @@ export default {
       q: "不等式 `-x^2+4x-3>0` の解は?",
       choices: ["`1<x<3`", "`x<1, 3<x`", "`x>3`", "`-3<x<-1`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "両辺×(-1)で向き反転: `x^2-4x+3<0` → `(x-1)(x-3)<0` → `1<x<3`。",
     },
     {
@@ -139,6 +152,7 @@ export default {
       q: "不等式 `x^2-2x+3>0` の解は?",
       choices: ["すべての実数", "解なし", "`x>1`", "`1<x<3`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=4-12<0` で `x` 軸と交わらず、下に凸なので常に正。すべての実数。",
     },
     {
@@ -146,6 +160,7 @@ export default {
       q: "不等式 `x^2+4x+4≤0` の解は?",
       choices: ["`x=-2` のみ", "すべての実数", "解なし", "`x≤-2`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`(x+2)^2≤0` → 2乗が0以下になるのは0のときだけ: `x=-2`。",
     },
     {
@@ -158,6 +173,7 @@ export default {
         "`-1<x<3`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "解の公式で境目は `x=frac(3±sqrt(13),2)`。`<0` なので間。",
     },
     {
@@ -165,6 +181,7 @@ export default {
       q: "すべての実数 `x` で `x^2+2x+k>0` が成り立つときの `k` の範囲は?",
       choices: ["`k>1`", "`k<1`", "`k≥1`", "`k>0`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "常に正 ⇔ `x` 軸と交わらない ⇔ `D=4-4k<0` → `k>1`。",
     },
   ],
@@ -174,6 +191,7 @@ export default {
       q: "不等式 `(x-2)(x-6)<0` の解は?",
       choices: ["`2<x<6`", "`x<2, 6<x`", "`x<6`", "`-6<x<-2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "間: `2<x<6`。",
     },
     {
@@ -181,6 +199,7 @@ export default {
       q: "不等式 `x^2-x-6>0` の解は?",
       choices: ["`x<-2, 3<x`", "`-2<x<3`", "`x>3`", "`x<-3, 2<x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+2)(x-3)>0` → 外側。",
     },
     {
@@ -188,6 +207,7 @@ export default {
       q: "不等式 `x^2-16≤0` の解は?",
       choices: ["`-4≤x≤4`", "`x≤-4, 4≤x`", "`x≤4`", "`x≤±4`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+4)(x-4)≤0` → `-4≤x≤4`。",
     },
     {
@@ -195,6 +215,7 @@ export default {
       q: "不等式 `x^2+6x+5≥0` の解は?",
       choices: ["`x≤-5, -1≤x`", "`-5≤x≤-1`", "`x≥-1`", "`x≥1, x≤5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(x+5)(x+1)≥0` → 外側で等号つき。",
     },
     {
@@ -207,6 +228,7 @@ export default {
         "`frac(1,4)<x<1`",
       ],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(3x-1)(x-1)<0` → `frac(1,3)<x<1`。",
     },
     {
@@ -214,6 +236,7 @@ export default {
       q: "不等式 `x^2+2x+5<0` の解は?",
       choices: ["解なし", "すべての実数", "`-5<x<1`", "`x<-1`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=4-20<0` で常に正。負になることはないので解なし。",
     },
     {
@@ -221,6 +244,7 @@ export default {
       q: "不等式 `(x-3)^2>0` の解は?",
       choices: ["`x=3` 以外のすべての実数", "すべての実数", "解なし", "`x>3`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "2乗は `x=3` のとき0、それ以外は正。`x≠3` が答え。",
     },
     {
@@ -228,6 +252,7 @@ export default {
       q: "すべての実数 `x` で `x^2-2kx+4>0` が成り立つときの `k` の範囲は?",
       choices: ["`-2<k<2`", "`k<-2, 2<k`", "`k<2`", "`0<k<4`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`D=4k^2-16<0` → `k^2<4` → `-2<k<2`。",
     },
     {
@@ -240,6 +265,7 @@ export default {
         "`x≤1`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "前: `(x-3)(x+2)<0` → `-2<x<3`。後: `(x-1)(x-3)≥0` → `x≤1, 3≤x`。共通範囲は `-2<x≤1`。",
     },
     {
@@ -252,6 +278,7 @@ export default {
         "`a<-1, 2<a`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "下に凸のグラフが `x` 軸に届けばよいので `frac(D,4)=a^2-a-2≥0` → `(a-2)(a+1)≥0` → `a≤-1, 2≤a`。",
     },
     {
@@ -264,6 +291,7 @@ export default {
         "`-4<k<4`",
       ],
       answer: 0,
+      mistakeType: "cond",
       exp: "`k=0` なら `1>0` で成立。`k≠0` なら `k>0` かつ `D=k^2-4k<0` → `0<k<4`。合わせて `0≤k<4`。`k=0` を落とすのが定番のワナ。",
     },
   ],

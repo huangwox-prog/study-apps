@@ -39,6 +39,7 @@ export default {
       q: "`|-5|` の値は?",
       choices: ["`5`", "`-5`", "`0`", "`±5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "絶対値は0からの距離なので 5。",
     },
     {
@@ -46,6 +47,7 @@ export default {
       q: "方程式 `|x|=3` の解は?",
       choices: ["`x=±3`", "`x=3`", "`x=-3`", "`x=9`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "0からの距離が3の点は 3 と -3 の2つ。",
     },
     {
@@ -53,6 +55,7 @@ export default {
       q: "不等式 `|x|<2` の解は?",
       choices: ["`-2<x<2`", "`x<2`", "`x<-2, 2<x`", "`x<-2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "距離が2より近い=内側で `-2<x<2`。",
     },
     {
@@ -60,6 +63,7 @@ export default {
       q: "方程式 `|x-1|=4` の解は?",
       choices: ["`x=5, -3`", "`x=5`", "`x=±4`", "`x=3, -5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x-1=±4` なので `x=5` または `x=-3`。",
     },
     {
@@ -67,6 +71,7 @@ export default {
       q: "不等式 `|x|≥3` の解は?",
       choices: ["`x≤-3, 3≤x`", "`-3≤x≤3`", "`x≥3`", "`x≥±3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "距離が3以上=外側で `x≤-3` または `x≥3`。",
     },
   ],
@@ -76,6 +81,7 @@ export default {
       q: "`|7|` の値は?",
       choices: ["`7`", "`-7`", "`0`", "`±7`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "正の数の絶対値はそのまま 7。",
     },
     {
@@ -83,6 +89,7 @@ export default {
       q: "`|-3|+|2|` の値は?",
       choices: ["`5`", "`-1`", "`1`", "`-5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`|-3|=3`、`|2|=2` で `3+2=5`。",
     },
     {
@@ -90,6 +97,7 @@ export default {
       q: "方程式 `|x|=6` の解は?",
       choices: ["`x=±6`", "`x=6`", "`x=-6`", "`x=36`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "0からの距離が6の点は ±6。",
     },
     {
@@ -97,6 +105,7 @@ export default {
       q: "不等式 `|x|≤1` の解は?",
       choices: ["`-1≤x≤1`", "`x≤1`", "`x≤-1, 1≤x`", "`x≤±1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "距離が1以下=内側で `-1≤x≤1`。",
     },
     {
@@ -104,6 +113,7 @@ export default {
       q: "方程式 `|x-2|=5` の解は?",
       choices: ["`x=7, -3`", "`x=7`", "`x=3, -7`", "`x=±5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x-2=±5` → `x=2+5=7` または `x=2-5=-3`。",
     },
     {
@@ -111,6 +121,7 @@ export default {
       q: "方程式 `|x+3|=2` の解は?",
       choices: ["`x=-1, -5`", "`x=1, 5`", "`x=-1`", "`x=±2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x+3=±2` → `x=-3+2=-1` または `x=-3-2=-5`。",
     },
     {
@@ -118,6 +129,7 @@ export default {
       q: "不等式 `|x-1|<3` の解は?",
       choices: ["`-2<x<4`", "`-3<x<3`", "`x<4`", "`x<-2, 4<x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-3<x-1<3` → 各辺に1をたして `-2<x<4`。",
     },
     {
@@ -125,6 +137,7 @@ export default {
       q: "不等式 `|x+2|≥1` の解は?",
       choices: ["`x≤-3, -1≤x`", "`-3≤x≤-1`", "`x≥-1`", "`x≤-3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x+2≤-1` または `x+2≥1` → `x≤-3` または `x≥-1`。",
     },
     {
@@ -132,6 +145,7 @@ export default {
       q: "方程式 `|2x-1|=5` の解は?",
       choices: ["`x=3, -2`", "`x=3`", "`x=2, -3`", "`x=±3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2x-1=±5` → `2x=6` または `2x=-4` → `x=3, -2`。",
     },
     {
@@ -139,6 +153,7 @@ export default {
       q: "不等式 `|2x+1|<7` の解は?",
       choices: ["`-4<x<3`", "`-3<x<4`", "`x<3`", "`-7<x<7`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-7<2x+1<7` → `-8<2x<6` → `-4<x<3`。",
     },
     {
@@ -146,6 +161,7 @@ export default {
       q: "不等式 `|x-3|>2` の解は?",
       choices: ["`x<1, 5<x`", "`1<x<5`", "`x>5`", "`x<-1, 5<x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x-3<-2` または `x-3>2` → `x<1` または `x>5`。",
     },
     {
@@ -153,6 +169,7 @@ export default {
       q: "不等式 `|3x-2|≤4` の解は?",
       choices: ["`-frac(2,3)≤x≤2`", "`-2≤x≤2`", "`x≤2`", "`-frac(4,3)≤x≤2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-4≤3x-2≤4` → `-2≤3x≤6` → `-frac(2,3)≤x≤2`。",
     },
   ],
@@ -162,6 +179,7 @@ export default {
       q: "`|-8|-|3|` の値は?",
       choices: ["`5`", "`-5`", "`11`", "`-11`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`8-3=5`。",
     },
     {
@@ -169,6 +187,7 @@ export default {
       q: "方程式 `|x|=9` の解は?",
       choices: ["`x=±9`", "`x=9`", "`x=-9`", "`x=3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "0からの距離が9なので ±9。",
     },
     {
@@ -176,6 +195,7 @@ export default {
       q: "方程式 `|x-4|=3` の解は?",
       choices: ["`x=7, 1`", "`x=7, -1`", "`x=±3`", "`x=7`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x-4=±3` → `x=7` または `x=1`。",
     },
     {
@@ -183,6 +203,7 @@ export default {
       q: "不等式 `|x|>4` の解は?",
       choices: ["`x<-4, 4<x`", "`-4<x<4`", "`x>4`", "`x>±4`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "距離が4より遠い=外側。",
     },
     {
@@ -190,6 +211,7 @@ export default {
       q: "不等式 `|x-2|≤3` の解は?",
       choices: ["`-1≤x≤5`", "`-3≤x≤3`", "`-5≤x≤1`", "`x≤5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-3≤x-2≤3` → `-1≤x≤5`。",
     },
     {
@@ -197,6 +219,7 @@ export default {
       q: "方程式 `|2x+3|=7` の解は?",
       choices: ["`x=2, -5`", "`x=-2, 5`", "`x=±7`", "`x=2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2x+3=±7` → `2x=4` または `2x=-10` → `x=2, -5`。",
     },
     {
@@ -204,6 +227,7 @@ export default {
       q: "不等式 `|x+1|>2` の解は?",
       choices: ["`x<-3, 1<x`", "`-3<x<1`", "`x>1`", "`x<-1, 3<x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x+1<-2` または `x+1>2` → `x<-3` または `x>1`。",
     },
     {
@@ -211,6 +235,7 @@ export default {
       q: "不等式 `|2x-3|<5` の解は?",
       choices: ["`-1<x<4`", "`-4<x<1`", "`x<4`", "`-5<x<5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`-5<2x-3<5` → `-2<2x<8` → `-1<x<4`。",
     },
   ],

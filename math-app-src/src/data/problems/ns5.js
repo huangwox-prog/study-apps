@@ -41,6 +41,7 @@ export default {
       q: "不等式 `x+3 < 7` を解くと?",
       choices: ["`x < 4`", "`x > 4`", "`x < 10`", "`x > -4`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "3を右へ移項: `x < 7-3 = 4`。",
     },
     {
@@ -48,6 +49,7 @@ export default {
       q: "不等式 `2x ≥ 6` を解くと?",
       choices: ["`x ≥ 3`", "`x ≤ 3`", "`x ≥ 12`", "`x ≥ 4`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "両辺を正の2で割る。向きはそのままで `x ≥ 3`。",
     },
     {
@@ -55,6 +57,7 @@ export default {
       q: "不等式 `-3x < 9` を解くと?",
       choices: ["`x > -3`", "`x < -3`", "`x > 3`", "`x < 3`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "負の数 -3 で割るので向きが反転: `x > -3`。",
     },
     {
@@ -62,6 +65,7 @@ export default {
       q: "不等式 `2x-1 > x+2` を解くと?",
       choices: ["`x > 3`", "`x < 3`", "`x > 1`", "`x > -3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "移項して `2x-x > 2+1`、つまり `x > 3`。",
     },
     {
@@ -69,6 +73,7 @@ export default {
       q: "連立不等式 `x+1 > 0` かつ `2x < 8` の解は?",
       choices: ["`-1 < x < 4`", "`x > -1`", "`x < 4`", "`-1 ≤ x ≤ 4`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "`x > -1` と `x < 4` の共通範囲で `-1 < x < 4`。",
     },
   ],
@@ -78,6 +83,7 @@ export default {
       q: "`x-2 > 1` を解くと?",
       choices: ["`x > 3`", "`x > -1`", "`x < 3`", "`x > 1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "-2を右へ移項: `x > 1+2 = 3`。",
     },
     {
@@ -85,6 +91,7 @@ export default {
       q: "`3x < 12` を解くと?",
       choices: ["`x < 4`", "`x > 4`", "`x < 36`", "`x < 9`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "正の3で割る: `x < 4`。向きはそのまま。",
     },
     {
@@ -92,6 +99,7 @@ export default {
       q: "`-x ≤ 5` を解くと?",
       choices: ["`x ≥ -5`", "`x ≤ -5`", "`x ≥ 5`", "`x ≤ 5`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "両辺に -1 をかけると向きが反転: `x ≥ -5`。",
     },
     {
@@ -99,6 +107,7 @@ export default {
       q: "`frac(x,2) > 3` を解くと?",
       choices: ["`x > 6`", "`x > frac(3,2)`", "`x < 6`", "`x > 5`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "両辺に正の2をかける: `x > 6`。",
     },
     {
@@ -106,6 +115,7 @@ export default {
       q: "`4x+3 < 2x+9` を解くと?",
       choices: ["`x < 3`", "`x > 3`", "`x < 6`", "`x < 2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`4x-2x < 9-3` → `2x < 6` → `x < 3`。",
     },
     {
@@ -113,6 +123,7 @@ export default {
       q: "`5-2x ≥ 1` を解くと?",
       choices: ["`x ≤ 2`", "`x ≥ 2`", "`x ≤ -2`", "`x ≥ -2`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "`-2x ≥ -4`、-2で割って向き反転: `x ≤ 2`。",
     },
     {
@@ -120,6 +131,7 @@ export default {
       q: "`3(x-1) > x+5` を解くと?",
       choices: ["`x > 4`", "`x > 2`", "`x < 4`", "`x > 1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "展開: `3x-3 > x+5` → `2x > 8` → `x > 4`。",
     },
     {
@@ -127,6 +139,7 @@ export default {
       q: "`frac(2x-1,3) < 1` を解くと?",
       choices: ["`x < 2`", "`x < 1`", "`x > 2`", "`x < frac(1,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "両辺×3で分母をはらう: `2x-1 < 3` → `x < 2`。",
     },
     {
@@ -134,6 +147,7 @@ export default {
       q: "連立不等式 `2x-3 < 5` かつ `3x+1 ≥ x-3` の解は?",
       choices: ["`-2 ≤ x < 4`", "`-2 < x < 4`", "`x < 4`", "`-2 ≤ x ≤ 4`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "前: `x < 4`。後: `2x ≥ -4` → `x ≥ -2`。共通範囲は `-2 ≤ x < 4`(等号の有無に注意)。",
     },
     {
@@ -141,6 +155,7 @@ export default {
       q: "連立不等式 `x+2 > 2x-1` かつ `5x ≥ 2x-6` の解は?",
       choices: ["`-2 ≤ x < 3`", "`-2 < x < 3`", "`x < 3`", "`-2 ≤ x ≤ 3`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "前: `-x > -3` → `x < 3`。後: `3x ≥ -6` → `x ≥ -2`。共通範囲は `-2 ≤ x < 3`。",
     },
     {
@@ -148,6 +163,7 @@ export default {
       q: "1個120円のりんごと1個80円のみかんを合わせて10個買い、代金を1000円以下にしたい。りんごは最大何個買える?",
       choices: ["5個", "4個", "6個", "7個"],
       answer: 0,
+      mistakeType: "read",
       exp: "りんご `x` 個なら `120x+80(10-x) ≤ 1000` → `40x ≤ 200` → `x ≤ 5`。最大5個。",
     },
     {
@@ -155,6 +171,7 @@ export default {
       q: "ある整数 `x` を3倍して5をたすと、`x` を5倍して1をひいた数より大きくなる。このような整数 `x` のうち最大のものは?",
       choices: ["`2`", "`3`", "`1`", "`0`"],
       answer: 0,
+      mistakeType: "read",
       exp: "`3x+5 > 5x-1` → `-2x > -6` → `x < 3`。3未満の最大の整数は 2。",
     },
   ],
@@ -164,6 +181,7 @@ export default {
       q: "`x+5 ≤ 8` を解くと?",
       choices: ["`x ≤ 3`", "`x ≥ 3`", "`x ≤ 13`", "`x < 3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x ≤ 8-5 = 3`。等号つきの `≤` のまま。",
     },
     {
@@ -171,6 +189,7 @@ export default {
       q: "`-2x > 8` を解くと?",
       choices: ["`x < -4`", "`x > -4`", "`x < 4`", "`x > 4`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "-2で割ると向き反転: `x < -4`。",
     },
     {
@@ -178,6 +197,7 @@ export default {
       q: "`3x-2 < x+6` を解くと?",
       choices: ["`x < 4`", "`x > 4`", "`x < 2`", "`x < 8`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2x < 8` → `x < 4`。",
     },
     {
@@ -185,6 +205,7 @@ export default {
       q: "`2(x+3) ≥ 5x-3` を解くと?",
       choices: ["`x ≤ 3`", "`x ≥ 3`", "`x ≤ -3`", "`x ≤ 1`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "`2x+6 ≥ 5x-3` → `-3x ≥ -9` → 向き反転で `x ≤ 3`。",
     },
     {
@@ -192,6 +213,7 @@ export default {
       q: "`frac(x-1,2) > frac(x,3)` を解くと?",
       choices: ["`x > 3`", "`x < 3`", "`x > -3`", "`x > 1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "両辺×6: `3(x-1) > 2x` → `3x-3 > 2x` → `x > 3`。",
     },
     {
@@ -199,6 +221,7 @@ export default {
       q: "連立不等式 `x-1 < 2` かつ `2x+1 ≥ -3` の解は?",
       choices: ["`-2 ≤ x < 3`", "`-2 < x < 3`", "`x < 3`", "`-2 ≤ x ≤ 3`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "前: `x < 3`。後: `2x ≥ -4` → `x ≥ -2`。共通範囲は `-2 ≤ x < 3`。",
     },
     {
@@ -206,6 +229,7 @@ export default {
       q: "不等式 `5x-2 < 3x+4` をみたす自然数 `x` をすべて求めると?",
       choices: ["`1, 2`", "`1, 2, 3`", "`1`", "`2, 3`"],
       answer: 0,
+      mistakeType: "read",
       exp: "`2x < 6` → `x < 3`。3未満の自然数は 1 と 2。",
     },
     {
@@ -213,6 +237,7 @@ export default {
       q: "1本150円のペンと1本100円の鉛筆を合わせて12本買い、代金を1500円以下にしたい。ペンは最大何本買える?",
       choices: ["6本", "5本", "7本", "8本"],
       answer: 0,
+      mistakeType: "read",
       exp: "ペン `x` 本で `150x+100(12-x) ≤ 1500` → `50x ≤ 300` → `x ≤ 6`。最大6本。",
     },
   ],

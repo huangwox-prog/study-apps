@@ -161,6 +161,46 @@ button {
   min-height: 100vh;
 }
 
+/* ホーム画面の3カラムレイアウト: 左=進捗マップ / 中央=コンテンツ / 右=弱点・ログ */
+.layout-3col {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 760px) 220px;
+  gap: 28px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  min-height: 100vh;
+  align-items: start;
+}
+
+.rail {
+  position: sticky;
+  top: 28px;
+  padding-top: 32px;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.rail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mobile-only { display: none; }
+
+/* 狭い画面ではサイドレールを隠し、中央1カラムに戻す */
+@media (max-width: 1100px) {
+  .layout-3col {
+    display: block;
+    max-width: 760px;
+    padding: 0;
+  }
+  .rail { display: none; }
+  .mobile-only { display: block; }
+}
+
 .screen {
   animation: screen-in var(--dur-slow) var(--ease) both;
 }

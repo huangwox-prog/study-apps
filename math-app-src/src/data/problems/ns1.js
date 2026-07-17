@@ -40,6 +40,7 @@ export default {
       q: "単項式 `3x^2y` の係数はどれ?",
       choices: ["`3`", "`2`", "`x^2`", "`3x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "係数は数の部分なので 3。文字の部分(`x^2y`)は係数に含めない。",
     },
     {
@@ -47,6 +48,7 @@ export default {
       q: "多項式 `5x^2+2x-3` は何次式?",
       choices: ["1次式", "2次式", "3次式", "5次式"],
       answer: 1,
+      mistakeType: "calc",
       exp: "いちばん次数の高い項は `5x^2`(次数2)なので2次式。係数の5と次数を混同しないように。",
     },
     {
@@ -54,6 +56,7 @@ export default {
       q: "`3x+5x` を計算すると?",
       choices: ["`8x`", "`8x^2`", "`15x`", "`8`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "同類項は係数どうしをたす: `3+5=8` なので `8x`。文字の指数は変わらない。",
     },
     {
@@ -61,6 +64,7 @@ export default {
       q: "`(2x+3)+(x-1)` を計算すると?",
       choices: ["`3x+2`", "`3x+4`", "`2x+2`", "`3x-2`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "カッコを外して同類項をまとめる: `2x+x=3x`、`3-1=2` で `3x+2`。",
     },
     {
@@ -68,6 +72,7 @@ export default {
       q: "`(3x^2+x)-(x^2-2x)` を計算すると?",
       choices: ["`2x^2+3x`", "`2x^2-x`", "`4x^2+3x`", "`2x^2-3x`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "ひき算はカッコ内の符号を反転: `3x^2+x-x^2+2x = 2x^2+3x`。`-(-2x)=+2x` に注意。",
     },
   ],
@@ -77,6 +82,7 @@ export default {
       q: "単項式 `4x` の係数は?",
       choices: ["`4`", "`x`", "`4x`", "`1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "数の部分が係数なので 4。",
     },
     {
@@ -84,6 +90,7 @@ export default {
       q: "単項式 `x^3` の次数は?",
       choices: ["`3`", "`1`", "`0`", "`x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x^3 = x×x×x` で文字が3個かけられているので次数は3。",
     },
     {
@@ -91,6 +98,7 @@ export default {
       q: "`2a+3a` を計算すると?",
       choices: ["`5a`", "`6a`", "`5a^2`", "`6a^2`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "同類項の係数をたす: `2+3=5` で `5a`。かけ算ではないので指数は増えない。",
     },
     {
@@ -98,6 +106,7 @@ export default {
       q: "`7x-4x` を計算すると?",
       choices: ["`3x`", "`3`", "`11x`", "`-3x`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`7-4=3` なので `3x`。",
     },
     {
@@ -105,6 +114,7 @@ export default {
       q: "単項式 `2x^3y` の次数は?",
       choices: ["`4`", "`3`", "`2`", "`6`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x` が3個、`y` が1個で合計4個。次数は文字の個数の合計。",
     },
     {
@@ -112,6 +122,7 @@ export default {
       q: "`3x^2` と同類項なのはどれ?",
       choices: ["`-5x^2`", "`3x`", "`3y^2`", "`2x^3`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "同類項は文字の部分が完全に同じ項。`x^2` どうしの `-5x^2` だけが同類項。",
     },
     {
@@ -119,6 +130,7 @@ export default {
       q: "`(x+4)+(2x-1)` を計算すると?",
       choices: ["`3x+3`", "`3x+5`", "`2x+3`", "`3x-3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x+2x=3x`、`4-1=3` で `3x+3`。",
     },
     {
@@ -126,6 +138,7 @@ export default {
       q: "`(4a+b)-(a-3b)` を計算すると?",
       choices: ["`3a+4b`", "`3a-2b`", "`5a+4b`", "`3a-4b`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "符号を反転してカッコを外す: `4a+b-a+3b = 3a+4b`。`-(-3b)=+3b` がポイント。",
     },
     {
@@ -133,6 +146,7 @@ export default {
       q: "`2(x^2+3x)+3(x^2-x)` を計算すると?",
       choices: ["`5x^2+3x`", "`5x^2+9x`", "`6x^2+3x`", "`5x^2-3x`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "分配してから同類項をまとめる: `2x^2+6x+3x^2-3x = 5x^2+3x`。",
     },
     {
@@ -140,6 +154,7 @@ export default {
       q: "`A=2x^2-x+3`、`B=x^2+2x-1` のとき、`A+B` は?",
       choices: ["`3x^2+x+2`", "`3x^2-x+2`", "`3x^2+x-2`", "`2x^2+x+2`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(2x^2+x^2)+(-x+2x)+(3-1) = 3x^2+x+2`。",
     },
     {
@@ -147,6 +162,7 @@ export default {
       q: "`A=2x^2-x+3`、`B=x^2+2x-1` のとき、`A-2B` は?",
       choices: ["`-5x+5`", "`x^2-5x+5`", "`-5x+1`", "`4x^2+3x+1`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2B=2x^2+4x-2`。`A-2B = 2x^2-x+3-2x^2-4x+2 = -5x+5`。`x^2` の項が消えるのが面白いところ。",
     },
     {
@@ -154,6 +170,7 @@ export default {
       q: "`3+2x^2-x` を `x` について降べきの順に整理すると?",
       choices: ["`2x^2-x+3`", "`3-x+2x^2`", "`-x+2x^2+3`", "`2x^2+3-x`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "降べきの順は次数の高い項から並べる: `2x^2-x+3`。",
     },
   ],
@@ -163,6 +180,7 @@ export default {
       q: "単項式 `-2xy^2` の係数は?",
       choices: ["`-2`", "`2`", "`-2x`", "`3`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "係数は数の部分の `-2`。マイナスも係数に含める。",
     },
     {
@@ -170,6 +188,7 @@ export default {
       q: "多項式 `x^3-4x+1` の次数は?",
       choices: ["`3`", "`1`", "`4`", "`0`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "最高次の項 `x^3` の次数3が多項式の次数。",
     },
     {
@@ -177,6 +196,7 @@ export default {
       q: "`5x^2-3x^2+x` を計算すると?",
       choices: ["`2x^2+x`", "`3x^2`", "`2x^2`", "`3x`"],
       answer: 0,
+      mistakeType: "formula",
       exp: "`5x^2-3x^2=2x^2`。`x` は同類項がないのでそのまま残る。",
     },
     {
@@ -184,6 +204,7 @@ export default {
       q: "`(3x-2)+(2x+5)` を計算すると?",
       choices: ["`5x+3`", "`5x-3`", "`5x+7`", "`6x+3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`3x+2x=5x`、`-2+5=3` で `5x+3`。",
     },
     {
@@ -191,6 +212,7 @@ export default {
       q: "`(x^2+2x)-(3x^2-x)` を計算すると?",
       choices: ["`-2x^2+3x`", "`-2x^2+x`", "`2x^2+3x`", "`-2x^2-x`"],
       answer: 0,
+      mistakeType: "sign",
       exp: "符号を反転: `x^2+2x-3x^2+x = -2x^2+3x`。",
     },
     {
@@ -198,6 +220,7 @@ export default {
       q: "`2(a-3b)+3(2a+b)` を計算すると?",
       choices: ["`8a-3b`", "`8a+3b`", "`4a-3b`", "`8a-6b`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`2a-6b+6a+3b = 8a-3b`。",
     },
     {
@@ -205,6 +228,7 @@ export default {
       q: "`A=x^2+3x-2`、`B=2x^2-x+1` のとき、`A-B` は?",
       choices: ["`-x^2+4x-3`", "`x^2+4x-3`", "`-x^2+2x-1`", "`-x^2-4x+3`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`x^2-2x^2=-x^2`、`3x-(-x)=4x`、`-2-1=-3` で `-x^2+4x-3`。",
     },
     {
@@ -212,6 +236,7 @@ export default {
       q: "次のうち、`3x^2y`(次数3)と次数が同じ単項式はどれ?",
       choices: ["`xy^2`", "`x^2`", "`5xy`", "`x^4`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`xy^2` は `x` 1個 + `y` 2個で次数3。ほかは次数2・2・4。",
     },
   ],

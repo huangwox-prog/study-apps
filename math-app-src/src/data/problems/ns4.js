@@ -41,6 +41,7 @@ export default {
       q: "`sqrt(16)` の値は?",
       choices: ["`4`", "`±4`", "`8`", "`256`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sqrt(16)` は「16の平方根のうち正の方」を表すので 4。±4 は「16の平方根」と聞かれたときの答え。",
     },
     {
@@ -48,6 +49,7 @@ export default {
       q: "`sqrt(2)×sqrt(3)` を計算すると?",
       choices: ["`sqrt(6)`", "`sqrt(5)`", "`6`", "`2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "√のかけ算は中身をかける: `sqrt(2×3)=sqrt(6)`。",
     },
     {
@@ -55,6 +57,7 @@ export default {
       q: "`sqrt(12)` を簡単にすると?",
       choices: ["`2sqrt(3)`", "`3sqrt(2)`", "`4sqrt(3)`", "`6`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`12=4×3` で4は2乗なので外へ: `2sqrt(3)`。",
     },
     {
@@ -62,6 +65,7 @@ export default {
       q: "`frac(1,sqrt(2))` を有理化すると?",
       choices: ["`frac(sqrt(2),2)`", "`frac(2,sqrt(2))`", "`sqrt(2)`", "`frac(1,2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "分母・分子に `sqrt(2)` をかける: `frac(sqrt(2),2)`。",
     },
     {
@@ -69,6 +73,7 @@ export default {
       q: "`sqrt(18)+sqrt(8)` を計算すると?",
       choices: ["`5sqrt(2)`", "`sqrt(26)`", "`13sqrt(2)`", "`6sqrt(2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "まず簡単に: `sqrt(18)=3sqrt(2)`、`sqrt(8)=2sqrt(2)`。同じ `sqrt(2)` どうしで `5sqrt(2)`。",
     },
   ],
@@ -78,6 +83,7 @@ export default {
       q: "`sqrt(25)` の値は?",
       choices: ["`5`", "`±5`", "`12.5`", "`625`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`5^2=25` なので `sqrt(25)=5`。",
     },
     {
@@ -85,6 +91,7 @@ export default {
       q: "`(sqrt(5))^2` の値は?",
       choices: ["`5`", "`sqrt(5)`", "`25`", "`2sqrt(5)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "√と2乗は打ち消し合う: `(sqrt(a))^2=a`。",
     },
     {
@@ -92,6 +99,7 @@ export default {
       q: "`sqrt(9)×sqrt(4)` を計算すると?",
       choices: ["`6`", "`36`", "`sqrt(13)`", "`13`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sqrt(9)=3`、`sqrt(4)=2` で `3×2=6`。",
     },
     {
@@ -99,6 +107,7 @@ export default {
       q: "次のうち無理数はどれ?",
       choices: ["`sqrt(7)`", "`0.5`", "`frac(22,7)`", "`0.333…`(3がずっと続く)"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sqrt(7)` は分数で表せない無理数。有限小数・分数・循環小数はすべて有理数。",
     },
     {
@@ -106,6 +115,7 @@ export default {
       q: "`sqrt(50)` を簡単にすると?",
       choices: ["`5sqrt(2)`", "`2sqrt(5)`", "`25sqrt(2)`", "`10sqrt(5)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`50=25×2` なので `sqrt(50)=5sqrt(2)`。",
     },
     {
@@ -113,6 +123,7 @@ export default {
       q: "`sqrt(27)+sqrt(12)` を計算すると?",
       choices: ["`5sqrt(3)`", "`sqrt(39)`", "`6sqrt(3)`", "`13sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sqrt(27)=3sqrt(3)`、`sqrt(12)=2sqrt(3)`。合わせて `5sqrt(3)`。",
     },
     {
@@ -120,6 +131,7 @@ export default {
       q: "`sqrt(6)×sqrt(8)` を計算すると?",
       choices: ["`4sqrt(3)`", "`sqrt(48)`のまま", "`2sqrt(12)`", "`48`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sqrt(48)=sqrt(16×3)=4sqrt(3)`。答えは最も簡単な形まで直す。",
     },
     {
@@ -127,6 +139,7 @@ export default {
       q: "`frac(3,sqrt(3))` を有理化すると?",
       choices: ["`sqrt(3)`", "`3sqrt(3)`", "`frac(sqrt(3),3)`", "`frac(3sqrt(3),3)`のまま"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(3×sqrt(3),3)=sqrt(3)`。約分まで忘れずに。",
     },
     {
@@ -134,6 +147,7 @@ export default {
       q: "`(sqrt(3)+sqrt(2))(sqrt(3)-sqrt(2))` を計算すると?",
       choices: ["`1`", "`5`", "`sqrt(5)`", "`2sqrt(6)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "和と差の積: `3-2=1`。有理化の考え方の土台になる計算。",
     },
     {
@@ -141,6 +155,7 @@ export default {
       q: "`(sqrt(5)+1)^2` を計算すると?",
       choices: ["`6+2sqrt(5)`", "`6`", "`5+2sqrt(5)`", "`26`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`(a+b)^2` で展開: `5+2sqrt(5)+1=6+2sqrt(5)`。真ん中の項を忘れずに。",
     },
     {
@@ -148,6 +163,7 @@ export default {
       q: "`frac(2,sqrt(5)-sqrt(3))` を有理化すると?",
       choices: ["`sqrt(5)+sqrt(3)`", "`sqrt(5)-sqrt(3)`", "`frac(sqrt(5)+sqrt(3),4)`", "`2sqrt(5)+2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "分母・分子に `sqrt(5)+sqrt(3)` をかける。分母は `5-3=2` になり、`frac(2(sqrt(5)+sqrt(3)),2)=sqrt(5)+sqrt(3)`。",
     },
     {
@@ -155,6 +171,7 @@ export default {
       q: "【発展】二重根号 `sqrt(3+2sqrt(2))` を簡単にすると?",
       choices: ["`sqrt(2)+1`", "`sqrt(3)+sqrt(2)`", "`2+sqrt(2)`", "`sqrt(5)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "たして3、かけて2になる2数は 2 と 1。`sqrt((sqrt(2)+1)^2)=sqrt(2)+1`。(教科書で扱わない場合は飛ばしてOK)",
     },
   ],
@@ -164,6 +181,7 @@ export default {
       q: "49の平方根は?",
       choices: ["`±7`", "`7`", "`-7`", "`24.5`"],
       answer: 0,
+      mistakeType: "cond",
       exp: "2乗して49になる数は 7 と -7 の2つ。「平方根」と聞かれたら±両方。",
     },
     {
@@ -171,6 +189,7 @@ export default {
       q: "`sqrt(45)` を簡単にすると?",
       choices: ["`3sqrt(5)`", "`5sqrt(3)`", "`9sqrt(5)`", "`sqrt(45)`のまま"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`45=9×5` なので `3sqrt(5)`。",
     },
     {
@@ -178,6 +197,7 @@ export default {
       q: "`sqrt(3)×sqrt(15)` を計算すると?",
       choices: ["`3sqrt(5)`", "`sqrt(45)`のまま", "`15sqrt(3)`", "`45`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sqrt(45)=3sqrt(5)` まで簡単にする。",
     },
     {
@@ -185,6 +205,7 @@ export default {
       q: "`sqrt(32)-sqrt(8)` を計算すると?",
       choices: ["`2sqrt(2)`", "`sqrt(24)`", "`6sqrt(2)`", "`4sqrt(2)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`sqrt(32)=4sqrt(2)`、`sqrt(8)=2sqrt(2)`。`4sqrt(2)-2sqrt(2)=2sqrt(2)`。",
     },
     {
@@ -192,6 +213,7 @@ export default {
       q: "`frac(6,sqrt(2))` を有理化すると?",
       choices: ["`3sqrt(2)`", "`6sqrt(2)`", "`frac(sqrt(2),3)`", "`2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`frac(6sqrt(2),2)=3sqrt(2)`。",
     },
     {
@@ -199,6 +221,7 @@ export default {
       q: "`(sqrt(7)-sqrt(5))(sqrt(7)+sqrt(5))` を計算すると?",
       choices: ["`2`", "`12`", "`sqrt(2)`", "`2sqrt(35)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "和と差の積: `7-5=2`。",
     },
     {
@@ -206,6 +229,7 @@ export default {
       q: "`(sqrt(3)-1)^2` を計算すると?",
       choices: ["`4-2sqrt(3)`", "`2`", "`4+2sqrt(3)`", "`2-2sqrt(3)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "`3-2sqrt(3)+1=4-2sqrt(3)`。",
     },
     {
@@ -213,6 +237,7 @@ export default {
       q: "`frac(1,sqrt(3)+1)` を有理化すると?",
       choices: ["`frac(sqrt(3)-1,2)`", "`frac(sqrt(3)+1,2)`", "`sqrt(3)-1`", "`frac(sqrt(3)-1,4)`"],
       answer: 0,
+      mistakeType: "calc",
       exp: "分母・分子に `sqrt(3)-1` をかける。分母は `3-1=2` で `frac(sqrt(3)-1,2)`。",
     },
   ],
