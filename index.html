@@ -5,54 +5,206 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>しだの学習アプリ集</title>
 <style>
-  :root{ --ink:#243b6b; --paper:#eef1f6; --card:#fff; --line:#d3d8e2; --muted:#6c7385; --accent:#c0392b; }
+  :root{
+    --bg-0:#0e1220; --bg-1:#161c31; --bg-2:#1c2440;
+    --ink:#f2f4fb; --ink-dim:#a9b1cf; --line:rgba(255,255,255,.10);
+    --glass:rgba(255,255,255,.06); --glass-strong:rgba(255,255,255,.10);
+
+    --c-tool:#8fd9c4;   --c-tool-glow:rgba(143,217,196,.45);
+    --c-math:#93a0e8;   --c-math-glow:rgba(147,160,232,.45);
+    --c-fe:#f0a85e;     --c-fe-glow:rgba(240,168,94,.45);
+  }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--paper); color:#1c2330;
-    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",system-ui,sans-serif; line-height:1.7;}
-  header{background:var(--ink); color:#fff; padding:28px 20px; border-bottom:5px solid var(--accent);}
-  header h1{margin:0; font-size:1.3rem; letter-spacing:.05em;}
-  header p{margin:6px 0 0; font-size:.82rem; color:#c6d0e8;}
-  main{max-width:760px; margin:0 auto; padding:24px 18px 60px;}
-  h2{font-size:1rem; color:var(--ink); border-left:5px solid var(--ink); padding-left:10px; margin:26px 0 10px;}
-  a.app{display:block; background:var(--card); border:1px solid var(--line); border-radius:10px;
-    padding:14px 16px; margin:10px 0; text-decoration:none; color:inherit; transition:transform .08s;}
-  a.app:active{transform:scale(.985);}
-  a.app b{color:var(--ink); font-size:1.02rem;}
-  a.app span{display:block; font-size:.83rem; color:var(--muted); margin-top:2px;}
-  a.app em{display:block; font-style:normal; font-size:.72rem; color:#98a0b3; margin-top:4px;}
-  footer{max-width:760px; margin:0 auto; padding:0 18px 40px; font-size:.78rem; color:var(--muted);}
+  html,body{margin:0; padding:0;}
+  body{
+    min-height:100vh; color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+    line-height:1.7;
+    background:
+      radial-gradient(ellipse 900px 500px at 12% -10%, rgba(147,160,232,.28), transparent 60%),
+      radial-gradient(ellipse 800px 600px at 90% 0%, rgba(143,217,196,.18), transparent 55%),
+      radial-gradient(ellipse 700px 500px at 50% 110%, rgba(240,168,94,.14), transparent 55%),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+    background-attachment:fixed;
+  }
+  .orb{position:fixed; border-radius:50%; filter:blur(60px); opacity:.35; pointer-events:none; z-index:0;}
+  .orb1{width:340px; height:340px; top:-80px; left:-60px; background:var(--c-math);}
+  .orb2{width:260px; height:260px; bottom:-40px; right:-40px; background:var(--c-tool);}
+
+  header{position:relative; z-index:1; padding:52px 22px 30px; text-align:center;}
+  header .kicker{display:inline-block; font-size:.72rem; letter-spacing:.18em; color:var(--ink-dim); text-transform:uppercase; margin-bottom:10px;}
+  header h1{
+    margin:0; font-size:1.9rem; font-weight:800; letter-spacing:.01em;
+    background:linear-gradient(90deg,#fff, #cdd4ff 55%, #bdeee0);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  header p{margin:10px 0 0; font-size:.9rem; color:var(--ink-dim);}
+  header .readme-link{
+    display:inline-flex; align-items:center; gap:6px; margin-top:16px; padding:7px 16px; font-size:.78rem;
+    color:var(--ink); text-decoration:none; background:var(--glass); border:1px solid var(--line);
+    border-radius:999px; backdrop-filter:blur(14px); transition:.35s cubic-bezier(.16,1,.3,1);
+  }
+  header .readme-link:hover{background:var(--glass-strong); border-color:rgba(255,255,255,.25); transform:translateY(-1px);}
+
+  main{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:8px 18px 70px;}
+  .section-head{display:flex; align-items:center; gap:10px; margin:34px 4px 14px;}
+  .section-head .dot{width:9px; height:9px; border-radius:50%; flex:none;}
+  .section-head h2{margin:0; font-size:.98rem; font-weight:700; color:var(--ink); letter-spacing:.01em;}
+  .section-head .count{margin-left:auto; font-size:.72rem; color:var(--ink-dim); background:var(--glass); border:1px solid var(--line); padding:2px 10px; border-radius:999px;}
+  .grid{display:flex; flex-direction:column; gap:10px;}
+
+  a.app{
+    position:relative; display:block; overflow:hidden; padding:15px 18px; text-decoration:none; color:inherit;
+    background:var(--glass); border:1px solid var(--line); border-radius:16px;
+    backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+    transition:transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s cubic-bezier(.16,1,.3,1),
+               border-color .45s cubic-bezier(.16,1,.3,1), background .45s cubic-bezier(.16,1,.3,1);
+  }
+  a.app::before{
+    content:""; position:absolute; inset:0; opacity:0;
+    background:radial-gradient(220px 120px at var(--mx,50%) var(--my,0%), var(--glow,rgba(255,255,255,.25)), transparent 70%);
+    transition:opacity .4s ease; pointer-events:none;
+  }
+  a.app:hover{transform:translateY(-3px); background:var(--glass-strong);}
+  a.app:hover::before{opacity:1;}
+  a.app[data-c="tool"]:hover{border-color:var(--c-tool); box-shadow:0 10px 34px -10px var(--c-tool-glow), 0 0 44px -12px var(--c-tool-glow);}
+  a.app[data-c="math"]:hover{border-color:var(--c-math); box-shadow:0 10px 34px -10px var(--c-math-glow), 0 0 44px -12px var(--c-math-glow);}
+  a.app[data-c="fe"]:hover{border-color:var(--c-fe); box-shadow:0 10px 34px -10px var(--c-fe-glow), 0 0 44px -12px var(--c-fe-glow);}
+
+  a.app b{display:flex; align-items:center; gap:8px; font-size:1rem; font-weight:700; color:var(--ink);}
+  a.app b .arrow{margin-left:auto; opacity:.35; font-size:.85rem; transition:transform .4s cubic-bezier(.16,1,.3,1), opacity .4s ease;}
+  a.app:hover b .arrow{transform:translateX(3px); opacity:.9;}
+  a.app span.desc{display:block; font-size:.82rem; color:var(--ink-dim); margin-top:4px;}
+  a.app em{display:block; font-style:normal; font-size:.68rem; color:rgba(169,177,207,.7); margin-top:7px; letter-spacing:.02em;}
+
+  footer{position:relative; z-index:1; max-width:760px; margin:20px auto 0; padding:22px 20px 44px; font-size:.78rem; color:var(--ink-dim); text-align:center; border-top:1px solid var(--line);}
+  footer a{color:#bcc6ff; text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
 <header>
+  <span class="kicker">Study Apps</span>
   <h1>しだの学習アプリ集</h1>
-  <p>生成AI(Claude)との対話で自作した、自分専用の反復練習アプリ　<a href="https://github.com/huangwox-prog/study-apps" style="color:#ffd9a0;">制作について(README)</a></p>
+  <p>生成AI(Claude)との対話で自作している、自分専用の反復練習アプリ</p>
+  <a class="readme-link" href="https://github.com/huangwox-prog/study-apps" target="_blank" rel="noopener">⚙︎ 制作について(README)</a>
 </header>
+
 <main>
-  <h2>学習ツール</h2>
-  <a class="app" href="pomodoro/index.html"><b>ポモドーロタイマー</b><span>作業25分・小休憩5分・長休憩15分。集中セッション数を自動記録</span><em>制作: 2026年7月10日</em></a>
-  <h2>数学Ⅰ（総合型選抜・口頭試問対策）</h2>
-  <a class="app" href="math-app/"><b>数学Ⅰ 総合学習アプリ</b><span>数と式・二次関数・三角比を統合。単元進行・グラフ描画・模試生成・習熟度管理つき</span><em>制作: 2026年7月10日</em></a>
-  <a class="app" href="nijikansu-jissen.html"><b>二次関数 実戦攻略</b><span>数Ⅰ第2章。平方完成から最大最小・グラフまで実戦形式で</span><em>制作: 2026年7月10日</em></a>
-  <a class="app" href="sugaku1-tokkun.html"><b>数Ⅰ特訓帳</b><span>数と式・集合と命題 全31テーマ93問。合格ハンコと苦手復習機能つき</span><em>制作: 2026年7月9日</em></a>
-  <a class="app" href="yurika-dojo.html"><b>有理化道場</b><span>ルートの有理化をゼロから教科書レベルまで段階的に強化学習</span><em>制作: 2026年7月</em></a>
-  <a class="app" href="ichiji-futoshiki.html"><b>一次不等式特訓</b><span>符号反転のルールを反復で体に入れる</span><em>制作: 2026年7月</em></a>
-  <a class="app" href="zettaichi.html"><b>絶対値特訓</b><span>絶対値つき方程式・不等式の場合分け練習</span><em>制作: 2026年7月</em></a>
-  <h2>基本情報技術者試験（FE 科目B）</h2>
-  <a class="app" href="fe_kamoku_b_full_mock.html"><b>科目B 通し1セット（本番形式・IRT採点）</b><span>本番前の実力測定はこれ。IRT方式のスコア推定つき</span><em>制作: 2026年6月29日</em></a>
-  <a class="app" href="FE_kamokuB_mogi16.html"><b>科目B 模擬試験 全16問</b><span>アルゴリズム中心の16問セット</span><em>制作: 2026年6月24日</em></a>
-  <a class="app" href="FE_kamokuB_hard16.html"><b>科目B 難問演習 全16問</b><span>難易度高め。仕上げ用</span><em>制作: 2026年6月下旬</em></a>
-  <a class="app" href="FE_kamokuB_mogi_v3.html"><b>科目B 模擬試験 v3</b><span>採点・解説つき模試</span><em>制作: 2026年6月下旬</em></a>
-  <a class="app" href="FE_kamokuB_mogi.html"><b>科目B 模擬試験（初代）</b><span>連結リスト・実行回数問題つき</span><em>制作: 2026年6月25日</em></a>
-  <a class="app" href="fe_kamoku_b_security_mock_v3.html"><b>セキュリティ実戦演習（複数選択）</b><span>「すべて選べ」形式対応の最新版</span><em>制作: 2026年6月29日</em></a>
-  <a class="app" href="fe_kamoku_b_security_mock_v2.html"><b>セキュリティ実戦演習（本番仕様）</b><span>長文シナリオ形式</span><em>制作: 2026年6月29日</em></a>
-  <a class="app" href="fe_kamoku_b_security_mock.html"><b>セキュリティ実戦演習</b><span>守る対象→脅威→CIA→消す、の型を練習</span><em>制作: 2026年6月29日</em></a>
-  <a class="app" href="fe_dll_pointer_rewire.html"><b>双方向リスト 矢印の付け替え（激ムズ）</b><span>ポインタ書き換え順のトラップ対策</span><em>制作: 2026年6月29日</em></a>
-  <a class="app" href="fe_oop_linkedlist_3.html"><b>オブジェクト指向・リスト構造 3問</b><span>クラスのトレース練習</span><em>制作: 2026年6月29日</em></a>
+  <div class="section-head"><span class="dot" style="background:var(--c-tool)"></span><h2>学習ツール</h2><span class="count">1</span></div>
+  <div class="grid">
+    <a class="app" data-c="tool" href="pomodoro/index.html">
+      <b>ポモドーロタイマー<span class="arrow">→</span></b>
+      <span class="desc">作業25分・小休憩5分・長休憩15分。集中セッション数を自動記録</span>
+      <em>制作: 2026年7月10日</em>
+    </a>
+  </div>
+
+  <div class="section-head"><span class="dot" style="background:var(--c-math)"></span><h2>数学Ⅰ（総合型選抜・口頭試問対策）</h2><span class="count">5</span></div>
+  <div class="grid">
+    <a class="app" data-c="math" href="math-app/">
+      <b>数学Ⅰ 総合学習アプリ<span class="arrow">→</span></b>
+      <span class="desc">数と式・二次関数・三角比を統合。単元進行・グラフ描画・模試生成・習熟度管理つき</span>
+      <em>制作: 2026年7月10日</em>
+    </a>
+    <a class="app" data-c="math" href="nijikansu-jissen.html">
+      <b>二次関数 実戦攻略<span class="arrow">→</span></b>
+      <span class="desc">数Ⅰ第2章。平方完成から最大最小・グラフまで実戦形式で</span>
+      <em>制作: 2026年7月10日</em>
+    </a>
+    <a class="app" data-c="math" href="sugaku1-tokkun.html">
+      <b>数Ⅰ特訓帳<span class="arrow">→</span></b>
+      <span class="desc">数と式・集合と命題 全31テーマ93問。苦手問題の復習機能つき</span>
+      <em>制作: 2026年7月9日</em>
+    </a>
+    <a class="app" data-c="math" href="yurika-dojo.html">
+      <b>有理化道場<span class="arrow">→</span></b>
+      <span class="desc">ルートの有理化を基礎から段階的に強化学習</span>
+      <em>制作: 2026年7月</em>
+    </a>
+    <a class="app" data-c="math" href="ichiji-futoshiki.html">
+      <b>一次不等式特訓<span class="arrow">→</span></b>
+      <span class="desc">符号反転のルールを反復で体に入れる</span>
+      <em>制作: 2026年7月</em>
+    </a>
+    <a class="app" data-c="math" href="zettaichi.html">
+      <b>絶対値特訓<span class="arrow">→</span></b>
+      <span class="desc">絶対値つき方程式・不等式の場合分け練習</span>
+      <em>制作: 2026年7月</em>
+    </a>
+  </div>
+
+  <div class="section-head"><span class="dot" style="background:var(--c-fe)"></span><h2>基本情報技術者試験（FE 科目B）</h2><span class="count">10</span></div>
+  <div class="grid">
+    <a class="app" data-c="fe" href="fe_kamoku_b_full_mock.html">
+      <b>通し1セット（本番形式・IRT採点）<span class="arrow">→</span></b>
+      <span class="desc">週1回の実力測定用。IRT方式のスコア推定つき</span>
+      <em>制作: 2026年6月29日</em>
+    </a>
+    <a class="app" data-c="fe" href="FE_kamokuB_mogi16.html">
+      <b>模擬試験 全16問<span class="arrow">→</span></b>
+      <span class="desc">アルゴリズム中心の16問セット</span>
+      <em>制作: 2026年6月24日</em>
+    </a>
+    <a class="app" data-c="fe" href="FE_kamokuB_hard16.html">
+      <b>難問演習 全16問<span class="arrow">→</span></b>
+      <span class="desc">難易度高め。仕上げ用</span>
+      <em>制作: 2026年6月下旬</em>
+    </a>
+    <a class="app" data-c="fe" href="FE_kamokuB_mogi_v3.html">
+      <b>模擬試験 v3<span class="arrow">→</span></b>
+      <span class="desc">採点・解説つき模試</span>
+      <em>制作: 2026年6月下旬</em>
+    </a>
+    <a class="app" data-c="fe" href="FE_kamokuB_mogi.html">
+      <b>模擬試験（初代）<span class="arrow">→</span></b>
+      <span class="desc">連結リスト・実行回数問題つき</span>
+      <em>制作: 2026年6月25日</em>
+    </a>
+    <a class="app" data-c="fe" href="fe_kamoku_b_security_mock_v3.html">
+      <b>セキュリティ実戦演習（複数選択）<span class="arrow">→</span></b>
+      <span class="desc">「すべて選べ」形式対応の最新版</span>
+      <em>制作: 2026年6月29日</em>
+    </a>
+    <a class="app" data-c="fe" href="fe_kamoku_b_security_mock_v2.html">
+      <b>セキュリティ実戦演習（本番仕様）<span class="arrow">→</span></b>
+      <span class="desc">長文シナリオ形式</span>
+      <em>制作: 2026年6月29日</em>
+    </a>
+    <a class="app" data-c="fe" href="fe_kamoku_b_security_mock.html">
+      <b>セキュリティ実戦演習<span class="arrow">→</span></b>
+      <span class="desc">守る対象→脅威→CIA→消す、の型を練習</span>
+      <em>制作: 2026年6月29日</em>
+    </a>
+    <a class="app" data-c="fe" href="fe_dll_pointer_rewire.html">
+      <b>双方向リスト 矢印の付け替え（激ムズ）<span class="arrow">→</span></b>
+      <span class="desc">ポインタ書き換え順のトラップ対策</span>
+      <em>制作: 2026年6月29日</em>
+    </a>
+    <a class="app" data-c="fe" href="fe_oop_linkedlist_3.html">
+      <b>オブジェクト指向・リスト構造 3問<span class="arrow">→</span></b>
+      <span class="desc">クラスのトレース練習</span>
+      <em>制作: 2026年6月29日</em>
+    </a>
+  </div>
 </main>
+
 <footer>
   数学Ⅰの学習計画（数と式 → 二次関数 → 三角比 → データの分析）に合わせて随時追加中。<br>
-  <a href="https://github.com/huangwox-prog/study-apps" style="color:#243b6b; font-weight:bold;">→ ソースコードと制作について（GitHubリポジトリ・README）</a>
+  <a href="https://github.com/huangwox-prog/study-apps">→ ソースコードと制作について（GitHubリポジトリ・README）</a>
 </footer>
+
+<script>
+  document.querySelectorAll('a.app').forEach(el=>{
+    el.addEventListener('pointermove', e=>{
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+      el.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+    });
+  });
+</script>
 </body>
 </html>
