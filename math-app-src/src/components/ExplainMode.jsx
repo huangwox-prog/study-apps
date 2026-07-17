@@ -36,7 +36,7 @@ export default function ExplainMode({ unit, onExit }) {
   if (finished) {
     const good = tally.good;
     return (
-      <div className="screen">
+      <div className="screen" key="finished">
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
           <span className="badge accent" style={{ marginBottom: 16 }}>説明の練習 おつかれさま</span>
           <h1 style={{ marginBottom: 18 }}>

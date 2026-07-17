@@ -64,7 +64,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
   // ---------- 画面 ----------
   if (stage === "menu") {
     return (
-      <div className="screen">
+      <div className="screen" key={stage}>
         <div className="top-bar">
           <button className="btn-ghost btn" onClick={onExit}>← ホームへ</button>
           {progress?.mastery != null && (
@@ -102,7 +102,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
 
   if (stage === "diag-intro") {
     return (
-      <div className="screen">
+      <div className="screen" key={stage}>
         <div className="top-bar">
           <button className="btn-ghost btn" onClick={hasHistory ? () => setStage("menu") : onExit}>← 戻る</button>
         </div>
@@ -131,6 +131,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
   if (stage === "diag") {
     return (
       <Quiz
+        key={stage}
         questions={unit.diagnostic}
         mode="test"
         title={`${unit.title} — 診断`}
@@ -142,7 +143,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
 
   if (stage === "diag-passed") {
     return (
-      <div className="screen">
+      <div className="screen" key={stage}>
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
           <span className="badge ok" style={{ marginBottom: 16 }}>
             診断 {diagResult.correct} / {diagResult.total} 正解
@@ -168,7 +169,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
 
   if (stage === "diag-failed") {
     return (
-      <div className="screen">
+      <div className="screen" key={stage}>
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
           <span className="badge" style={{ marginBottom: 16 }}>
             診断 {diagResult.correct} / {diagResult.total} 正解
@@ -189,6 +190,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
   if (stage === "lesson") {
     return (
       <Lesson
+        key={stage}
         unit={unit}
         onStart={() => setStage("practice")}
         onExit={hasHistory ? () => setStage("menu") : onExit}
@@ -199,6 +201,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
   if (stage === "explain") {
     return (
       <ExplainMode
+        key={stage}
         unit={unit}
         onExit={hasHistory ? () => setStage("menu") : onExit}
       />
@@ -208,6 +211,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
   if (stage === "practice") {
     return (
       <Quiz
+        key={stage}
         questions={unit.practice}
         mode="practice"
         title={`${unit.title} — 演習`}
@@ -220,7 +224,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
   if (stage === "practice-done") {
     const ratio = Math.round(practiceResult.ratio * 100);
     return (
-      <div className="screen">
+      <div className="screen" key={stage}>
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
           <span className="badge ok" style={{ marginBottom: 16 }}>演習おつかれさま</span>
           <h1 style={{ marginBottom: 10 }}>
@@ -246,7 +250,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
 
   if (stage === "test-intro") {
     return (
-      <div className="screen">
+      <div className="screen" key={stage}>
         <div className="top-bar">
           <button className="btn-ghost btn" onClick={hasHistory ? () => setStage("menu") : onExit}>← 戻る</button>
         </div>
@@ -268,6 +272,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
   if (stage === "test") {
     return (
       <Quiz
+        key={stage}
         questions={unit.test}
         mode="test"
         title={`${unit.title} — 確認テスト`}
@@ -281,7 +286,7 @@ export default function UnitFlow({ unit, progress, onExit }) {
     const m = testResult.mastery;
     const wrongs = testResult.results.filter((r) => !r.correct);
     return (
-      <div className="screen">
+      <div className="screen" key={stage}>
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
           <span className={`badge ${m >= 70 ? "ok" : ""}`} style={{ marginBottom: 16 }}>
             確認テスト結果

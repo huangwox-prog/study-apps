@@ -42,7 +42,7 @@ export default function MockExam({ examSet, units, onExit }) {
 
   if (phase === "intro") {
     return (
-      <div className="screen">
+      <div className="screen" key="intro">
         <div className="top-bar">
           <button className="btn-ghost btn" onClick={onExit}>← ホームへ</button>
         </div>
@@ -165,7 +165,7 @@ export default function MockExam({ examSet, units, onExit }) {
   // 結果画面
   const wrongs = result.detail.filter((d) => !d.ok);
   return (
-    <div className="screen">
+    <div className="screen" key="result">
       <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
         <span className="badge accent" style={{ marginBottom: 16 }}>{examSet.title} 結果</span>
         <h1 style={{ fontSize: "2.6rem", marginBottom: 8 }}>{result.score} 点</h1>
