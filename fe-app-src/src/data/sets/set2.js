@@ -1,484 +1,516 @@
 // FE科目B 模擬試験 第2回
-// 問1〜16: アルゴリズム・プログラミング(難易度は問1→16にかけて上昇)
+// 問1〜16: メソッド構造・間接参照/リスト構造/実務処理のトレース中心(難易度は問1→16にかけて上昇)
 // 問17〜20: 情報セキュリティ(長文シナリオ形式、問17が最難、問20にかけて易化)
 export default {
   id: "set2",
   title: "模擬試験 第2回",
   questions: [
-    // ============ 問1〜16: アルゴリズム・プログラミング ============
+    // ============ 問1〜16: メソッド構造/間接参照/リスト構造/実務処理 ============
     {
       id: "s2q1",
       no: 1,
       section: "algo",
-      categoryLabel: "プログラムの基本要素",
+      categoryLabel: "メソッド構造(メソッドチェーン)",
       level: 1,
-      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
+      lead: "メソッドチェーンにより addItem を連続して呼び出せるようにしたい。空欄 a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "通信販売の送料は、購入金額が3,000円以上の場合は無料、1,000円以上3,000円未満の場合は300円、1,000円未満の場合は500円である。関数 shipping は、購入金額を表す0以上の整数を引数として受け取り、送料を返す。",
+        "クラス Cart は買い物かごを表す。addItem(price) は商品の価格を合計金額に加算するメソッドで、自分自身への参照(この問題では this と表す)を戻り値として返すことで、戻り値に対して続けて addItem を呼び出せるようにしたい。",
       ],
       code:
-`○整数型: shipping(整数型: amount)
-  整数型: ret
-  if (amount が 3000 以上)
-    ret ← 0
-  elseif ( a )
-    ret ← 300
-  else
-    ret ← 500
-  endif
-  return ret`,
-      choices: [
-        "amount が 1000 以上",
-        "amount が 1000 より大きい",
-        "(amount が 1000 以上) and (amount が 3000 未満)",
-        "amount が 3000 未満",
-      ],
+`クラス Cart
+  整数型: total ← 0
+  ○Cart: addItem(整数型: price)
+    total ← total + price
+    return a
+  ○整数型: getTotal()
+    return total
+
+Cart: c ← Cart()
+整数型: result ← c.addItem(300).addItem(450).addItem(120).getTotal()`,
+      choices: ["this", "total", "price", "Cart()"],
       answer: 0,
       explanation:
-        "最初のifで「3000以上」が既に処理済みなので、elseifに到達した時点で amount は3000未満であることが確定している。よって `amount が 1000 以上` だけで条件は十分。",
+        "addItem が this(自分自身への参照)を返すことで、戻り値に対してさらに .addItem() を呼び出せる(メソッドチェーン)。total や price を返すと、整数値に対して .addItem() を呼ぶことになりエラーとなる。",
     },
     {
       id: "s2q2",
       no: 2,
       section: "algo",
-      categoryLabel: "配列",
+      categoryLabel: "間接参照(添字配列)",
       level: 1,
-      lead: "次のプログラムを実行したとき、変数 maxTemp に格納される値を答えよ。",
+      lead: "次のプログラムを実行したとき出力される文字列を、出力される順に並べたものを選べ。",
       description: [
-        "整数型の配列 temps に格納された一週間分の気温の最大値を求めるプログラムである。",
+        "会員ごとのランク番号が配列 rankCode に格納されており、ランク番号に対応するランク名は配列 rankNames に格納されている。rankNames[rankCode[i]] のように、配列の値を別の配列の添字として使う間接参照によってランク名を求める。",
       ],
       code:
-`整数型の配列: temps ← {24, 28, 19, 31, 27, 22, 30}
-整数型: maxTemp ← temps[1]
+`文字列型の配列: rankNames ← {"ブロンズ", "シルバー", "ゴールド"}
+整数型の配列: rankCode ← {2, 1, 3, 2}
 整数型: i
 
-for (i を 2 から tempsの要素数 まで 1 ずつ増やす)
-  if (temps[i] が maxTemp より大きい)
-    maxTemp ← temps[i]
-  endif
+for (i を 1 から rankCodeの要素数 まで 1 ずつ増やす)
+  出力(rankNames[rankCode[i]])
 endfor`,
-      choices: ["24", "28", "30", "31"],
-      answer: 3,
+      choices: [
+        "シルバー, ブロンズ, ゴールド, シルバー",
+        "ブロンズ, シルバー, ゴールド, シルバー",
+        "ゴールド, ブロンズ, シルバー, ブロンズ",
+        "シルバー, ゴールド, ブロンズ, シルバー",
+      ],
+      answer: 0,
       explanation:
-        "配列の最大値を1件ずつ比較しながら更新していく典型的な処理。{24,28,19,31,27,22,30}の中の最大値は31。",
+        "i=1: rankCode[1]=2 → rankNames[2]=\"シルバー\"。i=2: rankCode[2]=1 → rankNames[1]=\"ブロンズ\"。i=3: rankCode[3]=3 → rankNames[3]=\"ゴールド\"。i=4: rankCode[4]=2 → \"シルバー\"。よって出力順は シルバー, ブロンズ, ゴールド, シルバー。",
     },
     {
       id: "s2q3",
       no: 3,
       section: "algo",
-      categoryLabel: "実務処理(集計)",
+      categoryLabel: "実務処理(重複除去)",
       level: 1,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "アンケートの回答点数(1〜5点)が格納された配列 answers から、平均点を計算するプログラムである。",
+        "問い合わせフォームから送信されたメールアドレスの一覧 emails には、同じアドレスが複数回含まれることがある。プログラムは、重複を取り除いたユニークなメールアドレスの一覧を uniqueEmails に作成する。",
       ],
       code:
-`実数型の配列: answers ← {4, 5, 3, 4, 2, 5, 4}
-実数型: sum ← 0
-整数型: i
+`文字列型の配列: emails ← {"a@x.com", "b@x.com", "a@x.com", "c@x.com", "b@x.com"}
+文字列型の配列: uniqueEmails ← {}
+整数型: i, j
+論理型: found
 
-for (i を 1 から answersの要素数 まで 1 ずつ増やす)
-  sum ← sum + answers[i]
-endfor
-
-実数型: average ← a`,
+for (i を 1 から emailsの要素数 まで 1 ずつ増やす)
+  found ← 偽
+  for (j を 1 から uniqueEmailsの要素数 まで 1 ずつ増やす)
+    if ( a )
+      found ← 真
+    endif
+  endfor
+  if (found が 偽)
+    uniqueEmails の末尾に emails[i] を追加する
+  endif
+endfor`,
       choices: [
-        "sum ÷ answersの要素数",
-        "sum ÷ i",
-        "answersの要素数 ÷ sum",
-        "sum × answersの要素数",
+        "uniqueEmails[j] が emails[i] と等しい",
+        "uniqueEmails[i] が emails[j] と等しい",
+        "emails[j] が emails[i] と等しい",
+        "uniqueEmails[j] が emails[j] と等しい",
       ],
       answer: 0,
       explanation:
-        "平均は「合計 ÷ 件数」なので `sum ÷ answersの要素数` が正しい。ループ後の i はループ終了条件により要素数+1になっているため、iを使うのは誤り。",
+        "既に登録済みのアドレス uniqueEmails[j] の中に、これから追加しようとしている emails[i] と同じものがないかを確認する必要がある。よって `uniqueEmails[j] が emails[i] と等しい` が正しい。",
     },
     {
       id: "s2q4",
       no: 4,
       section: "algo",
-      categoryLabel: "文字列処理",
+      categoryLabel: "メソッド構造(メソッドチェーン応用)",
       level: 2,
-      lead: "次のプログラムを isPalindrome(\"level\") として呼び出したときの戻り値を答えよ。",
+      lead: "次のプログラムを実行したとき、sql に格納される文字列を答えよ。",
       description: [
-        "関数 isPalindrome は、引数の文字列が前から読んでも後ろから読んでも同じ(回文)かどうかを判定し、真偽値を返す。strのn文字目 で文字列strの前からn番目の文字を取得できる。",
+        "クラス QueryBuilder は検索条件を組み立てる。where(cond) は条件を配列 conditions の末尾に追加して自分自身(this)を返し、build() は conditions を \" AND \" で連結した文字列を返す。",
       ],
       code:
-`○論理型: isPalindrome(文字列型: str)
-  整数型: i, len
-  len ← strの文字数
-  for (i を 1 から (len ÷ 2 の商) まで 1 ずつ増やす)
-    if ((strのi文字目) が (strの(len - i + 1)文字目) と等しくない)
-      return 偽
-    endif
-  endfor
-  return 真`,
-      choices: ["真", "偽", "エラーになる", "空文字列"],
+`クラス QueryBuilder
+  文字列型の配列: conditions ← {}
+  ○QueryBuilder: where(文字列型: cond)
+    conditions の末尾に cond を追加する
+    return this
+  ○文字列型: build()
+    文字列型: result ← ""
+    整数型: i
+    for (i を 1 から conditionsの要素数 まで 1 ずつ増やす)
+      if (i が 1 と等しい)
+        result ← conditions[i]
+      else
+        result ← result + " AND " + conditions[i]
+      endif
+    endfor
+    return result
+
+QueryBuilder: q ← QueryBuilder()
+文字列型: sql ← q.where("age >= 20").where("status = '有効'").build()`,
+      choices: [
+        "age >= 20 AND status = '有効'",
+        "status = '有効' AND age >= 20",
+        "age >= 20",
+        "age >= 20, status = '有効'",
+      ],
       answer: 0,
       explanation:
-        "\"level\" は l-e-v-e-l で前から読んでも後ろから読んでも同じ回文である。ループでは前半の文字と対応する後半の文字を比較し、すべて一致するので最終的に真が返る。",
+        "where を2回呼び出すたびに条件が conditions の末尾に追加され、それぞれが this を返すのでメソッドチェーンが成立する。build() は追加順に \" AND \" で連結するので `age >= 20 AND status = '有効'` となる。",
     },
     {
       id: "s2q5",
       no: 5,
       section: "algo",
-      categoryLabel: "トレース(変数の変化)",
+      categoryLabel: "間接参照(参照渡しと値渡し)",
       level: 2,
-      lead: "次のプログラムを実行したとき、出力される a, b, c, d, e の値の並びを答えよ。",
+      lead: "次のプログラムを実行したとき出力される値を答えよ。",
       description: [
-        "数列の各項が直前の2項の和になっていく処理(フィボナッチ数列)をトレースする。",
+        "整数型の変数は値そのものが渡される(値渡し)のに対し、クラスのインスタンス(オブジェクト)は同じ実体への参照が渡される(参照渡し)。この違いによって、関数内での変更が呼び出し元に反映されるかどうかが変わる。",
       ],
       code:
-`整数型: a ← 1
-整数型: b ← 1
-整数型: c, d, e
+`クラス Box
+  整数型: value
 
-c ← a + b
-d ← b + c
-e ← c + d
+○addOne(整数型: n)
+  n ← n + 1
 
-出力(a, b, c, d, e)`,
-      choices: [
-        "1, 1, 2, 3, 5",
-        "1, 1, 2, 4, 6",
-        "1, 1, 3, 4, 7",
-        "1, 1, 2, 3, 4",
-      ],
+○addOneToBox(Box: b)
+  b.value ← b.value + 1
+
+整数型: x ← 5
+Box: box ← Box()
+box.value ← 5
+
+addOne(x)
+addOneToBox(box)
+
+出力(xの文字列 + "," + box.valueの文字列)`,
+      choices: ["5,6", "6,6", "5,5", "6,5"],
       answer: 0,
       explanation:
-        "a=1,b=1。c=a+b=2。d=b+c=1+2=3。e=c+d=2+3=5。よって出力は 1, 1, 2, 3, 5(フィボナッチ数列の一部)。",
+        "addOne(x) は x の値のコピーを引数 n として受け取るため、関数内で n を変更しても呼び出し元の x は変化せず x=5 のまま。一方 addOneToBox(box) は box への参照を引数 b として受け取るため、b.value を変更すると呼び出し元の box.value も変化し 6 になる。よって出力は \"5,6\"。",
     },
     {
       id: "s2q6",
       no: 6,
       section: "algo",
-      categoryLabel: "配列(多次元配列)",
+      categoryLabel: "実務処理(CSVパース)",
       level: 2,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "関数 transpose は、2行3列の二次元配列 matrix を、3行2列に転置(行と列を入れ替える)した二次元配列を返す。",
+        "社員データがCSV形式の1行の文字列として渡される。関数 split(str, sep) は、文字列 str を区切り文字 sep で分割した文字列型の配列を返す。プログラムは、社員番号・氏名・部署名の順に格納された行を分解し、それぞれの変数に格納する。",
       ],
       code:
-`○整数型の二次元配列: transpose(整数型の二次元配列: matrix)
-  整数型の二次元配列: result ← 3行2列の新しい二次元配列
-  整数型: i, j
-
-  for (i を 1 から matrixの行数 まで 1 ずつ増やす)
-    for (j を 1 から matrixの列数 まで 1 ずつ増やす)
-      a
-    endfor
-  endfor
-  return result`,
-      choices: [
-        "result[j, i] ← matrix[i, j]",
-        "result[i, j] ← matrix[i, j]",
-        "result[i, j] ← matrix[j, i]",
-        "result[j, i] ← matrix[j, i]",
-      ],
+`文字列型: line ← "1001,山田太郎,営業部"
+文字列型の配列: fields ← split(line, ",")
+文字列型: empId ← fields[1]
+文字列型: empName ← fields[ a ]
+文字列型: dept ← fields[3]`,
+      choices: ["2", "1", "3", "0"],
       answer: 0,
       explanation:
-        "転置は行と列を入れ替える操作なので、元の [i,j] の値は、結果の [j,i] に格納する。よって `result[j, i] ← matrix[i, j]` が正しい。",
+        "line を \",\" で分割すると fields は {\"1001\", \"山田太郎\", \"営業部\"} となる。氏名は2番目の要素なので `fields[2]` が正しい。",
     },
     {
       id: "s2q7",
       no: 7,
       section: "algo",
-      categoryLabel: "スタック",
-      level: 2,
+      categoryLabel: "リスト構造(単方向連結リストの削除)",
+      level: 3,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "関数 isBalanced は、文字列 str に含まれる丸括弧 \"(\" と \")\" の対応が取れているかをスタックを使って判定する。クラス Stack の push(値) は積み、pop() は取り除いて返し、isEmpty() は空なら真を返す。",
+        "手続 deleteNext は、単方向リストにおいて、指定したノード prev の直後のノードをリストから取り除く。クラス Node は、値 val と次の要素への参照 next をもつ。",
       ],
       code:
-`○論理型: isBalanced(文字列型: str)
-  Stack: st ← Stack()
-  整数型: i
+`クラス Node
+  整数型: val
+  Node: next ← 未定義の値
 
-  for (i を 1 から strの文字数 まで 1 ずつ増やす)
-    if ((strのi文字目) が "(" と等しい)
-      st.push("(")
-    elseif ((strのi文字目) が ")" と等しい)
-      if (st.isEmpty() が 真)
-        return 偽
-      endif
-      a
-    endif
-  endfor
-  return st.isEmpty()`,
-      choices: [
-        "st.pop()",
-        "st.push(\")\")",
-        "st.isEmpty()",
-        "st.push(\"(\")",
-      ],
+○deleteNext(Node: prev)
+  Node: target ← prev.next
+  prev.next ← a`,
+      choices: ["target.next", "target", "prev.next", "prev"],
       answer: 0,
       explanation:
-        "閉じ括弧が現れたら、対応する開き括弧をスタックから取り除く必要があるので `st.pop()` が正しい。最後にスタックが空であれば全ての括弧が対応している。",
+        "prev の直後にあった target を読み飛ばして、target のさらに次のノード(target.next)に prev を直接つなぎ直す必要がある。よって `prev.next ← target.next` が正しい。target を代入してしまうと、削除したいノードがリストに残ってしまう。",
     },
     {
       id: "s2q8",
       no: 8,
       section: "algo",
-      categoryLabel: "キュー",
+      categoryLabel: "リスト構造(単方向連結リストのトレース)",
       level: 3,
-      lead: "次のプログラムを実行したとき、最後に出力される値の並びを答えよ。",
+      lead: "次のプログラムを実行したとき、result に格納される文字列を答えよ。",
       description: [
-        "窓口の待ち行列をキューでシミュレートする。enqueue(値) は末尾に追加、dequeue() は先頭を取り除いて返す。",
+        "insertHead(n) は、新しいノードを単方向リストの先頭に挿入する手続である。挿入のたびに新しいノードの next を現在の head に向け、その後 head を新しいノードに更新する。",
       ],
       code:
-`Queue: q ← Queue()
-q.enqueue("客A")
-q.enqueue("客B")
-出力(q.dequeue())
-q.enqueue("客C")
-q.enqueue("客D")
-出力(q.dequeue())
-出力(q.dequeue())
-q.enqueue("客E")
-出力(q.dequeue())
-出力(q.dequeue())`,
-      choices: [
-        "客A, 客B, 客C, 客D, 客E",
-        "客A, 客B, 客C, 客E, 客D",
-        "客E, 客D, 客C, 客B, 客A",
-        "客A, 客C, 客B, 客D, 客E",
-      ],
+`クラス Node
+  文字列型: name
+  Node: next ← 未定義の値
+
+Node: head ← 未定義の値
+
+○insertHead(文字列型: n)
+  Node: newNode ← Node()
+  newNode.name ← n
+  newNode.next ← head
+  head ← newNode
+
+insertHead("佐藤")
+insertHead("鈴木")
+insertHead("高橋")
+
+Node: cur ← head
+文字列型: result ← ""
+while (cur が 未定義の値 でない)
+  result ← result + cur.name + " "
+  cur ← cur.next
+endwhile`,
+      choices: ["高橋 鈴木 佐藤 ", "佐藤 鈴木 高橋 ", "鈴木 高橋 佐藤 ", "高橋 佐藤 鈴木 "],
       answer: 0,
       explanation:
-        "キューは先入れ先出し(FIFO)。enqueue(A,B)後、中身は先頭から[A,B]。dequeue→A。enqueue(C,D)で[B,C,D]。dequeue→B。dequeue→C。enqueue(E)で[D,E]。dequeue→D。dequeue→E。よって出力順は A,B,C,D,E。",
+        "insertHead は常に先頭に挿入するため、挿入した順とは逆順のリストになる。「佐藤」挿入後: 佐藤。「鈴木」挿入後: 鈴木→佐藤。「高橋」挿入後: 高橋→鈴木→佐藤。先頭から辿ると \"高橋 鈴木 佐藤 \" となる。",
     },
     {
       id: "s2q9",
       no: 9,
       section: "algo",
-      categoryLabel: "探索",
+      categoryLabel: "実務処理(簡易キャッシュ)",
       level: 3,
-      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
+      lead: "次のプログラムを実行したとき、最終的にcacheKeysに残っているキーを、先頭から順に並べたものを選べ。",
       description: [
-        "関数 countUnder は、配列 data の中から limit 未満の値が何個あるかを数えて返す。ただし、データは整列されておらず、全件を走査する必要がある。",
+        "簡易的なキャッシュの仕組みを、キュー(Queue)を用いて実装する。キャッシュは最大 capacity 件までキーを保持でき、上限に達した状態で新しいキーを追加する場合は、最も古い(先に追加された)キーから削除する。Queue クラスの size() は現在の要素数を返す。",
       ],
       code:
-`○整数型: countUnder(整数型の配列: data, 整数型: limit)
-  整数型: cnt ← 0
-  整数型: i
+`Queue: cacheKeys ← Queue()
+整数型: capacity ← 3
 
-  for (i を 1 から dataの要素数 まで 1 ずつ増やす)
-    if ( a )
-      cnt ← cnt + 1
-    endif
-  endfor
-  return cnt`,
-      choices: [
-        "data[i] が limit より小さい",
-        "data[i] が limit 以下",
-        "i が limit より小さい",
-        "data[i] が cnt より小さい",
-      ],
+○put(文字列型: key)
+  if (cacheKeys.size() が capacity 以上)
+    cacheKeys.dequeue()
+  endif
+  cacheKeys.enqueue(key)
+
+put("A")
+put("B")
+put("C")
+put("D")
+put("E")`,
+      choices: ["C, D, E", "B, C, D", "A, B, C", "D, E, C"],
       answer: 0,
       explanation:
-        "「limit未満」を数えるので `data[i] が limit より小さい` が正しい。「以下」だとlimitと等しい値も含まれてしまう。",
+        "put(A): [A]。put(B): [A,B]。put(C): [A,B,C]。put(D): 上限3件に達しているのでAをdequeueして[B,C]、その後Dをenqueueして[B,C,D]。put(E): Bをdequeueして[C,D]、Eをenqueueして[C,D,E]。よって最終的に残るのは C, D, E。",
     },
     {
       id: "s2q10",
       no: 10,
       section: "algo",
-      categoryLabel: "整列",
+      categoryLabel: "間接参照(添字配列によるランキング表示)",
       level: 3,
-      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
+      lead: "次のプログラムを実行したとき出力される文字列を、出力される順に並べたものを選べ。",
       description: [
-        "次のプログラムは、バブルソートによって配列 data を昇順に並べ替える。隣り合う要素を比較し、順序が逆であれば交換する操作を繰り返す。",
+        "テストの得点上位者を表示する処理である。氏名は names、得点は score に、同じ添字で対応して格納されている。表示順は、元のデータを並べ替えず、表示したい順に元データの添字を並べた配列 order を用いた間接参照(names[order[i]])によって求める。",
       ],
       code:
-`整数型の配列: data ← {6, 3, 9, 1, 5}
-整数型: i, j, tmp
+`文字列型の配列: names ← {"田中", "鈴木", "佐藤", "伊藤"}
+整数型の配列: score ← {70, 95, 88, 60}
+整数型の配列: order ← {2, 3, 1, 4}
+整数型: i
 
-for (i を 1 から (dataの要素数 - 1) まで 1 ずつ増やす)
-  for (j を 1 から (dataの要素数 - i) まで 1 ずつ増やす)
-    if (data[j] が a )
-      tmp ← data[j]
-      data[j] ← data[j + 1]
-      data[j + 1] ← tmp
-    endif
-  endfor
+for (i を 1 から namesの要素数 まで 1 ずつ増やす)
+  出力(names[order[i]] + ":" + score[order[i]]の文字列)
 endfor`,
       choices: [
-        "data[j + 1] より大きい",
-        "data[j + 1] より小さい",
-        "data[j - 1] より大きい",
-        "dataの要素数 より大きい",
+        "鈴木:95, 佐藤:88, 田中:70, 伊藤:60",
+        "田中:70, 鈴木:95, 佐藤:88, 伊藤:60",
+        "鈴木:95, 田中:70, 佐藤:88, 伊藤:60",
+        "伊藤:60, 佐藤:88, 鈴木:95, 田中:70",
       ],
       answer: 0,
       explanation:
-        "バブルソートは、隣り合う要素の順序が逆(前の方が大きい)のときに交換する。よって `data[j+1] より大きい` が正しい条件。",
+        "order[1]=2 → names[2]=\"鈴木\", score[2]=95。order[2]=3 → \"佐藤\":88。order[3]=1 → \"田中\":70。order[4]=4 → \"伊藤\":60。元の配列を並べ替えずに order 配列を介した間接参照で順序を制御している点がポイント。",
     },
     {
       id: "s2q11",
       no: 11,
       section: "algo",
-      categoryLabel: "オブジェクト指向",
-      level: 3,
-      lead: "次のプログラムを実行したとき、出力される値を答えよ。",
+      categoryLabel: "実務処理(ページネーション)",
+      level: 4,
+      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "クラス BankAccount は、残高を管理する。deposit(金額) で入金、withdraw(金額) で出金する。withdraw は残高を超える出金の場合、何もせず失敗として扱う(残高は変化しない)。",
+        "検索結果一覧を1ページあたり pageSize 件ずつ表示するページネーション処理である。関数 getPageRange は、ページ番号 page(1始まり)と1ページあたりの件数 pageSize、全体件数 totalCount から、表示すべき範囲の開始位置 startIdx(1始まり)と終了位置 endIdx を求めて返す。",
       ],
       code:
-`クラス BankAccount
-  整数型: balance ← 0
-  ○deposit(整数型: amount)
-    balance ← balance + amount
-  ○withdraw(整数型: amount)
-    if (amount が balance 以下)
-      balance ← balance - amount
-    endif
-  ○整数型: getBalance()
-    return balance
-
-BankAccount: acc ← BankAccount()
-acc.deposit(3000)
-acc.withdraw(1000)
-acc.withdraw(5000)
-acc.deposit(500)
-acc.withdraw(2000)
-出力(acc.getBalance())`,
-      choices: ["500", "2500", "0", "1500"],
+`○整数型の配列: getPageRange(整数型: page, 整数型: pageSize, 整数型: totalCount)
+  整数型: startIdx ← (page - 1) × pageSize + 1
+  整数型: endIdx ← a
+  if (endIdx が totalCount より大きい)
+    endIdx ← totalCount
+  endif
+  return {startIdx, endIdx}`,
+      choices: [
+        "page × pageSize",
+        "(page - 1) × pageSize",
+        "page × pageSize - 1",
+        "startIdx + pageSize",
+      ],
       answer: 0,
       explanation:
-        "deposit(3000)→3000。withdraw(1000)→2000。withdraw(5000)は残高2000を超えるので失敗、変化なし(2000のまま)。deposit(500)→2500。withdraw(2000)→500。最終残高は500。",
+        "1ページ目(page=1)はstartIdx=1、endIdx=pageSizeでなければならない。`page × pageSize`ならpage=1のときpageSizeとなり正しい。それ以外の選択肢はいずれもズレた値になる(例えば`startIdx + pageSize`はpage×pageSize + 1となり1件多くカウントしてしまう)。",
     },
     {
       id: "s2q12",
       no: 12,
       section: "algo",
-      categoryLabel: "リスト構造(双方向)",
+      categoryLabel: "リスト構造(単方向連結リストの逆順化)",
       level: 4,
       lead: "次のプログラム中の a 、 b に入れる正しい答えの組合せを、解答群の中から選べ。",
       description: [
-        "手続 removeNode は、双方向リストからノード target を取り除く。クラス DNode は、値 val、前の要素への参照 prev、次の要素への参照 next をもつ。target は先頭でも末尾でもない中間のノードとする。",
+        "手続 reverseList は、単方向リストを逆順に並べ替える。3つの変数 prev(処理済みの先頭)、cur(処理中のノード)、nextNode(cur の元の次のノードを一時的に保持する)を使い、ノードの向きを1つずつ反転させていく。",
       ],
       code:
-`クラス DNode
-  整数型: val
-  DNode: prev ← 未定義の値
-  DNode: next ← 未定義の値
+`手続 reverseList()
+  Node: prev ← 未定義の値
+  Node: cur ← head
+  Node: nextNode
 
-○removeNode(DNode: target)
-  target.prev.next ← a
-  target.next.prev ← b`,
+  while (cur が 未定義の値 でない)
+    nextNode ← cur.next
+    cur.next ← a
+    prev ← cur
+    cur ← b
+  endwhile
+  head ← prev`,
       choices: [
-        "a: target.next　b: target.prev",
-        "a: target.prev　b: target.next",
-        "a: target　b: target",
-        "a: target.next.next　b: target.prev.prev",
+        "a: prev　b: nextNode",
+        "a: nextNode　b: prev",
+        "a: cur　b: nextNode",
+        "a: prev　b: cur",
       ],
       answer: 0,
       explanation:
-        "targetの前のノードのnextを、targetの次のノードに繋ぎ変える(target.prev.next ← target.next)。同様に、targetの次のノードのprevを、targetの前のノードに繋ぎ変える(target.next.prev ← target.prev)。よって a: target.next、b: target.prev。",
+        "cur.next を書き換える前に、元の次のノードへの参照を nextNode に保存しておく(でなければリストの続きを辿れなくなる)。その上で、向きを反転させるため cur.next ← prev とし、prev と cur をそれぞれ1つ後ろへ進める(prev←cur、cur←nextNode)。よって a: prev、b: nextNode。",
     },
     {
       id: "s2q13",
       no: 13,
       section: "algo",
-      categoryLabel: "再帰",
+      categoryLabel: "メソッド構造・間接参照(オブジェクト参照の共有)",
       level: 4,
-      lead: "次のプログラムを digitSum(4907) として呼び出したときの戻り値を答えよ。",
+      lead: "次のプログラムを実行したとき出力される値を答えよ。",
       description: [
-        "関数 digitSum は、引数の非負整数の各桁の数字の和を再帰的に計算して返す。",
+        "変数にオブジェクトを代入すると、実体がコピーされるのではなく同じ実体への参照が共有される。クラス Order は、applyDiscount(rate) で割引額を計算して自分自身(this)を返し、finalAmount() で割引後の金額を返す。",
       ],
       code:
-`○整数型: digitSum(整数型: n)
-  if (n が 10 より小さい)
-    return n
-  endif
-  return (n mod 10) + digitSum(n ÷ 10 の商)`,
-      choices: ["20", "19", "24", "13"],
+`クラス Order
+  整数型: amount
+  整数型: discount ← 0
+
+  ○Order: applyDiscount(整数型: rate)
+    discount ← (amount × rate) ÷ 100 の商
+    return this
+  ○整数型: finalAmount()
+    return amount - discount
+
+Order: o1 ← Order()
+o1.amount ← 2000
+Order: o2 ← o1
+
+o1.applyDiscount(10)
+o2.amount ← 3000
+
+出力(o1.finalAmount()の文字列 + "," + o2.finalAmount()の文字列)`,
+      choices: ["2800,2800", "1800,2800", "1800,1800", "2800,3000"],
       answer: 0,
       explanation:
-        "digitSum(4907) = 7 + digitSum(490) = 7 + (0 + digitSum(49)) = 7 + 0 + (9 + digitSum(4)) = 7+0+9+4 = 20。各桁 4,9,0,7 の和は 4+9+0+7=20 と一致する。",
+        "`Order: o2 ← o1` はオブジェクトのコピーではなく参照の共有であり、o1 と o2 は同一の実体を指す。o1.applyDiscount(10) により discount は (2000×10)÷100=200 となる(この値は共有実体に保存される)。続いて o2.amount ← 3000 は同じ実体の amount を3000に書き換える。したがって o1.finalAmount() も o2.finalAmount() も、共通の amount=3000, discount=200 に基づき 3000-200=2800 となり、出力は \"2800,2800\"。",
     },
     {
       id: "s2q14",
       no: 14,
       section: "algo",
-      categoryLabel: "探索(境界値)",
+      categoryLabel: "実務処理(バリデーション)",
       level: 4,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "配列 data は昇順に整列済みである。関数 lowerBound は、data の中で target 以上となる最初の要素の添字を二分探索で返す(該当がなければ、dataの要素数+1を返す)。",
+        "会員登録フォームの入力チェック処理である。関数 validate は、ユーザー名の文字数(3文字以上10文字以下)、年齢(0以上150未満)、メールアドレス(\"@\"を含む)の順にチェックし、最初に見つかった違反内容を返す。全ての条件を満たす場合は \"OK\" を返す。",
       ],
       code:
-`○整数型: lowerBound(整数型の配列: data, 整数型: target)
-  整数型: low ← 1
-  整数型: high ← dataの要素数 + 1
-  整数型: mid
-
-  while (low が high より小さい)
-    mid ← (low + high) ÷ 2 の商
-    if (data[mid] が target より小さい)
-      low ← mid + 1
-    else
-      a
-    endif
-  endwhile
-  return low`,
+`○文字列型: validate(文字列型: name, 整数型: age, 文字列型: email)
+  if ((nameの文字数 が 3 より小さい) or (nameの文字数 が 10 より大きい))
+    return "ユーザー名エラー"
+  endif
+  if ((age が 0 より小さい) or ( a ))
+    return "年齢エラー"
+  endif
+  if (emailの中に "@" が含まれない)
+    return "メールエラー"
+  endif
+  return "OK"`,
       choices: [
-        "high ← mid",
-        "high ← mid - 1",
-        "high ← mid + 1",
-        "low ← mid",
+        "age が 150 以上",
+        "age が 150 より大きい",
+        "age が 150 以下",
+        "age が 0 以上",
       ],
       answer: 0,
       explanation:
-        "data[mid]がtarget以上のとき、mid自身がまだ答えの候補になり得るので high を mid-1 にはできず `high ← mid` とする必要がある。これにより探索範囲が正しく縮まり、最終的に low が「target以上となる最初の添字」に収束する。",
+        "「0以上150未満」が正常な範囲なので、エラーとすべきは「0より小さい」または「150以上」の場合。よって `age が 150 以上` が正しい。「より大きい」にすると150ちょうどが誤って正常と判定されてしまう。",
     },
     {
       id: "s2q15",
       no: 15,
       section: "algo",
-      categoryLabel: "思考力(パズル)",
+      categoryLabel: "実務処理(集計・グルーピング)",
       level: 5,
-      lead: "あるプログラムには3つの変数 x, y, z があり、値はそれぞれ1, 2, 3のいずれかで、互いに重複しない。次の3つの条件をすべて満たす (x, y, z) の組合せを選べ。",
+      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "条件1: yの値は1である。",
-        "条件2: xの値はzの値より大きい。",
-        "条件3: zの値は1ではない。",
+        "ECサイトの売上明細(商品カテゴリ records と金額 amounts が同じ添字で対応する)を、カテゴリごとに合計する集計処理である。カテゴリ名の配列 catNames と、対応する合計金額の配列 catTotals を並行して管理し、既に登録済みのカテゴリであれば合計に加算し、未登録のカテゴリであれば新たに末尾へ追加する。",
       ],
-      code: null,
+      code:
+`文字列型の配列: records ← {"食品", "日用品", "食品", "衣料", "日用品", "食品"}
+整数型の配列: amounts ← {800, 300, 1200, 4500, 600, 950}
+文字列型の配列: catNames ← {}
+整数型の配列: catTotals ← {}
+整数型: i, j
+論理型: found
+
+for (i を 1 から recordsの要素数 まで 1 ずつ増やす)
+  found ← 偽
+  for (j を 1 から catNamesの要素数 まで 1 ずつ増やす)
+    if (catNames[j] が records[i] と等しい)
+      catTotals[j] ← a
+      found ← 真
+    endif
+  endfor
+  if (found が 偽)
+    catNames の末尾に records[i] を追加する
+    catTotals の末尾に amounts[i] を追加する
+  endif
+endfor`,
       choices: [
-        "(x, y, z) = (3, 1, 2)",
-        "(x, y, z) = (2, 1, 3)",
-        "(x, y, z) = (1, 2, 3)",
-        "(x, y, z) = (2, 3, 1)",
+        "catTotals[j] + amounts[i]",
+        "catTotals[i] + amounts[j]",
+        "catTotals[j] + amounts[j]",
+        "amounts[i]",
       ],
       answer: 0,
       explanation:
-        "条件1よりyは1に確定する。残るx, zは{2, 3}のいずれかを重複なく割り当てる。条件3(zは1でない)は自動的に満たされるので、実質的な決め手は条件2(x>z)である。(x,z)=(2,3)ならx<zで不成立、(x,z)=(3,2)ならx>zで成立する。よって(x,y,z)=(3,1,2)が唯一の解である。条件を1つずつ丁寧に絞り込む論理的思考力が問われる設問である。",
+        "内側ループの添字 j は catNames・catTotals 側の位置を指し、外側ループの添字 i は records・amounts 側の位置を指す。一致したカテゴリの現在の合計 catTotals[j] に、今回の売上 amounts[i] を加算するので `catTotals[j] + amounts[i]` が正しい。添字を取り違えると異なる配列同士を組み合わせてしまい正しく集計できない。",
     },
     {
       id: "s2q16",
       no: 16,
       section: "algo",
-      categoryLabel: "動的計画法",
+      categoryLabel: "リスト構造(双方向連結リスト)",
       level: 5,
-      lead: "次のプログラムを stairs(5) として呼び出したときの戻り値を答えよ。",
+      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "階段を上るとき、一度に1段または2段のどちらかで上れるとする。関数 stairs(n) は、n段の階段を上る方法が何通りあるかを、配列 memo を使って計算する(メモ化)。",
+        "ブラウザの閲覧履歴を双方向連結リストで管理する。クラス Node は、値 url のほか、前の要素への参照 prev と次の要素への参照 next をもつ。手続 insertAfter(cur, newNode) は、ノード cur の直後に newNode を挿入する。cur の次にノードが存在する場合、そのノードの prev も newNode に向け直す必要がある。",
       ],
       code:
-`○整数型: stairs(整数型: n)
-  整数型の配列: memo ← {1, 1}
-  整数型: i
+`クラス Node
+  文字列型: url
+  Node: prev ← 未定義の値
+  Node: next ← 未定義の値
 
-  if (n が 1 以下)
-    return 1
+手続 insertAfter(Node: cur, Node: newNode)
+  newNode.prev ← cur
+  newNode.next ← cur.next
+  if (cur.next が 未定義の値 でない)
+    a
   endif
-
-  for (i を 3 から (n + 1) まで 1 ずつ増やす)
-    memoの末尾に (memo[i - 1] + memo[i - 2]) を追加する
-  endfor
-  return memo[n + 1]`,
-      choices: ["8", "5", "13", "21"],
+  cur.next ← newNode`,
+      choices: [
+        "cur.next.prev ← newNode",
+        "newNode.next.prev ← newNode",
+        "cur.prev ← newNode",
+        "cur.next ← newNode.next",
+      ],
       answer: 0,
       explanation:
-        "memoは1段目、0段目を表す基準値として{1,1}から始まり、i=3から順に前2つの和を追加していく(フィボナッチ数列と同じ構造)。n=5のとき、memoは{1,1,2,3,5,8}まで伸び、memo[6]=8が返る。1段刻み・2段刻みの組合せ数は段数に対してフィボナッチ数列に従って増えるため、5段では8通りとなる。",
+        "この時点では cur.next はまだ元の(newNode挿入前の)次のノードを指しているので、そのノードの prev を newNode に向け直すには `cur.next.prev ← newNode` とする。これを行う前に最後の `cur.next ← newNode` を実行してしまうと、元の次のノードへの参照が失われて prev を書き換えられなくなる。",
     },
 
     // ============ 問17〜20: 情報セキュリティ ============
@@ -486,99 +518,96 @@ acc.withdraw(2000)
       id: "s2q17",
       no: 17,
       section: "sec",
-      categoryLabel: "セキュリティ(委託管理・多層防御)",
+      categoryLabel: "セキュリティ(責任分担・複合)",
       level: 5,
-      lead: "本文中の対応(ア)〜(エ)のうち、再発防止策として最も本質的かつ優先して実施すべきものを選べ。",
+      lead: "図1中の項番(一)〜(三)それぞれについて、再発防止の一次的な責任を負う主体の適切な組合せを、解答群の中から選べ。",
       scenario: [
-        "医療関連サービスを提供するP社は、患者向けの予約管理システム(以下、Pシステムという)を運営している。Pシステムは、患者の氏名、生年月日、診療履歴などの機微な個人情報を保持しており、開発・運用はQ社に全面的に委託している。P社とQ社との委託契約書には、Q社が実施すべきセキュリティ対策の詳細は明記されておらず、「Q社は適切なセキュリティ対策を講じるものとする」という抽象的な条項があるのみであった。",
-        "先日、Q社の担当者が、テスト用に本番環境のデータベースの複製を作成し、自身の個人所有ノートPCにコピーして自宅で作業を行っていたところ、そのノートPCがマルウェアに感染し、患者の個人情報を含むデータが外部に流出する事故が発生した。",
-        "事故後の調査で、次の問題点が判明した。",
-        "(ア) Q社の担当者が、本番データを個人所有の端末に持ち出すことを禁止する明確なルールが、P社Q社間の契約にも、Q社社内規程にも存在しなかった。",
-        "(イ) 個人所有のノートPCにはマルウェア対策ソフトが導入されておらず、最新の定義ファイルにも更新されていなかった。",
-        "(ウ) 流出したデータは暗号化されておらず、平文のまま保存されていた。",
-        "(エ) P社は、委託先であるQ社に対して、委託業務の実施状況を定期的に監査する仕組みを持っていなかった。",
+        "クラウド型の勤怠管理サービスを提供するQ社は、顧客企業の勤怠データを保管するデータベースを、R社が提供するDBaaS(Database as a Service)上に構築している。Q社はアプリケーションの開発・運用を自社で行っており、認証基盤には外部のIDaaS(Identity as a Service)であるS社のサービスを利用し、顧客企業の従業員にシングルサインオン(SSO)を提供している。",
+        "ある日、顧客企業の一つで、退職済み従業員のアカウントが悪用され、勤怠データが不正に閲覧される事件が発生した。Q社が調査した結果、次の3つの事実が判明した。",
       ],
-      description: [],
+      description: [
+        "図1 判明した事実",
+        "(一) 退職従業員のIDaaS上のアカウントは、顧客企業の管理者が無効化申請を行う運用だったが、当該従業員については申請が行われていなかった。",
+        "(二) Q社のアプリケーションには、SSOトークンが失効した後も、ログイン済み端末に残っていた古いセッショントークンでAPIにアクセスできてしまう不具合があった。",
+        "(三) DBaaSへの通信は暗号化されていたが、DBaaSのアクセス制御設定が、Q社のアプリケーションサーバ以外のIPアドレスからも接続可能な状態になっていた。",
+      ],
       code: null,
       choices: [
-        "(エ) 委託先に対する定期監査の仕組みを整備し、委託契約の中でセキュリティ要件を具体的に明記して遵守状況を継続的に確認できるようにする",
-        "(イ) 個人所有のノートPCにマルウェア対策ソフトを導入するよう、Q社の担当者に個別に注意喚起する",
-        "(ウ) 流出したデータを暗号化する処理を追加する",
-        "(ア) 本番データの持ち出しを禁止する一文を、口頭でQ社の担当者に伝える",
+        "(一)顧客企業　(二)Q社　(三)Q社",
+        "(一)Q社　(二)S社　(三)R社",
+        "(一)顧客企業　(二)S社　(三)R社",
+        "(一)Q社　(二)Q社　(三)R社",
       ],
       answer: 0,
       explanation:
-        "(ア)(イ)(ウ)はいずれも今回の個別事象への対症療法にすぎない。根本原因は、P社がQ社に対して具体的なセキュリティ要件を契約上明記せず、かつ委託先の実施状況を継続的にチェックする仕組み(監査)を持っていなかったという、委託先管理の構造的な不備にある。これを是正しない限り、同種の事故は形を変えて再発しうるため、(エ)の対応が再発防止として最も本質的かつ優先度が高い。",
+        "(一)退職者のアカウント無効化申請は、契約上顧客企業の管理者の役割であるため顧客企業の責任。(二)セッション失効の不具合はQ社が開発したアプリケーションのロジックの欠陥であり、認証基盤を提供するS社ではなくQ社の実装責任。(三)DBaaSのアクセス制御(接続元IPの制限など)は、通常テナントであるQ社自身が設定する項目であり、基盤そのもの(R社)の脆弱性ではない。したがって(一)顧客企業(二)Q社(三)Q社の組合せが正しい。",
     },
     {
       id: "s2q18",
       no: 18,
       section: "sec",
-      categoryLabel: "セキュリティ(標的型攻撃)",
+      categoryLabel: "セキュリティ(ビジネスメール詐欺)",
       level: 4,
-      lead: "本文中の下線の訓練の主な目的として、最も適切なものを選べ。",
+      lead: "本文中の下線の対応を導入した目的として、最も適切なものを選べ。",
       scenario: [
-        "従業員150名のR社では、半年に一度、全従業員を対象に、実在の取引先を装った偽の電子メールを送信し、添付ファイルを開いたり、本文中のリンクをクリックしたりする従業員がどの程度いるかを測定する訓練を実施している。訓練後、リンクをクリックしてしまった従業員には個別にフィードバックを行い、注意点を説明している。",
-        "情報システム部門の担当者は、直近の訓練でクリック率が前回より上昇したことを受けて、訓練の実施方法を見直すことにした。",
+        "従業員150名のT社経理部門では、取引先からの請求書に基づいて振込処理を行っている。ある日、経理担当者が、日頃取引のある仕入先U社の担当者名で「振込先口座を変更したので、今後はこの新しい口座に振り込んでほしい」という内容のメールを受信した。文面や署名は普段のU社とのやり取りとよく似ていたが、実際には送信元メールアドレスのドメインが、正規のU社のドメインと1文字だけ異なるものであった。経理担当者はこの違いに気づかず、指定された新しい口座に振込を実行してしまった。",
+        "この事件を受け、T社は再発防止策として、一定額以上の振込先口座変更の依頼を受けた場合、メール以外の手段(あらかじめ登録されている電話番号への架電など)で必ず本人確認を行うという運用を新たに導入した。",
       ],
       description: [],
       code: null,
       choices: [
-        "巧妙化する標的型攻撃メールの手口に対する従業員の警戒心を維持し、実際の攻撃メールを見分ける判断力を養う",
-        "電子メールサーバの送受信容量を測定し、システムの増強計画に役立てる",
-        "従業員の業務用PCにインストールされているソフトウェアの一覧を棚卸しする",
-        "取引先とのメールのやり取りの頻度を分析し、営業活動の効率を評価する",
+        "なりすましメールによる不正な口座変更に気づかず、誤った口座に振込んでしまうリスクを低減するため",
+        "経理担当者が振込処理にかかる時間を短縮するため",
+        "取引先とのメールのやり取りを暗号化し、通信の盗聴を防ぐため",
+        "請求書の金額を自動計算し、入力ミスを防ぐため",
       ],
       answer: 0,
       explanation:
-        "標的型攻撃メール訓練は、実際の攻撃を模した疑似メールを従業員に送ることで、不審なメールを見抜く判断力や警戒心を継続的に維持・向上させることが主な目的である。他の選択肢はいずれも訓練の内容と関係がない。",
+        "このシナリオの核心は、送信元ドメインが酷似したなりすましメールによって不正な口座変更依頼が行われ、気づかずに振込んでしまったことである。電話による本人確認は、メールだけでは真偽を判断しにくいなりすましのリスクに対処するための対策であり、目的は不正な口座への振込リスクの低減である。",
     },
     {
       id: "s2q19",
       no: 19,
       section: "sec",
-      categoryLabel: "セキュリティ(認証)",
+      categoryLabel: "セキュリティ(テレワーク環境)",
       level: 3,
-      lead: "本文中の空欄に入れる、最も適切な対策を選べ。",
+      lead: "この対策として、最も適切なものを選べ。",
       scenario: [
-        "従業員60名のS社では、社外から社内の勤怠管理システムにアクセスできるようにしている。ログインにはID とパスワードのみを使用しており、最近、他のWebサービスから漏えいしたパスワードのリストを使って他人のアカウントに次々とログインを試みる攻撃(パスワードリスト攻撃)により、複数の従業員アカウントが不正にログインされる被害が発生した。",
-        "調査の結果、被害に遭った従業員の多くが、プライベートで利用している別のサービスと同じパスワードを勤怠管理システムでも使い回していたことが分かった。",
+        "従業員60名のV社では、テレワークを推進しており、従業員は自宅やカフェなど社外の様々な場所からノートPCで社内システムにアクセスしている。情報システム部門は、外出先のカフェなどで提供されている暗号化されていない公衆Wi-Fiを利用して社内システムに接続している従業員が一部にいることを把握し、通信内容が第三者に盗聴されるリスクを懸念している。",
       ],
-      description: [
-        "パスワードの使い回しを完全になくすことが難しい状況でも、ID・パスワードの組合せが漏えいした場合の不正ログインを防ぐために有効な対策として、最も適切なものを選べ。",
-      ],
+      description: [],
       code: null,
       choices: [
-        "ID・パスワードによる認証に加えて、スマートフォンアプリへの通知確認など、別の要素による認証(多要素認証)を導入する",
-        "パスワードの文字数制限を、8文字以上から6文字以上に緩和し、覚えやすくする",
-        "全従業員のパスワードを、システム側で一括して同じ文字列に統一する",
-        "ログイン画面のデザインを変更し、視認性を向上させる",
+        "社内システムへの通信は必ずVPNを経由させ、経路全体を暗号化した上で接続させる",
+        "公衆Wi-Fiの利用を制限せず、従業員それぞれの判断に委ねる",
+        "ノートPCの画面の明るさを下げることで、周囲からの覗き見を防止する",
+        "社内システムのパスワードの文字数を短くし、入力の手間を減らす",
       ],
       answer: 0,
       explanation:
-        "パスワードリスト攻撃はID・パスワードの組合せが漏えいしていることを前提とする攻撃であるため、パスワードだけに頼らず、所持情報(スマートフォンなど)や生体情報を組み合わせた多要素認証を導入することが、パスワード漏えい時にも不正ログインを防ぐ効果的な対策となる。",
+        "暗号化されていない公衆Wi-Fiでは通信内容が盗聴される危険性がある。VPNを経由させて経路全体を暗号化することで、たとえ公衆Wi-Fi区間が暗号化されていなくても、盗聴による情報漏えいのリスクを大幅に低減できる。",
     },
     {
       id: "s2q20",
       no: 20,
       section: "sec",
-      categoryLabel: "セキュリティ(基礎知識)",
+      categoryLabel: "セキュリティ(認証の基礎知識)",
       level: 2,
-      lead: "情報セキュリティにおけるバックアップ運用に関する記述のうち、適切なものを選べ。",
+      lead: "情報セキュリティにおける認証の考え方として、適切なものを選べ。",
       scenario: [
-        "T社の情報システム部門では、新入社員向けの研修資料として、バックアップ運用に関する基本方針をまとめている。",
+        "W社の情報システム部門では、新入社員向けに認証に関する基礎知識の研修資料を作成している。",
       ],
       description: [],
       code: null,
       choices: [
-        "バックアップデータの一部は、本番環境とネットワークで隔離された場所にも保管し、ランサムウェアなどによってバックアップごと暗号化される事態に備える。",
-        "バックアップは一度取得すれば十分であり、その後の運用でデータが更新されても再取得する必要はない。",
-        "バックアップデータは、復元テストを行わずに保管しておくだけで、いざというときに確実に復元できると考えてよい。",
-        "バックアップの取得頻度は、業務への影響を避けるため、可能な限り少なくすることが望ましい。",
+        "パスワードに加えてスマートフォンアプリのワンタイムコードを併用する多要素認証を導入することで、パスワード漏えい時の不正ログインのリスクを低減できる。",
+        "覚えやすさを優先して、誕生日や電話番号など推測されやすい文字列をパスワードに設定することを推奨する。",
+        "退職者のアカウントは、次回の一斉棚卸しのタイミングまでそのまま有効にしておいてよい。",
+        "同一のパスワードを複数のシステムで使い回すことで、管理の手間を減らすことができ、セキュリティ上も望ましい。",
       ],
       answer: 0,
       explanation:
-        "ランサムウェア対策として、バックアップの一部をネットワークから隔離された場所(オフラインやエアギャップ環境)に保管することは有効な対策(3-2-1ルールの考え方の一部)。他の選択肢は、更新のたびに再取得しない、復元テストをしない、取得頻度を減らすなど、いずれもバックアップ運用として不適切な内容である。",
+        "多要素認証(パスワード等の「知識」とワンタイムコード等の「所持」の組合せ)を導入すると、パスワードが漏えいしただけでは不正ログインが成立しにくくなり、セキュリティが向上する。他の選択肢は、推測されやすいパスワードの使用・退職者アカウントの放置・パスワードの使い回しなど、いずれもセキュリティを損なう不適切な内容である。",
     },
   ],
 };
