@@ -376,35 +376,24 @@ endfor`,
       id: "s2q13",
       no: 13,
       section: "algo",
-      categoryLabel: "メソッド構造・間接参照(オブジェクト参照の共有)",
+      categoryLabel: "間接参照(複数配列の使い分け)",
       level: 4,
-      lead: "次のプログラムを実行したとき出力される値を答えよ。",
+      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "変数にオブジェクトを代入すると、実体がコピーされるのではなく同じ実体への参照が共有される。クラス Order は、applyDiscount(rate) で割引額を計算して自分自身(this)を返し、finalAmount() で割引後の金額を返す。",
+        "通販サイトの注文金額を計算する処理である。商品の単価は、商品ごとの単価コード priceCodeOf を経由して priceTable から間接参照で求める。一方、購入数量 qtyOf は商品番号でそのまま(直接)対応している。",
       ],
       code:
-`クラス Order
-  整数型: amount
-  整数型: discount ← 0
+`文字列型の配列: productNames ← {"ノート", "消しゴム", "定規"}
+整数型の配列: priceCodeOf ← {2, 1, 3}
+整数型の配列: priceTable ← {80, 150, 300}
+整数型の配列: qtyOf ← {5, 3, 2}
+整数型: productId ← 2
 
-  ○Order: applyDiscount(整数型: rate)
-    discount ← (amount × rate) ÷ 100 の商
-    return this
-  ○整数型: finalAmount()
-    return amount - discount
-
-Order: o1 ← Order()
-o1.amount ← 2000
-Order: o2 ← o1
-
-o1.applyDiscount(10)
-o2.amount ← 3000
-
-出力(o1.finalAmount()の文字列 + "," + o2.finalAmount()の文字列)`,
-      choices: ["2800,2800", "1800,2800", "1800,1800", "2800,3000"],
+整数型: amount ← priceTable[priceCodeOf[productId]] × qtyOf[ a ]`,
+      choices: ["productId", "priceCodeOf[productId]", "priceTable[productId]", "1"],
       answer: 0,
       explanation:
-        "`Order: o2 ← o1` はオブジェクトのコピーではなく参照の共有であり、o1 と o2 は同一の実体を指す。o1.applyDiscount(10) により discount は (2000×10)÷100=200 となる(この値は共有実体に保存される)。続いて o2.amount ← 3000 は同じ実体の amount を3000に書き換える。したがって o1.finalAmount() も o2.finalAmount() も、共通の amount=3000, discount=200 に基づき 3000-200=2800 となり、出力は \"2800,2800\"。",
+        "単価は priceCodeOf[productId] で得られる単価コードを使って priceTable から間接的に参照する必要があるが、購入数量 qtyOf は商品番号 productId でそのまま(直接)対応しているため、`qtyOf[productId]` とするのが正しい。qtyOf[priceCodeOf[productId]] のように誤って単価コードを流用してしまうと、全く別の商品の数量を参照することになる。(この例では productId=2 のとき、priceTable[priceCodeOf[2]]=priceTable[1]=80、qtyOf[2]=3なので amount=240 となる。)",
     },
     {
       id: "s2q14",
@@ -483,34 +472,31 @@ endfor`,
       id: "s2q16",
       no: 16,
       section: "algo",
-      categoryLabel: "リスト構造(双方向連結リスト)",
+      categoryLabel: "オブジェクト指向(二分木の合計値計算)",
       level: 5,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "ブラウザの閲覧履歴を双方向連結リストで管理する。クラス Node は、値 url のほか、前の要素への参照 prev と次の要素への参照 next をもつ。手続 insertAfter(cur, newNode) は、ノード cur の直後に newNode を挿入する。cur の次にノードが存在する場合、そのノードの prev も newNode に向け直す必要がある。",
+        "クラス TreeNode は二分木のノードを表す。メソッド sum は、自分自身を根とする部分木に含まれるすべてのノードの値の合計を再帰的に求める。",
       ],
       code:
-`クラス Node
-  文字列型: url
-  Node: prev ← 未定義の値
-  Node: next ← 未定義の値
+`クラス TreeNode
+  整数型: val
+  TreeNode: left ← 未定義の値
+  TreeNode: right ← 未定義の値
 
-手続 insertAfter(Node: cur, Node: newNode)
-  newNode.prev ← cur
-  newNode.next ← cur.next
-  if (cur.next が 未定義の値 でない)
-    a
-  endif
-  cur.next ← newNode`,
-      choices: [
-        "cur.next.prev ← newNode",
-        "newNode.next.prev ← newNode",
-        "cur.prev ← newNode",
-        "cur.next ← newNode.next",
-      ],
+  ○整数型: sum()
+    整数型: total ← val
+    if (left が 未定義の値 でない)
+      total ← total + left.sum()
+    endif
+    if (right が 未定義の値 でない)
+      total ← total + a
+    endif
+    return total`,
+      choices: ["right.sum()", "right.val", "sum()", "left.sum()"],
       answer: 0,
       explanation:
-        "この時点では cur.next はまだ元の(newNode挿入前の)次のノードを指しているので、そのノードの prev を newNode に向け直すには `cur.next.prev ← newNode` とする。これを行う前に最後の `cur.next ← newNode` を実行してしまうと、元の次のノードへの参照が失われて prev を書き換えられなくなる。",
+        "left側と同様に、rightの子が存在する場合は、そのright自身に対して sum() メソッドを再帰的に呼び出すことで、右部分木全体の合計を求めて加算する必要がある。よって `right.sum()` が正しい。",
     },
 
     // ============ 問17〜20: 情報セキュリティ ============

@@ -179,26 +179,25 @@ endfor`,
       id: "s3q7",
       no: 7,
       section: "algo",
-      categoryLabel: "リスト構造(単方向連結リストの探索)",
+      categoryLabel: "間接参照(複数コード体系の使い分け)",
       level: 3,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "関数 findNode は、単方向リストの中から値が target と一致する最初のノードを返す。見つからない場合は未定義の値を返す。クラス Node は、値 val と次の要素への参照 next をもつ。",
+        "通販サイトの注文金額を計算する処理である。商品の単価は、商品ごとの単価コード priceCode を経由して priceTable から間接参照で求める。送料は、商品ごとの送料コード shippingCode を経由して shippingTable から間接参照で求める。単価コードと送料コードは別の体系であり、混同しないよう注意する必要がある。",
       ],
       code:
-`○Node: findNode(整数型: target)
-  Node: cur ← head
-  while (cur が 未定義の値 でない)
-    if (cur.val が target と等しい)
-      return a
-    endif
-    cur ← cur.next
-  endwhile
-  return 未定義の値`,
-      choices: ["cur", "cur.next", "target", "head"],
+`文字列型の配列: itemNames ← {"ノートPC", "マウス", "モニタ"}
+整数型の配列: priceCode ← {3, 1, 2}
+整数型の配列: shippingCode ← {1, 1, 2}
+整数型の配列: priceTable ← {2000, 6000, 15000}
+整数型の配列: shippingTable ← {500, 1200}
+整数型: itemId ← 3
+
+整数型: total ← priceTable[priceCode[itemId]] + shippingTable[ a ]`,
+      choices: ["shippingCode[itemId]", "priceCode[itemId]", "itemId", "shippingTable[itemId]"],
       answer: 0,
       explanation:
-        "一致したノードそのものを返す必要があるので、ループ変数 `cur` をそのまま返せばよい。cur.next を返すと、一致したノードの次のノードを返してしまい誤りとなる。",
+        "送料は shippingCode[itemId] で得られる送料コードを使って shippingTable から間接参照する必要がある。priceCode[itemId] を誤って使ってしまうと、単価コードの体系を送料コードの体系として扱ってしまうことになり、全く関係のない値を参照してしまう。(この例では itemId=3 のとき、priceTable[priceCode[3]]=priceTable[2]=15000、shippingTable[shippingCode[3]]=shippingTable[2]=1200なので、total=16200となる。)",
     },
     {
       id: "s3q8",
@@ -324,29 +323,33 @@ endfor`,
       id: "s3q12",
       no: 12,
       section: "algo",
-      categoryLabel: "リスト構造(双方向連結リストの削除)",
+      categoryLabel: "オブジェクト指向(二分探索木の探索)",
       level: 4,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "手続 deleteNode は、双方向連結リストから target ノードを削除する。クラス Node は、値 val のほか、前の要素への参照 prev と次の要素への参照 next をもつ。target の前後にノードが存在する場合、両側のつなぎ直しが必要になる。",
+        "クラス TreeNode は二分探索木(BST)のノードを表す。メソッド contains は、自分自身を根とする木の中に target と等しい値が存在するかどうかを再帰的に判定する。BSTでは、探索対象が現在のノードの値より小さければ左部分木を、大きければ右部分木を辿ればよい。",
       ],
       code:
-`手続 deleteNode(Node: target)
-  if (target.prev が 未定義の値 でない)
-    target.prev.next ← target.next
-  endif
-  if (target.next が 未定義の値 でない)
-    a
-  endif`,
-      choices: [
-        "target.next.prev ← target.prev",
-        "target.next.prev ← target.next",
-        "target.prev.next ← target.prev",
-        "target.next ← target.prev",
-      ],
+`クラス TreeNode
+  整数型: val
+  TreeNode: left ← 未定義の値
+  TreeNode: right ← 未定義の値
+
+  ○論理型: contains(整数型: target)
+    if (val が target と等しい)
+      return 真
+    endif
+    if ((target が val より小さい) and (left が 未定義の値 でない))
+      return left.contains(target)
+    endif
+    if ((target が val より大きい) and (right が 未定義の値 でない))
+      return a
+    endif
+    return 偽`,
+      choices: ["right.contains(target)", "left.contains(target)", "contains(target)", "right.val"],
       answer: 0,
       explanation:
-        "target を削除した後、target の次にあったノードの prev は、target の前にあったノード(target.prev)を指すようにつなぎ直す必要がある。よって `target.next.prev ← target.prev` が正しい。",
+        "targetがvalより大きく、かつ右の子(right)が存在する場合は、そのrightに対して再帰的にcontainsメソッドを呼び出して探索を続ける必要がある。よって `right.contains(target)` が正しい。",
     },
     {
       id: "s3q13",

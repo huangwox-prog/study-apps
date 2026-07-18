@@ -240,35 +240,26 @@ endfor`,
       id: "s5q9",
       no: 9,
       section: "algo",
-      categoryLabel: "文字列探索(共通接頭辞)",
+      categoryLabel: "間接参照(自己参照的な多重間接参照)",
       level: 3,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "関数 commonPrefixLen は、2つの文字列 s1, s2 に共通する先頭部分の文字数を返す。",
+        "社員ごとの直属の上司の社員番号が配列 managerOf に格納されている(0は上司がいない=社長を表す)。ある社員の「上司の上司」の社員番号を求めるには、managerOf を2回続けて適用する必要がある。",
       ],
       code:
-`○整数型: commonPrefixLen(文字列型: s1, 文字列型: s2)
-  整数型: i, minLen
-  if (s1の文字数 が s2の文字数 より小さい)
-    minLen ← s1の文字数
-  else
-    minLen ← s2の文字数
-  endif
-  for (i を 1 から minLen まで 1 ずつ増やす)
-    if ( a )
-      return i - 1
-    endif
-  endfor
-  return minLen`,
+`整数型の配列: managerOf ← {0, 1, 1, 2, 3}
+整数型: empId ← 4
+
+整数型: grandManager ← managerOf[ a ]`,
       choices: [
-        "s1のi文字目 が s2のi文字目 と等しくない",
-        "s1のi文字目 が s2のi文字目 と等しい",
-        "s1のi文字目 が minLen と等しくない",
-        "s1のminLen文字目 が s2のi文字目 と等しくない",
+        "managerOf[empId]",
+        "empId",
+        "managerOf[managerOf[empId]]",
+        "0",
       ],
       answer: 0,
       explanation:
-        "s1とs2を先頭から1文字ずつ比較し、一致しない文字が最初に現れた位置iの1つ手前(i-1)までが共通する先頭部分となる。よって、一致しなくなった時点で `i - 1` を返せばよい。最後まで一致すればループを抜けてminLenを返す。",
+        "「上司の上司」を求めるには、まずempIdの直属の上司 managerOf[empId] を求め、その上司の番号に対してさらに managerOf を適用する必要がある。空欄の外側に既に managerOf[...] があるので、空欄には `managerOf[empId]` を入れればよい(全体として managerOf[managerOf[empId]] という同じ配列を2回参照する間接参照になる)。(この例では empId=4 のとき、managerOf[4]=2、managerOf[2]=1なので、grandManagerは1となる。)",
     },
     {
       id: "s5q10",
@@ -351,36 +342,35 @@ endwhile`,
       id: "s5q12",
       no: 12,
       section: "algo",
-      categoryLabel: "リスト構造(整列済みリストのマージ)",
+      categoryLabel: "オブジェクト指向(二分木の高さ)",
       level: 4,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "関数 mergeSortedLists は、2つの昇順に整列された単方向リスト a, b を、新しいノードを作らずに既存ノードのnextを繋ぎ変えることで1つの整列されたリストに統合し、その先頭ノードを返す。",
+        "クラス TreeNode は二分木のノードを表す。メソッド height は、自分自身を根とする部分木の高さ(自分自身を1として数えた最大の深さ)を再帰的に求める。",
       ],
       code:
-`○Node: mergeSortedLists(Node: a, Node: b)
-  if (a が 未定義の値 と等しい)
-    return b
-  endif
-  if (b が 未定義の値 と等しい)
-    return a
-  endif
-  if (a.val が b.val 以下)
-    a.next ← mergeSortedLists(a.next, b)
-    return a
-  else
-    a
-    return b
-  endif`,
-      choices: [
-        "b.next ← mergeSortedLists(a, b.next)",
-        "b.next ← mergeSortedLists(a.next, b)",
-        "b.next ← mergeSortedLists(b.next, a)",
-        "a.next ← mergeSortedLists(a, b.next)",
-      ],
+`クラス TreeNode
+  整数型: val
+  TreeNode: left ← 未定義の値
+  TreeNode: right ← 未定義の値
+
+  ○整数型: height()
+    整数型: leftHeight ← 0
+    整数型: rightHeight ← 0
+    if (left が 未定義の値 でない)
+      leftHeight ← left.height()
+    endif
+    if (right が 未定義の値 でない)
+      rightHeight ← right.height()
+    endif
+    if (leftHeight が rightHeight より大きい)
+      return a
+    endif
+    return rightHeight + 1`,
+      choices: ["leftHeight + 1", "leftHeight", "rightHeight + 1", "leftHeight - 1"],
       answer: 0,
       explanation:
-        "a.valの方が大きい場合、bを結果の先頭にし、bの次(b.next)には「aとb.nextを比較・統合した結果」をつなげる必要がある。よって `b.next ← mergeSortedLists(a, b.next)` が正しい。aはまだbより大きいままなので、aを進めてはならない。",
+        "左部分木の高さ(leftHeight)の方が大きい場合は、それに自分自身の分の1を加えた `leftHeight + 1` を高さとして返す。右の方が大きいか同じ場合は、既にプログラムに示されている `rightHeight + 1` を返す。",
     },
     {
       id: "s5q13",

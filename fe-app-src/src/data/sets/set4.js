@@ -185,25 +185,31 @@ endfor`,
       id: "s4q7",
       no: 7,
       section: "algo",
-      categoryLabel: "リスト構造(単方向連結リストへの追加)",
+      categoryLabel: "オブジェクト指向(木構造のノード数カウント)",
       level: 3,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "手続 append は、単方向リストの末尾に新しいノードを追加する。head はリストの先頭、tail は末尾のノードへの参照を保持している(リストが空の場合、head と tail は共に未定義の値)。",
+        "クラス TreeNode は二分木のノードを表す。メソッド count は、自分自身を根とする部分木に含まれるノードの総数を再帰的に求める。",
       ],
       code:
-`手続 append(Node: newNode)
-  if (head が 未定義の値 と等しい)
-    head ← newNode
-    tail ← newNode
-  else
-    a
-    tail ← newNode
-  endif`,
-      choices: ["tail.next ← newNode", "head.next ← newNode", "newNode.next ← tail", "tail ← newNode.next"],
+`クラス TreeNode
+  整数型: val
+  TreeNode: left ← 未定義の値
+  TreeNode: right ← 未定義の値
+
+  ○整数型: count()
+    整数型: total ← 1
+    if (left が 未定義の値 でない)
+      total ← total + left.count()
+    endif
+    if (right が 未定義の値 でない)
+      total ← a
+    endif
+    return total`,
+      choices: ["total + right.count()", "total + right.val", "right.count()", "total + count()"],
       answer: 0,
       explanation:
-        "リストが空でない場合、現在の末尾ノード(tail)の次に newNode をつなげる必要がある。よって `tail.next ← newNode` が正しい。その後、tail を newNode に更新することで、末尾ノードへの参照を最新の状態に保つ。",
+        "自分自身の分(1)に、左部分木のノード数(left.count())と右部分木のノード数(right.count())を加えることで、この部分木全体のノード数が求まる。すでに total には自分自身と左部分木の分が加算されているので、`total + right.count()` が正しい。",
     },
     {
       id: "s4q8",
@@ -230,34 +236,23 @@ endfor`,
       id: "s4q9",
       no: 9,
       section: "algo",
-      categoryLabel: "文字列処理(区切り文字のカウント)",
+      categoryLabel: "間接参照(二次元配列との組合せ)",
       level: 3,
       lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "関数 countWords は、カンマ区切りの文字列 str に含まれる単語数を数える(空文字列の場合は0を返す)。カンマの数を数え、それに1を加えることで単語数を求める。",
+        "教室の座席割り当てシステムである。受講者ごとの座席の行番号は rowOf に、列番号は colOf に格納されている。座席番号は、行番号と列番号の両方を使って二次元配列 seatMap を参照することで求まる。",
       ],
       code:
-`○整数型: countWords(文字列型: str)
-  if (strの文字数 が 0 と等しい)
-    return 0
-  endif
-  整数型: cnt ← 1
-  整数型: i
-  for (i を 1 から strの文字数 まで 1 ずつ増やす)
-    if ( a )
-      cnt ← cnt + 1
-    endif
-  endfor
-  return cnt`,
-      choices: [
-        "strのi文字目 が \",\" と等しい",
-        "strのi文字目 が \",\" と等しくない",
-        "strの文字数 が \",\" と等しい",
-        "strのi文字目 が \" \" と等しい",
-      ],
+`整数型の配列: rowOf ← {2, 1, 3}
+整数型の配列: colOf ← {3, 1, 2}
+整数型の二次元配列: seatMap ← {{101, 102, 103}, {201, 202, 203}, {301, 302, 303}}
+整数型: studentId ← 1
+
+整数型: seatNumber ← seatMap[rowOf[studentId], a ]`,
+      choices: ["colOf[studentId]", "rowOf[studentId]", "studentId", "seatMap[studentId]"],
       answer: 0,
       explanation:
-        "単語数は「区切り文字(カンマ)の個数+1」で求められる。よって、strを1文字ずつ調べてカンマが見つかるたびにcntを1増やせばよい。",
+        "座席番号は、行番号 rowOf[studentId] と列番号 colOf[studentId] の両方を使って二次元配列 seatMap を参照することで求まる。列側の添字に rowOf[studentId] を重複して使ってしまうなどの誤りに注意する必要がある。(この例では studentId=1 のとき、rowOf[1]=2、colOf[1]=3なので、seatNumber=seatMap[2, 3]=203となる。)",
     },
     {
       id: "s4q10",

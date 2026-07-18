@@ -305,66 +305,60 @@ endfor`,
       id: "s1q11",
       no: 11,
       section: "algo",
-      categoryLabel: "オブジェクト指向",
+      categoryLabel: "オブジェクト指向(二分探索木への挿入)",
       level: 3,
-      lead: "次のプログラムを実行したとき、出力される値を答えよ。",
+      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
       description: [
-        "クラス Counter は、内部にカウント値を保持し、increment で加算、reset で0に戻す。add(n) は n だけまとめて加算する。",
+        "クラス TreeNode は二分探索木(BST)のノードを表す。メソッド insert は、自分自身を根とする木に新しい値 v を挿入する。v が自分の値 val より小さければ左側に、そうでなければ右側に、条件を満たす位置まで再帰的に進んでいく。",
       ],
       code:
-`クラス Counter
-  整数型: count ← 0
-  ○increment()
-    count ← count + 1
-  ○add(整数型: n)
-    count ← count + n
-  ○reset()
-    count ← 0
-  ○整数型: value()
-    return count
+`クラス TreeNode
+  整数型: val
+  TreeNode: left ← 未定義の値
+  TreeNode: right ← 未定義の値
 
-Counter: c1 ← Counter()
-c1.increment()
-c1.increment()
-c1.add(5)
-c1.increment()
-Counter: c2 ← Counter()
-c2.add(10)
-c1.reset()
-c1.add(3)
-出力(c1.value() + c2.value())`,
-      choices: ["13", "10", "3", "23"],
+  ○insert(整数型: v)
+    if (v が val より小さい)
+      if (left が 未定義の値 と等しい)
+        left ← TreeNode()
+        left.val ← v
+      else
+        a
+      endif
+    else
+      if (right が 未定義の値 と等しい)
+        right ← TreeNode()
+        right.val ← v
+      else
+        right.insert(v)
+      endif
+    endif`,
+      choices: ["left.insert(v)", "right.insert(v)", "insert(v)", "left.val ← v"],
       answer: 0,
       explanation:
-        "c1: increment×2で2、add(5)で7、increment で8、reset で0、add(3)で3。c2: add(10)で10。c1.value()+c2.value() = 3+10 = 13。",
+        "vがvalより小さく、かつ左の子(left)が既に存在する場合は、自分自身ではなくその左の子に対して再帰的にinsertメソッドを呼び出し、条件を満たす挿入位置が見つかるまで木を下って探し続ける必要がある。よって `left.insert(v)` が正しい。",
     },
     {
       id: "s1q12",
       no: 12,
       section: "algo",
-      categoryLabel: "リスト構造",
+      categoryLabel: "間接参照(3段階の連鎖)",
       level: 4,
-      lead: "次のプログラム中の a に入れる正しい答えを、解答群の中から選べ。",
+      lead: "次のプログラムを実行したとき、result に格納される値を答えよ。",
       description: [
-        "手続 insertAfter は、単方向リストにおいて、指定したノード target の直後に新しいノード newNode を挿入する。クラス Node は、値 val と次の要素への参照 next をもつ。",
+        "社員番号から所属地域名を求める処理である。社員ごとの部署コードは deptCode に、部署コードごとの地域コードは regionOfDept に、地域コードごとの地域名は regionNames に、それぞれ格納されている。ある配列から得た値を、さらに別の配列の添字として使う「間接参照の連鎖」によって、社員番号から地域名を求める。",
       ],
       code:
-`クラス Node
-  整数型: val
-  Node: next ← 未定義の値
+`整数型の配列: deptCode ← {2, 1, 3, 2, 1}
+整数型の配列: regionOfDept ← {3, 1, 2}
+文字列型の配列: regionNames ← {"関東", "関西", "中部"}
+整数型: empId ← 3
 
-○insertAfter(Node: target, Node: newNode)
-  newNode.next ← a
-  target.next ← newNode`,
-      choices: [
-        "target.next",
-        "target",
-        "newNode",
-        "newNode.next",
-      ],
+文字列型: result ← regionNames[regionOfDept[deptCode[empId]]]`,
+      choices: ["関西", "関東", "中部", "エラーになる"],
       answer: 0,
       explanation:
-        "先に newNode.next を target の(元の)次の要素に繋いでおかないと、target.next を書き換えた瞬間に元のリンク先を見失ってしまう。よって `target.next` を先に newNode.next に代入するのが正しい順序。",
+        "empId→deptCode[empId]→regionOfDept[deptCode[empId]]→regionNames[...] の順に、1つずつ間接参照を辿る。deptCode[3]=3(社員3の部署コードは3)。regionOfDept[3]=2(部署コード3の地域コードは2)。regionNames[2]=\"関西\"。ある配列の添字として使う値が、さらに別の配列から得られるという間接参照の連鎖を正しく追跡できるかがポイント。",
     },
     {
       id: "s1q13",
