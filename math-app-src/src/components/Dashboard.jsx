@@ -1,8 +1,9 @@
 // ホーム画面:全単元の進捗一覧と模擬試験への入口
-import React from "react";
+import React, { useState } from "react";
 import { masteryLabel, overallProgress } from "../logic/mastery.js";
 import { EXAM_SETS } from "../logic/examGenerator.js";
 import { summarizeMistakes } from "../logic/weakness.js";
+import { getGreeting } from "../data/greetings.js";
 import WeakSpots from "./WeakSpots.jsx";
 
 const CATEGORY_LABELS = {
@@ -12,6 +13,8 @@ const CATEGORY_LABELS = {
 };
 
 export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onOpenReview }) {
+  // アクセス(マウント)のたびに1回だけ選び直す。レンダーごとに変わるとチラつくので固定化する。
+  const [greeting] = useState(() => getGreeting());
   const overall = overallProgress(units, progress.units);
   const completedCount = units.filter(
     (u) => (progress.units[u.id]?.mastery ?? 0) >= 70
@@ -23,7 +26,7 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
     <div className="screen">
       <header style={{ marginBottom: 34 }}>
         <p className="text-tertiary" style={{ marginBottom: 4 }}>数学I トレーナー</p>
-        <h1 style={{ marginBottom: 20 }}>今日も少しずつ進めよう</h1>
+        <h1 style={{ marginBottom: 20 }}>{greeting}</h1>
         <div className="card" style={{ padding: "22px 26px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
             <span style={{ fontWeight: 650 }}>全体の進捗</span>
@@ -62,33 +65,21 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
                 return (
                   <button
                     key={unit.id}
-                    className="card card-hover"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 18,
-                      width: "100%",
-                      textAlign: "left",
-                      cursor: "pointer",
-                      padding: "18px 22px",
-                    }}
+                    className="card card-hover unit-card"
                     onClick={() => onOpenUnit(unit.id)}
                   >
                     <span
+                      className="unit-card-badge"
                       style={{
-                        width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontWeight: 700, fontSize: "0.9rem",
                         background: mastery >= 70 ? "var(--success-soft)" : "var(--accent-soft)",
                         color: mastery >= 70 ? "var(--success)" : "var(--accent)",
-                        transition: "background var(--dur) var(--ease)",
                       }}
                     >
                       {mastery >= 70 ? "✓" : i + 1}
                     </span>
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontWeight: 650, display: "block" }}>{unit.title}</span>
-                      <span className="text-tertiary" style={{ fontSize: "0.85rem" }}>
+                    <span className="unit-card-text">
+                      <span className="unit-card-title">{unit.title}</span>
+                      <span className="text-tertiary unit-card-sub">
                         {p?.skippedByDiag
                           ? "診断でスキップ済み(いつでも演習できる)"
                           : started
@@ -96,14 +87,14 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
                           : unit.subtitle}
                       </span>
                     </span>
-                    <span style={{ width: 110, flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
+                    <span className="unit-card-progress">
                       <span className="progress-track" style={{ flex: 1 }}>
                         <span
                           className={`progress-fill ${mastery >= 70 ? "complete" : ""}`}
                           style={{ width: `${mastery}%`, display: "block" }}
                         />
                       </span>
-                      <span className="text-tertiary" style={{ fontSize: "0.82rem", width: 38, textAlign: "right" }}>
+                      <span className="text-tertiary unit-card-percent">
                         {mastery}%
                       </span>
                     </span>
@@ -126,15 +117,10 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
             return (
               <button
                 key={set.id}
-                className="card card-hover"
-                style={{
-                  display: "flex", alignItems: "center", gap: 16,
-                  width: "100%", textAlign: "left", cursor: "pointer",
-                  padding: "18px 22px",
-                }}
+                className="card card-hover unit-card"
                 onClick={() => onOpenExam(set.id)}
               >
-                <span style={{ flex: 1, fontWeight: 650 }}>{set.title}</span>
+                <span className="unit-card-title" style={{ flex: 1 }}>{set.title}</span>
                 {result ? (
                   <span className={`badge ${result.best >= 80 ? "ok" : ""}`}>
                     ベスト {result.best} 点

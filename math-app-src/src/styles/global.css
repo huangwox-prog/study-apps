@@ -591,3 +591,70 @@ h3 { font-size: 1.1rem; font-weight: 650; }
     background: var(--glass-strong);
   }
 }
+
+/* ============ 単元カード・模試カード ============ */
+/* .cardの基本paddingより後に定義して確実に上書きする */
+.unit-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 18px 22px;
+}
+
+.unit-card-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background var(--dur) var(--ease);
+}
+
+.unit-card-text { flex: 1; min-width: 0; }
+.unit-card-title { font-weight: 650; display: block; }
+.unit-card-sub { font-size: 0.85rem; }
+
+.unit-card-progress {
+  width: 110px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.unit-card-percent { font-size: 0.82rem; width: 38px; text-align: right; }
+
+/* PC・タブレットの広い画面では中央カラムとカードを大きくして余白を活かす */
+@media (min-width: 992px) {
+  .layout-3col {
+    grid-template-columns: 240px minmax(0, 860px) 240px;
+    gap: 32px;
+    max-width: 1480px;
+  }
+  .layout-3col > .app-shell {
+    max-width: 860px;
+  }
+
+  .unit-card {
+    gap: 24px;
+    padding: 26px 32px;
+  }
+  .unit-card-badge {
+    width: 42px;
+    height: 42px;
+    font-size: 1.05rem;
+  }
+  .unit-card-title { font-size: 1.22rem; }
+  .unit-card-sub { font-size: 1rem; }
+  .unit-card-progress {
+    width: 150px;
+    gap: 12px;
+  }
+  .unit-card-percent { font-size: 0.98rem; width: 48px; }
+}
