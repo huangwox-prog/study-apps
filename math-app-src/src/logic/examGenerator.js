@@ -2,8 +2,8 @@
 // 全単元の選択式問題プールから、単元バランスを保った50問を
 // シード付き乱数で決定的に選ぶ(同じセットは常に同じ問題構成)。
 
-// 数と式17問 / 二次関数18問 / 三角比15問 = 50問
-export const EXAM_COMPOSITION = { ns: 17, qf: 18, tri: 15 };
+// 数と式21問 / 二次関数15問 / 三角比14問 = 50問(単元数 ns9:qf6:tri6 の比に合わせて配分)
+export const EXAM_COMPOSITION = { ns: 21, qf: 15, tri: 14 };
 export const EXAM_SETS = [
   { id: "exam-1", title: "卒業模試 第1回", seed: 11 },
   { id: "exam-2", title: "卒業模試 第2回", seed: 23 },
