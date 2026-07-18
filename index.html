@@ -16,16 +16,21 @@
     --c-fe:#f0a85e;     --c-fe-glow:rgba(240,168,94,.45);
   }
   html[data-theme="light"]{
-    --bg-0:#f4f6fb; --bg-1:#eef1fb; --bg-2:#e6ebfa;
-    --ink:#1c2130; --ink-dim:#5b6480; --line:rgba(30,40,80,.12);
-    --glass:rgba(255,255,255,.55); --glass-strong:rgba(255,255,255,.80);
-    --orb-op:.22;
+    --bg-0:#dfe6f5; --bg-1:#e3e9f7; --bg-2:#e9edf9;
+    --ink:#1c2130; --ink-dim:#5b6480; --line:rgba(30,40,80,.14);
+    --glass:rgba(255,255,255,.50); --glass-strong:rgba(255,255,255,.75);
+    --orb-op:.55;
 
     --c-tool:#2f9c7e;   --c-tool-glow:rgba(47,156,126,.30);
     --c-math:#4f5fc4;   --c-math-glow:rgba(79,95,196,.30);
     --c-fe:#d9822f;     --c-fe-glow:rgba(217,130,47,.30);
   }
-  html, body{ transition: background .4s ease, color .4s ease; }
+  html, body{ transition: background .6s ease, color .6s ease; }
+  .theme-fade{
+    position:fixed; inset:0; z-index:9998; pointer-events:none;
+    background:#000; opacity:0; transition:opacity .35s ease;
+  }
+  .theme-fade.active{ opacity:.55; }
   *{box-sizing:border-box;}
   html,body{margin:0; padding:0;}
   body{
@@ -39,9 +44,14 @@
       linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
     background-attachment:fixed;
   }
-  .orb{position:fixed; border-radius:50%; filter:blur(60px); opacity:var(--orb-op); pointer-events:none; z-index:0; transition:opacity .4s ease;}
-  .orb1{width:340px; height:340px; top:-80px; left:-60px; background:var(--c-math);}
-  .orb2{width:260px; height:260px; bottom:-40px; right:-40px; background:var(--c-tool);}
+  .orb{position:fixed; border-radius:50%; filter:blur(70px); opacity:var(--orb-op); pointer-events:none; z-index:0; transition:opacity .6s ease; animation: floaty 14s ease-in-out infinite;}
+  .orb1{width:360px; height:360px; top:-90px; left:-70px; background:var(--c-math);}
+  .orb2{width:280px; height:280px; bottom:-50px; right:-50px; background:var(--c-tool); animation-delay:-5s;}
+  .orb3{width:300px; height:300px; top:35%; right:8%; background:#7fd0e8; animation-delay:-9s;}
+  @keyframes floaty{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%{ transform:translate(18px,-22px) scale(1.06); }
+  }
 
   .theme-toggle{
     position:fixed; top:18px; right:18px; z-index:5;
@@ -58,9 +68,10 @@
   header .kicker{display:inline-block; font-size:.72rem; letter-spacing:.18em; color:var(--ink-dim); text-transform:uppercase; margin-bottom:10px;}
   header h1{
     margin:0; font-size:1.9rem; font-weight:800; letter-spacing:.01em;
-    background:linear-gradient(90deg,#fff, #cdd4ff 55%, #bdeee0);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
+    color:var(--ink);
+    text-shadow: 0 0 26px var(--c-math-glow);
   }
+  html[data-theme="light"] header h1{ text-shadow: 0 0 20px rgba(79,95,196,.20); }
   header p{margin:10px 0 0; font-size:.9rem; color:var(--ink-dim);}
   header .readme-link{
     display:inline-flex; align-items:center; gap:6px; margin-top:16px; padding:7px 16px; font-size:.78rem;
@@ -146,11 +157,13 @@
 </style>
 </head>
 <body>
+<div class="theme-fade" id="themeFade"></div>
 <button class="theme-toggle" id="themeToggle" aria-label="ダーク/ライト切り替え">
   <span class="icon" id="themeIcon">🌙</span><span id="themeLabel">ダーク</span>
 </button>
 <div class="orb orb1"></div>
 <div class="orb orb2"></div>
+<div class="orb orb3"></div>
 
 <header>
   <span class="kicker">Study Apps</span>
@@ -282,6 +295,7 @@
     const btn = document.getElementById('themeToggle');
     const icon = document.getElementById('themeIcon');
     const label = document.getElementById('themeLabel');
+    const fade = document.getElementById('themeFade');
 
     function apply(theme){
       root.setAttribute('data-theme', theme);
@@ -295,8 +309,13 @@
 
     btn.addEventListener('click', ()=>{
       const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      apply(next);
-      localStorage.setItem('studyapps.theme', next);
+      // 眩しさを防ぐため、一瞬暗く覆ってから切り替える
+      fade.classList.add('active');
+      setTimeout(()=>{
+        apply(next);
+        localStorage.setItem('studyapps.theme', next);
+        setTimeout(()=> fade.classList.remove('active'), 60);
+      }, 180);
     });
   })();
 
