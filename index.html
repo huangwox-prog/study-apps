@@ -145,6 +145,20 @@
   }
   a.flagship em{display:block; font-style:normal; font-size:.68rem; color:rgba(169,177,207,.6); margin-top:16px;}
 
+  a.flagship.flagship-fe{
+    background:
+      radial-gradient(420px 220px at var(--mx,20%) var(--my,0%), rgba(240,168,94,.35), transparent 70%),
+      linear-gradient(160deg, rgba(240,168,94,.14), rgba(178,58,82,.10));
+    border-color: rgba(240,168,94,.35);
+    box-shadow:0 20px 60px -20px rgba(240,168,94,.35);
+  }
+  a.flagship.flagship-fe:hover{
+    border-color:rgba(240,168,94,.7);
+    box-shadow:0 26px 70px -18px rgba(240,168,94,.55), 0 0 60px -10px rgba(240,168,94,.4);
+  }
+  a.flagship.flagship-fe h3{ text-shadow: 0 0 26px rgba(240,168,94,.45); }
+  html[data-theme="light"] a.flagship.flagship-fe h3{ text-shadow: 0 0 20px rgba(217,130,47,.20); }
+
   .subgroup-head{
     display:flex; align-items:center; gap:8px; margin:20px 4px 10px;
   }
@@ -224,6 +238,21 @@
       <b>絶対値特訓<span class="arrow">→</span></b>
       <span class="desc">絶対値つき方程式・不等式の場合分け練習</span>
       <em>制作: 2026年7月</em>
+    </a>
+  </div>
+
+  <div class="flagship-wrap">
+    <span class="flagship-tag">★ FLAGSHIP</span>
+    <a class="flagship flagship-fe" href="fe-app/" id="flagshipCardFe">
+      <h3>基本情報技術者試験 科目B 模擬試験<span class="arrow">→</span></h3>
+      <p class="lead">IPA公式サンプル問題の出題傾向を分析し、本番仕様で作り込んだ模擬試験エンジン。アルゴリズムは易→難、セキュリティは難→易の難易度カーブを忠実に再現し、100分の制限時間で本番さながらに演習できる。</p>
+      <div class="feat-row">
+        <span class="feat">100分タイマー</span>
+        <span class="feat">問題ジャンプ</span>
+        <span class="feat">分野別採点</span>
+        <span class="feat">長文シナリオ問題</span>
+      </div>
+      <em>制作: 2026年7月19日〜　継続開発中</em>
     </a>
   </div>
 
