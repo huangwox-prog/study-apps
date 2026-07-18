@@ -6,6 +6,7 @@ import ReviewMode from "./components/ReviewMode.jsx";
 import ProgressRail from "./components/ProgressRail.jsx";
 import WeakSpots from "./components/WeakSpots.jsx";
 import ActivityLog from "./components/ActivityLog.jsx";
+import ThemeToggle from "./components/ThemeToggle.jsx";
 import { ALL_UNITS } from "./data/units.js";
 import { EXAM_SETS } from "./logic/examGenerator.js";
 import { loadProgress, recordActivity } from "./logic/storage.js";
@@ -76,32 +77,40 @@ export default function App() {
   }
 
   if (!showSidebars) {
-    return <div className={shellClass}>{content}</div>;
+    return (
+      <>
+        <ThemeToggle />
+        <div className={shellClass}>{content}</div>
+      </>
+    );
   }
 
   return (
-    <div className="layout-3col">
-      <aside className="rail rail-left">
-        <ProgressRail units={ALL_UNITS} progress={progress} onOpenUnit={openUnit} />
-      </aside>
-      <div className={shellClass} style={{ padding: "32px 0 80px" }}>
-        {content}
-      </div>
-      <aside className="rail rail-right">
-        <div className="rail-inner">
-          <WeakSpots
-            summary={mistakeSummary}
-            onOpenReview={(type) => setView({ screen: "review", mistakeType: type })}
-            compact
-          />
-          <ActivityLog
-            log={progress.log || {}}
-            units={ALL_UNITS}
-            onOpenUnit={openUnit}
-            compact
-          />
+    <>
+      <ThemeToggle />
+      <div className="layout-3col">
+        <aside className="rail rail-left">
+          <ProgressRail units={ALL_UNITS} progress={progress} onOpenUnit={openUnit} />
+        </aside>
+        <div className={shellClass} style={{ padding: "32px 0 80px" }}>
+          {content}
         </div>
-      </aside>
-    </div>
+        <aside className="rail rail-right">
+          <div className="rail-inner">
+            <WeakSpots
+              summary={mistakeSummary}
+              onOpenReview={(type) => setView({ screen: "review", mistakeType: type })}
+              compact
+            />
+            <ActivityLog
+              log={progress.log || {}}
+              units={ALL_UNITS}
+              onOpenUnit={openUnit}
+              compact
+            />
+          </div>
+        </aside>
+      </div>
+    </>
   );
 }

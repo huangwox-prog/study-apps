@@ -101,6 +101,89 @@
   }
 }
 
+/* 手動テーマ切り替え: data-theme属性がOS設定(上のmedia query)より優先される */
+:root[data-theme="dark"] {
+  --bg: #101018;
+  --text: #ececf2;
+  --text-secondary: #b0b2c0;
+  --text-tertiary: #797c8e;
+
+  --glass: rgba(28, 29, 40, 0.5);
+  --glass-strong: rgba(36, 37, 50, 0.66);
+  --glass-soft: rgba(24, 25, 36, 0.34);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-soft: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.22);
+
+  --accent: #93a0e8;
+  --accent-hover: #a5b1f0;
+  --accent-soft: rgba(147, 160, 232, 0.16);
+  --accent-glow: rgba(147, 160, 232, 0.4);
+  --accent-text: #12131c;
+
+  --cat-ns: #7ba3ee;
+  --cat-ns-soft: rgba(123, 163, 238, 0.16);
+  --cat-ns-glow: rgba(123, 163, 238, 0.42);
+  --cat-qf: #bd93e8;
+  --cat-qf-soft: rgba(189, 147, 232, 0.16);
+  --cat-qf-glow: rgba(189, 147, 232, 0.42);
+  --cat-tri: #5cc2b2;
+  --cat-tri-soft: rgba(92, 194, 178, 0.16);
+  --cat-tri-glow: rgba(92, 194, 178, 0.42);
+
+  --success: #7fbe97;
+  --success-soft: rgba(127, 190, 151, 0.16);
+  --warn: #cfa168;
+  --warn-soft: rgba(207, 161, 104, 0.16);
+  --error: #d08a86;
+  --error-soft: rgba(208, 138, 134, 0.15);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow: 0 8px 28px -8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 18px 50px -16px rgba(0, 0, 0, 0.65);
+}
+
+:root[data-theme="light"] {
+  --bg: #eef0f7;
+  --text: #1b1c22;
+  --text-secondary: #4e5160;
+  --text-tertiary: #878a9a;
+
+  --glass: rgba(255, 255, 255, 0.52);
+  --glass-strong: rgba(255, 255, 255, 0.7);
+  --glass-soft: rgba(255, 255, 255, 0.32);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-border-soft: rgba(255, 255, 255, 0.4);
+  --glass-highlight: rgba(255, 255, 255, 0.85);
+
+  --accent: #4f5fc4;
+  --accent-hover: #4353b5;
+  --accent-soft: rgba(79, 95, 196, 0.13);
+  --accent-glow: rgba(79, 95, 196, 0.35);
+  --accent-text: #ffffff;
+
+  --cat-ns: #3d6bc9;
+  --cat-ns-soft: rgba(61, 107, 201, 0.13);
+  --cat-ns-glow: rgba(61, 107, 201, 0.38);
+  --cat-qf: #8955c0;
+  --cat-qf-soft: rgba(137, 85, 192, 0.13);
+  --cat-qf-glow: rgba(137, 85, 192, 0.38);
+  --cat-tri: #1f8f80;
+  --cat-tri-soft: rgba(31, 143, 128, 0.14);
+  --cat-tri-glow: rgba(31, 143, 128, 0.38);
+
+  --success: #3d8a5a;
+  --success-soft: rgba(61, 138, 90, 0.14);
+  --warn: #a5702f;
+  --warn-soft: rgba(165, 112, 47, 0.14);
+  --error: #b0504c;
+  --error-soft: rgba(176, 80, 76, 0.13);
+
+  --shadow-sm: 0 2px 8px rgba(30, 32, 50, 0.07);
+  --shadow: 0 8px 28px -8px rgba(30, 32, 50, 0.16);
+  --shadow-lg: 0 18px 50px -16px rgba(30, 32, 50, 0.28);
+}
+
 /* カテゴリごとのアクセント上書き: 要素に .cat-ns / .cat-qf / .cat-tri を付ける */
 .cat-ns { --accent: var(--cat-ns); --accent-hover: var(--cat-ns); --accent-soft: var(--cat-ns-soft); --accent-glow: var(--cat-ns-glow); }
 .cat-qf { --accent: var(--cat-qf); --accent-hover: var(--cat-qf); --accent-soft: var(--cat-qf-soft); --accent-glow: var(--cat-qf-glow); }
@@ -144,6 +227,22 @@ body::before {
       radial-gradient(50% 44% at 22% 92%, rgba(38, 150, 134, 0.18), transparent 70%),
       radial-gradient(36% 34% at 78% 78%, rgba(190, 120, 80, 0.1), transparent 70%);
   }
+}
+
+:root[data-theme="dark"] body::before {
+  background:
+    radial-gradient(42% 38% at 12% 8%, rgba(83, 118, 210, 0.24), transparent 70%),
+    radial-gradient(46% 42% at 88% 22%, rgba(146, 96, 205, 0.2), transparent 70%),
+    radial-gradient(50% 44% at 22% 92%, rgba(38, 150, 134, 0.18), transparent 70%),
+    radial-gradient(36% 34% at 78% 78%, rgba(190, 120, 80, 0.1), transparent 70%);
+}
+
+:root[data-theme="light"] body::before {
+  background:
+    radial-gradient(42% 38% at 12% 8%, rgba(61, 107, 201, 0.2), transparent 70%),
+    radial-gradient(46% 42% at 88% 22%, rgba(137, 85, 192, 0.18), transparent 70%),
+    radial-gradient(50% 44% at 22% 92%, rgba(31, 143, 128, 0.17), transparent 70%),
+    radial-gradient(36% 34% at 78% 78%, rgba(214, 143, 96, 0.12), transparent 70%);
 }
 
 button {
@@ -285,6 +384,13 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   .card::before {
     background: linear-gradient(168deg, rgba(255, 255, 255, 0.07), transparent 38%);
   }
+}
+
+:root[data-theme="dark"] .card::before {
+  background: linear-gradient(168deg, rgba(255, 255, 255, 0.07), transparent 38%);
+}
+:root[data-theme="light"] .card::before {
+  background: linear-gradient(168deg, rgba(255, 255, 255, 0.22), transparent 38%);
 }
 
 /* ホバーでアクセントカラーに縁取られて光る */
@@ -657,4 +763,50 @@ h3 { font-size: 1.1rem; font-weight: 650; }
     gap: 12px;
   }
   .unit-card-percent { font-size: 0.98rem; width: 48px; }
+}
+
+/* ============ テーマ切り替えボタン ============ */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
+  transition: transform var(--dur-fast) var(--ease-press), box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent-glow);
+}
+.theme-toggle:active { transform: scale(0.92); }
+
+.theme-toggle-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  animation: theme-icon-in var(--dur) var(--ease) both;
+}
+@keyframes theme-icon-in {
+  from { opacity: 0; transform: rotate(-40deg) scale(0.6); }
+  to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+
+@media (max-width: 600px) {
+  .theme-toggle {
+    top: 14px;
+    right: 14px;
+    width: 40px;
+    height: 40px;
+  }
+  .theme-toggle-icon { font-size: 1.1rem; }
 }
