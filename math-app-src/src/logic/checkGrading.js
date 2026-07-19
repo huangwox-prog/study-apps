@@ -25,8 +25,18 @@ function extractNumbers(s) {
   return matches.map(Number);
 }
 
-// 1問を採点する。question.answerType: "expr" | "nums" | "piecewise"
+// 1問を採点する。question.answerType: "expr" | "nums" | "piecewise" | "vertex"
 export function gradeCheckAnswer(question, rawInput) {
+  // vertex: rawInputは { x, y } の2つの数値欄
+  if (question.answerType === "vertex") {
+    const { x, y } = rawInput || {};
+    const nx = extractNumbers(normalizeAnswer(x))[0];
+    const ny = extractNumbers(normalizeAnswer(y))[0];
+    if (nx === undefined || ny === undefined) return { correct: false };
+    const [ex, ey] = question.answer;
+    return { correct: Math.abs(nx - ex) < 1e-6 && Math.abs(ny - ey) < 1e-6 };
+  }
+
   const s = normalizeAnswer(rawInput);
   if (!s) return { correct: false };
 

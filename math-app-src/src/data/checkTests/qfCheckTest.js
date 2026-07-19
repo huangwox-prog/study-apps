@@ -1,6 +1,7 @@
-// 二次関数 単元確認テスト(固定40問)
+// 二次関数 単元確認テスト(固定30問)
 // 出題範囲: グラフ・平行移動 / 対称移動 / 最大値・最小値 / 二次関数の決定
-// answerType: "expr"(y=…の式を同値判定) / "nums"(数値を順番に抽出して比較) / "piecewise"(;区切りの式を順に同値判定)
+// answerType: "vertex"(頂点のx,y座標を別々の数値欄で比較) / "expr"(y=…の式を同値判定) /
+//             "nums"(数値を順番に抽出して比較) / "piecewise"(;区切りの式を順に同値判定)
 
 export const CATEGORY_LABELS = {
   graph: "グラフ・平行移動",
@@ -9,8 +10,7 @@ export const CATEGORY_LABELS = {
   decide: "二次関数の決定",
 };
 
-const VERTEX_AXIS_FORMAT =
-  "頂点の座標と軸の方程式をまとめて入力してね。例: `(2, 5), x=2`";
+const VERTEX_FORMAT = "頂点のx座標とy座標を、それぞれの欄に数値だけ入力してね。";
 const TRANSLATE_FORMAT =
   "移動後の式を `y=…` の形で入力してね(展開しても頂点の形のままでもOK)。例: `y=(x-1)^2+4`";
 const SYMMETRY_FORMAT =
@@ -25,51 +25,42 @@ const DECIDE_FORMAT =
   "求めた式を `y=…` の形で入力してね。例: `y=2x^2-4x+1`";
 
 const QUESTIONS = [
-  // ============ グラフ・平行移動 (10問) ============
+  // ============ グラフ・平行移動 (7問) ============
   {
     id: "g1",
     category: "graph",
-    q: "`y=x^2-6x+5` を平方完成し、頂点の座標と軸の方程式を求めよ。",
-    answerType: "nums",
-    answer: [3, -4, 3],
-    format: VERTEX_AXIS_FORMAT,
+    q: "`y=x^2-6x+5` を平方完成し、頂点の座標を求めよ。",
+    answerType: "vertex",
+    answer: [3, -4],
+    format: VERTEX_FORMAT,
     hint: "xの係数-6を2で割ると-3。`(x-3)^2` の形を作ってから残りの数を計算してみよう。",
   },
   {
     id: "g2",
     category: "graph",
-    q: "`y=x^2+8x+10` を平方完成し、頂点の座標と軸の方程式を求めよ。",
-    answerType: "nums",
-    answer: [-4, -6, -4],
-    format: VERTEX_AXIS_FORMAT,
+    q: "`y=x^2+8x+10` を平方完成し、頂点の座標を求めよ。",
+    answerType: "vertex",
+    answer: [-4, -6],
+    format: VERTEX_FORMAT,
     hint: "8を2で割ると4。`(x+4)^2` の形にしてから定数部分を計算しよう。",
   },
   {
     id: "g3",
     category: "graph",
-    q: "`y=2x^2-8x+3` を平方完成し、頂点の座標と軸の方程式を求めよ。",
-    answerType: "nums",
-    answer: [2, -5, 2],
-    format: VERTEX_AXIS_FORMAT,
+    q: "`y=2x^2-8x+3` を平方完成し、頂点の座標を求めよ。",
+    answerType: "vertex",
+    answer: [2, -5],
+    format: VERTEX_FORMAT,
     hint: "まずxの項だけを2でくくると `2(x^2-4x)+3`。カッコの中を平方完成してから2を配ろう。",
   },
   {
     id: "g4",
     category: "graph",
-    q: "`y=-3x^2-12x-7` を平方完成し、頂点の座標と軸の方程式を求めよ。",
-    answerType: "nums",
-    answer: [-2, 5, -2],
-    format: VERTEX_AXIS_FORMAT,
+    q: "`y=-3x^2-12x-7` を平方完成し、頂点の座標を求めよ。",
+    answerType: "vertex",
+    answer: [-2, 5],
+    format: VERTEX_FORMAT,
     hint: "係数-3でxの項をくくると `-3(x^2+4x)-7`。符号のミスに注意して平方完成しよう。",
-  },
-  {
-    id: "g5",
-    category: "graph",
-    q: "`y=3x^2+6x+4` を平方完成し、頂点の座標と軸の方程式を求めよ。",
-    answerType: "nums",
-    answer: [-1, 1, -1],
-    format: VERTEX_AXIS_FORMAT,
-    hint: "3でくくると `3(x^2+2x)+4`。`(x+1)^2` の形を作ってから3を配ろう。",
   },
   {
     id: "g6",
@@ -98,26 +89,8 @@ const QUESTIONS = [
     format: TRANSLATE_FORMAT,
     hint: "まず与式を平方完成して頂点を求めてから、頂点を移動させよう。",
   },
-  {
-    id: "g9",
-    category: "graph",
-    q: "`y=-2x^2+4x-5` のグラフを `x` 軸方向に `-2`、`y` 軸方向に `4` だけ平行移動して得られる関数を求めよ。",
-    answerType: "expr",
-    answer: "-2(x+1)^2+1",
-    format: TRANSLATE_FORMAT,
-    hint: "係数-2はそのまま。平方完成して頂点を求めてから移動させよう。",
-  },
-  {
-    id: "g10",
-    category: "graph",
-    q: "`y=3x^2+2` のグラフを `x` 軸方向に `2`、`y` 軸方向に `-6` だけ平行移動して得られる関数を求めよ。",
-    answerType: "expr",
-    answer: "3(x-2)^2-4",
-    format: TRANSLATE_FORMAT,
-    hint: "この式はすでに頂点の形。頂点(0, 2)がどこへ動くか考えよう。",
-  },
 
-  // ============ 対称移動 (10問) ============
+  // ============ 対称移動 (8問) ============
   {
     id: "s1",
     category: "symmetry",
@@ -135,15 +108,6 @@ const QUESTIONS = [
     answer: "-x^2+4x-1",
     format: SYMMETRY_FORMAT,
     hint: "展開したままの式でも、全部の項の符号をそれぞれ反転させればよい。",
-  },
-  {
-    id: "s3",
-    category: "symmetry",
-    q: "`y=-2(x+1)^2+5` のグラフを `x` 軸に関して対称移動して得られる式を求めよ。",
-    answerType: "expr",
-    answer: "2(x+1)^2-5",
-    format: SYMMETRY_FORMAT,
-    hint: "係数の符号もうしろの定数の符号も、両方反転させよう。",
   },
   {
     id: "s4",
@@ -199,17 +163,8 @@ const QUESTIONS = [
     format: SYMMETRY_FORMAT,
     hint: "まずxを-xに置き換えてから、式全体の符号を反転させよう。",
   },
-  {
-    id: "s10",
-    category: "symmetry",
-    q: "`y=2x^2-8x+3` のグラフを原点に関して対称移動して得られる式を求めよ。",
-    answerType: "expr",
-    answer: "-2x^2-8x-3",
-    format: SYMMETRY_FORMAT,
-    hint: "1次の項の符号を反転させたあと、式全体の符号もさらに反転させよう。",
-  },
 
-  // ============ 最大値・最小値 (10問) ============
+  // ============ 最大値・最小値 (8問) ============
   {
     id: "m1",
     category: "maxmin",
@@ -265,24 +220,6 @@ const QUESTIONS = [
     hint: "頂点がちょうど範囲の端にきている。この場合も頂点が最小値(または最大値)になる。",
   },
   {
-    id: "m7",
-    category: "maxmin",
-    q: "`y=-x^2+6x-5` (`1≤x≤2`) の最小値・最大値を求めよ。",
-    answerType: "nums",
-    answer: [1, 0, 2, 3],
-    format: FIXEDDOMAIN_MAXMIN_FORMAT,
-    hint: "上に凸で、頂点がこの範囲より右にある。その場合、範囲内ではずっと増加している。",
-  },
-  {
-    id: "m8",
-    category: "maxmin",
-    q: "`y=-x^2+2x+2` (`3≤x≤6`) の最小値・最大値を求めよ。",
-    answerType: "nums",
-    answer: [6, -22, 3, -1],
-    format: FIXEDDOMAIN_MAXMIN_FORMAT,
-    hint: "上に凸で、頂点がこの範囲より左にある。その場合、範囲内ではずっと減少している。",
-  },
-  {
     id: "m9",
     category: "maxmin",
     q: "`y=x^2-4x+7` (`0≤x≤t`、`t>0`) の最小値を、`0<t<2` のときと `t≧2` のときに場合分けして求めよ。この順で答えること。",
@@ -301,7 +238,7 @@ const QUESTIONS = [
     hint: "頂点のx座標1がこの範囲 `[0, t]` に入るかどうかで場合分けしよう。まず `t<1` のときを考えてみよう。",
   },
 
-  // ============ 二次関数の決定 (10問) ============
+  // ============ 二次関数の決定 (7問) ============
   {
     id: "d1",
     category: "decide",
@@ -330,15 +267,6 @@ const QUESTIONS = [
     hint: "頂点がx軸上にあるので `y=a(x-p)^2` の形になる。点を代入してaを求めよう。",
   },
   {
-    id: "d4",
-    category: "decide",
-    q: "頂点が `(-2, -3)` で、点 `(-4, 5)` を通る二次関数を求めよ。",
-    answerType: "expr",
-    answer: "2(x+2)^2-3",
-    format: DECIDE_FORMAT,
-    hint: "頂点の座標を先に `y=a(x-p)^2+q` へ入れて、あとは通る点からaを決めよう。",
-  },
-  {
     id: "d5",
     category: "decide",
     q: "軸が `x=1` で、2点 `(0, 4)`、`(3, 10)` を通る二次関数を求めよ。",
@@ -355,15 +283,6 @@ const QUESTIONS = [
     answer: "(x+2)^2-5",
     format: DECIDE_FORMAT,
     hint: "軸から `y=a(x+2)^2+q` とおける。2点を代入して a と q の連立方程式を解こう。",
-  },
-  {
-    id: "d7",
-    category: "decide",
-    q: "軸が `x=2` で、2点 `(0, 5)`、`(1, 2)` を通る二次関数を求めよ。",
-    answerType: "expr",
-    answer: "(x-2)^2+1",
-    format: DECIDE_FORMAT,
-    hint: "軸の情報から `y=a(x-2)^2+q` とおいて、2点を代入して連立方程式を解こう。",
   },
   {
     id: "d8",
@@ -383,23 +302,13 @@ const QUESTIONS = [
     format: DECIDE_FORMAT,
     hint: "まず `(0, -2)` からcを求めて、残り2点で連立方程式にしよう。",
   },
-  {
-    id: "d10",
-    category: "decide",
-    q: "3点 `(1, 0)`、`(2, 3)`、`(-1, 12)` を通る二次関数を求めよ。",
-    answerType: "expr",
-    answer: "3x^2-6x+3",
-    format: DECIDE_FORMAT,
-    hint: "3点とも代入して3つの式を作り、まず1つの文字(bなど)を消去してから解いていこう。",
-  },
 ];
 
 export default {
   id: "qf-check-1",
   unitCategory: "qf",
   title: "二次関数 確認テスト",
-  subtitle: "グラフ・平行移動/対称移動/最大最小/決定の全範囲・40問",
-  timeLimitSec: 45 * 60,
+  subtitle: "グラフ・平行移動/対称移動/最大最小/決定の全範囲・30問",
   categoryLabels: CATEGORY_LABELS,
   questions: QUESTIONS,
 };
