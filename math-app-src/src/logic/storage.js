@@ -4,6 +4,7 @@ const KEY = "mathapp.progress.v1";
 const defaultState = () => ({
   units: {}, // unitId -> { mastery: 0-100, status, bestTest, skippedByDiag }
   exams: {}, // examId -> { score, byCategory, date, answers }
+  checkTests: {}, // testId -> { correct, total, byCategory, elapsedSec, best, date }
   mistakes: {}, // qid -> { type, unitId, count } 間違えた問題のミスタイプ記録
   log: {}, // { lastUnitId, lastDate: "YYYY-MM-DD", streak } 学習ログ
 });
@@ -37,6 +38,18 @@ export function saveExamResult(examId, result) {
   state.exams[examId] = {
     ...result,
     best: Math.max(result.score, prev?.best ?? 0),
+  };
+  saveProgress(state);
+  return state;
+}
+
+export function saveCheckTestResult(testId, result) {
+  const state = loadProgress();
+  const prev = state.checkTests?.[testId];
+  if (!state.checkTests) state.checkTests = {};
+  state.checkTests[testId] = {
+    ...result,
+    best: Math.max(result.correct, prev?.best ?? 0),
   };
   saveProgress(state);
   return state;

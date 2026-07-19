@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { masteryLabel, overallProgress } from "../logic/mastery.js";
 import { EXAM_SETS } from "../logic/examGenerator.js";
+import { CHECK_TESTS } from "../data/checkTests/index.js";
 import { summarizeMistakes } from "../logic/weakness.js";
 import { getGreeting } from "../data/greetings.js";
 import WeakSpots from "./WeakSpots.jsx";
@@ -12,7 +13,7 @@ const CATEGORY_LABELS = {
   tri: "三角比",
 };
 
-export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onOpenReview }) {
+export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onOpenCheckTest, onOpenReview }) {
   // アクセス(マウント)のたびに1回だけ選び直す。レンダーごとに変わるとチラつくので固定化する。
   const [greeting] = useState(() => getGreeting());
   const overall = overallProgress(units, progress.units);
@@ -105,6 +106,37 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
           </section>
         );
       })}
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 6 }}>単元別 確認テスト</h2>
+        <p className="text-secondary" style={{ marginBottom: 14 }}>
+          記述式・タイマーつき。分野ごとの正答率で苦手を確認できる。
+        </p>
+        <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {CHECK_TESTS.map((t) => {
+            const result = progress.checkTests?.[t.id];
+            return (
+              <button
+                key={t.id}
+                className="card card-hover unit-card"
+                onClick={() => onOpenCheckTest(t.id)}
+              >
+                <span className="unit-card-text">
+                  <span className="unit-card-title">{t.title}</span>
+                  <span className="text-tertiary unit-card-sub">{t.subtitle}</span>
+                </span>
+                {result ? (
+                  <span className={`badge ${result.best >= t.questions.length ? "ok" : ""}`}>
+                    ベスト {result.best}/{t.questions.length}
+                  </span>
+                ) : (
+                  <span className="badge">未受験</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <section>
         <h2 style={{ marginBottom: 6 }}>卒業模擬試験</h2>
