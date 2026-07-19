@@ -6,16 +6,6 @@
 <title>しだの学習アプリ集</title>
 <style>
   :root{
-    --bg-0:#0e1220; --bg-1:#161c31; --bg-2:#1c2440;
-    --ink:#f2f4fb; --ink-dim:#a9b1cf; --line:rgba(255,255,255,.10);
-    --glass:rgba(255,255,255,.06); --glass-strong:rgba(255,255,255,.10);
-    --orb-op:.35;
-
-    --c-tool:#8fd9c4;   --c-tool-glow:rgba(143,217,196,.45);
-    --c-math:#93a0e8;   --c-math-glow:rgba(147,160,232,.45);
-    --c-fe:#f0a85e;     --c-fe-glow:rgba(240,168,94,.45);
-  }
-  html[data-theme="light"]{
     --bg-0:#dfe6f5; --bg-1:#e3e9f7; --bg-2:#e9edf9;
     --ink:#1c2130; --ink-dim:#5b6480; --line:rgba(30,40,80,.14);
     --glass:rgba(255,255,255,.50); --glass-strong:rgba(255,255,255,.75);
@@ -24,6 +14,16 @@
     --c-tool:#2f9c7e;   --c-tool-glow:rgba(47,156,126,.30);
     --c-math:#4f5fc4;   --c-math-glow:rgba(79,95,196,.30);
     --c-fe:#d9822f;     --c-fe-glow:rgba(217,130,47,.30);
+  }
+  html[data-theme="dark"]{
+    --bg-0:#0e1220; --bg-1:#161c31; --bg-2:#1c2440;
+    --ink:#f2f4fb; --ink-dim:#a9b1cf; --line:rgba(255,255,255,.10);
+    --glass:rgba(255,255,255,.06); --glass-strong:rgba(255,255,255,.10);
+    --orb-op:.35;
+
+    --c-tool:#8fd9c4;   --c-tool-glow:rgba(143,217,196,.45);
+    --c-math:#93a0e8;   --c-math-glow:rgba(147,160,232,.45);
+    --c-fe:#f0a85e;     --c-fe-glow:rgba(240,168,94,.45);
   }
   html, body{ transition: background .6s ease, color .6s ease; }
   .theme-fade{
@@ -69,9 +69,9 @@
   header h1{
     margin:0; font-size:1.9rem; font-weight:800; letter-spacing:.01em;
     color:var(--ink);
-    text-shadow: 0 0 26px var(--c-math-glow);
+    text-shadow: 0 0 20px rgba(79,95,196,.20);
   }
-  html[data-theme="light"] header h1{ text-shadow: 0 0 20px rgba(79,95,196,.20); }
+  html[data-theme="dark"] header h1{ text-shadow: 0 0 26px var(--c-math-glow); }
   header p{margin:10px 0 0; font-size:.9rem; color:var(--ink-dim);}
   header .readme-link{
     display:inline-flex; align-items:center; gap:6px; margin-top:16px; padding:7px 16px; font-size:.78rem;
@@ -156,8 +156,8 @@
     border-color:rgba(240,168,94,.7);
     box-shadow:0 26px 70px -18px rgba(240,168,94,.55), 0 0 60px -10px rgba(240,168,94,.4);
   }
-  a.flagship.flagship-fe h3{ text-shadow: 0 0 26px rgba(240,168,94,.45); }
-  html[data-theme="light"] a.flagship.flagship-fe h3{ text-shadow: 0 0 20px rgba(217,130,47,.20); }
+  a.flagship.flagship-fe h3{ text-shadow: 0 0 20px rgba(217,130,47,.20); }
+  html[data-theme="dark"] a.flagship.flagship-fe h3{ text-shadow: 0 0 26px rgba(240,168,94,.45); }
 
   .subgroup-head{
     display:flex; align-items:center; gap:8px; margin:20px 4px 10px;
@@ -317,7 +317,8 @@
 </footer>
 
 <script>
-  // テーマ切り替え(手動選択があればそれを優先、なければOS設定に従う)
+  // テーマ切り替え(保存・OS設定への自動追従はしない。常にライトから開始し、
+  // ボタンを押した場合のみその場でダークに切り替わる)
   (function(){
     const root = document.documentElement;
     const btn = document.getElementById('themeToggle');
@@ -331,9 +332,7 @@
       label.textContent = theme === 'light' ? 'ライト' : 'ダーク';
     }
 
-    const saved = localStorage.getItem('studyapps.theme');
-    const initial = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-    apply(initial);
+    apply('light');
 
     btn.addEventListener('click', ()=>{
       const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
@@ -341,7 +340,6 @@
       fade.classList.add('active');
       setTimeout(()=>{
         apply(next);
-        localStorage.setItem('studyapps.theme', next);
         setTimeout(()=> fade.classList.remove('active'), 60);
       }, 180);
     });

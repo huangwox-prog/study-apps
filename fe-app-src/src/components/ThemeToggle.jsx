@@ -1,19 +1,17 @@
 // ライト/ダークモードの手動切り替えボタン。全画面で常に右上に表示する。
+// 常にライトモードから開始し、押した場合のみその場でダークモードに切り替わる(保存しない)。
 import React, { useEffect, useState } from "react";
-import { getStoredTheme, setStoredTheme, applyTheme, effectiveTheme } from "../logic/theme.js";
+import { applyTheme } from "../logic/theme.js";
 
 export default function ThemeToggle() {
-  const [stored, setStored] = useState(() => getStoredTheme());
-  const current = effectiveTheme(stored);
+  const [current, setCurrent] = useState("light");
 
   useEffect(() => {
-    applyTheme(stored);
-  }, [stored]);
+    applyTheme(current);
+  }, [current]);
 
   const toggle = () => {
-    const next = current === "dark" ? "light" : "dark";
-    setStoredTheme(next);
-    setStored(next);
+    setCurrent((c) => (c === "dark" ? "light" : "dark"));
   };
 
   return (
