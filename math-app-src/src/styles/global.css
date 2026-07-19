@@ -649,29 +649,7 @@ h3 { font-size: 1.1rem; font-weight: 650; }
 .pad-key:active { transform: scale(0.93); }
 .pad-key.pad-op { background: var(--accent-soft); }
 .pad-key.pad-danger { color: var(--error); }
-
-/* ============ テキスト入力(確認テストの記述式解答) ============ */
-.text-input {
-  width: 100%;
-  background: var(--glass-strong);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
-  border: 1.5px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  font-size: 1.08rem;
-  font-family: var(--font-math);
-  color: var(--text);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
-  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-}
-.text-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 18px -8px var(--accent-glow);
-}
-.text-input:disabled { opacity: 0.6; }
-.text-input::placeholder { color: var(--text-tertiary); }
+.pad-key.pad-word { font-size: 0.74rem; font-family: var(--font-body); font-weight: 650; }
 
 /* ============ バッジ ============ */
 .badge {

@@ -1,6 +1,7 @@
 // 単元確認テスト:記述式解答・タイマー・分野別正答率つきの確認テストランナー
 import React, { useEffect, useRef, useState } from "react";
 import MathText from "./MathText.jsx";
+import AnswerPad from "./AnswerPad.jsx";
 import { gradeCheckAnswer } from "../logic/checkGrading.js";
 import { saveCheckTestResult } from "../logic/storage.js";
 
@@ -150,18 +151,7 @@ export default function CheckTest({ test, categoryLabels, onExit }) {
             <MathText text={q.q} block />
           </div>
 
-          <input
-            type="text"
-            className="text-input"
-            value={input}
-            disabled={!!feedback}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !feedback && input.trim()) submitAnswer();
-            }}
-            placeholder="ここに答えを入力"
-            autoFocus
-          />
+          <AnswerPad value={input} onChange={setInput} disabled={!!feedback} />
           <p className="text-tertiary" style={{ marginTop: 8 }}>
             <MathText text={q.format} />
           </p>
