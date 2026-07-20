@@ -110,7 +110,7 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ marginBottom: 6 }}>単元別 確認テスト</h2>
         <p className="text-secondary" style={{ marginBottom: 14 }}>
-          記述式・タイマーつき。分野ごとの正答率で苦手を確認できる。
+          分野ごとの正答率と経過時間が分かる、記述式の確認テスト。
         </p>
         <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {CHECK_TESTS.map((t) => {

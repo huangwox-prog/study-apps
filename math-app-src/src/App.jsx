@@ -3,6 +3,7 @@ import Dashboard from "./components/Dashboard.jsx";
 import UnitFlow from "./components/UnitFlow.jsx";
 import MockExam from "./components/MockExam.jsx";
 import CheckTest from "./components/CheckTest.jsx";
+import CheckTestFree from "./components/CheckTestFree.jsx";
 import ReviewMode from "./components/ReviewMode.jsx";
 import ProgressRail from "./components/ProgressRail.jsx";
 import WeakSpots from "./components/WeakSpots.jsx";
@@ -69,8 +70,9 @@ export default function App() {
     const test = CHECK_TESTS.find((t) => t.id === view.testId);
     shellClass = `app-shell cat-${test.unitCategory}`;
     showSidebars = false;
+    const CheckTestComponent = test.mode === "free" ? CheckTestFree : CheckTest;
     content = (
-      <CheckTest key={view.testId} test={test} categoryLabels={test.categoryLabels} onExit={goHome} />
+      <CheckTestComponent key={view.testId} test={test} categoryLabels={test.categoryLabels} onExit={goHome} />
     );
   } else if (view.screen === "review") {
     const entry = mistakeSummary.find((w) => w.type === view.mistakeType);

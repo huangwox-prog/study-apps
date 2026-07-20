@@ -25,6 +25,24 @@ function extractNumbers(s) {
   return matches.map(Number);
 }
 
+// 係数を個別の数値欄で答える形式の採点。
+// values: { [fieldKey]: 生の入力文字列 }。question.fields の各キーについて
+// 単一の数値として比較する。1つでも空/不一致なら不正解。
+// 戻り値: { correct, fieldResults: { [fieldKey]: boolean } }
+export function gradeFieldAnswer(question, values) {
+  const fieldResults = {};
+  let allCorrect = true;
+  for (const f of question.fields) {
+    const raw = values?.[f.key];
+    const n = extractNumbers(normalizeAnswer(raw))[0];
+    const expected = question.answer[f.key];
+    const ok = n !== undefined && Math.abs(n - expected) < 1e-6;
+    fieldResults[f.key] = ok;
+    if (!ok) allCorrect = false;
+  }
+  return { correct: allCorrect, fieldResults };
+}
+
 // 1問を採点する。question.answerType: "expr" | "nums" | "piecewise" | "vertex"
 export function gradeCheckAnswer(question, rawInput) {
   // vertex: rawInputは { x, y } の2つの数値欄

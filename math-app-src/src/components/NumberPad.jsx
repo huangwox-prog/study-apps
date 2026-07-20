@@ -9,13 +9,20 @@ const KEYS = [
   ["-"],
 ];
 
-export default function NumberPad({ value, onChange, disabled, label }) {
+export default function NumberPad({ value, onChange, disabled, label, status }) {
   const press = (key) => {
     if (disabled) return;
     if (key === "⌫") return onChange(value.slice(0, -1));
     if (key === "AC") return onChange("");
     onChange(value + key);
   };
+
+  const statusStyle =
+    status === "ok"
+      ? { borderColor: "var(--success)", boxShadow: "0 0 0 1px var(--success)" }
+      : status === "wrong"
+      ? { borderColor: "var(--error)", boxShadow: "0 0 0 1px var(--error)" }
+      : undefined;
 
   return (
     <div>
@@ -24,7 +31,10 @@ export default function NumberPad({ value, onChange, disabled, label }) {
           {label}
         </div>
       )}
-      <div className={`mathpad-display ${value ? "active" : ""}`} style={{ minHeight: 48, fontSize: "1.3rem", justifyContent: "center" }}>
+      <div
+        className={`mathpad-display ${value ? "active" : ""}`}
+        style={{ minHeight: 48, fontSize: "1.3rem", justifyContent: "center", ...statusStyle }}
+      >
         {value ? (
           <span className="math">{value}</span>
         ) : (
