@@ -6,24 +6,26 @@
 <title>しだの学習アプリ集</title>
 <style>
   :root{
-    --bg-0:#dfe6f5; --bg-1:#e3e9f7; --bg-2:#e9edf9;
-    --ink:#1c2130; --ink-dim:#5b6480; --line:rgba(30,40,80,.14);
-    --glass:rgba(255,255,255,.50); --glass-strong:rgba(255,255,255,.75);
-    --orb-op:.55;
+    --bg-0:#FBF3E7; --bg-1:#F7ECDC; --bg-2:#F1E3CD;
+    --ink:#3A2E22; --ink-dim:#8A7660; --line:rgba(58,46,34,.14);
+    --glass:rgba(255,255,255,.62); --glass-strong:rgba(255,255,255,.86);
 
-    --c-tool:#2f9c7e;   --c-tool-glow:rgba(47,156,126,.30);
-    --c-math:#4f5fc4;   --c-math-glow:rgba(79,95,196,.30);
-    --c-fe:#d9822f;     --c-fe-glow:rgba(217,130,47,.30);
+    --c-tool:#6E8F5E;   --c-tool-glow:rgba(110,143,94,.30);   --c-tool-bg:rgba(110,143,94,.14);
+    --c-math:#C1793F;   --c-math-glow:rgba(193,121,63,.32);   --c-math-bg:rgba(193,121,63,.14);
+    --c-fe:#C7963B;     --c-fe-glow:rgba(199,150,59,.32);     --c-fe-bg:rgba(199,150,59,.15);
+
+    --focus:#A35F2B;
   }
   html[data-theme="dark"]{
-    --bg-0:#0e1220; --bg-1:#161c31; --bg-2:#1c2440;
-    --ink:#f2f4fb; --ink-dim:#a9b1cf; --line:rgba(255,255,255,.10);
-    --glass:rgba(255,255,255,.06); --glass-strong:rgba(255,255,255,.10);
-    --orb-op:.35;
+    --bg-0:#1C140C; --bg-1:#211810; --bg-2:#251B12;
+    --ink:#F3E9DC; --ink-dim:#BBA88F; --line:rgba(255,244,230,.12);
+    --glass:rgba(255,246,235,.06); --glass-strong:rgba(255,246,235,.11);
 
-    --c-tool:#8fd9c4;   --c-tool-glow:rgba(143,217,196,.45);
-    --c-math:#93a0e8;   --c-math-glow:rgba(147,160,232,.45);
-    --c-fe:#f0a85e;     --c-fe-glow:rgba(240,168,94,.45);
+    --c-tool:#93C17E;   --c-tool-glow:rgba(147,193,126,.4);   --c-tool-bg:rgba(147,193,126,.14);
+    --c-math:#E3A46B;   --c-math-glow:rgba(227,164,107,.4);   --c-math-bg:rgba(227,164,107,.15);
+    --c-fe:#E0B75C;     --c-fe-glow:rgba(224,183,92,.4);      --c-fe-bg:rgba(224,183,92,.15);
+
+    --focus:#E3A46B;
   }
   html, body{ transition: background .6s ease, color .6s ease; }
   .theme-fade{
@@ -34,23 +36,31 @@
   *{box-sizing:border-box;}
   html,body{margin:0; padding:0;}
   body{
-    min-height:100vh; color:var(--ink);
+    min-height:100vh; color:var(--ink); overflow-x:hidden;
     font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
     line-height:1.7;
     background:
-      radial-gradient(ellipse 900px 500px at 12% -10%, rgba(147,160,232,.28), transparent 60%),
-      radial-gradient(ellipse 800px 600px at 90% 0%, rgba(143,217,196,.18), transparent 55%),
-      radial-gradient(ellipse 700px 500px at 50% 110%, rgba(240,168,94,.14), transparent 55%),
-      linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
+      radial-gradient(60% 38% at 14% -6%, rgba(193,121,63,.16), transparent 70%),
+      radial-gradient(55% 42% at 88% 6%, rgba(199,150,59,.14), transparent 70%),
+      radial-gradient(50% 40% at 50% 108%, rgba(110,143,94,.10), transparent 70%),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1) 45%, var(--bg-2));
     background-attachment:fixed;
   }
-  .orb{position:fixed; border-radius:50%; filter:blur(70px); opacity:var(--orb-op); pointer-events:none; z-index:0; transition:opacity .6s ease; animation: floaty 14s ease-in-out infinite;}
-  .orb1{width:360px; height:360px; top:-90px; left:-70px; background:var(--c-math);}
-  .orb2{width:280px; height:280px; bottom:-50px; right:-50px; background:var(--c-tool); animation-delay:-5s;}
-  .orb3{width:300px; height:300px; top:35%; right:8%; background:#7fd0e8; animation-delay:-9s;}
-  @keyframes floaty{
-    0%,100%{ transform:translate(0,0) scale(1); }
-    50%{ transform:translate(18px,-22px) scale(1.06); }
+
+  /* キーボード操作時のフォーカスを明示 */
+  a:focus-visible, button:focus-visible{
+    outline:3px solid var(--focus);
+    outline-offset:3px;
+    border-radius:8px;
+  }
+
+  /* 動きを抑えたい環境では、装飾的な動きを止める */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;
+    }
   }
 
   .theme-toggle{
@@ -59,105 +69,158 @@
     padding:8px 14px; font-size:.8rem; cursor:pointer;
     color:var(--ink); background:var(--glass); border:1px solid var(--line);
     border-radius:999px; backdrop-filter:blur(14px);
-    transition:.35s cubic-bezier(.16,1,.3,1);
+    transition:.3s ease;
   }
   .theme-toggle:hover{background:var(--glass-strong); transform:translateY(-1px);}
   .theme-toggle .icon{font-size:.95rem;}
 
-  header{position:relative; z-index:1; padding:52px 22px 30px; text-align:center;}
-  header .kicker{display:inline-block; font-size:.72rem; letter-spacing:.18em; color:var(--ink-dim); text-transform:uppercase; margin-bottom:10px;}
-  header h1{
-    margin:0; font-size:1.9rem; font-weight:800; letter-spacing:.01em;
-    color:var(--ink);
-    text-shadow: 0 0 20px rgba(79,95,196,.20);
-  }
-  html[data-theme="dark"] header h1{ text-shadow: 0 0 26px var(--c-math-glow); }
-  header p{margin:10px 0 0; font-size:.9rem; color:var(--ink-dim);}
-  header .readme-link{
-    display:inline-flex; align-items:center; gap:6px; margin-top:16px; padding:7px 16px; font-size:.78rem;
+  .readme-link{
+    display:inline-flex; align-items:center; gap:6px; margin-top:22px; padding:7px 16px; font-size:.78rem;
     color:var(--ink); text-decoration:none; background:var(--glass); border:1px solid var(--line);
-    border-radius:999px; backdrop-filter:blur(14px); transition:.35s cubic-bezier(.16,1,.3,1);
+    border-radius:999px; backdrop-filter:blur(14px); transition:.3s ease;
   }
-  header .readme-link:hover{background:var(--glass-strong); border-color:rgba(255,255,255,.25); transform:translateY(-1px);}
+  .readme-link:hover{background:var(--glass-strong); border-color:rgba(58,46,34,.28); transform:translateY(-1px);}
 
-  main{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:8px 18px 70px;}
+  /* ===== ヒーロー ===== */
+  .hero{ position:relative; z-index:1; padding:60px 22px 0; }
+  .hero-inner{
+    max-width:980px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap;
+  }
+  .hero-text{ flex:1 1 320px; min-width:260px; }
+  .hero-text .kicker{ display:inline-block; font-size:.72rem; letter-spacing:.18em; color:var(--ink-dim); text-transform:uppercase; margin-bottom:14px; }
+  .hero-text h1{
+    margin:0; font-weight:900; letter-spacing:.01em; color:var(--ink);
+    font-size:clamp(2rem, 5.2vw, 2.7rem); line-height:1.35;
+  }
+  .hero-text h1 .hl{
+    background:linear-gradient(180deg, transparent 58%, rgba(199,150,59,.5) 58%);
+    padding:0 2px;
+  }
+
+  /* イラスト枠: 差し込み用のプレースホルダー。装飾の図形は控えめな不透明度で添える程度 */
+  .hero-illust-wrap{ position:relative; flex:0 0 auto; width:220px; height:220px; }
+  .hero-illust{
+    position:relative; z-index:2; width:100%; height:100%; border-radius:32px;
+    background:var(--glass-strong); border:1.5px dashed rgba(58,46,34,.25);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    box-shadow:0 16px 40px -18px rgba(58,46,34,.3);
+  }
+  /* ここに本人・世界観イラストを差し込む(推奨: 正方形に近い画像) 例: <img src="assets/hero-illust.png" alt=""> */
+  .hero-illust img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .hero-illust-ph{ font-size:2.2rem; opacity:.45; }
+
+  .shape{ position:absolute; z-index:1; }
+  .shape-circle{ width:52px; height:52px; border-radius:50%; background:var(--c-math); opacity:.55; top:-14px; left:-16px; }
+  .shape-square{ width:40px; height:40px; border-radius:12px; background:var(--c-fe); opacity:.5; bottom:-10px; right:-12px; transform:rotate(14deg); }
+  .shape-tri{
+    width:0; height:0; border-left:20px solid transparent; border-right:20px solid transparent;
+    border-bottom:34px solid var(--c-tool); opacity:.42; top:52%; right:-26px; transform:translateY(-50%) rotate(16deg);
+  }
+
+  /* ティッカー: 取り組んでいるテーマのキーワードが流れる帯 */
+  .ticker{
+    margin-top:40px; overflow:hidden; white-space:nowrap;
+    background:linear-gradient(90deg, var(--c-math), var(--c-fe));
+  }
+  .ticker-track{
+    display:inline-flex; gap:10px; padding:9px 0;
+    animation:ticker 24s linear infinite;
+  }
+  .ticker-track span{ font-size:.74rem; font-weight:700; letter-spacing:.06em; color:#FFFBF3; }
+  @keyframes ticker{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce){
+    .ticker{ overflow-x:auto; }
+    .ticker-track{ animation:none; }
+  }
+
+  main{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:44px 18px 70px;}
   .section-head{display:flex; align-items:center; gap:10px; margin:34px 4px 14px;}
   .section-head .dot{width:9px; height:9px; border-radius:50%; flex:none;}
   .section-head h2{margin:0; font-size:.98rem; font-weight:700; color:var(--ink); letter-spacing:.01em;}
   .section-head .count{margin-left:auto; font-size:.72rem; color:var(--ink-dim); background:var(--glass); border:1px solid var(--line); padding:2px 10px; border-radius:999px;}
-  .grid{display:flex; flex-direction:column; gap:10px;}
+
+  /* 単発アプリ: コンパクトなグリッドで並べる */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(216px, 1fr)); gap:10px;}
 
   a.app{
-    position:relative; display:block; overflow:hidden; padding:15px 18px; text-decoration:none; color:inherit;
+    position:relative; display:flex; align-items:flex-start; gap:13px;
+    padding:15px 16px; text-decoration:none; color:inherit;
     background:var(--glass); border:1px solid var(--line); border-radius:16px;
-    backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
-    transition:transform .45s cubic-bezier(.16,1,.3,1), box-shadow .45s cubic-bezier(.16,1,.3,1),
-               border-color .45s cubic-bezier(.16,1,.3,1), background .45s cubic-bezier(.16,1,.3,1);
+    backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%);
+    transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease, background .3s ease;
   }
-  a.app::before{
-    content:""; position:absolute; inset:0; opacity:0;
-    background:radial-gradient(220px 120px at var(--mx,50%) var(--my,0%), var(--glow,rgba(255,255,255,.25)), transparent 70%);
-    transition:opacity .4s ease; pointer-events:none;
+  a.app:hover{transform:translateY(-2px); background:var(--glass-strong);}
+  a.app[data-c="tool"]:hover{border-color:var(--c-tool); box-shadow:0 8px 24px -12px var(--c-tool-glow);}
+  a.app[data-c="math"]:hover{border-color:var(--c-math); box-shadow:0 8px 24px -12px var(--c-math-glow);}
+  a.app[data-c="fe"]:hover{border-color:var(--c-fe); box-shadow:0 8px 24px -12px var(--c-fe-glow);}
+
+  /* カードのアイコン: 現在は絵文字のプレースホルダー。後から画像(<img>)に差し替え可能 */
+  .app-icon{
+    flex:none; width:48px; height:48px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.4rem; line-height:1;
   }
-  a.app:hover{transform:translateY(-3px); background:var(--glass-strong);}
-  a.app:hover::before{opacity:1;}
-  a.app[data-c="tool"]:hover{border-color:var(--c-tool); box-shadow:0 10px 34px -10px var(--c-tool-glow), 0 0 44px -12px var(--c-tool-glow);}
-  a.app[data-c="math"]:hover{border-color:var(--c-math); box-shadow:0 10px 34px -10px var(--c-math-glow), 0 0 44px -12px var(--c-math-glow);}
-  a.app[data-c="fe"]:hover{border-color:var(--c-fe); box-shadow:0 10px 34px -10px var(--c-fe-glow), 0 0 44px -12px var(--c-fe-glow);}
+  a.app[data-c="tool"] .app-icon{ background:var(--c-tool-bg); }
+  a.app[data-c="math"] .app-icon{ background:var(--c-math-bg); }
+  a.app[data-c="fe"] .app-icon{ background:var(--c-fe-bg); }
 
-  a.app b{display:flex; align-items:center; gap:8px; font-size:1rem; font-weight:700; color:var(--ink);}
-  a.app b .arrow{margin-left:auto; opacity:.35; font-size:.85rem; transition:transform .4s cubic-bezier(.16,1,.3,1), opacity .4s ease;}
-  a.app:hover b .arrow{transform:translateX(3px); opacity:.9;}
-  a.app span.desc{display:block; font-size:.82rem; color:var(--ink-dim); margin-top:4px;}
-  a.app em{display:block; font-style:normal; font-size:.68rem; color:rgba(169,177,207,.7); margin-top:7px; letter-spacing:.02em;}
+  .app-body{flex:1; min-width:0;}
+  a.app b{display:flex; align-items:center; gap:6px; font-size:.94rem; font-weight:700; color:var(--ink);}
+  a.app b .arrow{margin-left:auto; opacity:.35; font-size:.8rem; transition:transform .3s ease, opacity .3s ease;}
+  a.app:hover b .arrow{transform:translateX(3px); opacity:.85;}
+  a.app span.desc{display:block; font-size:.78rem; font-weight:400; color:var(--ink-dim); margin-top:3px; line-height:1.55;}
+  a.app em{display:block; font-style:normal; font-size:.66rem; color:var(--ink-dim); opacity:.75; margin-top:6px; letter-spacing:.02em;}
 
-  /* ===== 旗艦アプリ(本気で作った方) ===== */
+  /* ===== 旗艦アプリ(本気で作った方): 他より明確に大きく ===== */
   .flagship-wrap{margin:38px 4px 0;}
   .flagship-tag{
     display:inline-flex; align-items:center; gap:6px; font-size:.7rem; font-weight:700;
-    letter-spacing:.1em; color:#0e1220; background:linear-gradient(90deg,#bcd0ff,#9fe8d4);
+    letter-spacing:.1em; color:#3A2E22; background:linear-gradient(90deg,#F0C98A,#E7A96A);
     padding:4px 12px; border-radius:999px; margin-bottom:12px;
   }
   a.flagship{
-    position:relative; display:block; overflow:hidden; text-decoration:none; color:inherit;
-    padding:26px 24px 24px; border-radius:22px;
-    background:
-      radial-gradient(420px 220px at var(--mx,20%) var(--my,0%), rgba(147,160,232,.35), transparent 70%),
-      linear-gradient(160deg, rgba(147,160,232,.14), rgba(143,217,196,.10));
-    border:1px solid rgba(147,160,232,.35);
-    backdrop-filter:blur(22px) saturate(150%); -webkit-backdrop-filter:blur(22px) saturate(150%);
-    box-shadow:0 20px 60px -20px rgba(147,160,232,.35);
-    transition:transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s cubic-bezier(.16,1,.3,1), border-color .5s ease;
+    position:relative; display:block; text-decoration:none; color:inherit;
+    padding:28px 26px 26px; border-radius:22px;
+    background:linear-gradient(160deg, rgba(193,121,63,.13), rgba(199,150,59,.08));
+    border:1px solid rgba(193,121,63,.30);
+    backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+    box-shadow:0 14px 40px -18px rgba(58,46,34,.28);
+    transition:transform .35s ease, box-shadow .35s ease, border-color .35s ease;
   }
   a.flagship:hover{
-    transform:translateY(-4px);
-    border-color:rgba(147,160,232,.7);
-    box-shadow:0 26px 70px -18px rgba(147,160,232,.55), 0 0 60px -10px rgba(147,160,232,.4);
+    transform:translateY(-3px);
+    border-color:rgba(193,121,63,.6);
+    box-shadow:0 20px 48px -16px rgba(193,121,63,.35);
   }
-  a.flagship h3{margin:0; font-size:1.28rem; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:10px;}
-  a.flagship h3 .arrow{margin-left:auto; font-size:1rem; opacity:.5; transition:transform .4s cubic-bezier(.16,1,.3,1), opacity .4s ease;}
+  .flagship-top{display:flex; align-items:center; gap:16px;}
+  /* フラッグシップのアイコン: 現在は絵文字のプレースホルダー。後から画像(<img>)に差し替え可能 */
+  .flagship-icon{
+    flex:none; width:68px; height:68px; border-radius:19px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.1rem; line-height:1;
+    background:rgba(193,121,63,.16);
+  }
+  a.flagship h3{margin:0; font-size:1.24rem; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:10px; flex:1; min-width:0;}
+  a.flagship h3 .arrow{margin-left:auto; font-size:1rem; opacity:.5; transition:transform .3s ease, opacity .3s ease;}
   a.flagship:hover h3 .arrow{transform:translateX(4px); opacity:1;}
-  a.flagship p.lead{margin:10px 0 0; font-size:.88rem; color:var(--ink-dim); max-width:520px;}
+  a.flagship p.lead{margin:16px 0 0; font-size:.86rem; font-weight:400; color:var(--ink-dim); max-width:560px;}
   a.flagship .feat-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;}
   a.flagship .feat{
-    font-size:.7rem; color:#dfe4ff; background:rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.14); padding:4px 11px; border-radius:999px;
+    font-size:.7rem; color:var(--ink); background:rgba(58,46,34,.06);
+    border:1px solid var(--line); padding:4px 11px; border-radius:999px;
   }
-  a.flagship em{display:block; font-style:normal; font-size:.68rem; color:rgba(169,177,207,.6); margin-top:16px;}
+  a.flagship em{display:block; font-style:normal; font-size:.68rem; color:var(--ink-dim); opacity:.75; margin-top:16px; letter-spacing:.02em;}
 
   a.flagship.flagship-fe{
-    background:
-      radial-gradient(420px 220px at var(--mx,20%) var(--my,0%), rgba(240,168,94,.35), transparent 70%),
-      linear-gradient(160deg, rgba(240,168,94,.14), rgba(178,58,82,.10));
-    border-color: rgba(240,168,94,.35);
-    box-shadow:0 20px 60px -20px rgba(240,168,94,.35);
+    background:linear-gradient(160deg, rgba(199,150,59,.14), rgba(193,121,63,.07));
+    border-color: rgba(199,150,59,.32);
   }
   a.flagship.flagship-fe:hover{
-    border-color:rgba(240,168,94,.7);
-    box-shadow:0 26px 70px -18px rgba(240,168,94,.55), 0 0 60px -10px rgba(240,168,94,.4);
+    border-color:rgba(199,150,59,.6);
+    box-shadow:0 20px 48px -16px rgba(199,150,59,.35);
   }
-  a.flagship.flagship-fe h3{ text-shadow: 0 0 20px rgba(217,130,47,.20); }
-  html[data-theme="dark"] a.flagship.flagship-fe h3{ text-shadow: 0 0 26px rgba(240,168,94,.45); }
+  a.flagship.flagship-fe .flagship-icon{ background:rgba(199,150,59,.18); }
 
   .subgroup-head{
     display:flex; align-items:center; gap:8px; margin:20px 4px 10px;
@@ -166,8 +229,20 @@
   .subgroup-head span.line{flex:1; height:1px; background:var(--line);}
 
   footer{position:relative; z-index:1; max-width:760px; margin:20px auto 0; padding:22px 20px 44px; font-size:.78rem; color:var(--ink-dim); text-align:center; border-top:1px solid var(--line);}
-  footer a{color:#bcc6ff; text-decoration:none;}
+  footer a{color:var(--c-math); text-decoration:none;}
   footer a:hover{text-decoration:underline;}
+
+  @media (max-width:640px){
+    .hero{ padding:40px 18px 0; }
+    .hero-inner{ flex-direction:column-reverse; text-align:center; gap:20px; }
+    .hero-illust-wrap{ width:168px; height:168px; }
+    .shape-circle{ width:40px; height:40px; }
+    .shape-square{ width:32px; height:32px; }
+    .shape-tri{ border-left-width:16px; border-right-width:16px; border-bottom-width:28px; }
+  }
+  @media (max-width:420px){
+    .grid{grid-template-columns:1fr;}
+  }
 </style>
 </head>
 <body>
@@ -175,30 +250,41 @@
 <button class="theme-toggle" id="themeToggle" aria-label="ダーク/ライト切り替え">
   <span class="icon" id="themeIcon">🌙</span><span id="themeLabel">ダーク</span>
 </button>
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="orb orb3"></div>
 
-<header>
-  <span class="kicker">Study Apps</span>
-  <h1>しだの学習アプリ集</h1>
-  <a class="readme-link" href="https://github.com/huangwox-prog/study-apps" target="_blank" rel="noopener">⚙︎ 制作について(README)</a>
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <span class="kicker">Study Apps</span>
+      <h1>しだの<span class="hl">学習アプリ</span>集</h1>
+      <a class="readme-link" href="https://github.com/huangwox-prog/study-apps" target="_blank" rel="noopener">⚙︎ 制作について(README)</a>
+    </div>
+    <div class="hero-illust-wrap">
+      <span class="shape shape-circle" aria-hidden="true"></span>
+      <span class="shape shape-square" aria-hidden="true"></span>
+      <span class="shape shape-tri" aria-hidden="true"></span>
+      <div class="hero-illust" id="heroIllust">
+        <!-- ここに本人・世界観イラストを差し込む: <img src="assets/hero-illust.png" alt=""> -->
+        <span class="hero-illust-ph" aria-hidden="true">🎨</span>
+      </div>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>数学Ⅰ</span><span>・</span><span>基本情報技術者試験</span><span>・</span><span>総合型選抜対策</span><span>・</span><span>反復学習アプリ</span><span>・</span><span>個人開発</span><span>・</span>
+      <span>数学Ⅰ</span><span>・</span><span>基本情報技術者試験</span><span>・</span><span>総合型選抜対策</span><span>・</span><span>反復学習アプリ</span><span>・</span><span>個人開発</span><span>・</span>
+    </div>
+  </div>
 </header>
 
 <main>
-  <div class="section-head"><span class="dot" style="background:var(--c-tool)"></span><h2>学習ツール</h2><span class="count">1</span></div>
-  <div class="grid">
-    <a class="app" data-c="tool" href="pomodoro/index.html">
-      <b>ポモドーロタイマー<span class="arrow">→</span></b>
-      <span class="desc">作業25分・小休憩5分・長休憩15分。集中セッション数を自動記録</span>
-      <em>制作: 2026年7月10日</em>
-    </a>
-  </div>
-
-  <div class="flagship-wrap">
+  <div class="flagship-wrap" style="margin-top:4px;">
     <span class="flagship-tag">★ FLAGSHIP</span>
     <a class="flagship" href="math-app/" id="flagshipCard">
-      <h3>数学Ⅰ 総合学習アプリ<span class="arrow">→</span></h3>
+      <div class="flagship-top">
+        <!-- アイコン画像に差し替え可能: 現在は絵文字のプレースホルダー -->
+        <span class="flagship-icon" aria-hidden="true">🧮</span>
+        <h3>数学Ⅰ 総合学習アプリ<span class="arrow">→</span></h3>
+      </div>
       <p class="lead">数と式・二次関数・三角比を1本に統合。単元ごとの診断からレッスン、演習、確認テストまでを一気通貫で設計した、本気で作り込んだ学習エンジン。</p>
       <div class="feat-row">
         <span class="feat">単元進行管理</span>
@@ -214,36 +300,55 @@
   <div class="section-head" style="margin-top:8px;"><span class="dot" style="background:var(--c-math)"></span><h2>数学Ⅰ（総合型選抜・口頭試問対策）</h2><span class="count">4</span></div>
   <div class="grid">
     <a class="app" data-c="math" href="nijikansu-jissen.html">
-      <b>二次関数 実戦攻略<span class="arrow">→</span></b>
-      <span class="desc">数Ⅰ第2章。平方完成から最大最小・グラフまで実戦形式で</span>
-      <em>制作: 2026年7月10日</em>
+      <span class="app-icon" aria-hidden="true">📐</span>
+      <span class="app-body">
+        <b>二次関数 実戦攻略<span class="arrow">→</span></b>
+        <span class="desc">数Ⅰ第2章。平方完成から最大最小・グラフまで実戦形式で</span>
+        <em>制作: 2026年7月10日</em>
+      </span>
     </a>
     <a class="app" data-c="math" href="sugaku1-tokkun.html">
-      <b>数Ⅰ特訓帳<span class="arrow">→</span></b>
-      <span class="desc">数と式・集合と命題 全31テーマ93問。苦手問題の復習機能つき</span>
-      <em>制作: 2026年7月9日</em>
+      <span class="app-icon" aria-hidden="true">📘</span>
+      <span class="app-body">
+        <b>数Ⅰ特訓帳<span class="arrow">→</span></b>
+        <span class="desc">数と式・集合と命題 全31テーマ93問。苦手問題の復習機能つき</span>
+        <em>制作: 2026年7月9日</em>
+      </span>
     </a>
     <a class="app" data-c="math" href="yurika-dojo.html">
-      <b>有理化道場<span class="arrow">→</span></b>
-      <span class="desc">ルートの有理化を基礎から段階的に強化学習</span>
-      <em>制作: 2026年7月</em>
+      <span class="app-icon" aria-hidden="true">√</span>
+      <span class="app-body">
+        <b>有理化道場<span class="arrow">→</span></b>
+        <span class="desc">ルートの有理化を基礎から段階的に強化学習</span>
+        <em>制作: 2026年7月</em>
+      </span>
     </a>
     <a class="app" data-c="math" href="ichiji-futoshiki.html">
-      <b>一次不等式特訓<span class="arrow">→</span></b>
-      <span class="desc">符号反転のルールを反復で体に入れる</span>
-      <em>制作: 2026年7月</em>
+      <span class="app-icon" aria-hidden="true">📏</span>
+      <span class="app-body">
+        <b>一次不等式特訓<span class="arrow">→</span></b>
+        <span class="desc">符号反転のルールを反復で体に入れる</span>
+        <em>制作: 2026年7月</em>
+      </span>
     </a>
     <a class="app" data-c="math" href="zettaichi.html">
-      <b>絶対値特訓<span class="arrow">→</span></b>
-      <span class="desc">絶対値つき方程式・不等式の場合分け練習</span>
-      <em>制作: 2026年7月</em>
+      <span class="app-icon" aria-hidden="true" style="font-size:.92rem;">|x|</span>
+      <span class="app-body">
+        <b>絶対値特訓<span class="arrow">→</span></b>
+        <span class="desc">絶対値つき方程式・不等式の場合分け練習</span>
+        <em>制作: 2026年7月</em>
+      </span>
     </a>
   </div>
 
   <div class="flagship-wrap">
     <span class="flagship-tag">★ FLAGSHIP</span>
     <a class="flagship flagship-fe" href="fe-app/" id="flagshipCardFe">
-      <h3>基本情報技術者試験 科目B 模擬試験<span class="arrow">→</span></h3>
+      <div class="flagship-top">
+        <!-- アイコン画像に差し替え可能: 現在は絵文字のプレースホルダー -->
+        <span class="flagship-icon" aria-hidden="true">💻</span>
+        <h3>基本情報技術者試験 科目B 模擬試験<span class="arrow">→</span></h3>
+      </div>
       <p class="lead">IPA公式サンプル問題の出題傾向を分析し、本番仕様で作り込んだ模擬試験エンジン。アルゴリズムは易→難、セキュリティは難→易の難易度カーブを忠実に再現し、100分の制限時間で本番さながらに演習できる。</p>
       <div class="feat-row">
         <span class="feat">100分タイマー</span>
@@ -259,54 +364,84 @@
   <div class="section-head" style="margin-top:8px;"><span class="dot" style="background:var(--c-fe)"></span><h2>基本情報技術者試験（FE 科目B）</h2><span class="count">10</span></div>
   <div class="grid">
     <a class="app" data-c="fe" href="fe_kamoku_b_full_mock.html">
-      <b>通し1セット（本番形式・IRT採点）<span class="arrow">→</span></b>
-      <span class="desc">週1回の実力測定用。IRT方式のスコア推定つき</span>
-      <em>制作: 2026年6月29日</em>
+      <span class="app-icon" aria-hidden="true">🖥️</span>
+      <span class="app-body">
+        <b>通し1セット（本番形式・IRT採点）<span class="arrow">→</span></b>
+        <span class="desc">週1回の実力測定用。IRT方式のスコア推定つき</span>
+        <em>制作: 2026年6月29日</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="FE_kamokuB_mogi16.html">
-      <b>模擬試験 全16問<span class="arrow">→</span></b>
-      <span class="desc">アルゴリズム中心の16問セット</span>
-      <em>制作: 2026年6月24日</em>
+      <span class="app-icon" aria-hidden="true">📝</span>
+      <span class="app-body">
+        <b>模擬試験 全16問<span class="arrow">→</span></b>
+        <span class="desc">アルゴリズム中心の16問セット</span>
+        <em>制作: 2026年6月24日</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="FE_kamokuB_hard16.html">
-      <b>難問演習 全16問<span class="arrow">→</span></b>
-      <span class="desc">難易度高め。仕上げ用</span>
-      <em>制作: 2026年6月下旬</em>
+      <span class="app-icon" aria-hidden="true">🔥</span>
+      <span class="app-body">
+        <b>難問演習 全16問<span class="arrow">→</span></b>
+        <span class="desc">難易度高め。仕上げ用</span>
+        <em>制作: 2026年6月下旬</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="FE_kamokuB_mogi_v3.html">
-      <b>模擬試験 v3<span class="arrow">→</span></b>
-      <span class="desc">採点・解説つき模試</span>
-      <em>制作: 2026年6月下旬</em>
+      <span class="app-icon" aria-hidden="true">📝</span>
+      <span class="app-body">
+        <b>模擬試験 v3<span class="arrow">→</span></b>
+        <span class="desc">採点・解説つき模試</span>
+        <em>制作: 2026年6月下旬</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="FE_kamokuB_mogi.html">
-      <b>模擬試験（初代）<span class="arrow">→</span></b>
-      <span class="desc">連結リスト・実行回数問題つき</span>
-      <em>制作: 2026年6月25日</em>
+      <span class="app-icon" aria-hidden="true">📝</span>
+      <span class="app-body">
+        <b>模擬試験（初代）<span class="arrow">→</span></b>
+        <span class="desc">連結リスト・実行回数問題つき</span>
+        <em>制作: 2026年6月25日</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="fe_kamoku_b_security_mock_v3.html">
-      <b>セキュリティ実戦演習（複数選択）<span class="arrow">→</span></b>
-      <span class="desc">「すべて選べ」形式対応の最新版</span>
-      <em>制作: 2026年6月29日</em>
+      <span class="app-icon" aria-hidden="true">🔒</span>
+      <span class="app-body">
+        <b>セキュリティ実戦演習（複数選択）<span class="arrow">→</span></b>
+        <span class="desc">「すべて選べ」形式対応の最新版</span>
+        <em>制作: 2026年6月29日</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="fe_kamoku_b_security_mock_v2.html">
-      <b>セキュリティ実戦演習（本番仕様）<span class="arrow">→</span></b>
-      <span class="desc">長文シナリオ形式</span>
-      <em>制作: 2026年6月29日</em>
+      <span class="app-icon" aria-hidden="true">🔒</span>
+      <span class="app-body">
+        <b>セキュリティ実戦演習（本番仕様）<span class="arrow">→</span></b>
+        <span class="desc">長文シナリオ形式</span>
+        <em>制作: 2026年6月29日</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="fe_kamoku_b_security_mock.html">
-      <b>セキュリティ実戦演習<span class="arrow">→</span></b>
-      <span class="desc">守る対象→脅威→CIA→消す、の型を練習</span>
-      <em>制作: 2026年6月29日</em>
+      <span class="app-icon" aria-hidden="true">🔒</span>
+      <span class="app-body">
+        <b>セキュリティ実戦演習<span class="arrow">→</span></b>
+        <span class="desc">守る対象→脅威→CIA→消す、の型を練習</span>
+        <em>制作: 2026年6月29日</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="fe_dll_pointer_rewire.html">
-      <b>双方向リスト 矢印の付け替え（激ムズ）<span class="arrow">→</span></b>
-      <span class="desc">ポインタ書き換え順のトラップ対策</span>
-      <em>制作: 2026年6月29日</em>
+      <span class="app-icon" aria-hidden="true">🔗</span>
+      <span class="app-body">
+        <b>双方向リスト 矢印の付け替え（激ムズ）<span class="arrow">→</span></b>
+        <span class="desc">ポインタ書き換え順のトラップ対策</span>
+        <em>制作: 2026年6月29日</em>
+      </span>
     </a>
     <a class="app" data-c="fe" href="fe_oop_linkedlist_3.html">
-      <b>オブジェクト指向・リスト構造 3問<span class="arrow">→</span></b>
-      <span class="desc">クラスのトレース練習</span>
-      <em>制作: 2026年6月29日</em>
+      <span class="app-icon" aria-hidden="true">🧱</span>
+      <span class="app-body">
+        <b>オブジェクト指向・リスト構造 3問<span class="arrow">→</span></b>
+        <span class="desc">クラスのトレース練習</span>
+        <em>制作: 2026年6月29日</em>
+      </span>
     </a>
   </div>
 </main>
@@ -344,14 +479,6 @@
       }, 180);
     });
   })();
-
-  document.querySelectorAll('a.app, a.flagship').forEach(el=>{
-    el.addEventListener('pointermove', e=>{
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
-      el.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
-    });
-  });
 </script>
 </body>
 </html>
