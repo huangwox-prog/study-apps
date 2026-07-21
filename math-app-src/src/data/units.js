@@ -14,6 +14,7 @@ import qf5 from "./problems/qf5.js";
 import qf6 from "./problems/qf6.js";
 import qf7 from "./problems/qf7.js";
 import qf8 from "./problems/qf8.js";
+import qf9 from "./problems/qf9.js";
 import tri1 from "./problems/tri1.js";
 import tri2 from "./problems/tri2.js";
 import tri3 from "./problems/tri3.js";
@@ -23,6 +24,6 @@ import tri6 from "./problems/tri6.js";
 
 export const ALL_UNITS = [
   ns1, ns2, ns3, ns4, ns5, ns6, ns7,
-  qf1, qf2, qf3, qf4, qf5, qf6, qf7, qf8,
+  qf1, qf2, qf3, qf4, qf5, qf6, qf7, qf8, qf9,
   tri1, tri2, tri3, tri4, tri5, tri6,
 ];
