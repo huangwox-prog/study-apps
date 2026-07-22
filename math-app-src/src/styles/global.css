@@ -242,7 +242,7 @@ button {
   .layout-3col {
     display: block;
     max-width: 760px;
-    padding: 0;
+    padding: 0 16px;
   }
   .rail { display: none; }
   .mobile-only { display: block; }
