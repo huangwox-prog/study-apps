@@ -7,8 +7,6 @@ import { gradeExam, formatElapsed } from "../logic/grading.js";
 import { saveAttempt } from "../logic/storage.js";
 import { shuffledChoiceOrder } from "../logic/shuffle.js";
 
-const DURATION_SEC = 100 * 60; // 100分
-
 export default function ExamRunner({ examSet, onExit }) {
   const [phase, setPhase] = useState("intro"); // intro | exam | result
   const [current, setCurrent] = useState(1);
@@ -20,6 +18,16 @@ export default function ExamRunner({ examSet, onExit }) {
   const questions = examSet.questions;
   const q = questions.find((qq) => qq.no === current);
   const answeredCount = Object.keys(answers).length;
+  const durationMin = examSet.durationMin ?? 100;
+  const DURATION_SEC = durationMin * 60;
+  const algoCount = questions.filter((qq) => qq.section === "algo").length;
+  const secCount = questions.filter((qq) => qq.section === "sec").length;
+  const introSummary =
+    algoCount > 0 && secCount > 0
+      ? `全${questions.length}問(アルゴリズム・プログラミング${algoCount}問 + 情報セキュリティ${secCount}問)・制限時間${durationMin}分の本番仕様模試です。`
+      : secCount > 0
+      ? `全${questions.length}問(情報セキュリティのみ)・制限時間${durationMin}分の高難度演習です。`
+      : `全${questions.length}問・制限時間${durationMin}分の演習です。`;
 
   const finish = useCallback(
     (autoByTimeout) => {
@@ -53,7 +61,7 @@ export default function ExamRunner({ examSet, onExit }) {
           <span className="badge accent" style={{ marginBottom: 16 }}>基本情報技術者試験 科目B</span>
           <h1 style={{ marginBottom: 14 }}>{examSet.title}</h1>
           <p className="text-secondary" style={{ maxWidth: 520, margin: "0 auto 8px" }}>
-            全20問(アルゴリズム・プログラミング16問 + 情報セキュリティ4問)・制限時間100分の本番仕様模試です。
+            {introSummary}
           </p>
           <p className="text-secondary" style={{ maxWidth: 520, margin: "0 auto 28px" }}>
             問題は自由に行き来できます。時間切れになると、その時点の回答状況で自動採点されます。
@@ -65,7 +73,7 @@ export default function ExamRunner({ examSet, onExit }) {
               setPhase("exam");
             }}
           >
-            試験をはじめる(100分)
+            試験をはじめる({durationMin}分)
           </button>
         </div>
       </div>
@@ -189,7 +197,7 @@ export default function ExamRunner({ examSet, onExit }) {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 460, margin: "0 auto", textAlign: "left" }}>
-          {Object.entries(result.byCategory).map(([sec, r]) => {
+          {Object.entries(result.byCategory).filter(([, r]) => r.total > 0).map(([sec, r]) => {
             const pct = r.total ? Math.round((r.correct / r.total) * 100) : 0;
             return (
               <div key={sec}>
