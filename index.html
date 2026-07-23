@@ -82,25 +82,13 @@
   .readme-link:hover{background:var(--glass-strong); border-color:rgba(58,46,34,.28); transform:translateY(-1px);}
 
   /* ===== ヒーロー =====
-     見出し→一言説明→イラスト、の縦の流れで「開いた瞬間の第一印象」を作る */
-  @keyframes fadeUp{
-    from{ opacity:0; transform:translateY(64px) scale(.94); filter:blur(7px); }
-    to{ opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
-  }
+     見出し→一言説明→イラスト、の縦の流れで「開いた瞬間の第一印象」を作る。
+     最初の画面はアニメーションで遅らせず、開いた瞬間にそのまま表示する */
   .hero{ position:relative; z-index:1; padding:76px 22px 0; }
   .hero-inner{
     max-width:720px; margin:0 auto;
     display:flex; flex-direction:column; align-items:center; text-align:center;
   }
-  /* ヒーロー内の要素は、下からがっつり・時間差で塗るように現れる */
-  .hero-inner > *{
-    opacity:0; animation:fadeUp 1.3s cubic-bezier(.16,1,.3,1) both;
-  }
-  .hero-inner .kicker{ animation-delay:.05s; }
-  .hero-inner h1{ animation-delay:.22s; }
-  .hero-inner .hero-desc{ animation-delay:.46s; }
-  .hero-inner .hero-illust-wrap{ animation-delay:.7s; }
-  .hero-inner .readme-link{ animation-delay:.94s; }
   .hero-inner .kicker{ display:inline-block; font-size:.74rem; letter-spacing:.2em; color:var(--ink-dim); text-transform:uppercase; margin-bottom:18px; }
   .hero-inner h1{
     margin:0; font-weight:900; letter-spacing:.01em; color:var(--ink);
@@ -149,12 +137,13 @@
     .ticker-track{ animation:none; }
   }
 
-  /* スクロールで画面に入ってきたセクションが、下からがっつり塗るように現れる */
+  /* スクロールで画面に入ってきたセクションが、下からふわっと現れる。
+     同じグリッドの行は同じタイミングで現れるよう、行単位で遅延をつける(JS側で設定) */
   .reveal{
-    opacity:0; transform:translateY(64px) scale(.95); filter:blur(7px);
-    transition:opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1), filter 1s cubic-bezier(.16,1,.3,1);
+    opacity:0; transform:translateY(32px);
+    transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
   }
-  .reveal.is-visible{ opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+  .reveal.is-visible{ opacity:1; transform:translateY(0); }
 
   main{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:44px 18px 70px;}
   .section-head{display:flex; align-items:center; gap:10px; margin:34px 4px 14px;}
@@ -509,9 +498,15 @@
       el.classList.add('reveal');
     });
     document.querySelectorAll('.grid').forEach(grid=>{
-      [...grid.children].forEach((el, i)=>{
+      // グリッドは折り返しで列数が変わるため、実際の行(offsetTop)ごとに
+      // グループ化して、同じ行のカードは同じタイミングで現れるようにする
+      const children = [...grid.children];
+      const rowOfTop = new Map();
+      children.forEach(el=>{
+        const top = el.offsetTop;
+        if(!rowOfTop.has(top)) rowOfTop.set(top, rowOfTop.size);
         el.classList.add('reveal');
-        el.style.transitionDelay = (i * 0.06) + 's';
+        el.style.transitionDelay = (rowOfTop.get(top) * 0.1) + 's';
       });
     });
 
