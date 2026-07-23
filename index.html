@@ -101,13 +101,10 @@
   /* イラスト枠: 差し込み用のプレースホルダー。装飾の図形は控えめな不透明度で添える程度 */
   .hero-illust-wrap{ position:relative; flex:0 0 auto; width:220px; height:220px; }
   .hero-illust{
-    position:relative; z-index:2; width:100%; height:100%; border-radius:32px;
-    background:var(--glass-strong); border:1.5px dashed rgba(58,46,34,.25);
-    display:flex; align-items:center; justify-content:center; overflow:hidden;
-    box-shadow:0 16px 40px -18px rgba(58,46,34,.3);
+    position:relative; z-index:2; width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
   }
-  /* ここに本人・世界観イラストを差し込む(推奨: 正方形に近い画像) 例: <img src="assets/hero-illust.png" alt=""> */
-  .hero-illust img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .hero-illust img{ width:100%; height:100%; object-fit:contain; display:block; }
   .hero-illust-ph{ font-size:2.2rem; opacity:.45; }
 
   .shape{ position:absolute; z-index:1; }
@@ -233,12 +230,15 @@
   footer a:hover{text-decoration:underline;}
 
   @media (max-width:640px){
-    .hero{ padding:40px 18px 0; }
-    .hero-inner{ flex-direction:column-reverse; text-align:center; gap:20px; }
-    .hero-illust-wrap{ width:168px; height:168px; }
+    .hero{ padding:28px 18px 0; }
+    .hero-inner{ flex-direction:column-reverse; text-align:center; gap:14px; }
+    .hero-illust-wrap{ width:132px; height:132px; }
     .shape-circle{ width:40px; height:40px; }
     .shape-square{ width:32px; height:32px; }
     .shape-tri{ border-left-width:16px; border-right-width:16px; border-bottom-width:28px; }
+    .readme-link{ margin-top:14px; }
+    .ticker{ margin-top:20px; }
+    main{ padding-top:24px; }
   }
   @media (max-width:420px){
     .grid{grid-template-columns:1fr;}
@@ -263,8 +263,7 @@
       <span class="shape shape-square" aria-hidden="true"></span>
       <span class="shape shape-tri" aria-hidden="true"></span>
       <div class="hero-illust" id="heroIllust">
-        <!-- ここに本人・世界観イラストを差し込む: <img src="assets/hero-illust.png" alt=""> -->
-        <span class="hero-illust-ph" aria-hidden="true">🎨</span>
+        <img src="assets/hero-illust.png" alt="">
       </div>
     </div>
   </div>
