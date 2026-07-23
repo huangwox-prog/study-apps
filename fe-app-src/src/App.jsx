@@ -4,8 +4,10 @@ import ExamRunner from "./components/ExamRunner.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import { ALL_SETS } from "./data/sets/index.js";
 import { loadResults } from "./logic/storage.js";
+import { useStudyTimeTracker } from "./logic/useStudyTimeTracker.js";
 
 export default function App() {
+  useStudyTimeTracker();
   const [view, setView] = useState({ screen: "home" });
   const [results, setResults] = useState(() => loadResults().results);
 

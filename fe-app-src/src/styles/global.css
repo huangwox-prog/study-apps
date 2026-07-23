@@ -364,6 +364,74 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   box-shadow: 0 0 8px var(--error-soft);
 }
 
+/* ============ 学習時間メーター ============ */
+.study-gauge-card {
+  padding: 22px 26px;
+  margin-bottom: 24px;
+}
+.study-gauge-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.study-gauge-ring-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+}
+.study-gauge-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.study-gauge-track {
+  fill: none;
+  stroke: var(--glass-soft);
+  stroke-width: 9;
+}
+.study-gauge-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 9;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+  transition: stroke-dashoffset var(--dur-slow) var(--ease), stroke var(--dur) var(--ease);
+}
+.study-gauge-fill.complete {
+  stroke: var(--success);
+  filter: drop-shadow(0 0 6px var(--success-soft));
+}
+.study-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.study-gauge-pct {
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+.study-gauge-label {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+.study-gauge-info {
+  flex: 1;
+  min-width: 220px;
+}
+.study-gauge-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 /* ============ 選択肢 ============ */
 .choice-list { display: flex; flex-direction: column; gap: 12px; }
 

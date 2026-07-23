@@ -1,5 +1,6 @@
 // ホーム画面: 模試セットの選択
 import React from "react";
+import StudyGauge from "./StudyGauge.jsx";
 
 export default function SetSelect({ sets, results, onSelect }) {
   return (
@@ -12,6 +13,8 @@ export default function SetSelect({ sets, results, onSelect }) {
           情報セキュリティ4問(問17〜20は難→易、長文シナリオ形式)で構成されています。
         </p>
       </header>
+
+      <StudyGauge />
 
       <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {sets.map((set, i) => {
