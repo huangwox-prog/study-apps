@@ -81,25 +81,42 @@
   }
   .readme-link:hover{background:var(--glass-strong); border-color:rgba(58,46,34,.28); transform:translateY(-1px);}
 
-  /* ===== ヒーロー ===== */
-  .hero{ position:relative; z-index:1; padding:60px 22px 0; }
+  /* ===== ヒーロー =====
+     見出し→一言説明→イラスト、の縦の流れで「開いた瞬間の第一印象」を作る */
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(64px) scale(.94); filter:blur(7px); }
+    to{ opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
+  }
+  .hero{ position:relative; z-index:1; padding:76px 22px 0; }
   .hero-inner{
-    max-width:980px; margin:0 auto;
-    display:flex; align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap;
+    max-width:720px; margin:0 auto;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
   }
-  .hero-text{ flex:1 1 320px; min-width:260px; }
-  .hero-text .kicker{ display:inline-block; font-size:.72rem; letter-spacing:.18em; color:var(--ink-dim); text-transform:uppercase; margin-bottom:14px; }
-  .hero-text h1{
+  /* ヒーロー内の要素は、下からがっつり・時間差で塗るように現れる */
+  .hero-inner > *{
+    opacity:0; animation:fadeUp 1.3s cubic-bezier(.16,1,.3,1) both;
+  }
+  .hero-inner .kicker{ animation-delay:.05s; }
+  .hero-inner h1{ animation-delay:.22s; }
+  .hero-inner .hero-desc{ animation-delay:.46s; }
+  .hero-inner .hero-illust-wrap{ animation-delay:.7s; }
+  .hero-inner .readme-link{ animation-delay:.94s; }
+  .hero-inner .kicker{ display:inline-block; font-size:.74rem; letter-spacing:.2em; color:var(--ink-dim); text-transform:uppercase; margin-bottom:18px; }
+  .hero-inner h1{
     margin:0; font-weight:900; letter-spacing:.01em; color:var(--ink);
-    font-size:clamp(2rem, 5.2vw, 2.7rem); line-height:1.35;
+    font-size:clamp(2.6rem, 11vw, 4.6rem); line-height:1.28;
   }
-  .hero-text h1 .hl{
+  .hero-inner h1 .hl{
     background:linear-gradient(180deg, transparent 58%, rgba(199,150,59,.5) 58%);
     padding:0 2px;
   }
+  .hero-desc{
+    margin:18px 0 0; font-size:clamp(.94rem, 2.6vw, 1.08rem); color:var(--ink-dim);
+    max-width:34em; line-height:1.8;
+  }
 
-  /* イラスト枠: 差し込み用のプレースホルダー。装飾の図形は控えめな不透明度で添える程度 */
-  .hero-illust-wrap{ position:relative; flex:0 0 auto; width:220px; height:220px; }
+  /* イラスト枠: メインビジュアルとして大きめに扱う。装飾の図形は控えめな不透明度で添える程度 */
+  .hero-illust-wrap{ position:relative; flex:none; width:280px; height:280px; margin:34px 0 8px; }
   .hero-illust{
     position:relative; z-index:2; width:100%; height:100%;
     display:flex; align-items:center; justify-content:center;
@@ -117,19 +134,27 @@
 
   /* ティッカー: 取り組んでいるテーマのキーワードが流れる帯 */
   .ticker{
-    margin-top:40px; overflow:hidden; white-space:nowrap;
+    margin-top:44px; overflow:hidden; white-space:nowrap;
     background:linear-gradient(90deg, var(--c-math), var(--c-fe));
   }
   .ticker-track{
     display:inline-flex; gap:10px; padding:9px 0;
-    animation:ticker 24s linear infinite;
+    animation:ticker linear infinite;
   }
+  .ticker-set{ display:inline-flex; gap:10px; flex:none; }
   .ticker-track span{ font-size:.74rem; font-weight:700; letter-spacing:.06em; color:#FFFBF3; }
-  @keyframes ticker{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+  @keyframes ticker{ from{ transform:translateX(0); } to{ transform:translateX(calc(-100% / var(--n, 2))); } }
   @media (prefers-reduced-motion: reduce){
     .ticker{ overflow-x:auto; }
     .ticker-track{ animation:none; }
   }
+
+  /* スクロールで画面に入ってきたセクションが、下からがっつり塗るように現れる */
+  .reveal{
+    opacity:0; transform:translateY(64px) scale(.95); filter:blur(7px);
+    transition:opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1), filter 1s cubic-bezier(.16,1,.3,1);
+  }
+  .reveal.is-visible{ opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
 
   main{position:relative; z-index:1; max-width:760px; margin:0 auto; padding:44px 18px 70px;}
   .section-head{display:flex; align-items:center; gap:10px; margin:34px 4px 14px;}
@@ -230,14 +255,13 @@
   footer a:hover{text-decoration:underline;}
 
   @media (max-width:640px){
-    .hero{ padding:28px 18px 0; }
-    .hero-inner{ flex-direction:column-reverse; text-align:center; gap:14px; }
-    .hero-illust-wrap{ width:132px; height:132px; }
+    .hero{ padding:48px 18px 0; }
+    .hero-illust-wrap{ width:190px; height:190px; margin:24px 0 4px; }
     .shape-circle{ width:40px; height:40px; }
     .shape-square{ width:32px; height:32px; }
     .shape-tri{ border-left-width:16px; border-right-width:16px; border-bottom-width:28px; }
-    .readme-link{ margin-top:14px; }
-    .ticker{ margin-top:20px; }
+    .readme-link{ margin-top:18px; }
+    .ticker{ margin-top:28px; }
     main{ padding-top:24px; }
   }
   @media (max-width:420px){
@@ -253,11 +277,9 @@
 
 <header class="hero">
   <div class="hero-inner">
-    <div class="hero-text">
-      <span class="kicker">Study Apps</span>
-      <h1>しだの<span class="hl">学習アプリ</span>集</h1>
-      <a class="readme-link" href="https://github.com/huangwox-prog/study-apps" target="_blank" rel="noopener">⚙︎ 制作について(README)</a>
-    </div>
+    <span class="kicker">Study Apps</span>
+    <h1>しだの<span class="hl">学習アプリ</span>集</h1>
+    <p class="hero-desc">自分だけの学習アプリを、ここに置いています。</p>
     <div class="hero-illust-wrap">
       <span class="shape shape-circle" aria-hidden="true"></span>
       <span class="shape shape-square" aria-hidden="true"></span>
@@ -266,11 +288,13 @@
         <img src="assets/hero-illust.png" alt="">
       </div>
     </div>
+    <a class="readme-link" href="https://github.com/huangwox-prog/study-apps" target="_blank" rel="noopener">⚙︎ 制作について(README)</a>
   </div>
   <div class="ticker" aria-hidden="true">
-    <div class="ticker-track">
-      <span>数学Ⅰ</span><span>・</span><span>基本情報技術者試験</span><span>・</span><span>総合型選抜対策</span><span>・</span><span>反復学習アプリ</span><span>・</span><span>個人開発</span><span>・</span>
-      <span>数学Ⅰ</span><span>・</span><span>基本情報技術者試験</span><span>・</span><span>総合型選抜対策</span><span>・</span><span>反復学習アプリ</span><span>・</span><span>個人開発</span><span>・</span>
+    <div class="ticker-track" id="tickerTrack">
+      <span class="ticker-set">
+        <span>数学Ⅰ</span><span>・</span><span>基本情報技術者試験</span><span>・</span><span>総合型選抜対策</span><span>・</span><span>反復学習アプリ</span><span>・</span><span>個人開発</span><span>・</span>
+      </span>
     </div>
   </div>
 </header>
@@ -477,6 +501,47 @@
         setTimeout(()=> fade.classList.remove('active'), 60);
       }, 180);
     });
+  })();
+
+  // main内のセクションは、スクロールで画面に入ったタイミングで下からぬるっと現れる
+  (function(){
+    document.querySelectorAll('.flagship-wrap, .subgroup-head, .section-head').forEach(el=>{
+      el.classList.add('reveal');
+    });
+    document.querySelectorAll('.grid').forEach(grid=>{
+      [...grid.children].forEach((el, i)=>{
+        el.classList.add('reveal');
+        el.style.transitionDelay = (i * 0.06) + 's';
+      });
+    });
+
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold:.15, rootMargin:'0px 0px -60px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el=> io.observe(el));
+  })();
+
+  // ティッカー: コンテナの幅に対してコピーが足りず途中で途切れないよう、
+  // 1周分の幅の2倍以上を埋められるまで複製してから無限ループさせる
+  (function(){
+    const track = document.getElementById('tickerTrack');
+    const original = track.querySelector('.ticker-set');
+    if(!track || !original) return;
+    const containerWidth = track.parentElement.clientWidth;
+    let setWidth = original.getBoundingClientRect().width;
+    let copies = 1;
+    while(setWidth * copies < containerWidth * 2 && copies < 16){
+      track.appendChild(original.cloneNode(true));
+      copies++;
+    }
+    track.style.setProperty('--n', copies);
+    track.style.animationDuration = (copies * 9) + 's';
   })();
 </script>
 </body>
