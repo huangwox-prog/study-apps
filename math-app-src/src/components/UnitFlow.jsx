@@ -28,6 +28,12 @@ export default function UnitFlow({ unit, progress, onExit }) {
     }
   };
 
+  // 診断を受けずに、診断後と同じ選択画面へ進む
+  const skipDiag = () => {
+    setDiagResult(null);
+    setStage("diag-passed");
+  };
+
   const skipUnit = () => {
     updateUnitProgress(unit.id, {
       mastery: 100,
@@ -119,8 +125,8 @@ export default function UnitFlow({ unit, progress, onExit }) {
             診断をはじめる
           </button>
           <div style={{ marginTop: 18 }}>
-            <button className="btn btn-ghost" onClick={() => setStage("practice")}>
-              診断をスキップして演習へ →
+            <button className="btn btn-ghost" onClick={skipDiag}>
+              診断をスキップする →
             </button>
           </div>
         </div>
@@ -142,24 +148,33 @@ export default function UnitFlow({ unit, progress, onExit }) {
   }
 
   if (stage === "diag-passed") {
+    // 診断を受けずに来た場合は結果がないので、文言を切り替える
+    const skipped = diagResult == null;
     return (
       <div className="screen" key={stage}>
+        {skipped && (
+          <div className="top-bar">
+            <button className="btn-ghost btn" onClick={() => setStage("diag-intro")}>← 戻る</button>
+          </div>
+        )}
         <div className="card" style={{ padding: "40px 36px", textAlign: "center" }}>
-          <span className="badge ok" style={{ marginBottom: 16 }}>
-            診断 {diagResult.correct} / {diagResult.total} 正解
+          <span className={`badge ${skipped ? "accent" : "ok"}`} style={{ marginBottom: 16 }}>
+            {skipped ? "診断はスキップ" : `診断 ${diagResult.correct} / ${diagResult.total} 正解`}
           </span>
-          <h1 style={{ marginBottom: 14 }}>この単元、もう身についてるみたい</h1>
+          <h1 style={{ marginBottom: 14 }}>
+            {skipped ? "この単元、どうする?" : "この単元、もう身についてるみたい"}
+          </h1>
           <p className="text-secondary" style={{ maxWidth: 500, margin: "0 auto 30px" }}>
-            この単元は習得済みとみなして次に進みますか?
-            それとも念のため全問演習しますか?
-            (スキップしても、あとからいつでも演習に戻れるよ)
+            {skipped
+              ? "この単元は習得済みとみなして次に進む?それとも解説を読んでから演習する?(スキップしても、あとからいつでも演習に戻れるよ)"
+              : "この単元は習得済みとみなして次に進みますか?それとも念のため全問演習しますか?(スキップしても、あとからいつでも演習に戻れるよ)"}
           </p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <button className="btn btn-primary btn-lg" onClick={skipUnit}>
               習得済みにして次へ
             </button>
             <button className="btn btn-secondary btn-lg" onClick={() => setStage("lesson")}>
-              念のため演習する
+              {skipped ? "解説を読んで演習する" : "念のため演習する"}
             </button>
           </div>
         </div>
