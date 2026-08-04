@@ -173,7 +173,7 @@ export default function Quiz({
                   disabled={!!feedback}
                   onClick={() => setAnswer(orig)}
                 >
-                  <span className="choice-key">{"ABCD"[i]}</span>
+                  <span className="choice-key">{"ABCDEF"[i]}</span>
                   <MathText text={q.choices[orig]} />
                 </button>
               );

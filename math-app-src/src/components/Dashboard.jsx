@@ -79,7 +79,10 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
                       {mastery >= 70 ? "✓" : i + 1}
                     </span>
                     <span className="unit-card-text">
-                      <span className="unit-card-title">{unit.title}</span>
+                      <span className="unit-card-title">
+                        {unit.title}
+                        {unit.isNew && <span className="badge-new">NEW</span>}
+                      </span>
                       <span className="text-tertiary unit-card-sub">
                         {p?.skippedByDiag
                           ? "診断でスキップ済み(いつでも演習できる)"

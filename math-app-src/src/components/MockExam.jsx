@@ -122,7 +122,7 @@ export default function MockExam({ examSet, units, onExit }) {
                   setAnswers(next);
                 }}
               >
-                <span className="choice-key">{"ABCD"[i]}</span>
+                <span className="choice-key">{"ABCDEF"[i]}</span>
                 <MathText text={q.choices[orig]} />
               </button>
             ))}

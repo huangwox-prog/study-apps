@@ -592,6 +592,22 @@ h3 { font-size: 1.1rem; font-weight: 650; }
 .pad-key.pad-danger { color: var(--error); }
 .pad-key.pad-word { font-size: 0.74rem; font-family: var(--font-body); font-weight: 650; }
 
+/* 新規追加した単元につく NEW マーク */
+.badge-new {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 2px 8px -3px var(--accent-glow);
+}
+
 /* ============ バッジ ============ */
 .badge {
   display: inline-flex;
