@@ -2,10 +2,10 @@
 import React, { useState } from "react";
 import { masteryLabel, overallProgress } from "../logic/mastery.js";
 import { EXAM_SETS } from "../logic/examGenerator.js";
-import { CHECK_TESTS } from "../data/checkTests/index.js";
 import { summarizeMistakes } from "../logic/weakness.js";
 import { getGreeting } from "../data/greetings.js";
 import WeakSpots from "./WeakSpots.jsx";
+import OralStats from "./OralStats.jsx";
 
 const CATEGORY_LABELS = {
   ns: "数と式",
@@ -13,7 +13,7 @@ const CATEGORY_LABELS = {
   tri: "三角比",
 };
 
-export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onOpenCheckTest, onOpenReview }) {
+export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onOpenOral, onOpenReview }) {
   // アクセス(マウント)のたびに1回だけ選び直す。レンダーごとに変わるとチラつくので固定化する。
   const [greeting] = useState(() => getGreeting());
   const overall = overallProgress(units, progress.units);
@@ -111,33 +111,22 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
       })}
 
       <section style={{ marginBottom: 32 }}>
-        <h2 style={{ marginBottom: 6 }}>単元別 確認テスト</h2>
+        <h2 style={{ marginBottom: 6 }}>口頭試問ドリル</h2>
         <p className="text-secondary" style={{ marginBottom: 14 }}>
-          分野ごとの正答率と経過時間が分かる、記述式の確認テスト。
+          「これは何の問題か」「最初の一手は何か」を言えるようにする、
+          分野を選んで解く164問の分類ドリル。
         </p>
-        <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {CHECK_TESTS.map((t) => {
-            const result = progress.checkTests?.[t.id];
-            return (
-              <button
-                key={t.id}
-                className="card card-hover unit-card"
-                onClick={() => onOpenCheckTest(t.id)}
-              >
-                <span className="unit-card-text">
-                  <span className="unit-card-title">{t.title}</span>
-                  <span className="text-tertiary unit-card-sub">{t.subtitle}</span>
-                </span>
-                {result ? (
-                  <span className={`badge ${result.best >= t.questions.length ? "ok" : ""}`}>
-                    ベスト {result.best}/{t.questions.length}
-                  </span>
-                ) : (
-                  <span className="badge">未受験</span>
-                )}
-              </button>
-            );
-          })}
+        <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <button className="card card-hover unit-card" onClick={onOpenOral}>
+            <span className="unit-card-text">
+              <span className="unit-card-title">ドリルを始める</span>
+              <span className="text-tertiary unit-card-sub">
+                分野・出題順・問題数を選んで開始
+              </span>
+            </span>
+            <span className="badge accent">164問</span>
+          </button>
+          <OralStats onStart={onOpenOral} />
         </div>
       </section>
 

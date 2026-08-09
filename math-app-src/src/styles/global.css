@@ -768,3 +768,275 @@ h3 { font-size: 1.1rem; font-weight: 650; }
   }
   .theme-toggle-icon { font-size: 1.1rem; }
 }
+
+/* ============ KaTeX(口頭試問ドリルの数式) ============ */
+/* KaTeX本体のCSSは Tex.jsx が読み込む。ここでは本文になじませる調整だけ。 */
+.tex .katex { font-size: 1.08em; }
+.tex-block { margin: 6px 0; }
+/* 長い式は行を壊さずに横スクロールさせる */
+.tex-block > .katex-display { margin: 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+/* ============ 口頭試問ドリル: 設定画面 ============ */
+.oral-setup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.oral-setup-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.oral-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 6px;
+}
+
+.oral-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.oral-check:hover { background: var(--glass-soft); border-color: var(--glass-border-soft); }
+.oral-check input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.oral-check-label { flex: 1; min-width: 0; line-height: 1.4; }
+.oral-check-count { flex-shrink: 0; font-size: 0.82rem; }
+.oral-check-wide { width: 100%; }
+
+/* 順番/シャッフル・問題数のセグメント切り替え */
+.oral-segment {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.oral-segment-btn {
+  flex: 1;
+  min-width: 92px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  background: var(--glass-soft);
+  border: 1.5px solid var(--glass-border-soft);
+  color: var(--text-secondary);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+    color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.oral-segment-btn:hover { border-color: var(--accent); }
+.oral-segment-btn.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 18px -8px var(--accent-glow);
+}
+
+/* ============ 口頭試問ドリル: 出題画面 ============ */
+/* 常時表示。口頭試問対策の本体なので、問題より先に目に入る位置に置く。 */
+.oral-mantra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+  font-weight: 650;
+  font-size: 0.97rem;
+  line-height: 1.5;
+}
+.oral-mantra::before { content: "🗣"; font-size: 1.1rem; }
+
+.oral-question { margin-bottom: 20px; }
+.oral-question-text {
+  margin-top: 12px;
+  font-size: 1.22rem;
+  line-height: 2.1;
+}
+
+.oral-reveal { width: 100%; margin-bottom: 18px; }
+
+.oral-answer { margin-bottom: 20px; }
+.oral-answer-block { display: flex; gap: 16px; padding: 12px 0; }
+.oral-answer-block + .oral-answer-block { border-top: 1px solid var(--glass-border-soft); }
+.oral-answer-label {
+  flex-shrink: 0;
+  width: 62px;
+  padding-top: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+}
+.oral-answer-body { flex: 1; min-width: 0; line-height: 1.95; }
+.oral-answer-main { font-size: 1.14rem; font-weight: 650; color: var(--accent); }
+.oral-solution-line { padding: 1px 0; }
+
+/* 自己採点の3ボタン。誤タップしないよう高さと間隔を十分に取る。 */
+.oral-grade { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+.oral-grade-hint { font-size: 0.88rem; margin-bottom: 2px; }
+.oral-grade-btn {
+  min-height: 62px;
+  padding: 16px 24px;
+  border-radius: var(--radius);
+  font-size: 1.08rem;
+  font-weight: 650;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1.5px solid var(--glass-border-soft);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease-press), box-shadow var(--dur) var(--ease);
+}
+.oral-grade-btn:active { transform: scale(0.985); }
+.oral-grade-btn.tone-ok:hover {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--success);
+}
+.oral-grade-btn.tone-warn:hover {
+  border-color: var(--warn);
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.oral-grade-btn.tone-ng:hover {
+  border-color: var(--error);
+  background: var(--error-soft);
+  color: var(--error);
+}
+
+/* 採点直後の確認表示。1タップで次へ進ませず、取り消す余地を残す。 */
+.oral-recorded {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding: 18px 22px;
+  border-radius: var(--radius);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
+  animation: feedback-in var(--dur) var(--ease) both;
+}
+.oral-recorded-text { font-weight: 650; }
+.oral-recorded-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ============ 口頭試問ドリル: 正答率一覧 ============ */
+.oral-stats { padding: 22px 26px; }
+.oral-stats-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.oral-stats-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+
+.oral-stat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 88px 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+}
+.oral-stat-row + .oral-stat-row { border-top: 1px solid var(--glass-border-soft); }
+.oral-stat-name { font-size: 0.94rem; line-height: 1.4; }
+.oral-stat-empty { grid-column: 2 / -1; text-align: right; }
+.oral-stat-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--glass-soft);
+  border: 0.5px solid var(--glass-border-soft);
+  overflow: hidden;
+}
+.oral-stat-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 75%, white), var(--accent));
+  transition: width var(--dur-slow) var(--ease);
+}
+.oral-stat-rate { text-align: right; font-weight: 650; font-size: 0.94rem; }
+.oral-stat-breakdown { grid-column: 1 / -1; font-size: 0.8rem; }
+/* 方針間違いはその人の本当の弱点なので目立たせる */
+.oral-stat-plan { color: var(--error); font-weight: 650; }
+
+.oral-stats-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.oral-reset-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.oral-reset-yes { color: var(--error); border-color: color-mix(in srgb, var(--error) 40%, transparent); }
+
+.oral-done-rate { font-size: 2.6rem; font-weight: 700; line-height: 1.2; }
+.oral-done-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.oral-done-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--glass-border-soft);
+}
+
+/* ============ 口頭試問ドリル: 詰まったときの手順 ============ */
+.oral-stuck {
+  margin-top: 28px;
+  border-radius: var(--radius);
+  background: var(--glass-soft);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--glass-border-soft);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  overflow: hidden;
+}
+.oral-stuck-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 22px;
+  font-weight: 650;
+  color: var(--text-secondary);
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.oral-stuck-toggle:hover { color: var(--text); background: var(--glass-soft); }
+.oral-stuck-caret { transition: transform var(--dur) var(--ease); font-size: 1.1rem; }
+.oral-stuck-caret.open { transform: rotate(180deg); }
+.oral-stuck-list {
+  padding: 0 22px 20px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-secondary);
+  animation: feedback-in var(--dur) var(--ease) both;
+}
+.oral-stuck-list li { line-height: 1.7; }
+
+@media (max-width: 600px) {
+  .oral-stats { padding: 18px 18px; }
+  .oral-stat-row { grid-template-columns: minmax(0, 1fr) 60px 42px; }
+  .oral-answer-block { flex-direction: column; gap: 4px; }
+  .oral-answer-label { width: auto; }
+  .oral-question-text { font-size: 1.12rem; }
+}

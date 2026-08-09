@@ -2,8 +2,7 @@ import React, { useState, useCallback, useMemo } from "react";
 import Dashboard from "./components/Dashboard.jsx";
 import UnitFlow from "./components/UnitFlow.jsx";
 import MockExam from "./components/MockExam.jsx";
-import CheckTest from "./components/CheckTest.jsx";
-import CheckTestFree from "./components/CheckTestFree.jsx";
+import OralDrill from "./components/OralDrill.jsx";
 import ReviewMode from "./components/ReviewMode.jsx";
 import ProgressRail from "./components/ProgressRail.jsx";
 import WeakSpots from "./components/WeakSpots.jsx";
@@ -11,7 +10,6 @@ import ActivityLog from "./components/ActivityLog.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
 import { ALL_UNITS } from "./data/units.js";
 import { EXAM_SETS } from "./logic/examGenerator.js";
-import { CHECK_TESTS } from "./data/checkTests/index.js";
 import { loadProgress, recordActivity } from "./logic/storage.js";
 import { summarizeMistakes, MISTAKE_TYPES } from "./logic/weakness.js";
 
@@ -43,7 +41,7 @@ export default function App() {
         progress={progress}
         onOpenUnit={openUnit}
         onOpenExam={(examId) => setView({ screen: "exam", examId })}
-        onOpenCheckTest={(testId) => setView({ screen: "checktest", testId })}
+        onOpenOral={() => setView({ screen: "oral" })}
         onOpenReview={(type) => setView({ screen: "review", mistakeType: type })}
       />
     );
@@ -66,14 +64,9 @@ export default function App() {
     content = (
       <MockExam key={view.examId} examSet={examSet} units={ALL_UNITS} onExit={goHome} />
     );
-  } else if (view.screen === "checktest") {
-    const test = CHECK_TESTS.find((t) => t.id === view.testId);
-    shellClass = `app-shell cat-${test.unitCategory}`;
+  } else if (view.screen === "oral") {
     showSidebars = false;
-    const CheckTestComponent = test.mode === "free" ? CheckTestFree : CheckTest;
-    content = (
-      <CheckTestComponent key={view.testId} test={test} categoryLabels={test.categoryLabels} onExit={goHome} />
-    );
+    content = <OralDrill onExit={goHome} />;
   } else if (view.screen === "review") {
     const entry = mistakeSummary.find((w) => w.type === view.mistakeType);
     showSidebars = false;
