@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="東北学院大学 未来探究科学部 デジタル構想学科 総合型選抜（口頭試問・面接）の練習アプリ。">
+<meta name="theme-color" content="#FBF3E7">
+<title>総合型選抜 対策｜東北学院大 デジタル構想</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --paper:#FBF3E7; --grid:#E7D8BF; --ink:#3A2E22; --ink-soft:#8A7660;
+  --amber:#C1793F; --amber-deep:#A35F2B; --amber-bg:rgba(193,121,63,.10);
+  --gold:#C7963B; --gold-bg:rgba(199,150,59,.13);
+  --green:#6E8F5E; --green-bg:rgba(110,143,94,.12);
+  --red:#D8442B; --red-soft:#FBE7E2;
+  --card:#FFFDF8; --line:#E6D9C4; --radius:16px;
+  --shadow:0 2px 12px rgba(58,46,34,.09);
+  --fd:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif;
+  --fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{overflow-x:hidden}
+body{
+  font-family:var(--fb);color:var(--ink);font-size:16px;line-height:1.7;
+  background:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    var(--paper);
+  background-size:24px 24px;
+  min-height:100vh;
+}
+button{font-family:var(--fb);cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--amber-deep);outline-offset:2px;border-radius:8px}
+
+#app{max-width:640px;margin:0 auto;padding:14px 14px 60px}
+body.split #app{max-width:1280px}
+
+/* ===== ヘッダ ===== */
+.hd{display:flex;align-items:center;gap:10px;padding:6px 2px 12px;flex-wrap:wrap}
+.hd h1{font-family:var(--fd);font-weight:900;font-size:19px;letter-spacing:.01em}
+.hd h1 .ac{color:var(--red)}
+.hd .sub{font-size:11.5px;color:var(--ink-soft);font-family:var(--fd)}
+.hd .sp{flex:1}
+.iconbtn{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:6px 10px;font-family:var(--fd);font-weight:700;font-size:12px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:5px}
+.iconbtn.on{background:var(--amber);border-color:var(--amber);color:#fff}
+.iconbtn:active{transform:scale(.97)}
+
+/* ===== レイアウト ===== */
+.layout{display:block}
+body.split .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:860px){body.split .layout{display:block}}
+body.split .paneR{position:sticky;top:12px}
+@media(max-width:860px){body.split .paneR{position:static}}
+
+/* ===== 部品 ===== */
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;position:relative}
+.card.accent{border-color:var(--amber);border-width:2px}
+.secttl{font-family:var(--fd);font-weight:900;font-size:13.5px;color:var(--amber-deep);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.secttl::after{content:"";flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--amber-deep) 0 6px,transparent 6px 11px);opacity:.35}
+.note{font-size:12px;color:var(--ink-soft);line-height:1.6}
+.bigbtn{width:100%;border:none;border-radius:var(--radius);padding:14px;font-family:var(--fd);font-weight:700;font-size:16px;box-shadow:var(--shadow);transition:transform .08s;margin-bottom:10px;background:var(--amber);color:#fff}
+.bigbtn.ghost{background:var(--card);color:var(--amber-deep);border:2px solid var(--amber);box-shadow:none}
+.bigbtn.green{background:var(--green)}
+.bigbtn.quiet{background:var(--card);color:var(--ink-soft);border:1.5px solid var(--line);box-shadow:none;font-size:14px;padding:11px}
+.bigbtn:active{transform:scale(.985)}
+.bigbtn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.bigbtn{flex:1;min-width:130px}
+textarea,input[type=text],select{
+  width:100%;font-family:var(--fb);font-size:15px;color:var(--ink);
+  background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;line-height:1.7;
+}
+textarea{resize:vertical}
+label.lab{display:block;font-family:var(--fd);font-weight:700;font-size:12.5px;color:var(--ink-soft);margin:10px 0 5px}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-family:var(--fd);font-weight:700;font-size:13px;color:var(--ink-soft)}
+.chip.on{background:var(--amber-bg);border-color:var(--amber);color:var(--amber-deep)}
+.chip small{display:block;font-size:10.5px;font-weight:500;opacity:.8}
+
+.badge{font-family:var(--fd);font-weight:900;font-size:11px;border-radius:6px;padding:2px 8px;display:inline-block;white-space:nowrap}
+.badge.S{background:var(--red);color:#fff}
+.badge.A{background:var(--gold-bg);color:#8A6413;border:1.5px solid var(--gold)}
+.badge.B{background:#F0EAE0;color:var(--ink-soft);border:1.5px solid var(--line)}
+.badge.ax{background:var(--green-bg);color:#4A6440;border:1.5px solid var(--green);font-size:10.5px;font-weight:700}
+
+/* 赤ペン風 */
+.stamp{font-family:var(--fd);font-weight:900;color:var(--red);border:2.5px solid var(--red);border-radius:50%;
+  width:62px;height:62px;display:flex;align-items:center;justify-content:center;transform:rotate(-11deg);
+  font-size:15px;flex:none;text-align:center;line-height:1.15}
+.stamp.mid{border-color:var(--gold);color:#8A6413;border-radius:14px;transform:rotate(-6deg);font-size:13px}
+.stamp.bad{border-color:var(--ink-soft);color:var(--ink-soft);font-size:22px}
+.redpen{color:var(--red);font-family:var(--fd);font-weight:700}
+.underline{background:linear-gradient(transparent 62%,rgba(216,68,43,.22) 62%)}
+
+.qbox{font-size:18px;line-height:2;font-family:var(--fd);font-weight:500}
+.qmeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.qno{font-family:var(--fd);font-weight:900;font-size:12px;color:var(--ink-soft)}
+
+.kv{display:flex;gap:10px;align-items:baseline;font-size:13.5px;padding:5px 0;border-bottom:1.5px dashed var(--line)}
+.kv:last-child{border-bottom:none}
+.kv .k{font-family:var(--fd);font-weight:700;color:var(--ink-soft);min-width:96px;flex:none;font-size:12.5px}
+.kv .v{flex:1}
+
+/* メーター */
+.meter{display:flex;gap:4px;align-items:center}
+.mp{width:13px;height:13px;border-radius:50%;border:1.5px solid #D6C8B0;background:#fff}
+.mp.on{background:var(--red);border-color:var(--red)}
+.scorerow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1.5px dashed var(--line)}
+.scorerow:last-child{border-bottom:none}
+.scorerow .nm{font-family:var(--fd);font-weight:700;font-size:12.5px;flex:none;width:118px}
+.scorerow .cm{font-size:11.5px;color:var(--ink-soft);flex:1;min-width:100%;order:9;padding-left:2px}
+.total{font-family:var(--fd);font-weight:900;font-size:30px;color:var(--red);line-height:1}
+.total small{font-size:13px;color:var(--ink-soft)}
+
+/* マイク */
+.micwrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 2px}
+.mic{width:112px;height:112px;border-radius:50%;border:3px solid var(--amber);background:var(--card);
+  display:grid;place-items:center;box-shadow:var(--shadow);transition:transform .1s}
+.mic:active{transform:scale(.96)}
+.mic svg{width:46px;height:46px}
+.mic.rec{background:var(--red);border-color:var(--red);animation:pulse 1.5s ease-in-out infinite}
+.mic.rec svg{stroke:#fff}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(216,68,43,.42)}50%{box-shadow:0 0 0 16px rgba(216,68,43,0)}}
+@media(prefers-reduced-motion:reduce){.mic.rec{animation:none}}
+.miclabel{font-family:var(--fd);font-weight:700;font-size:13px;color:var(--amber-deep)}
+.timer{font-family:var(--fd);font-weight:900;font-size:34px;letter-spacing:.02em;text-align:center;color:var(--ink)}
+.timer.rec{color:var(--red)}
+.live{background:#fff;border:1.5px dashed var(--line);border-radius:12px;padding:10px 12px;min-height:64px;font-size:14.5px;line-height:1.8}
+.live .interim{color:var(--ink-soft);opacity:.8}
+.live .ph{color:var(--ink-soft);font-size:12.5px}
+
+.warn{background:var(--red-soft);border:1.5px solid var(--red);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#8E2A17;margin-bottom:10px}
+.rawerr{background:#fff;border:1.5px solid var(--red);border-radius:10px;padding:10px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;font-family:ui-monospace,monospace;color:#7A2717}
+
+.spin{display:inline-block;width:15px;height:15px;border:2.5px solid var(--amber);border-top-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* チェックリスト */
+.clgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px}
+.cl{aspect-ratio:1;border:1.5px solid var(--line);border-radius:10px;background:var(--card);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px;position:relative}
+.cl .n{font-family:var(--fd);font-weight:900;font-size:13px}
+.cl .s{font-size:10px;color:var(--ink-soft);font-family:var(--fd);font-weight:700}
+.cl.rS{border-color:var(--red);border-width:2px}
+.cl.rA{border-color:var(--gold)}
+.cl.done{background:var(--green-bg)}
+.cl.done .s{color:var(--green)}
+.cl.undone.rS{background:var(--red-soft)}
+.cl .chk{position:absolute;top:2px;right:4px;color:var(--red);font-size:11px;font-family:var(--fd);font-weight:900}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-soft);margin-top:10px}
+
+.bar{height:9px;background:#F0E7D8;border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--amber);border-radius:99px}
+.statline{display:flex;align-items:center;gap:9px;margin:8px 0;font-size:13px}
+.statline .nm{font-family:var(--fd);font-weight:700;font-size:12.5px;width:78px;flex:none}
+.statline .bar{flex:1}
+.statline .vl{font-family:var(--fd);font-weight:900;font-size:12.5px;width:56px;text-align:right;flex:none}
+
+.hidden{display:none !important}
+.katex{font-size:1.03em}
+.katex-display{margin:.5em 0}
+hr.dash{border:none;border-top:1.5px dashed var(--line);margin:12px 0}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="hd">
+    <h1>総合型選抜 <span class="ac">対策</span></h1>
+    <span class="sub" id="hdsub">東北学院大 デジタル構想 / 9月22日</span>
+    <span class="sp"></span>
+    <button class="iconbtn" id="btnSplit" type="button">▥ 2画面</button>
+    <button class="iconbtn hidden" id="btnHome" type="button">← モード選択</button>
+  </div>
+
+  <!-- ========== ホーム ========== -->
+  <div id="vHome">
+    <div class="card accent">
+      <div class="secttl">本番までの練習ツール</div>
+      <p class="note">口頭試問は「解けたか・どこで詰まったか」だけを見ます。面接は音声で答えて、質問ごとの<b>測るもの</b>に届いたかで採点します。</p>
+    </div>
+    <button class="bigbtn" id="goOral" type="button">✎ 口頭試問モード<br><span style="font-size:12px;font-weight:500">数Ⅰ・教科書の例題レベル / 全<span id="oralCount">0</span>問</span></button>
+    <button class="bigbtn green" id="goItv" type="button">🗣 面接モード<br><span style="font-size:12px;font-weight:500">想定質問105問 / S必修20問</span></button>
+    <button class="bigbtn quiet" id="goCl" type="button">☑ 105問チェックリストを見る</button>
+    <div class="card">
+      <div class="secttl">記録</div>
+      <div id="homeStats"></div>
+      <hr class="dash">
+      <button class="bigbtn quiet" id="btnReset" type="button" style="margin:0">⟲ 記録をすべてリセット</button>
+    </div>
+  </div>
+
+  <!-- ========== 口頭試問 ========== -->
+  <div id="vOral" class="hidden">
+    <div class="layout">
+      <div class="paneL">
+        <div class="card" id="oralSetup">
+          <div class="secttl">出題する分野</div>
+          <div class="chips" id="fieldChips"></div>
+          <p class="note" style="margin-top:10px">教科書の例題レベルのみ。ホワイトボードで3分程度で解き切れる分量です。</p>
+          <button class="bigbtn" id="oralStart" type="button" style="margin-top:12px">問題を出す</button>
+        </div>
+
+        <div class="card accent hidden" id="oralQCard">
+          <div class="qmeta">
+            <span class="badge ax" id="oralField"></span>
+            <span class="qno" id="oralNo"></span>
+          </div>
+          <div class="qbox" id="oralQ"></div>
+          <hr class="dash">
+          <button class="bigbtn quiet" id="oralHint" type="button" style="margin:0">💡 ヒントを見る（最初の一手だけ）</button>
+          <div class="hidden" id="oralHintBox" style="margin-top:10px">
+            <div class="note" style="background:var(--gold-bg);border:1.5px dashed var(--gold);border-radius:12px;padding:10px 12px">
+              <b style="font-family:var(--fd)">最初の一手：</b><span id="oralHintTxt"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="oralAnsCard">
+          <div class="secttl">答えと方針を入力</div>
+          <div id="oralSpeechUI">
+            <div class="row" style="margin-bottom:8px">
+              <button class="bigbtn ghost" id="oralMic" type="button" style="margin:0">🎤 音声で入力</button>
+            </div>
+            <p class="note" style="margin-bottom:8px">音声入力は下の「解いた方針」に追記されます。数式は手で直してください。</p>
+          </div>
+          <label class="lab" for="oralA">答え</label>
+          <input type="text" id="oralA" placeholder="例：x = 2, 3">
+          <label class="lab" for="oralS">どう解いたか（方針）</label>
+          <textarea id="oralS" rows="4" placeholder="例：たすき掛けで因数分解して、それぞれの因数が0になるxを求めた"></textarea>
+          <button class="bigbtn" id="oralGrade" type="button" style="margin-top:12px">採点する</button>
+        </div>
+      </div>
+
+      <div class="paneR">
+        <div class="card hidden" id="oralResult"></div>
+        <div class="card" id="oralStats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 面接 ========== -->
+  <div id="vItv" class="hidden">
+    <div class="layout">
+      <div class="paneL">
+        <div class="card" id="itvSetup">
+          <div class="secttl">出題範囲</div>
+          <div class="chips" id="itvScope"></div>
+          <div id="itvAxisWrap" class="hidden" style="margin-top:10px">
+            <label class="lab" for="itvAxis">評価軸を選ぶ</label>
+            <select id="itvAxis"></select>
+          </div>
+          <hr class="dash">
+          <button class="chip" id="itvOther" type="button">他学科限定の質問も含める<small>英文・歴史・教育・総合人文・経営・経済・環境建設（計7問）</small></button>
+          <p class="note" id="itvPoolNote" style="margin-top:10px"></p>
+          <button class="bigbtn green" id="itvStart" type="button" style="margin-top:12px">面接を始める</button>
+          <button class="bigbtn quiet" id="itvGoCl" type="button" style="margin:8px 0 0">☑ 105問チェックリスト</button>
+        </div>
+
+        <div class="card accent hidden" id="itvQCard">
+          <div class="qmeta">
+            <span class="badge" id="itvRank"></span>
+            <span class="badge ax" id="itvAxisB"></span>
+            <span class="qno" id="itvNo"></span>
+          </div>
+          <div class="qbox" id="itvQ"></div>
+          <div class="timer" id="itvTimer" style="margin-top:12px">0:00</div>
+          <div class="micwrap" id="itvMicWrap">
+            <button class="mic" id="itvMic" type="button" aria-label="録音開始">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#C1793F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="2.5" width="6" height="11.5" rx="3"/>
+                <path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/><path d="M8.5 21h7"/>
+              </svg>
+            </button>
+            <div class="miclabel" id="itvMicLbl">押して話し始める</div>
+          </div>
+          <div id="itvNoSpeech" class="warn hidden">このブラウザは音声認識に対応していません（Chrome推奨）。下の欄に打ち込んで練習してください。</div>
+          <div id="itvMicErr" class="warn hidden"></div>
+          <div style="margin-top:10px">
+            <div class="live" id="itvLive"><span class="ph">ここに認識結果が出ます</span></div>
+            <button class="bigbtn quiet" id="itvEditBtn" type="button" style="margin:8px 0 0">✎ 認識テキストを直す</button>
+            <textarea id="itvEdit" rows="5" class="hidden" style="margin-top:8px"></textarea>
+          </div>
+          <button class="bigbtn green" id="itvEnd" type="button" style="margin-top:12px">解答を終えて採点</button>
+          <button class="bigbtn quiet" id="itvSkip" type="button" style="margin:0">次の質問へ（採点せず）</button>
+        </div>
+      </div>
+
+      <div class="paneR">
+        <div class="card hidden" id="itvMetrics"></div>
+        <div class="card hidden" id="itvResult"></div>
+        <div class="card hidden" id="itvHist"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== チェックリスト ========== -->
+  <div id="vCl" class="hidden">
+    <div class="card">
+      <div class="secttl">105問チェックリスト</div>
+      <div id="clSummary"></div>
+    </div>
+    <div class="card">
+      <div class="secttl">S（必修20問）</div>
+      <div class="clgrid" id="clS"></div>
+    </div>
+    <div class="card">
+      <div class="secttl">A（深掘り対策）</div>
+      <div class="clgrid" id="clA"></div>
+    </div>
+    <div class="card">
+      <div class="secttl">B</div>
+      <div class="clgrid" id="clB"></div>
+    </div>
+    <div class="card">
+      <div class="legend">
+        <span>■ 枠が赤太 = S</span><span>■ 緑背景 = 答えたことがある</span><span>■ 赤背景 = S で未回答</span><span>数字の下 = 直近スコア(25点満点)</span>
+      </div>
+      <div id="clDetail" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   総合型選抜 対策アプリ
+   ============================================================ */
+const R = String.raw;
+
+/* ---------- 口頭試問：問題データ（数Ⅰ・教科書例題レベル） ---------- */
+const FIELDS = ['数と式','方程式と不等式','二次関数','三角比'];
+
+const OP = [
+/* --- 1. 数と式 --- */
+{f:0,q:R`単項式 $-3x^2y^3$ の次数と係数を答えよ。`,
+ a:R`次数 $5$、係数 $-3$`,
+ h:R`次数は、掛けられている文字の個数をすべて足したもの。`,
+ s:R`文字は $x$ が $2$ 個、$y$ が $3$ 個なので、次数は $2+3=5$。文字の前についている数が係数なので $-3$。`},
+{f:0,q:R`$A=2x^2-3x+1$、$B=x^2+4x-5$ のとき、$A+B$ を計算せよ。`,
+ a:R`$3x^2+x-4$`,
+ h:R`同じ次数の項どうしを足す。`,
+ s:R`$x^2$ の項：$2+1=3$、$x$ の項：$-3+4=1$、定数項：$1+(-5)=-4$。よって $A+B=3x^2+x-4$。`},
+{f:0,q:R`$A=2x^2-3x+1$、$B=x^2+4x-5$ のとき、$A-2B$ を計算せよ。`,
+ a:R`$-11x+11$`,
+ h:R`まず $2B$ を作り、カッコを外すときの符号に注意して引く。`,
+ s:R`$2B=2x^2+8x-10$。$A-2B=(2x^2-3x+1)-(2x^2+8x-10)=2x^2-3x+1-2x^2-8x+10=-11x+11$。`},
+{f:0,q:R`$(2x+3)(x-4)$ を展開せよ。`,
+ a:R`$2x^2-5x-12$`,
+ h:R`前の $2$ 項それぞれを、後ろの $2$ 項に掛ける。`,
+ s:R`$2x\cdot x=2x^2$、$2x\cdot(-4)=-8x$、$3\cdot x=3x$、$3\cdot(-4)=-12$。$x$ の項をまとめて $-8x+3x=-5x$。よって $2x^2-5x-12$。`},
+{f:0,q:R`$(x+2y)^2$ を展開せよ。`,
+ a:R`$x^2+4xy+4y^2$`,
+ h:R`$(a+b)^2=a^2+2ab+b^2$ を使う。`,
+ s:R`$a=x$、$b=2y$ とみて、$x^2+2\cdot x\cdot 2y+(2y)^2=x^2+4xy+4y^2$。`},
+{f:0,q:R`$(3a-b)(3a+b)$ を展開せよ。`,
+ a:R`$9a^2-b^2$`,
+ h:R`和と差の積は $2$ 乗の差になる。`,
+ s:R`$(X-Y)(X+Y)=X^2-Y^2$ で $X=3a$、$Y=b$。よって $(3a)^2-b^2=9a^2-b^2$。`},
+{f:0,q:R`$x^2-9x+20$ を因数分解せよ。`,
+ a:R`$(x-4)(x-5)$`,
+ h:R`足して $-9$、掛けて $20$ になる $2$ 数を探す。`,
+ s:R`掛けて $20$、足して $-9$ になるのは $-4$ と $-5$。よって $(x-4)(x-5)$。`},
+{f:0,q:R`$3x^2+5x-2$ を因数分解せよ。`,
+ a:R`$(3x-1)(x+2)$`,
+ h:R`たすき掛け。$x^2$ の係数 $3$ を $3\times 1$ に分ける。`,
+ s:R`$3$ を $3$ と $1$、$-2$ を $-1$ と $2$ に分けて、たすきに掛けると $3\cdot 2+1\cdot(-1)=5$ で $x$ の係数と一致する。よって $(3x-1)(x+2)$。`},
+{f:0,q:R`$4x^2-12x+9$ を因数分解せよ。`,
+ a:R`$(2x-3)^2$`,
+ h:R`$4x^2$ と $9$ がどちらも $2$ 乗になっていることに気づく。`,
+ s:R`$4x^2=(2x)^2$、$9=3^2$、$-12x=-2\cdot 2x\cdot 3$ なので $a^2-2ab+b^2=(a-b)^2$ の形。よって $(2x-3)^2$。`},
+{f:0,q:R`$x^2+(a+2)x+2a$ を因数分解せよ。`,
+ a:R`$(x+a)(x+2)$`,
+ h:R`掛けて $2a$、足して $a+2$ になる $2$ つを探す。`,
+ s:R`$a$ と $2$ は、掛けると $2a$、足すと $a+2$。よって $x^2+(a+2)x+2a=(x+a)(x+2)$。`},
+{f:0,q:R`$x^2-2ax-3a^2$ を因数分解せよ。`,
+ a:R`$(x-3a)(x+a)$`,
+ h:R`$a$ を数のように扱い、掛けて $-3a^2$、足して $-2a$ の $2$ つを探す。`,
+ s:R`$-3a$ と $a$ は掛けて $-3a^2$、足して $-2a$。よって $(x-3a)(x+a)$。`},
+
+/* --- 2. 方程式と不等式 --- */
+{f:1,q:R`一次不等式 $3x-7<5$ を解け。`,
+ a:R`$x<4$`,
+ h:R`定数を右辺に移してから、$x$ の係数で割る。`,
+ s:R`$3x<12$。両辺を正の数 $3$ で割るので不等号の向きは変わらず、$x<4$。`},
+{f:1,q:R`一次不等式 $-2x+5\ge 11$ を解け。`,
+ a:R`$x\le -3$`,
+ h:R`負の数で割るときは不等号の向きが変わる。`,
+ s:R`$-2x\ge 6$。両辺を $-2$ で割ると向きが変わり、$x\le -3$。`},
+{f:1,q:R`一次不等式 $\dfrac{x-1}{2}\ge \dfrac{x+2}{3}$ を解け。`,
+ a:R`$x\ge 7$`,
+ h:R`両辺に分母の最小公倍数 $6$ を掛けて分数をなくす。`,
+ s:R`両辺に $6$ を掛けて $3(x-1)\ge 2(x+2)$。展開して $3x-3\ge 2x+4$、よって $x\ge 7$。`},
+{f:1,q:R`二次方程式 $x^2-5x+6=0$ を解け。`,
+ a:R`$x=2,\ 3$`,
+ h:R`因数分解できる形か確かめる。`,
+ s:R`掛けて $6$、足して $-5$ は $-2$ と $-3$。$(x-2)(x-3)=0$ より $x=2,\ 3$。`},
+{f:1,q:R`二次方程式 $x^2-3x-1=0$ を解け。`,
+ a:R`$x=\dfrac{3\pm\sqrt{13}}{2}$`,
+ h:R`因数分解できないので解の公式 $x=\dfrac{-b\pm\sqrt{b^2-4ac}}{2a}$ を使う。`,
+ s:R`$a=1$、$b=-3$、$c=-1$。$b^2-4ac=9+4=13$。よって $x=\dfrac{3\pm\sqrt{13}}{2}$。`},
+{f:1,q:R`二次方程式 $2x^2+5x+1=0$ を解け。`,
+ a:R`$x=\dfrac{-5\pm\sqrt{17}}{4}$`,
+ h:R`解の公式に $a=2$、$b=5$、$c=1$ を入れる。`,
+ s:R`$b^2-4ac=25-8=17$。$x=\dfrac{-5\pm\sqrt{17}}{2\cdot 2}=\dfrac{-5\pm\sqrt{17}}{4}$。`},
+{f:1,q:R`二次方程式 $x^2-4x+k=0$ が重解をもつとき、定数 $k$ の値を求めよ。`,
+ a:R`$k=4$`,
+ h:R`重解の条件は判別式 $D=0$。`,
+ s:R`$D=(-4)^2-4\cdot 1\cdot k=16-4k$。$D=0$ より $16-4k=0$、よって $k=4$。`},
+{f:1,q:R`二次方程式 $x^2+3x+k=0$ が異なる $2$ つの実数解をもつとき、定数 $k$ の範囲を求めよ。`,
+ a:R`$k<\dfrac{9}{4}$`,
+ h:R`異なる $2$ つの実数解の条件は $D>0$。`,
+ s:R`$D=3^2-4k=9-4k$。$D>0$ より $9-4k>0$、よって $k<\dfrac{9}{4}$。`},
+{f:1,q:R`二次不等式 $x^2-x-6>0$ を解け。`,
+ a:R`$x<-2$、$3<x$`,
+ h:R`まず左辺を因数分解して、$y=x^2-x-6$ のグラフが $x$ 軸より上にある範囲を考える。`,
+ s:R`因数分解して $(x-3)(x+2)>0$。下に凸のグラフが $x$ 軸と交わるのは $x=-2,\ 3$。$y>0$ となるのは $2$ 交点の外側なので $x<-2$、$3<x$。`},
+{f:1,q:R`二次不等式 $x^2-4x+4\le 0$ を解け。`,
+ a:R`$x=2$`,
+ h:R`左辺は $2$ 乗の形に因数分解できる。`,
+ s:R`$(x-2)^2\le 0$。$2$ 乗は必ず $0$ 以上なので、成り立つのは $(x-2)^2=0$ のときだけ。よって $x=2$。`},
+{f:1,q:R`二次不等式 $-x^2+3x-2\ge 0$ を解け。`,
+ a:R`$1\le x\le 2$`,
+ h:R`$x^2$ の係数を正にするため、両辺に $-1$ を掛けて不等号の向きを変える。`,
+ s:R`両辺に $-1$ を掛けて $x^2-3x+2\le 0$。$(x-1)(x-2)\le 0$ なので、下に凸のグラフが $x$ 軸以下になるのは $2$ 交点の間。よって $1\le x\le 2$。`},
+
+/* --- 3. 二次関数 --- */
+{f:2,q:R`$y=x^2$ のグラフを、$x$ 軸方向に $3$、$y$ 軸方向に $-2$ だけ平行移動した放物線の式を求めよ。`,
+ a:R`$y=(x-3)^2-2$`,
+ h:R`$x$ 方向に $p$ 動かすと $x$ が $x-p$ に置きかわる。`,
+ s:R`$x$ 方向 $3$ より $x\to x-3$、$y$ 方向 $-2$ より定数 $-2$ を足す。よって $y=(x-3)^2-2$。`},
+{f:2,q:R`$y=2x^2-4x+5$ を平方完成し、頂点の座標を求めよ。`,
+ a:R`$y=2(x-1)^2+3$、頂点 $(1,\ 3)$`,
+ h:R`まず $x^2$ と $x$ の項を $2$ でくくる。`,
+ s:R`$y=2(x^2-2x)+5$。$x$ の係数 $-2$ の半分は $-1$ なので $x^2-2x=(x-1)^2-1$。よって $y=2\{(x-1)^2-1\}+5=2(x-1)^2+3$。頂点は $(1,\ 3)$。`},
+{f:2,q:R`$y=-x^2+6x-5$ を平方完成し、頂点の座標を求めよ。`,
+ a:R`$y=-(x-3)^2+4$、頂点 $(3,\ 4)$`,
+ h:R`$x^2$ の係数 $-1$ でくくってから平方完成する。`,
+ s:R`$y=-(x^2-6x)-5$。$x^2-6x=(x-3)^2-9$ なので $y=-\{(x-3)^2-9\}-5=-(x-3)^2+4$。頂点は $(3,\ 4)$。`},
+{f:2,q:R`$y=x^2-2x-3$ のグラフを、$x$ 軸に関して対称移動した放物線の式を求めよ。`,
+ a:R`$y=-x^2+2x+3$`,
+ h:R`$x$ 軸に関する対称移動は $y$ を $-y$ に置きかえる。`,
+ s:R`$-y=x^2-2x-3$ とし、両辺に $-1$ を掛けて $y=-x^2+2x+3$。`},
+{f:2,q:R`$y=x^2-4x+1$ のグラフを、$y$ 軸に関して対称移動した放物線の式を求めよ。`,
+ a:R`$y=x^2+4x+1$`,
+ h:R`$y$ 軸に関する対称移動は $x$ を $-x$ に置きかえる。`,
+ s:R`$x$ を $-x$ に置きかえて $y=(-x)^2-4(-x)+1=x^2+4x+1$。`},
+{f:2,q:R`$0\le x\le 3$ における $y=x^2-4x+3$ の最大値と最小値を求めよ。`,
+ a:R`最大値 $3$（$x=0$）、最小値 $-1$（$x=2$）`,
+ h:R`平方完成して頂点を出し、頂点が定義域に入っているか確かめる。`,
+ s:R`$y=(x-2)^2-1$ で頂点は $(2,\ -1)$。$x=2$ は $0\le x\le 3$ に入るので最小値は $-1$。端の値は $x=0$ で $3$、$x=3$ で $0$。よって最大値は $3$。`},
+{f:2,q:R`$1\le x\le 4$ における $y=-x^2+2x+2$ の最大値と最小値を求めよ。`,
+ a:R`最大値 $3$（$x=1$）、最小値 $-6$（$x=4$）`,
+ h:R`上に凸なので、頂点で最大、遠い端で最小になる。`,
+ s:R`$y=-(x-1)^2+3$ で頂点は $(1,\ 3)$。上に凸で $x=1$ は定義域の端かつ頂点なので最大値 $3$。$x=4$ のとき $y=-16+8+2=-6$ で最小値。`},
+{f:2,q:R`$a>0$ とする。$0\le x\le 2$ における $y=x^2-2ax$ の最小値を、$a$ の値で場合分けして求めよ。`,
+ a:R`$0<a<2$ のとき $-a^2$、$a\ge 2$ のとき $4-4a$`,
+ h:R`平方完成すると頂点は $x=a$。この $a$ が定義域 $0\le x\le 2$ の中にあるかで分ける。`,
+ s:R`$y=(x-a)^2-a^2$ で頂点は $(a,\ -a^2)$。$0<a<2$ のときは頂点が定義域内なので最小値 $-a^2$。$a\ge 2$ のときは定義域内で減少し続けるので $x=2$ で最小となり、$y=4-4a$。`},
+{f:2,q:R`頂点が $(1,\ -2)$ で、点 $(3,\ 6)$ を通る放物線の式を求めよ。`,
+ a:R`$y=2(x-1)^2-2$`,
+ h:R`頂点がわかっているので $y=a(x-1)^2-2$ とおく。`,
+ s:R`$y=a(x-1)^2-2$ に $(3,\ 6)$ を代入すると $6=4a-2$、よって $a=2$。式は $y=2(x-1)^2-2$。`},
+{f:2,q:R`$3$ 点 $(0,\ 1)$、$(1,\ 0)$、$(2,\ 3)$ を通る放物線の式を求めよ。`,
+ a:R`$y=2x^2-3x+1$`,
+ h:R`$y=ax^2+bx+c$ とおいて、$3$ 点を代入する。`,
+ s:R`$(0,1)$ より $c=1$。$(1,0)$ より $a+b+1=0$。$(2,3)$ より $4a+2b+1=3$。整理して $a+b=-1$、$2a+b=1$。引くと $a=2$、$b=-3$。よって $y=2x^2-3x+1$。`},
+{f:2,q:R`放物線 $y=x^2-2x+3$ と直線 $y=2x-1$ の共有点の個数を求めよ。`,
+ a:R`$1$ 個（接する）`,
+ h:R`$2$ 式を連立して、できた二次方程式の判別式を調べる。`,
+ s:R`$x^2-2x+3=2x-1$ より $x^2-4x+4=0$。$D=16-16=0$ なので共有点は $1$ 個。`},
+{f:2,q:R`放物線 $y=x^2+1$ と直線 $y=x-1$ の共有点の個数を求めよ。`,
+ a:R`$0$ 個`,
+ h:R`連立して二次方程式にし、判別式の符号を見る。`,
+ s:R`$x^2+1=x-1$ より $x^2-x+2=0$。$D=1-8=-7<0$ なので共有点はない。`},
+{f:2,q:R`放物線 $y=x^2-6x+9$ と $x$ 軸の共有点の個数を求めよ。`,
+ a:R`$1$ 個`,
+ h:R`$x$ 軸との共有点は $y=0$ とおいた二次方程式の実数解の個数。`,
+ s:R`$x^2-6x+9=0$ の判別式は $D=36-36=0$。よって共有点は $1$ 個（$x$ 軸に接する）。`},
+
+/* --- 4. 三角比 --- */
+{f:3,q:R`直角三角形で、斜辺の長さが $5$、角 $\theta$ をはさむ辺の長さが $3$ である。$\sin\theta$、$\cos\theta$、$\tan\theta$ を求めよ。`,
+ a:R`$\sin\theta=\dfrac{4}{5}$、$\cos\theta=\dfrac{3}{5}$、$\tan\theta=\dfrac{4}{3}$`,
+ h:R`三平方の定理で残りの辺の長さを求める。`,
+ s:R`残りの辺は $\sqrt{5^2-3^2}=4$。$\sin\theta=\dfrac{\text{対辺}}{\text{斜辺}}=\dfrac{4}{5}$、$\cos\theta=\dfrac{3}{5}$、$\tan\theta=\dfrac{4}{3}$。`},
+{f:3,q:R`$\theta$ が鋭角で $\sin\theta=\dfrac{3}{5}$ のとき、$\cos\theta$ と $\tan\theta$ を求めよ。`,
+ a:R`$\cos\theta=\dfrac{4}{5}$、$\tan\theta=\dfrac{3}{4}$`,
+ h:R`$\sin^2\theta+\cos^2\theta=1$ を使う。`,
+ s:R`$\cos^2\theta=1-\dfrac{9}{25}=\dfrac{16}{25}$。鋭角なので $\cos\theta>0$ より $\cos\theta=\dfrac{4}{5}$。$\tan\theta=\dfrac{\sin\theta}{\cos\theta}=\dfrac{3}{4}$。`},
+{f:3,q:R`$\theta$ が鋭角で $\cos\theta=\dfrac{1}{3}$ のとき、$\sin\theta$ と $\tan\theta$ を求めよ。`,
+ a:R`$\sin\theta=\dfrac{2\sqrt{2}}{3}$、$\tan\theta=2\sqrt{2}$`,
+ h:R`$\sin^2\theta=1-\cos^2\theta$ から求める。`,
+ s:R`$\sin^2\theta=1-\dfrac{1}{9}=\dfrac{8}{9}$。鋭角なので $\sin\theta=\dfrac{2\sqrt{2}}{3}$。$\tan\theta=\dfrac{\sin\theta}{\cos\theta}=\dfrac{2\sqrt{2}}{3}\times 3=2\sqrt{2}$。`},
+{f:3,q:R`$\theta$ が鋭角で $\tan\theta=2$ のとき、$\cos\theta$ と $\sin\theta$ を求めよ。`,
+ a:R`$\cos\theta=\dfrac{1}{\sqrt{5}}$、$\sin\theta=\dfrac{2}{\sqrt{5}}$`,
+ h:R`$1+\tan^2\theta=\dfrac{1}{\cos^2\theta}$ を使う。`,
+ s:R`$1+4=\dfrac{1}{\cos^2\theta}$ より $\cos^2\theta=\dfrac{1}{5}$。鋭角なので $\cos\theta=\dfrac{1}{\sqrt{5}}$。$\sin\theta=\tan\theta\cos\theta=\dfrac{2}{\sqrt{5}}$。`},
+{f:3,q:R`$\sin 60^\circ+\cos 30^\circ$ の値を求めよ。`,
+ a:R`$\sqrt{3}$`,
+ h:R`代表的な角の値を思い出す。`,
+ s:R`$\sin 60^\circ=\dfrac{\sqrt{3}}{2}$、$\cos 30^\circ=\dfrac{\sqrt{3}}{2}$。足して $\sqrt{3}$。`},
+{f:3,q:R`$\tan 120^\circ$ の値を求めよ。`,
+ a:R`$-\sqrt{3}$`,
+ h:R`$120^\circ$ は $180^\circ-60^\circ$。`,
+ s:R`$\tan(180^\circ-\theta)=-\tan\theta$ より $\tan 120^\circ=-\tan 60^\circ=-\sqrt{3}$。`},
+{f:3,q:R`$0^\circ\le\theta\le 180^\circ$ のとき、$\sin\theta=\dfrac{1}{2}$ を満たす $\theta$ を求めよ。`,
+ a:R`$\theta=30^\circ,\ 150^\circ$`,
+ h:R`$\sin$ は $0^\circ$ から $180^\circ$ の間で $2$ か所同じ値をとる。`,
+ s:R`$\sin 30^\circ=\dfrac{1}{2}$。また $\sin(180^\circ-\theta)=\sin\theta$ なので $\theta=150^\circ$ も解。よって $\theta=30^\circ,\ 150^\circ$。`},
+{f:3,q:R`$0^\circ\le\theta\le 180^\circ$ のとき、$\cos\theta=-\dfrac{\sqrt{3}}{2}$ を満たす $\theta$ を求めよ。`,
+ a:R`$\theta=150^\circ$`,
+ h:R`$\cos$ が負になるのは鈍角のとき。`,
+ s:R`$\cos 30^\circ=\dfrac{\sqrt{3}}{2}$ で、$\cos(180^\circ-\theta)=-\cos\theta$。よって $\theta=180^\circ-30^\circ=150^\circ$。この範囲では解は $1$ つ。`},
+{f:3,q:R`$0^\circ\le\theta\le 180^\circ$ のとき、$\tan\theta=-1$ を満たす $\theta$ を求めよ。`,
+ a:R`$\theta=135^\circ$`,
+ h:R`$\tan$ が負になるのは鈍角のとき。`,
+ s:R`$\tan 45^\circ=1$ で $\tan(180^\circ-\theta)=-\tan\theta$。よって $\theta=180^\circ-45^\circ=135^\circ$。`},
+{f:3,q:R`$\sin 130^\circ$ を、$45^\circ$ 以下の角の三角比で表せ。`,
+ a:R`$\cos 40^\circ$`,
+ h:R`まず $\sin(180^\circ-\theta)=\sin\theta$ で鋭角にする。`,
+ s:R`$\sin 130^\circ=\sin(180^\circ-130^\circ)=\sin 50^\circ$。さらに $\sin\theta=\cos(90^\circ-\theta)$ より $\sin 50^\circ=\cos 40^\circ$。`},
+{f:3,q:R`$\cos 160^\circ$ を、$45^\circ$ 以下の角の三角比で表せ。`,
+ a:R`$-\cos 20^\circ$`,
+ h:R`$\cos(180^\circ-\theta)=-\cos\theta$ を使う。`,
+ s:R`$\cos 160^\circ=\cos(180^\circ-20^\circ)=-\cos 20^\circ$。$20^\circ$ は $45^\circ$ 以下なのでこれでよい。`},
+{f:3,q:R`斜辺の長さが $10$、$1$ つの鋭角が $30^\circ$ の直角三角形について、$30^\circ$ の角に向かい合う辺の長さを求めよ。`,
+ a:R`$5$`,
+ h:R`$\sin 30^\circ=\dfrac{\text{対辺}}{\text{斜辺}}$。`,
+ s:R`対辺を $x$ とすると $\sin 30^\circ=\dfrac{x}{10}$。$\sin 30^\circ=\dfrac{1}{2}$ なので $x=10\times\dfrac{1}{2}=5$。`}
+];
+OP.forEach((p,i)=>{p.id=i+1;});
+
+/* ---------- 面接：想定質問105問 ---------- */
+const AXES = [
+ 'キリスト教主義の人格教育への理解と共感',
+ '思考力・判断力・表現力',
+ '学部の学びとの接続と主体的に学ぶ態度',
+ '隣人愛と地域・社会への貢献意欲',
+ '学部別の固有質問'
+];
+const AXES_SHORT = ['キリスト教主義','思考力・表現力','学部の学び','地域・貢献','学部別'];
+
+/* [id, rank, axis(1-5), question, measures, otherDept(1=他学科限定)] */
+const IQ = [
+[1,'S',1,'東北学院大学が掲げる「キリスト教による人格教育」を、あなたはどう理解していますか。','建学の理念への理解の深さを測る。'],
+[2,'S',1,'数ある大学の中で、キリスト教主義を土台にするこの大学を選んだ理由を教えてください。','志望の核と大学理解の接続を測る。'],
+[3,'S',1,'スクールモットー「LIFE LIGHT LOVE」で、いちばん心に留まった言葉はどれですか。','理念のどこに共感したかの具体性を測る。'],
+[4,'S',1,'入学すると聖書やキリスト教に関する授業、大学礼拝の時間があります。それをどう受け止めていますか。','教育プログラムへの理解と受容の姿勢を測る。'],
+[5,'B',1,'この大学の教育理念のうち、自分の価値観と重なると感じた部分はどこですか。','価値観の相性を測る。'],
+[6,'A',1,'「隣人への愛」という言葉を、あなた自身の経験に引きつけて説明できますか。','抽象的な理念を自分の言葉に翻訳する力を測る。'],
+[7,'B',1,'「個人の尊厳を重んじる」とは、具体的にどういうことだと思いますか。','理念を具体に落とす力を測る。'],
+[8,'B',1,'これまでに、誰かの尊厳や気持ちが軽んじられている場面に気づいた経験はありますか。','他者への感受性を測る。'],
+[9,'A',1,'信仰や価値観の異なる人と、これからどう関わっていきたいと考えていますか。','多様性への態度を測る。'],
+[10,'B',1,'「学問や科学の成果で新しい時代を切り開く」という言葉から、何を思い浮かべますか。','理念の自分なりの解釈を測る。'],
+[11,'B',1,'オープンキャンパスや資料で、この大学の雰囲気に触れて感じたことはありますか。','実際に大学を調べたかを測る。'],
+[12,'A',1,'人格的に成長するとは、あなたにとってどういうことですか。','人格教育を自分の言葉で捉えられるかを測る。'],
+[13,'S',1,'この大学での4年間で、人としてどう成長したいと考えていますか。','人格教育への当事者意識を測る。'],
+[14,'S',2,'いま関心を持っている社会の出来事を一つ挙げ、あなたの考えを聞かせてください。','自分の考えをその場で口頭で構成する力を測る。'],
+[15,'S',2,'いまの考えの根拠は何ですか。順を追って説明してください。','思考の筋道を口頭で示せるかを測る。'],
+[16,'A',2,'あなたの意見に反対する立場の人は、どんな理由を挙げると思いますか。','多面的に考える判断力を測る。'],
+[17,'S',2,'いまの答えを、結論から一文で言い直せますか。','要点を先に述べる表現力を測る。'],
+[18,'A',2,'いま説明した内容を、もっと短く言い直せますか。','要約する力を測る。'],
+[19,'A',2,'答えに詰まったとき、あなたはどうしますか。','思考が止まったときの対処の型を測る。'],
+[20,'S',2,'高校の勉強で、いちばん「考えさせられた」テーマは何でしたか。','学習を思考に結びつけているかを測る。'],
+[21,'A',2,'そのテーマについて、いまのあなたはどんな問いを持っていますか。','自分で問いを立てる力を測る。'],
+[22,'A',2,'正解が一つに決まらない問題に、あなたはどう向き合いますか。','曖昧さに耐えて考え続ける力を測る。'],
+[23,'A',2,'ある主張が正しいかどうか、あなたは何を手がかりに判断しますか。','判断の基準を自分で持てるかを測る。'],
+[24,'B',2,'うまく言葉が出てこないとき、伝えるためにどんな工夫をしますか。','表現の工夫を測る。'],
+[25,'A',2,'人に何かを説明して「伝わらなかった」経験はありますか。原因は何でしたか。','伝達を振り返る力を測る。'],
+[26,'B',2,'ニュースや新聞を、あなたはどのくらいの頻度で、何から得ていますか。','情報への接し方を測る。'],
+[27,'B',2,'一つの情報を鵜呑みにせず、自分で確かめた経験はありますか。','情報リテラシーを測る。'],
+[28,'A',2,'今日の面接で、いちばん答えにくいと感じそうな質問は何だと思いますか。','自分の弱点を客観視できるかを測る。'],
+[29,'B',2,'「わからない」と正直に言うことについて、どう考えますか。','知的な誠実さを測る。'],
+[30,'A',2,'自分の考えを持つために、日ごろ心がけていることはありますか。','思考を習慣にできているかを測る。'],
+[31,'S',3,'この学部で学びたいことを、一つに絞ると何ですか。','関心の焦点を測る。'],
+[32,'S',3,'その学びは、あなたのどんな経験や関心とつながっていますか。','過去と志望の接続を測る。'],
+[33,'S',3,'なぜ他大学ではなく、東北学院大学のこの学部なのですか。','志望の固有性を測る。'],
+[34,'S',3,'この学部のアドミッション・ポリシーで、自分に響いた部分はどこですか。','学部理解の深さを測る。'],
+[35,'S',3,'入学後、最初の一年でやりたいことを具体的に教えてください。','学びの見通しを測る。'],
+[36,'A',3,'その学びは、独学や他大学でもできてしまいませんか。','志望の必然性をどこまで詰めているかを測る。'],
+[37,'S',3,'誰にも言われずに、自分から続けている学びや取り組みはありますか。','内発的な学習意欲を測る。'],
+[38,'A',3,'それを続ける中で、うまくいかなかったときどう対処しましたか。','自走の中の粘りを測る。'],
+[39,'A',3,'高校までの勉強と、大学での学問はどう違うと思いますか。','大学で学ぶことへの理解を測る。'],
+[40,'S',3,'卒業後、この学びをどう生かしたいと考えていますか。','長期の接続を測る。'],
+[41,'A',3,'大学のパンフレットやサイトで、印象に残った授業や取り組みはありますか。','実際に調べた深さを測る。'],
+[42,'B',3,'この学部で学ぶために、いま準備していることはありますか。','行動が伴っているかを測る。'],
+[43,'A',3,'入学後、時間の使い方をどう設計するつもりですか。','自己管理の具体性を測る。'],
+[44,'B',3,'苦手な科目や分野に、自分から取り組んだ経験はありますか。','逃げない姿勢を測る。'],
+[45,'S',3,'志望理由書に書いたことで、いまいちばん補足したい部分はどこですか。','書類を自分のものにしているかを測る。'],
+[46,'A',3,'併願している大学と、この大学は何が違うと考えていますか。','比較検討の解像度を測る。'],
+[47,'A',3,'新しいことを学び始めるとき、あなたは最初に何をしますか。','学び方を自分で設計できるかを測る。'],
+[48,'B',3,'入学して想像と違っていたら、どうしますか。','志望の現実感を測る。'],
+[49,'A',3,'この学部で身につけたい力を、一つ挙げるとしたら何ですか。','学びの目的意識を測る。'],
+[50,'B',3,'高校の探究学習や課題研究で取り組んだテーマはありますか。','探究の経験を測る。'],
+[51,'A',3,'そのテーマを、大学ではどう深めたいですか。','探究と大学の学びの接続を測る。'],
+[52,'S',3,'あなたを合格させるべき理由を、一つ挙げるとしたら何ですか。','自分と大学の接続を裏側から語れるかを測る。'],
+[53,'S',4,'あなたにとって「地域」とは、どんな存在ですか。','地域への当事者意識を測る。'],
+[54,'A',4,'あなたの住む地域が抱える課題を一つ挙げ、その原因をどう考えますか。','現象の背後にある構造を見ようとするかを測る。'],
+[55,'A',4,'学んだことを、将来どんな人や地域のために使いたいですか。','学びを社会に開く視点を測る。'],
+[56,'S',4,'東北や仙台という土地に、あなたはどんな思いを持っていますか。','地域・東北への関心を測る。'],
+[57,'A',4,'あなたの地域で「もっとこうなればいい」と感じることはありますか。','身近な課題を見つける感度を測る。'],
+[58,'B',4,'ボランティアや地域の活動に関わった経験はありますか。そこで何を感じましたか。','社会参加の経験を測る。'],
+[59,'A',4,'東日本大震災やその後の復興について、あなたが考えたことがあれば聞かせてください。','地域の歩みへの向き合い方を測る。'],
+[60,'B',4,'災害や困難のとき、人が助け合う姿を見た経験はありますか。','隣人愛の実感を測る。'],
+[61,'A',4,'「誰かのために動く」ことと「自分のためにやる」ことは、両立すると思いますか。','貢献と自己実現の関係を考える力を測る。'],
+[62,'B',4,'地域の人口減少や高齢化について、気になっていることはありますか。','社会課題への関心を測る。'],
+[63,'A',4,'あなたが将来、地域や社会に残したいものは何ですか。','長期的な貢献意欲を測る。'],
+[64,'B',4,'身近で困っている人に気づき、行動した経験はありますか。','他者への感受性と行動を測る。'],
+[65,'A',4,'「支援」が相手のためにならない場合があるとすれば、どんなときだと思いますか。','善意の副作用まで考えられるかを測る。'],
+[66,'B',4,'地元を離れて進学する人も多い中で、この地域で学ぶことにどんな意味を見ていますか。','地元・東北で学ぶ意味づけを測る。'],
+[67,'A',4,'卒業後、この地域に残る・戻る・出ていく、いまはどう考えていますか。理由も教えてください。','進路と地域の関係を測る。'],
+[68,'B',4,'あなたの地域の魅力を、外から来た人にどう伝えますか。','地域を編集して語る力を測る。'],
+[69,'A',4,'人と人が支え合う社会をつくるために、大学で何を学びたいですか。','理念と学びの接続を測る。'],
+[70,'B',4,'自分とは異なる背景を持つ人と協力した経験はありますか。','協働の姿勢を測る。'],
+[71,'B',5,'心に残っている本や作品を一つ挙げ、どこに惹かれたのか教えてください。','読む経験の深さを測る。'],
+[72,'B',5,'（英文学科）英語を学ぶことは、あなたにとってどんな意味を持ちますか。','言語学習の動機を測る。',1],
+[73,'B',5,'（歴史学科）過去の出来事を、いま学ぶ意味はどこにあると思いますか。','歴史を学ぶ意義の理解を測る。',1],
+[74,'B',5,'（教育学科）あなたが出会った「良い先生」とは、どんな人でしたか。','教育観の原点を測る。',1],
+[75,'B',5,'（総合人文学科）人間や思想について、答えの出ない問いを考え続けた経験はありますか。','人文的な探究の姿勢を測る。',1],
+[76,'B',5,'言葉で何かを表現することの難しさを感じた経験はありますか。','表現への自覚を測る。'],
+[77,'B',5,'この学科で身につけた力を、将来どう生かしたいですか。','学びと将来の接続を測る。'],
+[78,'B',5,'最近の経済やビジネスのニュースで気になったものと、あなたの考えを聞かせてください。','社会の動きへの関心と自分の視点を測る。'],
+[79,'B',5,'身近な商品やサービスで「うまい仕組みだ」と感じたものはありますか。','日常を仕組みとして観察する目を測る。'],
+[80,'B',5,'（経営学部）あなたが「良い会社」だと思う企業を一つ挙げ、その理由を教えてください。','経営への関心の具体性を測る。',1],
+[81,'B',5,'（経済学部）お金やモノの動きについて、疑問に思ったことはありますか。','経済への関心の入口を測る。',1],
+[82,'B',5,'アルバイトや商売にふれた経験から、見えたことはありますか。','経済活動を体験から語れるかを測る。'],
+[83,'B',5,'「利益を出すこと」と「社会に良いこと」がぶつかったら、どう考えますか。','利益と倫理のあいだで思考できるかを測る。'],
+[84,'B',5,'数字やデータをもとに何かを判断した経験はありますか。','根拠を数量で扱う素地を測る。'],
+[85,'B',5,'ルールや決まりが現実に合っていないと感じた経験はありますか。','規範と現実のずれに気づく感度を測る。'],
+[86,'B',5,'最近の社会の出来事で「これは公正だろうか」と考えたことはありますか。','公正さへの関心を測る。'],
+[87,'B',5,'対立する二つの言い分を、どちらも尊重しようとした経験はありますか。','利害を調整する姿勢を測る。'],
+[88,'B',5,'法律は何のためにあると思いますか。あなたの言葉で答えてください。','法の意義を自分で語れるかを測る。'],
+[89,'B',5,'身の回りの技術や機械で「なぜこう動くのか」と気になったものはありますか。','探究の入口が実感にあるかを測る。'],
+[90,'B',5,'ものづくりや実験で、思いどおりにいかなかった経験はありますか。','試行錯誤に向かう姿勢を測る。'],
+[91,'B',5,'（環境建設工学科）安全な街やインフラをつくるうえで、大切だと思うことは何ですか。','社会基盤への責任感を測る。',1],
+[92,'B',5,'技術が人を幸せにしなかった例を、一つ挙げられますか。','技術を無条件に礼賛しない視点を測る。'],
+[93,'B',5,'高校の数学や理科で、いちばん納得できた単元とその理由を教えてください。','理解の実感を伴った学習経験を測る。'],
+[94,'B',5,'あなたが関心を持つ地域の課題を一つ挙げ、どう向き合いたいか教えてください。','地域課題への当事者意識を測る。'],
+[95,'B',5,'地域を良くするには、文系・理系のどちらの視点も要ると言われます。あなたはどう考えますか。','学際的にものを見る姿勢を測る。'],
+[96,'B',5,'フィールドワークで地域に入るとき、どんな姿勢が大切だと思いますか。','現場に学ぶ構えを測る。'],
+[97,'B',5,'生活の中で「不便だ」と感じ、情報技術で解決できそうだと思ったことはありますか。','課題発見を技術に接続する視点を測る。'],
+[98,'B',5,'データを使って明らかにしてみたいテーマはありますか。','データ活用への関心を測る。'],
+[99,'B',5,'生成AIやSNSを使ううえで、あなたが気をつけていることは何ですか。','情報を扱う当事者としての倫理観を測る。'],
+[100,'B',5,'人の心や行動について「なぜだろう」と考えたことはありますか。','人間理解への関心を測る。'],
+[101,'B',5,'運動やからだ、健康について、関心を持ったきっかけはありますか。','身体・健康への関心の入口を測る。'],
+[102,'B',5,'人を支える関わりや仕事について、いまどんなイメージを持っていますか。','対人支援への理解を測る。'],
+[103,'B',5,'異文化や海外に関心を持った、具体的なきっかけを教えてください。','関心の原点が実体験にあるかを測る。'],
+[104,'B',5,'言葉が十分に通じない相手と協力しなければならないとき、どうしますか。','異文化協働への構えを測る。'],
+[105,'B',5,'日本で暮らす外国人が直面する課題を一つ挙げ、あなたの考えを聞かせてください。','身近な場所から国際を見る視点を測る。']
+].map(a=>({id:a[0],rank:a[1],axis:a[2],question:a[3],measures:a[4],other:!!a[5]}));
+
+/* ============================================================
+   保存
+   ============================================================ */
+const KEY='sogo-senbatsu-v1';
+let DB = load();
+function blank(){return {oral:[],itv:[],ui:{split:false}};}
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(!raw) return blank();
+    const d=JSON.parse(raw);
+    return Object.assign(blank(),d);
+  }catch(e){ return blank(); }
+}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(DB)); }catch(e){} }
+
+/* ============================================================
+   共通ユーティリティ
+   ============================================================ */
+const $=id=>document.getElementById(id);
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+let katexReady=false;
+function tryKatex(){ katexReady = typeof window.renderMathInElement==='function'; return katexReady; }
+/* 動的に差し込んだ要素にも必ず呼ぶ */
+function mathify(el){
+  if(!el) return;
+  if(!tryKatex()){ setTimeout(()=>mathify(el),300); return; }
+  try{
+    window.renderMathInElement(el,{
+      delimiters:[
+        {left:'$$',right:'$$',display:true},
+        {left:'\\[',right:'\\]',display:true},
+        {left:'$',right:'$',display:false},
+        {left:'\\(',right:'\\)',display:false}
+      ],
+      throwOnError:false, ignoredTags:['script','noscript','style','textarea','pre','option']
+    });
+  }catch(e){ console.warn('KaTeX',e); }
+}
+function setHTML(el,html){ el.innerHTML=html; mathify(el); }
+function fmtTime(ms){ const s=Math.max(0,Math.round(ms/1000)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+/* ============================================================
+   Claude API
+   ============================================================ */
+async function callClaude(prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:1000,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  const text=await res.text();
+  if(!res.ok) throw new Error('APIがエラーを返しました（HTTP '+res.status+'）\n'+text);
+  let data;
+  try{ data=JSON.parse(text); }catch(e){ throw new Error('APIの応答がJSONではありません\n'+text); }
+  const out=(data.content||[]).map(c=>c.text||'').join('').trim();
+  if(!out) throw new Error('APIの応答が空でした\n'+text);
+  return out;
+}
+function parseModelJSON(raw){
+  let t=String(raw).trim();
+  t=t.replace(/^```[a-zA-Z]*\s*/,'').replace(/```\s*$/,'').trim();
+  try{ return JSON.parse(t); }
+  catch(e){
+    const i=t.indexOf('{'), j=t.lastIndexOf('}');
+    if(i>=0&&j>i){ return JSON.parse(t.slice(i,j+1)); }
+    throw e;
+  }
+}
+const LATEX_RULE = R`数式は必ずLaTeX記法で $ ... $ で囲んで書くこと。Unicodeの記号（√ ² ³ ° × ÷ ≦ など）は使わず、分数は \frac{}{}、根号は \sqrt{}、三角比は \sin \cos \tan、度は ^\circ、不等号は \le \ge を使うこと。`;
+const JSON_RULE = '出力は指定したJSONオブジェクトだけにすること。前置き・あいさつ・説明文・Markdownのコードフェンス（```）は一切書かないこと。最初の文字は { で、最後の文字は } であること。';
+
+function errBox(e){
+  const msg=(e&&e.message)?e.message:String(e);
+  return '<div class="warn" style="margin-bottom:8px"><b>採点に失敗しました。</b>下に応答をそのまま出します。</div><div class="rawerr">'+esc(msg)+'</div>';
+}
+
+/* ============================================================
+   音声認識
+   ============================================================ */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SPEECH_OK = !!SR;
+
+function makeRecognizer(handlers){
+  if(!SPEECH_OK) return null;
+  const r=new SR();
+  r.lang='ja-JP'; r.continuous=true; r.interimResults=true;
+  r.onresult=handlers.onresult; r.onerror=handlers.onerror; r.onend=handlers.onend;
+  return r;
+}
+function micErrMsg(err){
+  if(err==='not-allowed'||err==='service-not-allowed')
+    return 'マイクの使用が許可されていません。ブラウザのアドレスバーのマイクのアイコンから「許可」に変えて、もう一度押してください。';
+  if(err==='no-speech') return '音声が聞き取れませんでした。もう一度押して、話し始めてください。';
+  if(err==='audio-capture') return 'マイクが見つかりません。接続を確認してください。';
+  if(err==='network') return 'ネットワークエラーで音声認識が止まりました。';
+  return '音声認識でエラーが起きました（'+err+'）。';
+}
+
+/* ============================================================
+   画面切り替え
+   ============================================================ */
+const VIEWS={home:'vHome',oral:'vOral',itv:'vItv',cl:'vCl'};
+let view='home';
+function show(v){
+  view=v;
+  Object.values(VIEWS).forEach(id=>$(id).classList.add('hidden'));
+  $(VIEWS[v]).classList.remove('hidden');
+  $('btnHome').classList.toggle('hidden', v==='home');
+  const subs={home:'東北学院大 デジタル構想 / 9月22日',oral:'口頭試問 — 数Ⅰ 教科書例題レベル',itv:'面接 — 想定質問105',cl:'105問チェックリスト'};
+  $('hdsub').textContent=subs[v];
+  window.scrollTo({top:0,behavior:'instant'in document.documentElement.style?'instant':'auto'});
+  if(v==='home') renderHomeStats();
+  if(v==='cl') renderChecklist();
+}
+$('btnHome').onclick=()=>{ stopAllAudio(); show('home'); };
+$('goOral').onclick=()=>{ show('oral'); renderOralStats(); };
+$('goItv').onclick=()=>{ show('itv'); renderItvPool(); };
+$('goCl').onclick=()=>show('cl');
+$('itvGoCl').onclick=()=>show('cl');
+
+$('btnSplit').onclick=()=>{
+  DB.ui.split=!DB.ui.split; save(); applySplit();
+};
+function applySplit(){
+  document.body.classList.toggle('split',!!DB.ui.split);
+  $('btnSplit').classList.toggle('on',!!DB.ui.split);
+}
+applySplit();
+
+$('btnReset').onclick=()=>{
+  if(!confirm('口頭試問と面接の記録をすべて消します。よろしいですか？')) return;
+  const split=DB.ui.split;
+  DB=blank(); DB.ui.split=split; save();
+  renderHomeStats(); renderOralStats();
+  alert('記録を消しました。');
+};
+
+function stopAllAudio(){ oralStopMic(); itvHardStop(); }
+
+/* ============================================================
+   口頭試問モード
+   ============================================================ */
+let oralSel=new Set([0,1,2,3]);
+let oralCur=null, oralHintUsed=false, oralQueue=[];
+
+$('oralCount').textContent=OP.length;
+
+function renderFieldChips(){
+  $('fieldChips').innerHTML=FIELDS.map((f,i)=>{
+    const n=OP.filter(p=>p.f===i).length;
+    return '<button type="button" class="chip'+(oralSel.has(i)?' on':'')+'" data-f="'+i+'">'+esc(f)+'<small>'+n+'問</small></button>';
+  }).join('');
+  $('fieldChips').querySelectorAll('.chip').forEach(b=>{
+    b.onclick=()=>{
+      const i=+b.dataset.f;
+      if(oralSel.has(i)) oralSel.delete(i); else oralSel.add(i);
+      if(oralSel.size===0) oralSel.add(i);
+      renderFieldChips();
+    };
+  });
+}
+renderFieldChips();
+
+function oralPool(){ return OP.filter(p=>oralSel.has(p.f)); }
+
+$('oralStart').onclick=()=>nextOral();
+
+function nextOral(){
+  const pool=oralPool();
+  if(!pool.length) return;
+  if(!oralQueue.length){
+    oralQueue=pool.slice();
+    for(let i=oralQueue.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [oralQueue[i],oralQueue[j]]=[oralQueue[j],oralQueue[i]]; }
+  }
+  oralCur=oralQueue.shift();
+  oralHintUsed=false;
+  $('oralQCard').classList.remove('hidden');
+  $('oralAnsCard').classList.remove('hidden');
+  $('oralResult').classList.add('hidden');
+  $('oralHintBox').classList.add('hidden');
+  $('oralHint').disabled=false;
+  $('oralHint').textContent='💡 ヒントを見る（最初の一手だけ）';
+  $('oralField').textContent=FIELDS[oralCur.f];
+  $('oralNo').textContent='第'+oralCur.id+'問';
+  setHTML($('oralQ'),oralCur.q);
+  setHTML($('oralHintTxt'),oralCur.h);
+  $('oralA').value=''; $('oralS').value='';
+  $('oralGrade').disabled=false;
+  $('oralGrade').textContent='採点する';
+  if(!document.body.classList.contains('split')) $('oralQCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+$('oralHint').onclick=()=>{
+  oralHintUsed=true;
+  $('oralHintBox').classList.remove('hidden');
+  $('oralHint').disabled=true;
+  $('oralHint').textContent='💡 ヒントを見た（記録されます）';
+};
+
+/* --- 口頭試問の音声入力（補助） --- */
+let oralRec=null, oralRecOn=false;
+if(!SPEECH_OK) $('oralSpeechUI').classList.add('hidden');
+$('oralMic').onclick=()=>{
+  if(!SPEECH_OK) return;
+  if(oralRecOn){ oralStopMic(); return; }
+  oralRec=makeRecognizer({
+    onresult:e=>{
+      let fin='';
+      for(let i=e.resultIndex;i<e.results.length;i++) if(e.results[i].isFinal) fin+=e.results[i][0].transcript;
+      if(fin) $('oralS').value=($('oralS').value+' '+fin).trim();
+    },
+    onerror:e=>{ alert(micErrMsg(e.error)); oralStopMic(); },
+    onend:()=>{ if(oralRecOn){ try{oralRec.start();}catch(_){} } }
+  });
+  oralRecOn=true;
+  $('oralMic').textContent='■ 停止';
+  $('oralMic').classList.remove('ghost');
+  try{ oralRec.start(); }catch(e){ alert(micErrMsg('start-failed')); oralStopMic(); }
+};
+function oralStopMic(){
+  oralRecOn=false;
+  if(oralRec){ try{oralRec.stop();}catch(_){} oralRec=null; }
+  const b=$('oralMic'); if(b){ b.textContent='🎤 音声で入力'; b.classList.add('ghost'); }
+}
+
+$('oralGrade').onclick=async()=>{
+  if(!oralCur) return;
+  const ans=$('oralA').value.trim(), sol=$('oralS').value.trim();
+  if(!ans&&!sol){ alert('答えか方針を入力してください。'); return; }
+  oralStopMic();
+  const btn=$('oralGrade'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 採点中…';
+  const box=$('oralResult'); box.classList.remove('hidden');
+  setHTML(box,'<div class="secttl">採点</div><p class="note"><span class="spin"></span> Claude が採点しています…</p>');
+
+  const prompt=
+R`あなたは高校数学Ⅰの指導者です。生徒が黒板（ホワイトボード）で解いた結果を口頭で述べたものを採点します。
+
+【問題】
+`+oralCur.q+R`
+
+【正解】
+`+oralCur.a+R`
+
+【模範的な解法】
+`+oralCur.s+R`
+
+【生徒が述べた答え】
+`+(ans||'（答えの記述なし）')+R`
+
+【生徒が述べた解き方の方針】
+`+(sol||'（方針の記述なし）')+R`
+
+採点の注意：
+- 答えの表記ゆれ（順序、空白、$x=$ の有無、同値な式）は正解として扱うこと。
+- 「惜しい」は、方針は正しいが計算や符号などの小さな誤りで答えがずれている場合。
+- 方針の記述がない場合は、答えから読み取れる範囲で判断すること。
+
+次のJSONを返すこと。
+{"verdict":"正解 または 惜しい または 不正解","approach":"合っている または 方針から誤り","causeType":"計算ミス または 方針の誤り または 公式の誤用 または 条件の見落とし または 符号ミス または なし","cause":"間違いの原因を具体的に1文で。正解のときは「なし」","explain":"正しい解法の簡潔な説明（3文以内）"}
+
+`+LATEX_RULE+`
+`+JSON_RULE;
+
+  let raw='';
+  try{
+    raw=await callClaude(prompt);
+    const r=parseModelJSON(raw);
+    const v=r.verdict||'不明';
+    const stampCls = v.indexOf('正解')===0?'':(v.indexOf('惜')>=0?'mid':'bad');
+    const stampTxt = v.indexOf('正解')===0?'よく<br>できました':(v.indexOf('惜')>=0?'おしい':'✗');
+    setHTML(box,
+      '<div class="secttl">採点</div>'+
+      '<div style="display:flex;gap:14px;align-items:center;margin-bottom:10px">'+
+        '<div class="stamp '+stampCls+'">'+stampTxt+'</div>'+
+        '<div style="flex:1">'+
+          '<div class="redpen" style="font-size:19px">'+esc(v)+'</div>'+
+          '<div class="note">方針：'+esc(r.approach||'—')+(oralHintUsed?' ／ <b>ヒント使用</b>':'')+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="kv"><span class="k">正解</span><span class="v">'+oralCur.a+'</span></div>'+
+      '<div class="kv"><span class="k">つまずき</span><span class="v">'+esc(r.causeType||'—')+'：'+(r.cause||'—')+'</span></div>'+
+      '<div class="kv"><span class="k">正しい解法</span><span class="v">'+(r.explain||'—')+'</span></div>'+
+      '<hr class="dash">'+
+      '<div class="secttl" style="margin-top:0">模範解法</div>'+
+      '<div style="font-size:14px">'+oralCur.s+'</div>'+
+      '<button class="bigbtn" id="oralNext" type="button" style="margin-top:12px">次の問題へ</button>'
+    );
+    $('oralNext').onclick=()=>nextOral();
+    DB.oral.push({id:oralCur.id,f:oralCur.f,verdict:v,approach:r.approach||'',causeType:r.causeType||'なし',hint:oralHintUsed,ts:Date.now()});
+    save(); renderOralStats();
+  }catch(e){
+    setHTML(box,'<div class="secttl">採点</div>'+errBox(e)+(raw?'<div class="note" style="margin-top:8px">モデルの生の応答：</div><div class="rawerr">'+esc(raw)+'</div>':'')+
+      '<button class="bigbtn quiet" id="oralNext" type="button" style="margin-top:12px">次の問題へ</button>');
+    $('oralNext').onclick=()=>nextOral();
+  }finally{
+    btn.disabled=false; btn.textContent='採点する';
+  }
+};
+
+function renderOralStats(){
+  const box=$('oralStats');
+  const A=DB.oral;
+  if(!A.length){ setHTML(box,'<div class="secttl">口頭試問の記録</div><p class="note">まだ記録がありません。</p>'); return; }
+  let h='<div class="secttl">口頭試問の記録（'+A.length+'問）</div>';
+  h+='<div class="note" style="margin-bottom:8px">分野ごとの正答率（「正解」のみを正答として数えます）</div>';
+  FIELDS.forEach((f,i)=>{
+    const a=A.filter(x=>x.f===i);
+    if(!a.length){ h+='<div class="statline"><span class="nm">'+esc(f)+'</span><span class="bar"><i style="width:0%"></i></span><span class="vl">—</span></div>'; return; }
+    const ok=a.filter(x=>String(x.verdict).indexOf('正解')===0).length;
+    const p=Math.round(ok/a.length*100);
+    h+='<div class="statline"><span class="nm">'+esc(f)+'</span><span class="bar"><i style="width:'+p+'%"></i></span><span class="vl">'+p+'% <small style="font-weight:500;color:var(--ink-soft)">('+ok+'/'+a.length+')</small></span></div>';
+  });
+  const hintN=A.filter(x=>x.hint).length;
+  h+='<hr class="dash"><div class="kv"><span class="k">ヒント使用率</span><span class="v"><b class="redpen">'+Math.round(hintN/A.length*100)+'%</b>（'+hintN+'/'+A.length+'問）</span></div>';
+  const causes={};
+  A.filter(x=>String(x.verdict).indexOf('正解')!==0).forEach(x=>{ const c=x.causeType||'その他'; causes[c]=(causes[c]||0)+1; });
+  const keys=Object.keys(causes).sort((a,b)=>causes[b]-causes[a]);
+  h+='<div class="secttl" style="margin-top:12px">間違いの原因の内訳</div>';
+  if(!keys.length) h+='<p class="note">まだ間違いがありません。</p>';
+  else{
+    const tot=keys.reduce((s,k)=>s+causes[k],0);
+    keys.forEach(k=>{
+      const p=Math.round(causes[k]/tot*100);
+      h+='<div class="statline"><span class="nm">'+esc(k)+'</span><span class="bar"><i style="width:'+p+'%"></i></span><span class="vl">'+causes[k]+'回</span></div>';
+    });
+  }
+  setHTML(box,h);
+}
+
+/* ============================================================
+   面接モード
+   ============================================================ */
+let itvScope='S';           // S / SA / ALL / AXIS / RANDOM
+let itvAxisSel=1;
+let itvIncludeOther=false;
+let itvQueue=[], itvCur=null, itvDeep=null;
+
+/* 計測 */
+let M=null; // {shownAt, firstFinalAt, lastVoiceAt, silCount, silSec, endAt}
+let itvRec=null, itvRecOn=false, itvFinalText='', itvInterim='', itvTimerId=null, itvEditing=false;
+
+const SCOPES=[
+  {k:'S',   n:'S のみ',   d:'必修20問'},
+  {k:'SA',  n:'S + A',    d:'合計49問'},
+  {k:'ALL', n:'全105問',  d:'すべて'},
+  {k:'AXIS',n:'評価軸で絞る',d:'軸ごと'},
+  {k:'RANDOM',n:'ランダム',d:'全体から'}
+];
+function renderScopeChips(){
+  $('itvScope').innerHTML=SCOPES.map(s=>
+    '<button type="button" class="chip'+(itvScope===s.k?' on':'')+'" data-k="'+s.k+'">'+esc(s.n)+'<small>'+esc(s.d)+'</small></button>').join('');
+  $('itvScope').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{ itvScope=b.dataset.k; renderScopeChips(); renderItvPool(); });
+  $('itvAxisWrap').classList.toggle('hidden',itvScope!=='AXIS');
+}
+$('itvAxis').innerHTML=AXES.map((a,i)=>'<option value="'+(i+1)+'">評価軸'+(i+1)+'：'+esc(a)+'</option>').join('');
+$('itvAxis').onchange=()=>{ itvAxisSel=+$('itvAxis').value; renderItvPool(); };
+$('itvOther').onclick=()=>{ itvIncludeOther=!itvIncludeOther; $('itvOther').classList.toggle('on',itvIncludeOther); renderItvPool(); };
+renderScopeChips();
+
+function itvPool(){
+  let p=IQ.filter(q=>itvIncludeOther||!q.other);
+  if(itvScope==='S') p=p.filter(q=>q.rank==='S');
+  else if(itvScope==='SA') p=p.filter(q=>q.rank!=='B');
+  else if(itvScope==='AXIS') p=p.filter(q=>q.axis===itvAxisSel);
+  return p;
+}
+function renderItvPool(){
+  const n=itvPool().length;
+  const excl=itvIncludeOther?'':'（他学科限定の7問を除外中）';
+  $('itvPoolNote').innerHTML='いまの設定で <b class="redpen">'+n+'問</b> が出題対象です。'+esc(excl);
+}
+renderItvPool();
+
+$('itvStart').onclick=()=>{ itvQueue=[]; nextItv(); };
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function nextItv(){
+  const pool=itvPool();
+  if(!pool.length){ alert('出題できる質問がありません。'); return; }
+  if(itvScope==='RANDOM'){ itvCur=pool[Math.floor(Math.random()*pool.length)]; }
+  else{
+    if(!itvQueue.length) itvQueue=shuffle(pool.slice());
+    itvCur=itvQueue.shift();
+  }
+  itvDeep=null;
+  presentItv(itvCur.question,itvCur.measures,{rank:itvCur.rank,axis:itvCur.axis,no:'Q'+itvCur.id,id:itvCur.id});
+}
+function presentItv(question,measures,meta){
+  itvHardStop();
+  itvFinalText=''; itvInterim=''; itvEditing=false;
+  $('itvQCard').classList.remove('hidden');
+  $('itvResult').classList.add('hidden');
+  $('itvMetrics').classList.add('hidden');
+  $('itvMicErr').classList.add('hidden');
+  $('itvEdit').classList.add('hidden'); $('itvEdit').value='';
+  $('itvEditBtn').textContent='✎ 認識テキストを直す';
+  $('itvRank').textContent=meta.rank; $('itvRank').className='badge '+meta.rank;
+  $('itvAxisB').textContent=AXES_SHORT[meta.axis-1];
+  $('itvNo').textContent=meta.no;
+  $('itvQ').textContent=question;
+  $('itvLive').innerHTML='<span class="ph">'+(SPEECH_OK?'マイクを押して話し始めてください':'下の欄に打ち込んでください')+'</span>';
+  $('itvNoSpeech').classList.toggle('hidden',SPEECH_OK);
+  $('itvMicWrap').classList.toggle('hidden',!SPEECH_OK);
+  if(!SPEECH_OK){ $('itvEdit').classList.remove('hidden'); itvEditing=true; }
+  $('itvEnd').disabled=false; $('itvEnd').textContent='解答を終えて採点';
+  itvCurQ={question,measures,meta};
+  M={shownAt:performance.now(),firstFinalAt:null,lastVoiceAt:null,silCount:0,silMs:0,endAt:null};
+  $('itvTimer').textContent='0:00'; $('itvTimer').classList.remove('rec');
+  clearInterval(itvTimerId);
+  itvTimerId=setInterval(()=>{ if(M&&!M.endAt) $('itvTimer').textContent=fmtTime(performance.now()-M.shownAt); },250);
+  if(!document.body.classList.contains('split')) $('itvQCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+let itvCurQ=null;
+
+function renderLive(){
+  const el=$('itvLive');
+  if(!itvFinalText&&!itvInterim){ el.innerHTML='<span class="ph">'+(SPEECH_OK?'マイクを押して話し始めてください':'下の欄に打ち込んでください')+'</span>'; return; }
+  el.innerHTML=esc(itvFinalText)+(itvInterim?'<span class="interim">'+esc(itvInterim)+'</span>':'');
+  el.scrollTop=el.scrollHeight;
+}
+function markVoice(){
+  const now=performance.now();
+  if(M.lastVoiceAt!=null){
+    const gap=now-M.lastVoiceAt;
+    if(gap>=2000){ M.silCount++; M.silMs+=gap; }
+  }
+  M.lastVoiceAt=now;
+}
+
+$('itvMic').onclick=()=>{
+  if(!SPEECH_OK) return;
+  if(itvRecOn){ itvStopMic(); return; }
+  itvRec=makeRecognizer({
+    onresult:e=>{
+      markVoice();
+      let interim='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const t=e.results[i][0].transcript;
+        if(e.results[i].isFinal){
+          itvFinalText+=t;
+          if(M.firstFinalAt==null) M.firstFinalAt=performance.now();
+        } else interim+=t;
+      }
+      itvInterim=interim;
+      if(!itvEditing) renderLive();
+    },
+    onerror:e=>{
+      $('itvMicErr').textContent=micErrMsg(e.error);
+      $('itvMicErr').classList.remove('hidden');
+      if(e.error!=='no-speech') itvStopMic();
+    },
+    onend:()=>{ if(itvRecOn){ try{itvRec.start();}catch(_){} } }
+  });
+  itvRecOn=true;
+  $('itvMic').classList.add('rec');
+  $('itvMicLbl').textContent='話しています…（押すと停止）';
+  $('itvTimer').classList.add('rec');
+  try{ itvRec.start(); }
+  catch(e){ $('itvMicErr').textContent=micErrMsg('start-failed'); $('itvMicErr').classList.remove('hidden'); itvStopMic(); }
+};
+function itvStopMic(){
+  itvRecOn=false;
+  if(itvRec){ try{itvRec.stop();}catch(_){} itvRec=null; }
+  if(itvInterim){ itvFinalText+=itvInterim; itvInterim=''; if(!itvEditing) renderLive(); }
+  $('itvMic').classList.remove('rec');
+  $('itvMicLbl').textContent='押して話し始める';
+  $('itvTimer').classList.remove('rec');
+}
+function itvHardStop(){ itvStopMic(); clearInterval(itvTimerId); }
+
+$('itvEditBtn').onclick=()=>{
+  const ta=$('itvEdit');
+  if(ta.classList.contains('hidden')){
+    ta.value=itvFinalText+itvInterim;
+    ta.classList.remove('hidden'); itvEditing=true;
+    $('itvEditBtn').textContent='✓ 直した内容を反映';
+    ta.focus();
+  }else{
+    itvFinalText=ta.value; itvInterim='';
+    ta.classList.add('hidden'); itvEditing=false;
+    $('itvEditBtn').textContent='✎ 認識テキストを直す';
+    renderLive();
+  }
+};
+$('itvSkip').onclick=()=>{ nextItv(); };
+
+$('itvEnd').onclick=async()=>{
+  if(!itvCurQ) return;
+  if(itvEditing){ itvFinalText=$('itvEdit').value; }
+  itvStopMic();
+  const text=(itvFinalText||'').trim();
+  if(!text){ alert('解答が空です。マイクを押して答えるか、テキスト欄に入力してください。'); return; }
+  M.endAt=performance.now();
+  clearInterval(itvTimerId);
+  /* 最後の無音も沈黙として数える */
+  if(M.lastVoiceAt!=null){
+    const tail=M.endAt-M.lastVoiceAt;
+    if(tail>=2000){ M.silCount++; M.silMs+=tail; }
+  }
+  const totalSec=(M.endAt-M.shownAt)/1000;
+  const firstSec=M.firstFinalAt!=null?(M.firstFinalAt-M.shownAt)/1000:null;
+  const cps=totalSec>0?text.length/totalSec:0;
+  const metrics={totalSec:+totalSec.toFixed(1),firstSec:firstSec==null?null:+firstSec.toFixed(1),
+                 silCount:M.silCount,silSec:+(M.silMs/1000).toFixed(1),cps:+cps.toFixed(2),chars:text.length};
+  renderMetrics(metrics);
+
+  const btn=$('itvEnd'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 採点中…';
+  const box=$('itvResult'); box.classList.remove('hidden');
+  box.innerHTML='<div class="secttl">採点</div><p class="note"><span class="spin"></span> Claude が採点しています…</p>';
+
+  const prompt=
+`あなたは大学の総合型選抜（AO入試）の面接官です。受験生の口頭の解答を採点します。受験生は東北学院大学 未来探究科学部 デジタル構想学科の志望者です。
+
+【質問】
+`+itvCurQ.question+`
+
+【この質問が測ろうとしているもの】
+`+itvCurQ.measures+`
+
+【受験生の解答（音声認識のテキストなので変換ミスを含むことがあります。文意で判断してください）】
+`+text+`
+
+採点の方針：
+- 汎用的な「面接の good/bad」ではなく、上の【この質問が測ろうとしているもの】に届いているかを最重要の軸にすること。
+- 高校生の口頭の答えとして評価すること。文章としての整い方より、中身が届いているかを見ること。
+- 甘くつけないこと。具体例がなければ「具体例・自分の経験」は3点以下にすること。
+- 「長さ」は1分前後（およそ250〜350文字）を適切とし、短すぎ・長すぎは減点する。この解答は約`+text.length+`文字、話した時間は約`+Math.round(totalSec)+`秒。
+
+次のJSONを返すこと。各scoreは0〜5の整数、各commentは1文。
+{"aim":{"score":0,"comment":"「測るもの」に届いているかの講評"},"direct":{"score":0,"comment":"質問に正面から答えているか"},"concrete":{"score":0,"comment":"具体例・自分の経験が入っているか"},"own":{"score":0,"comment":"自分の言葉になっているか"},"length":{"score":0,"comment":"長さは適切か"},"weakest":"この解答で最も弱い点を1文で","followup":"この解答に対して面接官が投げそうな深掘り質問を1つ（質問文のみ）"}
+
+`+JSON_RULE;
+
+  let raw='';
+  try{
+    raw=await callClaude(prompt);
+    const r=parseModelJSON(raw);
+    const keys=[['aim','測るものに届く'],['direct','質問に正面から'],['concrete','具体例・経験'],['own','自分の言葉'],['length','長さ']];
+    let tot=0;
+    let rows=keys.map(([k,label])=>{
+      const o=r[k]||{}; const s=Math.max(0,Math.min(5,parseInt(o.score,10)||0)); tot+=s;
+      let dots=''; for(let i=1;i<=5;i++) dots+='<span class="mp'+(i<=s?' on':'')+'"></span>';
+      return '<div class="scorerow"><span class="nm">'+esc(label)+'</span><span class="meter">'+dots+'</span>'+
+             '<span style="font-family:var(--fd);font-weight:900;font-size:13px;margin-left:auto">'+s+'</span>'+
+             '<span class="cm">'+esc(o.comment||'')+'</span></div>';
+    }).join('');
+    const fu=r.followup||'';
+    box.innerHTML=
+      '<div class="secttl">採点</div>'+
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">'+
+        '<div><span class="total">'+tot+'</span><small> / 25</small></div>'+
+        '<div class="note" style="flex:1">'+esc(itvCurQ.meta.no)+'：'+esc(itvCurQ.measures)+'</div>'+
+      '</div>'+rows+
+      '<hr class="dash">'+
+      '<div class="kv"><span class="k">最も弱い点</span><span class="v"><span class="underline">'+esc(r.weakest||'—')+'</span></span></div>'+
+      (fu?('<div class="card" style="margin:12px 0 0;background:var(--amber-bg);border-color:var(--amber)">'+
+        '<div class="secttl" style="margin-bottom:6px">面接官の深掘り</div>'+
+        '<div style="font-family:var(--fd);font-weight:700;font-size:15.5px;line-height:1.8">'+esc(fu)+'</div>'+
+        '<button class="bigbtn" id="itvDeepBtn" type="button" style="margin:10px 0 0">この質問に続けて答える</button>'+
+      '</div>'):'')+
+      '<button class="bigbtn quiet" id="itvNextBtn" type="button" style="margin-top:10px">次の質問へ</button>';
+    $('itvNextBtn').onclick=()=>nextItv();
+    if(fu) $('itvDeepBtn').onclick=()=>{
+      presentItv(fu,'直前の解答の根拠・具体性を掘り下げて確かめる。',
+        {rank:itvCurQ.meta.rank,axis:itvCurQ.meta.axis,no:itvCurQ.meta.no+' 深掘り',id:null});
+    };
+    if(itvCurQ.meta.id!=null){
+      DB.itv.push({qid:itvCurQ.meta.id,total:tot,
+        scores:{aim:(r.aim||{}).score|0,direct:(r.direct||{}).score|0,concrete:(r.concrete||{}).score|0,own:(r.own||{}).score|0,length:(r.length||{}).score|0},
+        weakest:r.weakest||'',m:metrics,ts:Date.now()});
+      save();
+    }
+    renderItvHist();
+  }catch(e){
+    box.innerHTML='<div class="secttl">採点</div>'+errBox(e)+(raw?'<div class="note" style="margin-top:8px">モデルの生の応答：</div><div class="rawerr">'+esc(raw)+'</div>':'')+
+      '<button class="bigbtn quiet" id="itvNextBtn" type="button" style="margin-top:12px">次の質問へ</button>';
+    $('itvNextBtn').onclick=()=>nextItv();
+  }finally{
+    btn.disabled=false; btn.textContent='解答を終えて採点';
+  }
+};
+
+function renderMetrics(m){
+  const box=$('itvMetrics'); box.classList.remove('hidden');
+  const fs=m.firstSec==null?'—':m.firstSec+'秒';
+  const warn1=(m.firstSec!=null&&m.firstSec>8)?' <span class="redpen">← 出だしが遅い</span>':'';
+  const warn2=(m.silCount>=3)?' <span class="redpen">← 詰まりが多い</span>':'';
+  const lenNote=(m.totalSec<30?'短い':(m.totalSec>90?'長い':'ちょうどよい'));
+  box.innerHTML=
+    '<div class="secttl">この解答の計測</div>'+
+    '<div class="kv"><span class="k">初動</span><span class="v">'+fs+'（質問表示から最初の発話まで）'+warn1+'</span></div>'+
+    '<div class="kv"><span class="k">所要時間</span><span class="v">'+m.totalSec+'秒（'+lenNote+'）</span></div>'+
+    '<div class="kv"><span class="k">沈黙</span><span class="v">'+m.silCount+'回 / 合計'+m.silSec+'秒（2秒以上の途切れ）'+warn2+'</span></div>'+
+    '<div class="kv"><span class="k">話速の目安</span><span class="v">'+m.cps+' 文字/秒（'+Math.round(m.cps*60)+' 文字/分）</span></div>'+
+    '<div class="kv"><span class="k">文字数</span><span class="v">'+m.chars+' 文字</span></div>'+
+    '<p class="note" style="margin-top:8px">この計測はアプリ内だけの数値です（採点には送っていません）。</p>';
+}
+
+function renderItvHist(){
+  const box=$('itvHist');
+  const A=DB.itv;
+  if(!A.length){ box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  const last=A.slice(-8);
+  const answered=new Set(A.map(x=>x.qid));
+  const sTot=IQ.filter(q=>q.rank==='S').length;
+  const sDone=IQ.filter(q=>q.rank==='S'&&answered.has(q.id)).length;
+  const avg=k=>{const v=A.map(x=>(x.scores||{})[k]||0);return (v.reduce((s,n)=>s+n,0)/v.length).toFixed(1);};
+  let h='<div class="secttl">面接の記録（'+A.length+'回）</div>';
+  h+='<div class="kv"><span class="k">S問題の進捗</span><span class="v"><b class="redpen">'+sDone+' / '+sTot+'問</b> に回答済み</span></div>';
+  h+='<div class="kv"><span class="k">回答した質問</span><span class="v">'+answered.size+' / 105問</span></div>';
+  h+='<hr class="dash"><div class="note" style="margin-bottom:6px">観点別の平均（5点満点）</div>';
+  [['aim','測るものに届く'],['direct','質問に正面から'],['concrete','具体例・経験'],['own','自分の言葉'],['length','長さ']].forEach(([k,l])=>{
+    const a=parseFloat(avg(k));
+    h+='<div class="statline"><span class="nm">'+esc(l)+'</span><span class="bar"><i style="width:'+(a/5*100)+'%"></i></span><span class="vl">'+a.toFixed(1)+'</span></div>';
+  });
+  const fs=A.map(x=>(x.m||{}).firstSec).filter(v=>typeof v==='number');
+  const sl=A.map(x=>(x.m||{}).silSec).filter(v=>typeof v==='number');
+  if(fs.length) h+='<hr class="dash"><div class="kv"><span class="k">初動の平均</span><span class="v">'+(fs.reduce((s,n)=>s+n,0)/fs.length).toFixed(1)+'秒（直近：'+fs[fs.length-1]+'秒）</span></div>';
+  if(sl.length) h+='<div class="kv"><span class="k">沈黙の平均</span><span class="v">'+(sl.reduce((s,n)=>s+n,0)/sl.length).toFixed(1)+'秒（直近：'+sl[sl.length-1]+'秒）</span></div>';
+  h+='<div class="secttl" style="margin-top:12px">直近の解答</div>';
+  h+=last.slice().reverse().map(x=>{
+    const q=IQ.find(q=>q.id===x.qid);
+    return '<div class="kv"><span class="k">Q'+x.qid+'　'+x.total+'/25</span><span class="v" style="font-size:12.5px">'+esc(q?q.question.slice(0,34)+'…':'')+'</span></div>';
+  }).join('');
+  box.innerHTML=h;
+}
+
+/* ============================================================
+   チェックリスト
+   ============================================================ */
+function itvByQ(){
+  const m={};
+  DB.itv.forEach(x=>{ if(!m[x.qid]) m[x.qid]={n:0,last:null,best:0}; m[x.qid].n++; m[x.qid].last=x.total; m[x.qid].best=Math.max(m[x.qid].best,x.total); });
+  return m;
+}
+function renderChecklist(){
+  const m=itvByQ();
+  const mk=q=>{
+    const r=m[q.id];
+    const done=!!r;
+    return '<button type="button" class="cl r'+q.rank+(done?' done':' undone')+'" data-q="'+q.id+'">'+
+      (done?'<span class="chk">✓</span>':'')+
+      '<span class="n">'+q.id+'</span>'+
+      '<span class="s">'+(done?r.last+'点':'—')+'</span></button>';
+  };
+  ['S','A','B'].forEach(rk=>{
+    const el=$('cl'+rk);
+    el.innerHTML=IQ.filter(q=>q.rank===rk).map(mk).join('');
+    el.querySelectorAll('.cl').forEach(b=>b.onclick=()=>showClDetail(+b.dataset.q));
+  });
+  const sAll=IQ.filter(q=>q.rank==='S'), sDone=sAll.filter(q=>m[q.id]).length;
+  const all=IQ.length, allDone=Object.keys(m).length;
+  const sPct=Math.round(sDone/sAll.length*100);
+  let h='<div class="statline"><span class="nm">S（必修）</span><span class="bar"><i style="width:'+sPct+'%;background:var(--red)"></i></span><span class="vl">'+sDone+'/'+sAll.length+'</span></div>';
+  h+='<div class="statline"><span class="nm">全体</span><span class="bar"><i style="width:'+Math.round(allDone/all*100)+'%"></i></span><span class="vl">'+allDone+'/'+all+'</span></div>';
+  if(sDone===sAll.length) h+='<p class="note" style="margin-top:8px"><b class="redpen">S問題は全部埋まりました。</b>次はAに進みましょう。</p>';
+  else{
+    const rest=sAll.filter(q=>!m[q.id]).map(q=>'Q'+q.id).join('、');
+    h+='<p class="note" style="margin-top:8px">S で未回答：<b class="redpen">'+esc(rest)+'</b></p>';
+  }
+  $('clSummary').innerHTML=h;
+  $('clDetail').innerHTML='<p class="note">番号をタップすると質問文と記録が出ます。</p>';
+}
+function showClDetail(id){
+  const q=IQ.find(x=>x.id===id); if(!q) return;
+  const rec=DB.itv.filter(x=>x.qid===id);
+  let h='<div class="qmeta"><span class="badge '+q.rank+'">'+q.rank+'</span><span class="badge ax">'+esc(AXES_SHORT[q.axis-1])+'</span><span class="qno">Q'+q.id+'</span>'+(q.other?'<span class="badge B">他学科限定</span>':'')+'</div>';
+  h+='<div style="font-family:var(--fd);font-weight:700;font-size:15px;line-height:1.8">'+esc(q.question)+'</div>';
+  h+='<p class="note" style="margin-top:6px">測るもの：'+esc(q.measures)+'</p>';
+  if(!rec.length) h+='<p class="note" style="margin-top:8px"><b class="redpen">まだ答えていません。</b></p>';
+  else{
+    h+='<hr class="dash">';
+    rec.slice(-4).reverse().forEach(x=>{
+      const d=new Date(x.ts);
+      h+='<div class="kv"><span class="k">'+(d.getMonth()+1)+'/'+d.getDate()+'　'+x.total+'/25</span><span class="v" style="font-size:12.5px">'+esc(x.weakest||'')+'</span></div>';
+    });
+  }
+  h+='<button class="bigbtn green" id="clGo" type="button" style="margin-top:12px">この質問で練習する</button>';
+  $('clDetail').innerHTML=h;
+  $('clGo').onclick=()=>{
+    show('itv');
+    itvCur=q;
+    presentItv(q.question,q.measures,{rank:q.rank,axis:q.axis,no:'Q'+q.id,id:q.id});
+  };
+}
+
+/* ============================================================
+   ホームの記録
+   ============================================================ */
+function renderHomeStats(){
+  const o=DB.oral, i=DB.itv;
+  const answered=new Set(i.map(x=>x.qid));
+  const sAll=IQ.filter(q=>q.rank==='S').length;
+  const sDone=IQ.filter(q=>q.rank==='S'&&answered.has(q.id)).length;
+  let h='';
+  if(!o.length&&!i.length) h='<p class="note">まだ記録がありません。どちらかのモードから始めてください。</p>';
+  else{
+    if(o.length){
+      const ok=o.filter(x=>String(x.verdict).indexOf('正解')===0).length;
+      h+='<div class="kv"><span class="k">口頭試問</span><span class="v">'+o.length+'問 / 正答率 <b class="redpen">'+Math.round(ok/o.length*100)+'%</b> / ヒント '+o.filter(x=>x.hint).length+'回</span></div>';
+    }
+    if(i.length){
+      const avg=(i.reduce((s,x)=>s+x.total,0)/i.length).toFixed(1);
+      h+='<div class="kv"><span class="k">面接</span><span class="v">'+i.length+'回 / 平均 <b class="redpen">'+avg+'/25</b> / 回答済 '+answered.size+'問</span></div>';
+    }
+    h+='<div class="kv"><span class="k">S問題</span><span class="v"><b class="redpen">'+sDone+' / '+sAll+'問</b> 済み</span></div>';
+  }
+  $('homeStats').innerHTML=h;
+}
+
+/* 初期化 */
+renderHomeStats(); renderOralStats(); renderItvHist();
+window.addEventListener('load',()=>{ tryKatex(); mathify(document.body); });
+window.addEventListener('beforeunload',()=>{ stopAllAudio(); });
+</script>
+</body>
+</html>
