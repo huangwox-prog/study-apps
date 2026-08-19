@@ -188,7 +188,7 @@
   .band-head h2{ margin:0; font-size:1.02rem; font-weight:800; color:var(--ink); letter-spacing:.01em; }
   .band-head p{ margin:6px 0 0; font-size:.82rem; color:var(--ink-dim); }
 
-  /* ===== 主役の3本: 他より明確に大きく、情報量も多く ===== */
+  /* ===== 主役の2本: 他より明確に大きく、情報量も多く ===== */
   .flagships{ display:flex; flex-direction:column; gap:18px; }
   .flagship-tag{
     display:inline-flex; align-items:center; gap:6px; font-size:.68rem; font-weight:800;
@@ -224,13 +224,6 @@
   }
   a.flagship.flagship-fe:hover{ border-color:rgba(199,150,59,.6); box-shadow:0 22px 50px -20px var(--c-fe-glow); }
   a.flagship.flagship-fe .ico-lg{ background:var(--c-fe-bg); }
-
-  a.flagship.flagship-ao{
-    background:linear-gradient(160deg, rgba(110,143,94,.14), rgba(193,121,63,.06));
-    border-color:rgba(110,143,94,.32);
-  }
-  a.flagship.flagship-ao:hover{ border-color:rgba(110,143,94,.6); box-shadow:0 22px 50px -20px var(--c-tool-glow); }
-  a.flagship.flagship-ao .ico-lg{ background:var(--c-tool-bg); }
 
   /* ===== その他の単発アプリ: さらっと一覧できる程度の軽い扱い ===== */
   .others{ margin-top:clamp(52px,7vh,80px); }
@@ -337,7 +330,7 @@
 
 <main id="apps">
   <div class="band-head reveal">
-    <h2>力を入れて作っている3本</h2>
+    <h2>力を入れて作っている2本</h2>
     <p>要件を決めて設計から組み上げた、継続開発中のアプリです。</p>
   </div>
 
@@ -378,27 +371,6 @@
           <span class="feat">学習時間トラッキング</span>
         </div>
         <em>制作: 2026年7月19日〜　継続開発中</em>
-      </a>
-    </div>
-
-    <div class="reveal">
-      <span class="flagship-tag">★ FLAGSHIP</span>
-      <a class="flagship flagship-ao" href="sogo-senbatsu.html">
-        <div class="flagship-top">
-          <!-- 手書きアイコンに差し替え可: <span class="ico ico-lg"><img src="assets/icons/ao.png" alt=""></span> -->
-          <span class="ico ico-lg" aria-hidden="true">🎓</span>
-          <h3>総合型選抜 対策<span class="arrow">→</span></h3>
-        </div>
-        <p class="lead">東北学院大学 未来探究科学部 デジタル構想学科の総合型選抜に向けて作った本番想定の練習ツール。数Ⅰの口頭試問47問と、公開情報から評価軸を分解して組み立てた想定質問105問を、口頭試問モードと面接モードの2本立てで練習できる。</p>
-        <div class="feat-row">
-          <span class="feat">口頭試問 47問</span>
-          <span class="feat">想定質問 105問</span>
-          <span class="feat">音声入力</span>
-          <span class="feat">AI採点</span>
-          <span class="feat">初動・沈黙の計測</span>
-          <span class="feat">105問チェックリスト</span>
-        </div>
-        <em>制作: 2026年8月15日〜　継続開発中</em>
       </a>
     </div>
   </div>
