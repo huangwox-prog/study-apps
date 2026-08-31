@@ -102,10 +102,10 @@ export default {
     {
       id: "qf3-p3", type: "choice", level: 1,
       q: "`y=x^2` を `x` 軸に関して対称移動した式は?",
-      choices: ["`y=-x^2`", "`y=x^2`", "`y=(-x)^2`", "`y=-x^2+1`"],
+      choices: ["`y=-x^2`", "`y=x^2`", "`y=x^2+1`", "`y=-x^2+1`"],
       answer: 0,
       mistakeType: "calc",
-      exp: "上下反転で `y=-x^2`。下に凸が上に凸になる。",
+      exp: "`x` 軸対称は `y` を `-y` にするので `y=-x^2`。下に凸が上に凸になる。平行移動ではないので `+1` はつかない。",
     },
     {
       id: "qf3-p4", type: "graph", level: 1,

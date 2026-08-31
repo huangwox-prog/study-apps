@@ -130,10 +130,10 @@ export default {
     {
       id: "qf5-p6", type: "choice", level: 2,
       q: "方程式 `x^2-6x+9=0` の解は?",
-      choices: ["`x=3`(重解)", "`x=±3`", "`x=3, -3`", "`x=9`"],
+      choices: ["`x=3`(重解)", "`x=±3`", "`x=-3`", "`x=9`"],
       answer: 0,
       mistakeType: "cond",
-      exp: "`(x-3)^2=0` より `x=3` の重解。解は1つだけ。",
+      exp: "`(x-3)^2=0` より `x=3` の重解。解は1つだけ。`x^2-9=0` と混同して `±3` としない。",
     },
     {
       id: "qf5-p7", type: "choice", level: 2,

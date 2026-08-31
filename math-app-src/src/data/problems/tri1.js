@@ -226,10 +226,10 @@ export default {
     {
       id: "tri1-t7", type: "choice",
       q: "水平距離9mの地点から見上げる角が60°のとき、目の高さから測った高さは?",
-      choices: ["`9sqrt(3)` m", "`3sqrt(3)` m", "`9` m", "`frac(9,sqrt(3))` m"],
+      choices: ["`9sqrt(3)` m", "`3sqrt(3)` m", "`9` m", "`frac(9sqrt(3),2)` m"],
       answer: 0,
       mistakeType: "calc",
-      exp: "高さ = `9 tan 60° = 9sqrt(3)` m。",
+      exp: "高さ = `9 tan 60° = 9sqrt(3)` m。`sin 60°` を使うと `frac(9sqrt(3),2)` になってしまう(それは斜辺を9としたときの値)。",
     },
     {
       id: "tri1-t8", type: "choice",

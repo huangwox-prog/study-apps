@@ -186,7 +186,7 @@ export default {
         "`y=(x-1)(x-3)`",
         "`y=(x+1)(x+3)`",
         "`y=(x-1)(x+3)`",
-        "`y=x^2+4x+3`",
+        "`y=x^2-4x-3`",
       ],
       answer: 0,
       mistakeType: "calc",
