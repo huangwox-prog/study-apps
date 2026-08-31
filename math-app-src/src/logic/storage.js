@@ -19,8 +19,24 @@ export function loadProgress() {
   }
 }
 
+// localStorage が使えない環境(プライベートモード・容量超過など)でも
+// 画面が落ちないように、書き込みは失敗しても握りつぶす。
 export function saveProgress(state) {
-  localStorage.setItem(KEY, JSON.stringify(state));
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch {
+    // 保存できなくても、その場の学習はメモリ上の状態で続けられる
+  }
+  return state;
+}
+
+// 端末のローカル日付(YYYY-MM-DD)。toISOString だとUTC基準になり、
+// 日本時間の朝9時で日付が変わってしまうのでこちらを使う。
+function localDate(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export function updateUnitProgress(unitId, patch) {
@@ -83,9 +99,9 @@ export function clearMistake(qid) {
 export function recordActivity(unitId) {
   const state = loadProgress();
   const log = state.log || {};
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDate();
   if (log.lastDate !== today) {
-    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const yesterday = localDate(new Date(Date.now() - 86400000));
     log.streak = log.lastDate === yesterday ? (log.streak ?? 0) + 1 : 1;
     log.lastDate = today;
   }
@@ -96,5 +112,9 @@ export function recordActivity(unitId) {
 }
 
 export function resetAllProgress() {
-  localStorage.removeItem(KEY);
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    // 消せなくても既定値で動く
+  }
 }
