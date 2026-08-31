@@ -25,12 +25,37 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
 
   return (
     <div className="screen">
-      <header style={{ marginBottom: 34 }}>
+      <header style={{ marginBottom: 22 }}>
         <p className="text-tertiary" style={{ marginBottom: 4 }}>数学I トレーナー</p>
-        <h1 style={{ marginBottom: 20 }}>{greeting}</h1>
+        <h1 style={{ marginBottom: 0 }}>{greeting}</h1>
+      </header>
+
+      {/* ファーストビュー: 毎日まずここから。口頭試問ドリルを最上部に置く */}
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 6 }}>口頭試問ドリル</h2>
+        <p className="text-secondary" style={{ marginBottom: 14 }}>
+          「これは何の問題か」「最初の一手は何か」を言えるようにする、
+          分野を選んで解く164問の分類ドリル。
+        </p>
+        <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <button className="card card-hover unit-card" onClick={onOpenOral}>
+            <span className="unit-card-text">
+              <span className="unit-card-title">ドリルを始める</span>
+              <span className="text-tertiary unit-card-sub">
+                分野・出題順・問題数を選んで開始
+              </span>
+            </span>
+            <span className="badge accent">164問</span>
+          </button>
+          <OralStats onStart={onOpenOral} />
+        </div>
+      </section>
+
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 14 }}>全体の進捗</h2>
         <div className="card" style={{ padding: "22px 26px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-            <span style={{ fontWeight: 650 }}>全体の進捗</span>
+            <span style={{ fontWeight: 650 }}>習熟度の平均</span>
             <span style={{ fontSize: "1.5rem", fontWeight: 700 }}>{overall}%</span>
           </div>
           <div className="progress-track">
@@ -43,7 +68,7 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
             習熟度70%以上の単元: {completedCount} / {units.length}
           </p>
         </div>
-      </header>
+      </section>
 
       {/* サイドパネルが隠れる狭い画面でだけ表示(広い画面では右レールに表示される) */}
       <div className="mobile-only" style={{ marginBottom: 32 }}>
@@ -109,26 +134,6 @@ export default function Dashboard({ units, progress, onOpenUnit, onOpenExam, onO
           </section>
         );
       })}
-
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ marginBottom: 6 }}>口頭試問ドリル</h2>
-        <p className="text-secondary" style={{ marginBottom: 14 }}>
-          「これは何の問題か」「最初の一手は何か」を言えるようにする、
-          分野を選んで解く164問の分類ドリル。
-        </p>
-        <div className="fade-stagger" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <button className="card card-hover unit-card" onClick={onOpenOral}>
-            <span className="unit-card-text">
-              <span className="unit-card-title">ドリルを始める</span>
-              <span className="text-tertiary unit-card-sub">
-                分野・出題順・問題数を選んで開始
-              </span>
-            </span>
-            <span className="badge accent">164問</span>
-          </button>
-          <OralStats onStart={onOpenOral} />
-        </div>
-      </section>
 
       <section>
         <h2 style={{ marginBottom: 6 }}>卒業模擬試験</h2>
