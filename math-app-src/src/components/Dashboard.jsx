@@ -14,10 +14,11 @@ import ProgressRail from "./ProgressRail.jsx";
 import OralStats from "./OralStats.jsx";
 
 const CATEGORY_LABELS = { ns: "数と式", qf: "二次関数", tri: "三角比" };
+// 分野名を主役にし、その下に「この先どこへ続くか」を一言で添える
 const CATEGORY_COPY = {
-  ns: "式を、迷わず整える。",
-  qf: "放物線が、素直に読める。",
-  tri: "円の上で、比を捉える。",
+  ns: "すべての計算は、ここから始まる。",
+  qf: "微分積分は、ここから始まる。",
+  tri: "三角関数は、ここから始まる。",
 };
 const CATEGORY_LEDE = {
   ns: "展開・因数分解から不等式・集合と命題まで。計算の土台を、手が覚えるまで。",
@@ -225,10 +226,8 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
                 >
                   <CategoryGlyph category={cat} size={46} />
                   <div>
-                    <p className="kicker" style={{ letterSpacing: "0.16em" }}>{CATEGORY_LABELS[cat]}</p>
-                    <h3 style={{ fontSize: "clamp(1.3rem, 1rem + 1.2vw, 1.9rem)", letterSpacing: "-0.03em" }}>
-                      {CATEGORY_COPY[cat]}
-                    </h3>
+                    <h3 className="cat-title">{CATEGORY_LABELS[cat]}</h3>
+                    <p className="cat-tagline">{CATEGORY_COPY[cat]}</p>
                   </div>
                 </div>
                 <p className="text-secondary" data-reveal style={{ marginBottom: 18, maxWidth: "52ch" }}>
