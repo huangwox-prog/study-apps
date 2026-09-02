@@ -4,17 +4,18 @@ import UnitFlow from "./components/UnitFlow.jsx";
 import MockExam from "./components/MockExam.jsx";
 import OralDrill from "./components/OralDrill.jsx";
 import ReviewMode from "./components/ReviewMode.jsx";
-import ProgressRail from "./components/ProgressRail.jsx";
-import WeakSpots from "./components/WeakSpots.jsx";
-import ActivityLog from "./components/ActivityLog.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
+import { ArcMark } from "./components/Motif.jsx";
 import { ALL_UNITS } from "./data/units.js";
 import { EXAM_SETS } from "./logic/examGenerator.js";
 import { loadProgress, recordActivity } from "./logic/storage.js";
 import { summarizeMistakes, MISTAKE_TYPES } from "./logic/weakness.js";
+import { useScrollDriver } from "./logic/motion.js";
 
 export default function App() {
   const [view, setView] = useState({ screen: "home" });
+  // スクロール量を CSS 変数に流し、背景の弧とヒーローの図形を回す
+  useScrollDriver();
   const [progress, setProgress] = useState(loadProgress);
 
   const goHome = useCallback(() => {
@@ -32,24 +33,29 @@ export default function App() {
 
   let content = null;
   let shellClass = "app-shell";
-  let showSidebars = true;
 
+  // ホームは全幅のプロダクトページ。左右レールの内容はページ内の「状況」節に統合した。
   if (view.screen === "home") {
-    content = (
-      <Dashboard
-        units={ALL_UNITS}
-        progress={progress}
-        onOpenUnit={openUnit}
-        onOpenExam={(examId) => setView({ screen: "exam", examId })}
-        onOpenOral={() => setView({ screen: "oral" })}
-        onOpenReview={(type) => setView({ screen: "review", mistakeType: type })}
-      />
+    return (
+      <>
+        <ThemeToggle />
+        <Dashboard
+          units={ALL_UNITS}
+          progress={progress}
+          mistakeSummary={mistakeSummary}
+          onOpenUnit={openUnit}
+          onOpenExam={(examId) => setView({ screen: "exam", examId })}
+          onOpenOral={() => setView({ screen: "oral" })}
+          onOpenReview={(type) => setView({ screen: "review", mistakeType: type })}
+        />
+      </>
     );
-  } else if (view.screen === "unit") {
+  }
+
+  if (view.screen === "unit") {
     const unit = ALL_UNITS.find((u) => u.id === view.unitId);
     // 単元画面はカテゴリカラーのアクセントで統一する
     shellClass = `app-shell cat-${unit.category}`;
-    showSidebars = false;
     content = (
       <UnitFlow
         key={view.unitId}
@@ -60,16 +66,13 @@ export default function App() {
     );
   } else if (view.screen === "exam") {
     const examSet = EXAM_SETS.find((e) => e.id === view.examId);
-    showSidebars = false;
     content = (
       <MockExam key={view.examId} examSet={examSet} units={ALL_UNITS} onExit={goHome} />
     );
   } else if (view.screen === "oral") {
-    showSidebars = false;
     content = <OralDrill onExit={goHome} />;
   } else if (view.screen === "review") {
     const entry = mistakeSummary.find((w) => w.type === view.mistakeType);
-    showSidebars = false;
     content = (
       <ReviewMode
         key={view.mistakeType}
@@ -81,41 +84,18 @@ export default function App() {
     );
   }
 
-  if (!showSidebars) {
-    return (
-      <>
-        <ThemeToggle />
-        <div className={shellClass}>{content}</div>
-      </>
-    );
-  }
-
+  // 単元・模試・ドリルの各画面にも、細いブランド帯で同じ世界観を通す
   return (
     <>
       <ThemeToggle />
-      <div className="layout-3col">
-        <aside className="rail rail-left">
-          <ProgressRail units={ALL_UNITS} progress={progress} onOpenUnit={openUnit} />
-        </aside>
-        <div className={shellClass} style={{ padding: "32px 0 80px" }}>
-          {content}
-        </div>
-        <aside className="rail rail-right">
-          <div className="rail-inner">
-            <WeakSpots
-              summary={mistakeSummary}
-              onOpenReview={(type) => setView({ screen: "review", mistakeType: type })}
-              compact
-            />
-            <ActivityLog
-              log={progress.log || {}}
-              units={ALL_UNITS}
-              onOpenUnit={openUnit}
-              compact
-            />
-          </div>
-        </aside>
+      <div className="inner-brand">
+        <button className="brand-lockup" onClick={goHome} title="ホームへ">
+          <ArcMark size={20} />
+          ARCA
+          <span className="brand-lockup-sub">数学I</span>
+        </button>
       </div>
+      <div className={shellClass}>{content}</div>
     </>
   );
 }
