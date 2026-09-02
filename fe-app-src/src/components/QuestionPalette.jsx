@@ -1,4 +1,4 @@
-// 問題番号ジャンプパレット: 1〜20を一覧表示し、未回答/回答済み/現在を色分け
+// 問題番号ジャンプパレット。街区の窓のように、回答済みが灯っていく。
 import React from "react";
 
 export default function QuestionPalette({ questions, current, answers, onJump }) {
@@ -12,13 +12,8 @@ export default function QuestionPalette({ questions, current, answers, onJump })
         if (isAnswered && !isCurrent) cls += " answered";
         if (isCurrent) cls += " current";
         return (
-          <button
-            key={q.no}
-            className={cls}
-            onClick={() => onJump(q.no)}
-            aria-label={`第${q.no}問へ移動`}
-          >
-            {isAnswered && !isCurrent ? "✓" : q.no}
+          <button key={q.no} className={cls} onClick={() => onJump(q.no)} aria-label={`第${q.no}問へ移動`}>
+            <span>{isAnswered && !isCurrent ? "■" : q.no}</span>
           </button>
         );
       })}

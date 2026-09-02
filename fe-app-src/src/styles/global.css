@@ -1,678 +1,1157 @@
-/* ============ デザイントークン(Liquid Glass) ============ */
+/* =====================================================================
+   NEON DRILL / 電脳演習区
+   デザイン言語: ピクセルアートのサイバーパンク夜景から抽出
+     色    … 藍の空 / 青紫のビル面 → 下部でマゼンタへ / ネオン3色 + アンバー
+     形    … 角丸ゼロ。階段状(ピクセル)の切り欠き角、看板パネル、窓の光格子
+     字    … ビットマップ書体。数字は発光する看板の表示
+     装飾  … 走査線、ディザ、ブルーム、スカイライン
+   ===================================================================== */
+
+/* ============ 1. デザイントークン ============ */
 :root {
-  /* ベース(ライト): すりガラス越しに淡いグラデーションが透ける */
-  --bg: #eef0f7;
-  --text: #1b1c22;
-  --text-secondary: #4e5160;
-  --text-tertiary: #878a9a;
+  /* --- 夜(既定) --- */
+  --void: #05020f;
+  --night: #0a0520;
+  --night-2: #100a2e;
+  --slab: #191046;
+  --slab-2: #241a63;
+  --edge: #3b2a94;
 
-  /* ガラス面 */
-  --glass: rgba(255, 255, 255, 0.52);
-  --glass-strong: rgba(255, 255, 255, 0.7);
-  --glass-soft: rgba(255, 255, 255, 0.32);
-  --glass-border: rgba(255, 255, 255, 0.65);
-  --glass-border-soft: rgba(255, 255, 255, 0.4);
-  --glass-highlight: rgba(255, 255, 255, 0.85);
-  --glass-blur: 22px;
+  --bg: var(--night);
+  --panel: #120b33;
+  --panel-2: #1b1150;
+  --panel-flat: #150d3d;
 
-  /* デフォルトアクセント(スレート寄りのブルー)。カテゴリで上書きされる */
-  --accent: #3766c9;
-  --accent-hover: #2d55ab;
-  --accent-soft: rgba(55, 102, 201, 0.13);
-  --accent-glow: rgba(55, 102, 201, 0.35);
-  --accent-text: #ffffff;
+  --text: #eae4ff;
+  --text-secondary: #a99ce0;
+  --text-tertiary: #7566b8;
 
-  /* カテゴリカラー: アルゴリズム・プログラミング=ブルー / セキュリティ=レッド */
-  --cat-algo: #3766c9;
-  --cat-algo-soft: rgba(55, 102, 201, 0.13);
-  --cat-algo-glow: rgba(55, 102, 201, 0.38);
-  --cat-sec: #b23a52;
-  --cat-sec-soft: rgba(178, 58, 82, 0.13);
-  --cat-sec-glow: rgba(178, 58, 82, 0.38);
+  /* ネオン3原色 + 差し色 */
+  --cyan: #22e7f5;
+  --cyan-dim: #12a9b8;
+  --magenta: #ff2d95;
+  --magenta-dim: #c01470;
+  --violet: #a44bff;
+  --amber: #ffc23d;
 
-  --success: #3d8a5a;
-  --success-soft: rgba(61, 138, 90, 0.14);
-  --warn: #a5702f;
-  --warn-soft: rgba(165, 112, 47, 0.14);
-  --error: #b0504c;
-  --error-soft: rgba(176, 80, 76, 0.13);
+  /* 役割色 */
+  --accent: var(--cyan);
+  --accent-2: var(--magenta);
+  --accent-soft: rgba(34, 231, 245, 0.14);
+  --accent-glow: rgba(34, 231, 245, 0.75);
+  --accent-text: #05020f;
 
-  --radius-sm: 12px;
-  --radius: 18px;
-  --radius-lg: 26px;
-  --shadow-sm: 0 2px 8px rgba(30, 32, 50, 0.07);
-  --shadow: 0 8px 28px -8px rgba(30, 32, 50, 0.16);
-  --shadow-lg: 0 18px 50px -16px rgba(30, 32, 50, 0.28);
+  --cat-algo: var(--cyan);
+  --cat-algo-soft: rgba(34, 231, 245, 0.14);
+  --cat-algo-glow: rgba(34, 231, 245, 0.75);
+  --cat-sec: var(--magenta);
+  --cat-sec-soft: rgba(255, 45, 149, 0.15);
+  --cat-sec-glow: rgba(255, 45, 149, 0.75);
 
-  /* なめらかモーション(Liquid Glass風: 動き出しが速く、着地はゆっくり) */
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-press: cubic-bezier(0.32, 0.72, 0.4, 1);
-  --dur-fast: 0.22s;
-  --dur: 0.48s;
+  --success: var(--cyan);
+  --success-soft: rgba(34, 231, 245, 0.14);
+  --success-glow: rgba(34, 231, 245, 0.7);
+  --warn: var(--amber);
+  --warn-soft: rgba(255, 194, 61, 0.15);
+  --error: var(--magenta);
+  --error-soft: rgba(255, 45, 149, 0.15);
+  --error-glow: rgba(255, 45, 149, 0.7);
+
+  /* ピクセル格子の単位。すべての寸法はこの倍数 */
+  --px: 4px;
+  --st: 5px;            /* 切り欠き階段の段差 */
+  --bw: 2px;            /* 枠線の太さ */
+
+  /* 階段状の切り欠き(左上と右下)— ネオン看板の角 */
+  --cut: polygon(
+    calc(var(--st) * 2) 0, 100% 0,
+    100% calc(100% - var(--st) * 2),
+    calc(100% - var(--st)) calc(100% - var(--st) * 2),
+    calc(100% - var(--st)) calc(100% - var(--st)),
+    calc(100% - var(--st) * 2) calc(100% - var(--st)),
+    calc(100% - var(--st) * 2) 100%, 0 100%,
+    0 calc(var(--st) * 2),
+    var(--st) calc(var(--st) * 2),
+    var(--st) var(--st),
+    calc(var(--st) * 2) var(--st)
+  );
+  /* 四隅を落とした看板形(タグ・ボタン用) */
+  --cut-tag: polygon(
+    var(--st) 0, calc(100% - var(--st)) 0,
+    100% var(--st), 100% calc(100% - var(--st)),
+    calc(100% - var(--st)) 100%, var(--st) 100%,
+    0 calc(100% - var(--st)), 0 var(--st)
+  );
+
+  /* モーション: ピクセルらしく「段で動く」 */
+  --ease: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --ease-step: steps(4, end);
+  --dur-fast: 0.14s;
+  --dur: 0.3s;
   --dur-slow: 0.6s;
 
-  --font-body: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "SF Mono", "SFMono-Regular", "Menlo", "Cascadia Code", Consolas, "Osaka-Mono", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "MS Gothic", "Courier New", monospace;
+  --font-pixel: "DotGothic16", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+  --font-tag: "Press Start 2P", "DotGothic16", monospace;
+  --font-body: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic",
+    -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "SF Mono", "SFMono-Regular", "Menlo", "Cascadia Code", Consolas,
+    "Osaka-Mono", "Yu Gothic Medium", "MS Gothic", "Courier New", monospace;
 }
 
-:root[data-theme="dark"] {
-  --bg: #101018;
-  --text: #ececf2;
-  --text-secondary: #b0b2c0;
-  --text-tertiary: #797c8e;
-
-  --glass: rgba(28, 29, 40, 0.5);
-  --glass-strong: rgba(36, 37, 50, 0.66);
-  --glass-soft: rgba(24, 25, 36, 0.34);
-  --glass-border: rgba(255, 255, 255, 0.14);
-  --glass-border-soft: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.22);
-
-  --accent: #8aa3ec;
-  --accent-hover: #9cb3f0;
-  --accent-soft: rgba(138, 163, 236, 0.16);
-  --accent-glow: rgba(138, 163, 236, 0.4);
-  --accent-text: #12131c;
-
-  --cat-algo: #8aa3ec;
-  --cat-algo-soft: rgba(138, 163, 236, 0.16);
-  --cat-algo-glow: rgba(138, 163, 236, 0.42);
-  --cat-sec: #e28ba0;
-  --cat-sec-soft: rgba(226, 139, 160, 0.16);
-  --cat-sec-glow: rgba(226, 139, 160, 0.42);
-
-  --success: #7fbe97;
-  --success-soft: rgba(127, 190, 151, 0.16);
-  --warn: #cfa168;
-  --warn-soft: rgba(207, 161, 104, 0.16);
-  --error: #d08a86;
-  --error-soft: rgba(208, 138, 134, 0.15);
-
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow: 0 8px 28px -8px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 18px 50px -16px rgba(0, 0, 0, 0.65);
-}
-
+/* --- 白昼モード: コンクリートの街に昼のネオンが灯る --- */
 :root[data-theme="light"] {
-  --bg: #eef0f7;
-  --text: #1b1c22;
-  --text-secondary: #4e5160;
-  --text-tertiary: #878a9a;
+  --bg: #d9dcef;
+  --panel: #ffffff;
+  --panel-2: #eceefa;
+  --panel-flat: #f5f6fc;
 
-  --glass: rgba(255, 255, 255, 0.52);
-  --glass-strong: rgba(255, 255, 255, 0.7);
-  --glass-soft: rgba(255, 255, 255, 0.32);
-  --glass-border: rgba(255, 255, 255, 0.65);
-  --glass-border-soft: rgba(255, 255, 255, 0.4);
-  --glass-highlight: rgba(255, 255, 255, 0.85);
+  --text: #16112e;
+  --text-secondary: #4a4270;
+  --text-tertiary: #7d76a3;
 
-  --accent: #3766c9;
-  --accent-hover: #2d55ab;
-  --accent-soft: rgba(55, 102, 201, 0.13);
-  --accent-glow: rgba(55, 102, 201, 0.35);
+  --cyan: #0090a8;
+  --cyan-dim: #00b6cf;
+  --magenta: #d10068;
+  --magenta-dim: #ff2d95;
+  --violet: #6f24c9;
+  --amber: #a86b00;
+
+  --accent: var(--cyan);
+  --accent-soft: rgba(0, 144, 168, 0.12);
+  --accent-glow: rgba(0, 144, 168, 0.45);
   --accent-text: #ffffff;
 
-  --cat-algo: #3766c9;
-  --cat-algo-soft: rgba(55, 102, 201, 0.13);
-  --cat-algo-glow: rgba(55, 102, 201, 0.38);
-  --cat-sec: #b23a52;
-  --cat-sec-soft: rgba(178, 58, 82, 0.13);
-  --cat-sec-glow: rgba(178, 58, 82, 0.38);
+  --cat-algo: var(--cyan);
+  --cat-algo-soft: rgba(0, 144, 168, 0.12);
+  --cat-algo-glow: rgba(0, 144, 168, 0.45);
+  --cat-sec: var(--magenta);
+  --cat-sec-soft: rgba(209, 0, 104, 0.12);
+  --cat-sec-glow: rgba(209, 0, 104, 0.45);
 
-  --success: #3d8a5a;
-  --success-soft: rgba(61, 138, 90, 0.14);
-  --warn: #a5702f;
-  --warn-soft: rgba(165, 112, 47, 0.14);
-  --error: #b0504c;
-  --error-soft: rgba(176, 80, 76, 0.13);
-
-  --shadow-sm: 0 2px 8px rgba(30, 32, 50, 0.07);
-  --shadow: 0 8px 28px -8px rgba(30, 32, 50, 0.16);
-  --shadow-lg: 0 18px 50px -16px rgba(30, 32, 50, 0.28);
+  --success: var(--cyan);
+  --success-soft: rgba(0, 144, 168, 0.12);
+  --success-glow: rgba(0, 144, 168, 0.4);
+  --warn: var(--amber);
+  --warn-soft: rgba(168, 107, 0, 0.13);
+  --error: var(--magenta);
+  --error-soft: rgba(209, 0, 104, 0.11);
+  --error-glow: rgba(209, 0, 104, 0.4);
 }
 
-/* カテゴリごとのアクセント上書き: .cat-algo / .cat-sec */
-.cat-algo { --accent: var(--cat-algo); --accent-hover: var(--cat-algo); --accent-soft: var(--cat-algo-soft); --accent-glow: var(--cat-algo-glow); }
-.cat-sec { --accent: var(--cat-sec); --accent-hover: var(--cat-sec); --accent-soft: var(--cat-sec-soft); --accent-glow: var(--cat-sec-glow); }
+:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
 
-/* ============ リセット & ベース ============ */
+/* カテゴリ別のネオン差し替え */
+.cat-algo { --accent: var(--cat-algo); --accent-soft: var(--cat-algo-soft); --accent-glow: var(--cat-algo-glow); }
+.cat-sec  { --accent: var(--cat-sec);  --accent-soft: var(--cat-sec-soft);  --accent-glow: var(--cat-sec-glow); }
+
+/* ============ 2. リセット & ベース ============ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-html { font-size: 16px; }
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 1.0625rem;
-  line-height: 1.75;
-  -webkit-font-smoothing: antialiased;
+  line-height: 1.8;
   min-height: 100vh;
-  transition: background var(--dur) var(--ease);
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 
-/* 背景に滲む色のブロブ(ガラス越しに透ける光) */
-body::before {
-  content: "";
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+::selection { background: var(--magenta); color: #fff; }
+
+/* スクロールバーも街の配管に */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--cyan), var(--magenta));
+  border: 2px solid var(--void);
+}
+
+/* =====================================================================
+   3. 背景 — 都市レイヤー(CityBackdrop.jsx が描画)
+   空 → 遠景ビル → 中景ビル → ネオン地平線 → 走査線、の5層。
+   スクロール量 --sy(0〜1)で各層が別速度で動く(視差)。
+   ===================================================================== */
+.city {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -3;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 空: 上は藍、下はマゼンタが滲む(写真のビル下部の発色) */
+.city-sky {
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(42% 38% at 12% 8%, rgba(55, 102, 201, 0.2), transparent 70%),
-    radial-gradient(46% 42% at 88% 22%, rgba(178, 58, 82, 0.14), transparent 70%),
-    radial-gradient(50% 44% at 22% 92%, rgba(55, 102, 201, 0.14), transparent 70%),
-    radial-gradient(36% 34% at 78% 78%, rgba(178, 58, 82, 0.1), transparent 70%);
+    radial-gradient(120% 60% at 50% 100%, rgba(255, 45, 149, 0.28), transparent 62%),
+    radial-gradient(70% 40% at 15% 78%, rgba(164, 75, 255, 0.24), transparent 70%),
+    radial-gradient(60% 36% at 88% 70%, rgba(34, 231, 245, 0.18), transparent 70%),
+    linear-gradient(180deg, var(--void) 0%, var(--night) 46%, var(--night-2) 100%);
+}
+:root[data-theme="light"] .city-sky {
+  background:
+    radial-gradient(120% 60% at 50% 100%, rgba(209, 0, 104, 0.14), transparent 62%),
+    radial-gradient(70% 40% at 15% 78%, rgba(111, 36, 201, 0.1), transparent 70%),
+    linear-gradient(180deg, #eef0fb 0%, #dcdff2 55%, #cdd1ea 100%);
+}
+
+/* 空に走る細い電線・アンテナの光条 */
+.city-rain {
+  position: absolute;
+  inset: -20% 0 0;
+  background-image:
+    linear-gradient(180deg, transparent 0%, rgba(34, 231, 245, 0.5) 45%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(255, 45, 149, 0.4) 55%, transparent 100%);
+  background-size: 2px 120px, 2px 90px;
+  background-repeat: repeat-x, repeat-x;
+  background-position: 0 0, 37px 0;
+  opacity: 0.35;
+  animation: rain-fall 3.2s linear infinite;
+}
+@keyframes rain-fall {
+  from { background-position: 0 -120px, 37px -90px; }
+  to   { background-position: 0 0, 37px 0; }
+}
+
+/* ビルのシルエット(SVG)。層ごとに視差 */
+.city-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  display: block;
+  will-change: transform;
+}
+.city-layer--far  { transform: translate3d(0, calc(var(--sy, 0) * 26px), 0); opacity: 0.55; }
+.city-layer--mid  { transform: translate3d(0, calc(var(--sy, 0) * 54px), 0); opacity: 0.85; }
+.city-layer--near { transform: translate3d(0, calc(var(--sy, 0) * 96px), 0); }
+
+/* 地平線のネオン帯 */
+.city-scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 300px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--night) 72%, transparent) 55%, color-mix(in srgb, var(--night) 88%, transparent));
   pointer-events: none;
 }
-
-:root[data-theme="dark"] body::before {
-  background:
-    radial-gradient(42% 38% at 12% 8%, rgba(83, 118, 210, 0.24), transparent 70%),
-    radial-gradient(46% 42% at 88% 22%, rgba(200, 100, 130, 0.16), transparent 70%),
-    radial-gradient(50% 44% at 22% 92%, rgba(83, 118, 210, 0.18), transparent 70%),
-    radial-gradient(36% 34% at 78% 78%, rgba(200, 100, 130, 0.12), transparent 70%);
-}
-:root[data-theme="light"] body::before {
-  background:
-    radial-gradient(42% 38% at 12% 8%, rgba(55, 102, 201, 0.2), transparent 70%),
-    radial-gradient(46% 42% at 88% 22%, rgba(178, 58, 82, 0.14), transparent 70%),
-    radial-gradient(50% 44% at 22% 92%, rgba(55, 102, 201, 0.14), transparent 70%),
-    radial-gradient(36% 34% at 78% 78%, rgba(178, 58, 82, 0.1), transparent 70%);
-}
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: inherit;
+:root[data-theme="light"] .city-scrim {
+  background: linear-gradient(180deg, transparent, rgba(217, 220, 239, 0.8) 55%, rgba(217, 220, 239, 0.94));
 }
 
-/* ============ レイアウト ============ */
+.city-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--violet), var(--magenta) 40%, var(--cyan) 100%);
+  box-shadow: 0 0 24px 4px rgba(255, 45, 149, 0.5);
+  opacity: 0.8;
+}
+
+/* 走査線 + CRT の周辺減光。全面にかぶせる最前面レイヤー */
+.crt {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.4;
+}
+:root[data-theme="light"] .crt { opacity: 0.16; }
+
+.crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 50%, transparent 52%, rgba(5, 2, 15, 0.75) 100%);
+}
+:root[data-theme="light"] .crt::after {
+  background: radial-gradient(120% 100% at 50% 50%, transparent 60%, rgba(60, 50, 110, 0.2) 100%);
+}
+
+/* ときどき走る一本の掃引線 */
+.crt-sweep {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 140px;
+  z-index: 91;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(34, 231, 245, 0.07) 60%, transparent);
+  animation: sweep 7s linear infinite;
+}
+@keyframes sweep {
+  0%   { transform: translateY(-160px); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* ============ 4. レイアウト ============ */
 .app-shell {
-  max-width: 820px;
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
   margin: 0 auto;
-  padding: 32px 24px 80px;
+  padding: 28px 20px 140px;
   min-height: 100vh;
 }
 
-.screen {
-  animation: screen-in var(--dur-slow) var(--ease) both;
+.screen { animation: boot-in var(--dur-slow) var(--ease) both; }
+
+/* 画面遷移は「電源が入る」ように */
+@keyframes boot-in {
+  0%   { opacity: 0; transform: translateY(12px) scaleY(0.985); filter: brightness(2.4) saturate(0); }
+  35%  { opacity: 1; filter: brightness(1.6) saturate(0.4); }
+  100% { opacity: 1; transform: none; filter: none; }
 }
 
-@keyframes screen-in {
-  from { opacity: 0; transform: translateY(20px) scale(0.99); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+/* ============ 5. タイポグラフィ ============ */
+h1, h2, h3 {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
 }
-
-/* ============ タイポグラフィ ============ */
-h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.01em; }
-h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
-h3 { font-size: 1.1rem; font-weight: 650; }
+h1 { font-size: 1.9rem; }
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.12rem; }
 
 .text-secondary { color: var(--text-secondary); }
 .text-tertiary { color: var(--text-tertiary); font-size: 0.9rem; }
 
-.cat-dot {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 4px;
-  background: var(--accent);
-  box-shadow: 0 0 10px var(--accent-glow);
-  margin-right: 10px;
+/* 看板の英字ラベル(小さく、字間を開けて) */
+.tag-en {
+  font-family: var(--font-tag);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.9;
 }
 
-/* 疑似言語・プログラムコード表示 */
-.code-block {
-  font-family: var(--font-mono);
-  font-size: 0.98rem;
-  line-height: 1.85;
-  letter-spacing: 0.01em;
-  white-space: pre;
-  overflow-x: auto;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border-soft);
-  border-radius: var(--radius-sm);
-  padding: 16px 20px;
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
+/* ネオン発光する見出し。グリッチ用に data-text を持たせる */
+.neon {
+  color: var(--text);
+  text-shadow:
+    0 0 6px var(--accent-glow),
+    0 0 18px var(--accent-glow),
+    0 0 40px color-mix(in srgb, var(--accent) 40%, transparent);
 }
-.code-inline {
-  font-family: var(--font-mono);
-  font-size: 0.92em;
-  background: var(--glass-soft);
-  padding: 1px 6px;
-  border-radius: 5px;
+.neon-cyan { color: var(--cyan); text-shadow: 0 0 8px rgba(34, 231, 245, 0.85), 0 0 26px rgba(34, 231, 245, 0.45); }
+.neon-magenta { color: var(--magenta); text-shadow: 0 0 8px rgba(255, 45, 149, 0.85), 0 0 26px rgba(255, 45, 149, 0.45); }
+
+/* 看板の点滅(古いネオンのちらつき) */
+.flicker { animation: flicker 6s infinite steps(1, end); }
+@keyframes flicker {
+  0%, 100%   { opacity: 1; }
+  41%, 43%   { opacity: 0.35; }
+  42%        { opacity: 1; }
+  67%, 68.5% { opacity: 0.5; }
 }
 
-/* ============ ガラスカード ============ */
+/* 色収差のグリッチ。ホバー時だけ走る */
+.glitch { position: relative; display: inline-block; }
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  clip-path: inset(0 0 0 0);
+}
+.glitch::before { color: var(--magenta); }
+.glitch::after  { color: var(--cyan); }
+.glitch:hover::before,
+.glitch:is(.glitch-on)::before { opacity: 0.85; animation: glitch-a 0.42s steps(2, end) 2; }
+.glitch:hover::after,
+.glitch:is(.glitch-on)::after  { opacity: 0.85; animation: glitch-b 0.42s steps(2, end) 2; }
+@keyframes glitch-a {
+  0%   { transform: translate(0, 0);    clip-path: inset(0 0 72% 0); }
+  25%  { transform: translate(-3px, 1px); clip-path: inset(38% 0 30% 0); }
+  50%  { transform: translate(3px, -1px); clip-path: inset(66% 0 6% 0); }
+  75%  { transform: translate(-2px, 0);  clip-path: inset(12% 0 60% 0); }
+  100% { transform: translate(0, 0);    clip-path: inset(0 0 100% 0); }
+}
+@keyframes glitch-b {
+  0%   { transform: translate(0, 0);    clip-path: inset(70% 0 0 0); }
+  25%  { transform: translate(3px, -1px); clip-path: inset(20% 0 52% 0); }
+  50%  { transform: translate(-3px, 1px); clip-path: inset(4% 0 78% 0); }
+  75%  { transform: translate(2px, 0);  clip-path: inset(52% 0 22% 0); }
+  100% { transform: translate(0, 0);    clip-path: inset(100% 0 0 0); }
+}
+
+/* 数字は看板の発光表示。等幅で桁が揺れない */
+.digits {
+  font-family: var(--font-tag);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+/* =====================================================================
+   6. ピクセル枠(この意匠の中心)
+   clip-path で角を階段状に切り、要素自身の背景をネオン色=枠、
+   ::before を 2px 内側に敷いて中身の面にする。影は clip を無視しない
+   filter: drop-shadow で出すので、切り欠きの形のまま発光する。
+   ===================================================================== */
 .card {
   position: relative;
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
-  border: 1px solid var(--glass-border-soft);
-  border-radius: var(--radius);
-  padding: 24px;
-  box-shadow:
-    var(--shadow-sm),
-    inset 0 1px 0 var(--glass-highlight),
-    inset 0 0 0 0.5px var(--glass-border-soft);
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
-    border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  padding: 24px 26px;
+  clip-path: var(--cut);
+  background: color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--text);
+  font-family: inherit;
+  transition:
+    transform var(--dur-fast) var(--ease-step),
+    background var(--dur) var(--ease),
+    filter var(--dur) var(--ease);
 }
 
+/* 面 */
 .card::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(168deg, rgba(255, 255, 255, 0.22), transparent 38%);
-  pointer-events: none;
-}
-:root[data-theme="dark"] .card::before {
-  background: linear-gradient(168deg, rgba(255, 255, 255, 0.07), transparent 38%);
-}
-:root[data-theme="light"] .card::before {
-  background: linear-gradient(168deg, rgba(255, 255, 255, 0.22), transparent 38%);
-}
-.card-hover:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
-  box-shadow:
-    0 0 0 1px var(--accent),
-    0 10px 36px -8px var(--accent-glow),
-    inset 0 1px 0 var(--glass-highlight);
+  inset: var(--bw);
+  clip-path: var(--cut);
+  background:
+    linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
+  z-index: -1;
 }
 
-/* ============ ボタン ============ */
+/* ビルの窓のような微細な光格子 + 上端のハイライト */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: var(--bw);
+  clip-path: var(--cut);
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 22%, transparent) 0, transparent 3px),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--accent) 30%, transparent) 1px, transparent 1.6px);
+  background-size: 100% 100%, 12px 12px;
+  opacity: 0.22;
+  transition: opacity var(--dur) var(--ease), background-position var(--dur-slow) var(--ease);
+}
+
+.card > * { position: relative; z-index: 1; }
+
+/* ホバー: 4px ずつ「段で」持ち上がり、ネオンが灯る */
+.card-hover { cursor: pointer; }
+.card-hover:hover,
+.card-hover:focus-visible {
+  transform: translate(-2px, -6px);
+  background: var(--accent);
+  filter: drop-shadow(0 6px 0 color-mix(in srgb, var(--accent) 35%, transparent))
+          drop-shadow(0 0 16px var(--accent-glow));
+  outline: none;
+}
+.card-hover:hover::after,
+.card-hover:focus-visible::after { opacity: 0.5; background-position: 0 0, 6px 6px; }
+.card-hover:active { transform: translate(0, 0); }
+
+/* 看板の吊り金具。カード上端から伸びる2本の支柱 */
+.sign-rig {
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 12px;
+  z-index: 0;
+  pointer-events: none;
+}
+.sign-rig i {
+  position: absolute;
+  top: 0;
+  width: var(--bw);
+  height: 12px;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.sign-rig i:first-child { left: 0; }
+.sign-rig i:last-child { right: 0; }
+
+/* 平たい面(コード・シナリオ用の内側パネル) */
+.slab {
+  position: relative;
+  isolation: isolate;
+  clip-path: var(--cut-tag);
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  padding: var(--bw);
+}
+.slab > .slab-in {
+  clip-path: var(--cut-tag);
+  background: var(--panel-flat);
+  padding: 18px 20px;
+}
+
+/* ============ 7. ボタン ============ */
 .btn {
   position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+  font-family: var(--font-pixel);
   font-size: 1rem;
-  font-weight: 600;
-  padding: 12px 26px;
-  border-radius: 999px;
-  transition: background var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
-    border-color var(--dur) var(--ease), color var(--dur) var(--ease),
-    opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-press);
+  letter-spacing: 0.06em;
+  padding: 13px 28px;
+  clip-path: var(--cut-tag);
+  transition:
+    transform var(--dur-fast) var(--ease-step),
+    filter var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
-.btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.45; cursor: default; }
-.btn:disabled:active { transform: none; }
+.btn > * { position: relative; z-index: 1; }
+
+/* ボタン内を走る光。ホバーで左から右へ抜ける */
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
+  transform: translateX(-120%);
+  opacity: 0;
+}
+.btn:hover:not(:disabled)::after { animation: shine 0.55s var(--ease) 1; }
+@keyframes shine {
+  from { transform: translateX(-120%); opacity: 0.9; }
+  to   { transform: translateX(120%); opacity: 0; }
+}
+
+/* 押下は3px沈む(足元の影が潰れる) */
+.btn:active:not(:disabled) { transform: translateY(3px); }
+.btn:disabled { opacity: 0.35; cursor: default; filter: grayscale(0.6); }
 
 .btn-primary {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, white), var(--accent));
+  background: var(--accent);
   color: var(--accent-text);
-  box-shadow:
-    0 6px 20px -6px var(--accent-glow),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  font-weight: 400;
+  filter: drop-shadow(0 4px 0 color-mix(in srgb, var(--accent) 40%, transparent))
+          drop-shadow(0 0 12px var(--accent-glow));
 }
 .btn-primary:hover:not(:disabled) {
-  box-shadow:
-    0 8px 26px -6px var(--accent-glow),
-    0 0 0 1px var(--accent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  filter: drop-shadow(0 6px 0 color-mix(in srgb, var(--accent) 45%, transparent))
+          drop-shadow(0 0 26px var(--accent-glow));
+  transform: translateY(-2px);
+}
+.btn-primary:active:not(:disabled) {
+  filter: drop-shadow(0 0 0 transparent) drop-shadow(0 0 10px var(--accent-glow));
 }
 
 .btn-secondary {
-  background: var(--glass-strong);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
-  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
   color: var(--text);
-  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
+}
+.btn-secondary::before {
+  content: "";
+  position: absolute;
+  inset: var(--bw);
+  clip-path: var(--cut-tag);
+  background: var(--panel);
+  z-index: -1;
 }
 .btn-secondary:hover:not(:disabled) {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent-glow);
+  background: var(--accent);
+  color: var(--accent);
+  filter: drop-shadow(0 0 16px var(--accent-glow));
+  transform: translateY(-2px);
 }
 
 .btn-ghost {
+  font-family: var(--font-pixel);
   color: var(--text-secondary);
   padding: 8px 14px;
-  border-radius: 999px;
+  clip-path: none;
+  letter-spacing: 0.06em;
 }
-.btn-ghost:hover { color: var(--text); background: var(--glass-soft); }
+.btn-ghost::after { display: none; }
+.btn-ghost:hover { color: var(--cyan); text-shadow: 0 0 10px var(--accent-glow); }
+.btn-ghost:active:not(:disabled) { transform: translateX(-3px); }
 
-.btn-lg { font-size: 1.08rem; padding: 15px 34px; }
+.btn-lg { font-size: 1.1rem; padding: 16px 36px; }
 
-/* ============ 進捗バー ============ */
+/* ============ 8. バッジ(小さなネオン札) ============ */
+.badge {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-pixel);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  clip-path: var(--cut-tag);
+  --st: 3px;
+  background: color-mix(in srgb, var(--text-tertiary) 45%, transparent);
+  color: var(--text-secondary);
+}
+.badge::before {
+  content: "";
+  position: absolute;
+  inset: var(--bw);
+  clip-path: var(--cut-tag);
+  background: var(--panel-flat);
+  z-index: -1;
+}
+
+.badge.accent { background: var(--accent); color: var(--accent); filter: drop-shadow(0 0 8px var(--accent-glow)); }
+.badge.ok     { background: var(--success); color: var(--success); filter: drop-shadow(0 0 8px var(--success-glow)); }
+.badge.danger { background: var(--error); color: var(--error); filter: drop-shadow(0 0 8px var(--error-glow)); }
+
+/* バッジの中身をテキストノードのまま置いても読めるように */
+.badge { text-shadow: 0 0 6px color-mix(in srgb, currentColor 45%, transparent); }
+
+/* 縦組みの漢字ネオン(写真の縦看板) */
+.vsign {
+  position: fixed;
+  right: 10px;
+  top: 22vh;
+  z-index: 2;
+  writing-mode: vertical-rl;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  letter-spacing: 0.5em;
+  padding: 14px 6px;
+  color: var(--magenta);
+  background: color-mix(in srgb, var(--magenta) 22%, transparent);
+  clip-path: var(--cut-tag);
+  text-shadow: 0 0 10px rgba(255, 45, 149, 0.9);
+  pointer-events: none;
+  opacity: 0.75;
+  transform: translateY(calc(var(--sy, 0) * -70px));
+  transition: opacity var(--dur) var(--ease);
+}
+@media (max-width: 1100px) { .vsign { display: none; } }
+
+/* ============ 9. 進捗バー = ビルの窓が灯る ============ */
 .progress-track {
-  height: 8px;
-  background: var(--glass-soft);
-  border: 0.5px solid var(--glass-border-soft);
-  border-radius: 999px;
-  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  height: 14px;
+  background: color-mix(in srgb, var(--text-tertiary) 30%, transparent);
+  padding: var(--bw);
+  clip-path: var(--cut-tag);
+  --st: 3px;
+}
+.progress-track::before {
+  content: "";
+  position: absolute;
+  inset: var(--bw);
+  background: var(--panel-flat);
+  z-index: -1;
 }
 .progress-fill {
+  position: relative;
   height: 100%;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 75%, white), var(--accent));
-  border-radius: 999px;
-  box-shadow: 0 0 8px var(--accent-glow);
-  transition: width var(--dur-slow) var(--ease), background var(--dur) var(--ease);
+  background: var(--accent);
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 100%, transparent) 0 4px,
+    color-mix(in srgb, var(--accent) 55%, transparent) 4px 6px
+  );
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: width var(--dur-slow) steps(20, end), background var(--dur) var(--ease);
 }
-.progress-fill.complete {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--success) 75%, white), var(--success));
-  box-shadow: 0 0 8px var(--success-soft);
-}
-.progress-fill.danger {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--error) 75%, white), var(--error));
-  box-shadow: 0 0 8px var(--error-soft);
-}
+.progress-fill.complete { --accent: var(--success); background-color: var(--success); box-shadow: 0 0 12px var(--success-glow); }
+.progress-fill.danger   { --accent: var(--error);   background-color: var(--error);   box-shadow: 0 0 12px var(--error-glow); }
 
-/* ============ 学習時間メーター ============ */
-.study-gauge-card {
-  padding: 22px 26px;
-  margin-bottom: 24px;
-}
-.study-gauge-row {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-}
+/* ============ 10. 学習時間メーター = 円形ネオン看板(写真の「玩」) ============ */
+.study-gauge-card { padding: 22px 26px; margin-bottom: 26px; }
+.study-gauge-row { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
+
 .study-gauge-ring-wrap {
   position: relative;
-  width: 96px;
-  height: 96px;
+  width: 104px;
+  height: 104px;
   flex-shrink: 0;
 }
-.study-gauge-ring {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
+.study-gauge-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
 .study-gauge-track {
   fill: none;
-  stroke: var(--glass-soft);
-  stroke-width: 9;
+  stroke: color-mix(in srgb, var(--text-tertiary) 40%, transparent);
+  stroke-width: 8;
+  stroke-dasharray: 2 2;   /* 消灯した窓の列 */
 }
 .study-gauge-fill {
   fill: none;
   stroke: var(--accent);
-  stroke-width: 9;
-  stroke-linecap: round;
+  stroke-width: 8;
+  stroke-linecap: butt;
   filter: drop-shadow(0 0 6px var(--accent-glow));
-  transition: stroke-dashoffset var(--dur-slow) var(--ease), stroke var(--dur) var(--ease);
+  transition: stroke-dashoffset var(--dur-slow) steps(24, end), stroke var(--dur) var(--ease);
 }
-.study-gauge-fill.complete {
-  stroke: var(--success);
-  filter: drop-shadow(0 0 6px var(--success-soft));
-}
-.study-gauge-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.study-gauge-pct {
-  font-weight: 700;
-  font-size: 1.05rem;
-  line-height: 1.2;
-}
-.study-gauge-label {
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-}
-.study-gauge-info {
-  flex: 1;
-  min-width: 220px;
-}
-.study-gauge-info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+.study-gauge-fill.complete { stroke: var(--success); }
 
-/* ============ 選択肢 ============ */
+/* リングの外側でゆっくり回る破線 = 看板の回転灯 */
+.study-gauge-orbit {
+  position: absolute;
+  inset: -6px;
+  border: 2px dashed color-mix(in srgb, var(--magenta) 55%, transparent);
+  border-radius: 50%;
+  animation: orbit 14s linear infinite;
+  pointer-events: none;
+}
+@keyframes orbit { to { transform: rotate(360deg); } }
+
+.study-gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.study-gauge-pct { font-family: var(--font-tag); font-size: 0.95rem; line-height: 1.2; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+.study-gauge-label { font-family: var(--font-pixel); font-size: 0.75rem; color: var(--text-tertiary); margin-top: 2px; }
+.study-gauge-info { flex: 1; min-width: 220px; }
+.study-gauge-info-row { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+
+/* ============ 11. 選択肢 = 押せる看板 ============ */
 .choice-list { display: flex; flex-direction: column; gap: 12px; }
 
 .choice {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: flex-start;
   gap: 14px;
   width: 100%;
   text-align: left;
-  padding: 16px 20px;
-  background: var(--glass-soft);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  backdrop-filter: blur(12px) saturate(150%);
-  border: 1.5px solid var(--glass-border-soft);
-  border-radius: var(--radius);
+  padding: 15px 20px;
   font-size: 1.02rem;
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
-  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
-    transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  line-height: 1.7;
+  color: var(--text);
+  clip-path: var(--cut-tag);
+  background: color-mix(in srgb, var(--text-tertiary) 40%, transparent);
+  transition: transform var(--dur-fast) var(--ease-step), background var(--dur) var(--ease),
+    filter var(--dur) var(--ease);
 }
+.choice::before {
+  content: "";
+  position: absolute;
+  inset: var(--bw);
+  clip-path: var(--cut-tag);
+  background: var(--panel);
+  z-index: -1;
+}
+/* ホバーで左から光の帯が差し込む */
+.choice::after {
+  content: "";
+  position: absolute;
+  inset: var(--bw);
+  clip-path: var(--cut-tag);
+  z-index: -1;
+  background: linear-gradient(90deg, var(--accent-soft), transparent 60%);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.choice > * { position: relative; z-index: 1; }
+
 .choice:hover:not(:disabled) {
-  border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 18px -6px var(--accent-glow), inset 0 1px 0 var(--glass-highlight);
+  background: var(--accent);
+  transform: translateX(4px);
+  filter: drop-shadow(0 0 14px var(--accent-glow));
 }
+.choice:hover:not(:disabled)::after { opacity: 1; transform: translateX(0); }
 .choice:disabled { cursor: default; }
 
-.choice .choice-key {
+.choice-key {
   flex-shrink: 0;
   width: 30px;
   height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  background: var(--glass-strong);
-  border: 0.5px solid var(--glass-border-soft);
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+  background: color-mix(in srgb, var(--text-tertiary) 30%, transparent);
+  clip-path: var(--cut-tag);
+  --st: 3px;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+    transform var(--dur) var(--ease-step);
 }
+.choice:hover:not(:disabled) .choice-key { transform: rotate(-8deg) scale(1.08); }
 
 .choice.selected {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 18px -6px var(--accent-glow);
+  background: var(--accent);
+  filter: drop-shadow(0 0 16px var(--accent-glow));
 }
-.choice.selected .choice-key { background: var(--accent); color: var(--accent-text); border-color: transparent; }
-
-.choice.correct {
-  border-color: var(--success);
-  background: var(--success-soft);
-  box-shadow: 0 0 0 1px var(--success), 0 4px 20px -6px var(--success-soft);
+.choice.selected::after { opacity: 1; transform: translateX(0); }
+.choice.selected .choice-key {
+  background: var(--accent);
+  color: var(--accent-text);
+  animation: key-pop 0.3s var(--ease) 1;
 }
-.choice.correct .choice-key { background: var(--success); color: #fff; border-color: transparent; }
-
-.choice.wrong {
-  border-color: var(--error);
-  background: var(--error-soft);
+@keyframes key-pop {
+  0% { transform: scale(0.6) rotate(-20deg); }
+  60% { transform: scale(1.18) rotate(6deg); }
+  100% { transform: scale(1) rotate(0); }
 }
-.choice.wrong .choice-key { background: var(--error); color: #fff; border-color: transparent; }
 
-/* ============ フィードバック ============ */
+.choice.correct { --accent: var(--success); background: var(--success); filter: drop-shadow(0 0 18px var(--success-glow)); }
+.choice.correct .choice-key { background: var(--success); color: var(--accent-text); }
+.choice.wrong { --accent: var(--error); background: var(--error); filter: drop-shadow(0 0 18px var(--error-glow)); }
+.choice.wrong .choice-key { background: var(--error); color: #fff; }
+
+/* ============ 12. フィードバック ============ */
 .feedback {
-  border-radius: var(--radius);
-  padding: 18px 22px;
+  position: relative;
+  isolation: isolate;
+  padding: 16px 20px;
   margin-top: 18px;
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  backdrop-filter: blur(12px) saturate(150%);
-  animation: feedback-in var(--dur) var(--ease) both;
+  clip-path: var(--cut-tag);
+  animation: boot-in var(--dur) var(--ease) both;
 }
-.feedback.ok {
-  background: var(--success-soft);
-  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
-}
-.feedback.ng {
-  background: var(--error-soft);
-  border: 1px solid color-mix(in srgb, var(--error) 35%, transparent);
-}
-.feedback .feedback-title {
-  font-weight: 700;
-  font-size: 1.02rem;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.feedback.ok .feedback-title { color: var(--success); }
-.feedback.ng .feedback-title { color: var(--error); }
+.feedback::before { content: ""; position: absolute; inset: var(--bw); clip-path: var(--cut-tag); background: var(--panel); z-index: -1; }
+.feedback > * { position: relative; z-index: 1; }
+.feedback.ok { background: var(--success); }
+.feedback.ng { background: var(--error); }
+.feedback .feedback-title { font-family: var(--font-pixel); font-size: 1.02rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.feedback.ok .feedback-title { color: var(--success); text-shadow: 0 0 10px var(--success-glow); }
+.feedback.ng .feedback-title { color: var(--error); text-shadow: 0 0 10px var(--error-glow); }
 
-@keyframes feedback-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ============ バッジ ============ */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  font-weight: 650;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: var(--glass-strong);
-  border: 0.5px solid var(--glass-border-soft);
-  color: var(--text-secondary);
-  box-shadow: inset 0 1px 0 var(--glass-highlight);
-}
-.badge.accent { background: var(--accent-soft); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
-.badge.ok { background: var(--success-soft); color: var(--success); border-color: color-mix(in srgb, var(--success) 30%, transparent); }
-.badge.danger { background: var(--error-soft); color: var(--error); border-color: color-mix(in srgb, var(--error) 30%, transparent); }
-
-/* ============ その他 ============ */
-.divider { height: 1px; background: var(--glass-border-soft); margin: 20px 0; }
-
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 28px;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.fade-stagger > * {
-  animation: screen-in var(--dur-slow) var(--ease) both;
-}
-.fade-stagger > *:nth-child(1) { animation-delay: 0.02s; }
-.fade-stagger > *:nth-child(2) { animation-delay: 0.06s; }
-.fade-stagger > *:nth-child(3) { animation-delay: 0.1s; }
-.fade-stagger > *:nth-child(4) { animation-delay: 0.14s; }
-
-::selection { background: var(--accent-soft); }
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .card, .choice, .btn-secondary, .badge, .feedback, .code-block {
-    background: var(--glass-strong);
-  }
-}
-
-/* ============ テーマ切り替えボタン ============ */
-.theme-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 50;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--glass-strong);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--glass-highlight);
-  transition: transform var(--dur-fast) var(--ease-press), box-shadow var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
-}
-.theme-toggle:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 6px 22px -8px var(--accent-glow);
-}
-.theme-toggle:active { transform: scale(0.92); }
-.theme-toggle-icon { font-size: 1.25rem; line-height: 1; }
-
-@media (max-width: 600px) {
-  .theme-toggle { top: 14px; right: 14px; width: 40px; height: 40px; }
-  .theme-toggle-icon { font-size: 1.1rem; }
-}
-
-/* ============ 問題番号パレット ============ */
-.q-palette {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 22px;
-}
+/* ============ 13. 問題番号パレット = 街区の窓 ============ */
+.q-palette { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 22px; }
 .q-palette-btn {
+  position: relative;
+  isolation: isolate;
   width: 34px;
   height: 34px;
-  border-radius: 9px;
-  font-size: 0.8rem;
-  font-weight: 650;
+  font-family: var(--font-pixel);
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--glass-border-soft);
-  background: var(--glass-soft);
   color: var(--text-tertiary);
-  transition: all var(--dur-fast) var(--ease);
+  background: color-mix(in srgb, var(--text-tertiary) 34%, transparent);
+  clip-path: var(--cut-tag);
+  --st: 3px;
+  transition: transform var(--dur-fast) var(--ease-step), background var(--dur) var(--ease),
+    color var(--dur) var(--ease), filter var(--dur) var(--ease);
 }
-.q-palette-btn.answered {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: transparent;
-}
+.q-palette-btn::before { content: ""; position: absolute; inset: var(--bw); clip-path: var(--cut-tag); background: var(--panel-flat); z-index: -1; }
+.q-palette-btn:hover { transform: translateY(-4px) rotate(-4deg); color: var(--cyan); filter: drop-shadow(0 0 10px var(--accent-glow)); }
+.q-palette-btn.answered { background: var(--accent); color: var(--accent); }
 .q-palette-btn.current {
   background: var(--accent);
   color: var(--accent-text);
-  border: none;
-  box-shadow: 0 4px 14px -4px var(--accent-glow);
+  filter: drop-shadow(0 0 12px var(--accent-glow));
+  animation: current-pulse 1.6s steps(1, end) infinite;
 }
-.q-palette-btn.section-sec { border-left: 2px solid var(--cat-sec); }
+.q-palette-btn.current::before { background: var(--accent); }
+@keyframes current-pulse {
+  0%, 100% { filter: drop-shadow(0 0 12px var(--accent-glow)); }
+  50%      { filter: drop-shadow(0 0 22px var(--accent-glow)); }
+}
+.q-palette-btn.section-sec { --accent: var(--cat-sec); --accent-glow: var(--cat-sec-glow); }
 
-/* ============ タイマー ============ */
+/* ============ 14. タイマー = 街の上に浮かぶ時計 ============ */
 .exam-timer {
-  display: flex;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: var(--glass-strong);
-  border: 1px solid var(--glass-border-soft);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 1rem;
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
+  gap: 10px;
+  padding: 9px 18px;
+  clip-path: var(--cut-tag);
+  background: color-mix(in srgb, var(--cyan) 65%, transparent);
+  font-family: var(--font-tag);
+  font-size: 0.95rem;
+  color: var(--cyan);
+  text-shadow: 0 0 10px rgba(34, 231, 245, 0.9);
+  filter: drop-shadow(0 0 10px rgba(34, 231, 245, 0.5));
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease), filter var(--dur) var(--ease);
 }
-.exam-timer.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+.exam-timer::before { content: ""; position: absolute; inset: var(--bw); clip-path: var(--cut-tag); background: var(--panel-flat); z-index: -1; }
+.exam-timer > * { position: relative; z-index: 1; }
+.exam-timer.warn { background: color-mix(in srgb, var(--warn) 65%, transparent); color: var(--warn); text-shadow: 0 0 10px rgba(255, 194, 61, 0.9); filter: drop-shadow(0 0 10px rgba(255, 194, 61, 0.5)); }
 .exam-timer.danger {
-  color: var(--error);
-  border-color: color-mix(in srgb, var(--error) 45%, transparent);
-  animation: timer-pulse 1s ease-in-out infinite;
+  background: var(--magenta);
+  color: var(--magenta);
+  text-shadow: 0 0 12px rgba(255, 45, 149, 1);
+  animation: timer-alarm 1s steps(2, end) infinite;
 }
-@keyframes timer-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+@keyframes timer-alarm {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 45, 149, 0.6)); transform: translateX(0); }
+  50%      { filter: drop-shadow(0 0 26px rgba(255, 45, 149, 1)); transform: translateX(-2px); }
 }
 
-/* ============ シナリオボックス(セキュリティ問題) ============ */
+/* ============ 15. コード / シナリオ ============ */
+.code-block {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+  white-space: pre;
+  overflow-x: auto;
+  padding: 18px 20px;
+  clip-path: var(--cut-tag);
+  background: var(--panel-flat);
+  color: var(--text);
+  box-shadow: inset 0 0 0 var(--bw) color-mix(in srgb, var(--cyan) 45%, transparent);
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 30px,
+    color-mix(in srgb, var(--cyan) 6%, transparent) 30px 60px
+  );
+}
+.code-inline {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: color-mix(in srgb, var(--cyan) 16%, transparent);
+  color: var(--cyan);
+  padding: 1px 6px;
+}
+
 .scenario-box {
-  background: var(--glass-soft);
-  border: 1px solid var(--glass-border-soft);
-  border-radius: var(--radius-sm);
-  padding: 20px 22px;
+  position: relative;
+  padding: 18px 20px 18px 26px;
   margin-bottom: 20px;
-  line-height: 1.9;
+  line-height: 1.95;
+  background: var(--panel-flat);
+  clip-path: var(--cut-tag);
+  border-left: 4px solid var(--magenta);
+}
+.scenario-box::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--magenta);
+  box-shadow: 0 0 14px rgba(255, 45, 149, 0.8);
 }
 .scenario-box p + p { margin-top: 12px; }
+
+.divider {
+  height: var(--bw);
+  margin: 22px 0;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--cyan) 70%, transparent) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; gap: 12px; flex-wrap: wrap; }
+
+/* ============ 16. テーマ切替 = 街の電源スイッチ ============ */
+.theme-toggle {
+  position: fixed;
+  isolation: isolate;
+  top: 18px;
+  right: 18px;
+  z-index: 95;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: var(--cut-tag);
+  --st: 4px;
+  background: var(--cyan);
+  transition: transform var(--dur-fast) var(--ease-step), filter var(--dur) var(--ease), background var(--dur) var(--ease);
+  filter: drop-shadow(0 0 12px rgba(34, 231, 245, 0.5));
+}
+.theme-toggle::before { content: ""; position: absolute; inset: var(--bw); clip-path: var(--cut-tag); background: var(--panel-flat); z-index: -1; }
+.theme-toggle:hover { transform: rotate(-90deg); filter: drop-shadow(0 0 22px rgba(34, 231, 245, 0.9)); }
+.theme-toggle:active { transform: rotate(-90deg) scale(0.88); }
+.theme-toggle-icon {
+  position: relative;
+  z-index: 1;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* ============ 17. ヘッダー看板とティッカー ============ */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.brand-mark {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  clip-path: var(--cut-tag);
+  --st: 4px;
+  background: linear-gradient(140deg, var(--cyan), var(--magenta));
+  display: grid;
+  place-items: center;
+  font-family: var(--font-tag);
+  font-size: 0.85rem;
+  color: #05020f;
+  filter: drop-shadow(0 0 14px rgba(255, 45, 149, 0.55));
+  animation: mark-hover 4.5s ease-in-out infinite;
+}
+@keyframes mark-hover {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-6px) rotate(3deg); }
+}
+.brand-mark:hover { animation: mark-spin 0.6s var(--ease) 1; }
+@keyframes mark-spin { to { transform: rotate(360deg); } }
+
+.brand-name { display: block; font-family: var(--font-tag); font-size: 1.05rem; letter-spacing: 0.1em; line-height: 1.5; }
+.brand-sub { display: block; font-family: var(--font-pixel); font-size: 0.85rem; color: var(--text-tertiary); letter-spacing: 0.3em; }
+
+/* 流れる電光掲示板 */
+.ticker {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin: 0 0 26px;
+  padding: 7px 0;
+  clip-path: var(--cut-tag);
+  --st: 3px;
+  background: color-mix(in srgb, var(--magenta) 50%, transparent);
+}
+.ticker::before { content: ""; position: absolute; inset: var(--bw); clip-path: var(--cut-tag); background: var(--void); z-index: -1; }
+:root[data-theme="light"] .ticker::before { background: #1b1436; }
+.ticker-track {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 46px;
+  width: max-content;
+  animation: ticker-run 26s linear infinite;
+  font-family: var(--font-tag);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: var(--amber);
+  text-shadow: 0 0 8px rgba(255, 194, 61, 0.8);
+  white-space: nowrap;
+}
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes ticker-run { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ============ 18. スクロール演出 ============ */
+.reveal { transition: opacity 0.5s var(--ease), transform 0.5s var(--ease); }
+.has-reveal .reveal:not(.is-in) { opacity: 0; transform: translateY(26px); }
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+  animation: power-on 0.5s steps(3, end) 1;
+}
+@keyframes power-on {
+  0%   { filter: brightness(3) saturate(0); }
+  40%  { filter: brightness(0.6) saturate(1.4); }
+  70%  { filter: brightness(1.8) saturate(1); }
+  100% { filter: none; }
+}
+.fade-stagger > *:nth-child(1) { transition-delay: 0.02s; }
+.fade-stagger > *:nth-child(2) { transition-delay: 0.07s; }
+.fade-stagger > *:nth-child(3) { transition-delay: 0.12s; }
+.fade-stagger > *:nth-child(4) { transition-delay: 0.17s; }
+.fade-stagger > *:nth-child(5) { transition-delay: 0.22s; }
+.fade-stagger > *:nth-child(6) { transition-delay: 0.27s; }
+.fade-stagger > *:nth-child(7) { transition-delay: 0.32s; }
+.fade-stagger > *:nth-child(8) { transition-delay: 0.37s; }
+
+/* セット一覧の1行: 番号札 / 表題 / 受験履歴バッジ */
+.set-row { display: flex; align-items: center; gap: 16px; }
+.set-row-body { flex: 1; min-width: 0; }
+
+/* 幅が足りないときはバッジを次の行へ送り、表題を折らない */
+@media (max-width: 480px) {
+  .set-row { flex-wrap: wrap; row-gap: 10px; }
+  .set-row-body { flex: 1 1 100%; order: 2; }
+  .set-row .badge { order: 3; margin-left: auto; }
+}
+
+/* セット番号のピクセル札。ホバーで回る */
+.set-no {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-tag);
+  font-size: 0.8rem;
+  color: var(--accent-text);
+  background: var(--accent);
+  clip-path: var(--cut-tag);
+  --st: 4px;
+  transition: transform var(--dur) var(--ease);
+}
+.card-hover:hover .set-no { transform: rotate(-12deg) scale(1.12); }
+
+/* 得点の巨大表示 */
+.score-big {
+  font-family: var(--font-tag);
+  font-size: 3rem;
+  line-height: 1.2;
+  color: var(--cyan);
+  text-shadow: 0 0 12px rgba(34, 231, 245, 0.9), 0 0 40px rgba(34, 231, 245, 0.5);
+  animation: score-in 0.7s steps(6, end) 1 both;
+}
+@keyframes score-in {
+  0%   { opacity: 0; transform: scale(1.6); filter: blur(6px); }
+  100% { opacity: 1; transform: scale(1); filter: none; }
+}
+
+/* ============ 19. レスポンシブ ============ */
+@media (max-width: 640px) {
+  html { font-size: 15px; }
+  .app-shell { padding: 20px 14px 110px; }
+  /* 右上の電源スイッチにティッカーが潜り込まないよう幅を譲る */
+  .ticker { margin-right: 52px; }
+  .study-gauge-card { padding: 18px 16px; }
+  .study-gauge-ring-wrap { width: 84px; height: 84px; }
+  .card { padding: 20px 18px; }
+  h1 { font-size: 1.5rem; }
+  .score-big { font-size: 2.2rem; }
+  .theme-toggle { top: 12px; right: 12px; width: 40px; height: 40px; }
+  .btn-lg { font-size: 1rem; padding: 14px 24px; }
+  .study-gauge-row { gap: 18px; }
+}
+
+/* ============ 20. モーション低減 ============ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  .city-layer { transform: none !important; }
+  .vsign { transform: none; }
+  .crt-sweep, .city-rain { display: none; }
+}
+
+/* 屋上の航空障害灯。層ごとに位相をずらして明滅させる */
+.city-beacon { animation: beacon 2.6s steps(1, end) infinite; }
+@keyframes beacon {
+  0%, 45%  { opacity: 1; }
+  46%, 100% { opacity: 0.15; }
+}

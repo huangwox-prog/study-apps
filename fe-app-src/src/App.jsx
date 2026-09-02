@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import SetSelect from "./components/SetSelect.jsx";
 import ExamRunner from "./components/ExamRunner.jsx";
 import ThemeToggle from "./components/ThemeToggle.jsx";
+import CityBackdrop from "./components/CityBackdrop.jsx";
 import { ALL_SETS } from "./data/sets/index.js";
 import { loadResults } from "./logic/storage.js";
 import { useStudyTimeTracker } from "./logic/useStudyTimeTracker.js";
@@ -14,6 +15,7 @@ export default function App() {
   const goHome = useCallback(() => {
     setResults(loadResults().results);
     setView({ screen: "home" });
+    window.scrollTo({ top: 0 });
   }, []);
 
   let content = null;
@@ -24,7 +26,10 @@ export default function App() {
       <SetSelect
         sets={ALL_SETS}
         results={results}
-        onSelect={(setId) => setView({ screen: "exam", setId })}
+        onSelect={(setId) => {
+          setView({ screen: "exam", setId });
+          window.scrollTo({ top: 0 });
+        }}
       />
     );
   } else if (view.screen === "exam") {
@@ -35,6 +40,7 @@ export default function App() {
 
   return (
     <>
+      <CityBackdrop />
       <ThemeToggle />
       <div className={shellClass}>{content}</div>
     </>

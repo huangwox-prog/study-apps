@@ -1,4 +1,4 @@
-// ホーム画面: 学習時間のメーター表示(当日の目標達成率 + 直近7日間の合計)
+// 学習時間メーター。写真の円形ネオン看板に見立て、破線のリングが回る。
 import React, { useEffect, useState } from "react";
 import { getDailySeconds, getWeeklySeconds, formatMinutes, DAILY_TARGET_MIN } from "../logic/studyTime.js";
 
@@ -32,15 +32,17 @@ export default function StudyGauge() {
     <div className="card study-gauge-card">
       <div className="study-gauge-row">
         <div className="study-gauge-ring-wrap">
-          <svg viewBox="0 0 100 100" className="study-gauge-ring">
+          <span className="study-gauge-orbit" aria-hidden="true" />
+          <svg viewBox="0 0 100 100" className="study-gauge-ring" aria-hidden="true">
             <circle cx="50" cy="50" r={RADIUS} className="study-gauge-track" />
             <circle
               cx="50"
               cy="50"
               r={RADIUS}
               className={`study-gauge-fill ${dailyRatio >= 1 ? "complete" : ""}`}
-              strokeDasharray={CIRCUMFERENCE}
-              strokeDashoffset={dashOffset}
+              pathLength="100"
+              strokeDasharray="100"
+              strokeDashoffset={100 - dailyPct}
             />
           </svg>
           <div className="study-gauge-center">
@@ -51,23 +53,16 @@ export default function StudyGauge() {
 
         <div className="study-gauge-info">
           <div className="study-gauge-info-row">
-            <span className="text-secondary" style={{ fontSize: "0.85rem" }}>
-              本日の学習時間
-            </span>
-            <span style={{ fontWeight: 650 }}>
+            <span className="tag-en" style={{ color: "var(--cyan)" }}>DAILY UPTIME</span>
+            <span style={{ fontFamily: "var(--font-pixel)" }}>
               {formatMinutes(dailySec)}
-              <span className="text-tertiary" style={{ fontWeight: 500 }}>
-                {" "}
-                / 目標 {DAILY_TARGET_MIN}分
-              </span>
+              <span className="text-tertiary"> / 目標 {DAILY_TARGET_MIN}分</span>
             </span>
           </div>
 
-          <div style={{ marginTop: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-              <span className="text-secondary" style={{ fontSize: "0.85rem" }}>
-                今週の合計(直近7日間)
-              </span>
+          <div style={{ marginTop: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span className="tag-en" style={{ color: "var(--magenta)" }}>WEEKLY / 7 DAYS</span>
               <span className="text-secondary" style={{ fontSize: "0.85rem" }}>
                 {formatMinutes(weeklySec)}({weeklyPct}%)
               </span>

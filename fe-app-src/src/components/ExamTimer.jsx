@@ -1,4 +1,4 @@
-// 100分カウントダウンタイマー
+// 100分カウントダウン。街の上に浮かぶ時計看板として表示する。
 import React, { useEffect, useRef, useState } from "react";
 
 export default function ExamTimer({ totalSec, onExpire }) {
@@ -23,17 +23,21 @@ export default function ExamTimer({ totalSec, onExpire }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const m = Math.floor(remaining / 60);
+  const h = Math.floor(remaining / 3600);
+  const m = Math.floor((remaining % 3600) / 60);
   const s = remaining % 60;
-  const label = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  const pad = (n) => String(n).padStart(2, "0");
+  // 写真の看板時計に合わせて hh:mm:ss の3桁組で出す
+  const label = `${pad(h)}:${pad(m)}:${pad(s)}`;
 
   let cls = "exam-timer";
   if (remaining <= 180) cls += " danger";
   else if (remaining <= 600) cls += " warn";
 
   return (
-    <span className={cls}>
-      <span aria-hidden="true">⏱</span> {label}
+    <span className={cls} role="timer" aria-live="off">
+      <span className="tag-en" aria-hidden="true">TIME</span>
+      <span className="digits">{label}</span>
     </span>
   );
 }

@@ -1,4 +1,4 @@
-// 疑似言語プログラムの等幅フォント表示
+// 疑似言語プログラムの表示。端末の画面に見立てて走査線を敷く。
 import React from "react";
 
 export default function CodeBlock({ code }) {
