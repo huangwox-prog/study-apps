@@ -6,7 +6,8 @@ import { masteryLabel, overallProgress } from "../logic/mastery.js";
 import { EXAM_SETS } from "../logic/examGenerator.js";
 import { getGreeting } from "../data/greetings.js";
 import { useRevealObserver, useCountUp } from "../logic/motion.js";
-import { ArcMark, HeroFigure, CategoryGlyph, ProgressArc } from "./Motif.jsx";
+import { ArcMark, CategoryGlyph, ProgressArc } from "./Motif.jsx";
+import FormulaField from "./FormulaField.jsx";
 import WeakSpots from "./WeakSpots.jsx";
 import ActivityLog from "./ActivityLog.jsx";
 import ProgressRail from "./ProgressRail.jsx";
@@ -58,6 +59,7 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
 
       {/* ---------- ヒーロー ---------- */}
       <header className="hero">
+        <FormulaField />
         <div className="hero-stage">
         <div className="hero-copy">
           <p className="kicker">ARCA 数学I ／ {greeting}</p>
@@ -75,7 +77,6 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
           </div>
         </div>
 
-        <HeroFigure />
         </div>
 
         <div className="hero-meta">
