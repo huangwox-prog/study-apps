@@ -85,10 +85,13 @@
   --dur: 0.45s;
   --dur-slow: 0.9s;
 
-  --font-body: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic",
-    -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Hiragino Sans", "Hiragino Kaku Gothic ProN", -apple-system, "Segoe UI",
-    "Yu Gothic UI", sans-serif;
+  /* 欧文はシステムフォント(Apple では SF Pro が当たる)を先頭に置き、
+     和文は Hiragino → Yu Gothic → Noto Sans JP の順でフォールバックする */
+  --font-system: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial,
+    "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic",
+    "Noto Sans CJK JP", "Noto Sans JP", Meiryo, "IPAexGothic", "IPAGothic", sans-serif;
+  --font-body: var(--font-system);
+  --font-display: var(--font-system);
   --font-math: "STIX Two Math", "Cambria Math", Georgia, "Times New Roman", serif;
 
   --scroll: 0;
