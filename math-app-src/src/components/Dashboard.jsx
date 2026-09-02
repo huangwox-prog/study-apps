@@ -60,7 +60,7 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
 
       {/* ---------- ヒーロー ---------- */}
       <header className="hero">
-        <FormulaField />
+        <FormulaField onPick={() => document.getElementById("units")?.scrollIntoView({ behavior: "smooth" })} />
         <div className="hero-stage">
         <div className="hero-copy">
           <p className="kicker">ARCA 数学I ／ {greeting}</p>
