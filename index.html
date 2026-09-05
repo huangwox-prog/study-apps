@@ -149,14 +149,14 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 .hero{
   position:relative;isolation:isolate;min-height:min(100svh,940px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  padding:clamp(28px,5vh,64px) clamp(18px,5vw,40px) clamp(28px,5vh,56px);
-  gap:clamp(8px,2vh,20px);
+  padding:clamp(18px,3.4vh,48px) clamp(18px,5vw,40px) clamp(18px,3.4vh,44px);
+  gap:clamp(6px,1.4vh,16px);
 }
 .hero-copy,.hero-meta,.hero-scroll-hint{position:relative;z-index:2;width:100%;max-width:var(--content-max);margin-inline:auto;}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:clamp(16px,3vh,28px);}
 .hero .display{margin:14px 0 10px;}
 .hero .lede{margin:0 auto;}
-.hero-meta{display:flex;gap:clamp(20px,5vw,56px);flex-wrap:wrap;justify-content:center;margin-top:clamp(14px,3vh,34px);}
+.hero-meta{display:flex;gap:clamp(20px,5vw,56px);flex-wrap:wrap;justify-content:center;margin-top:clamp(10px,2vh,26px);}
 .hero-meta-value{display:block;font-size:clamp(1.6rem,1.1rem + 1.8vw,2.5rem);font-weight:700;letter-spacing:-.035em;line-height:1.1;}
 .hero-meta-label{font-size:.78rem;color:var(--text-tertiary);letter-spacing:.06em;}
 .hero-scroll-hint{margin-top:clamp(12px,2.4vh,30px);font-size:.76rem;letter-spacing:.18em;color:var(--text-tertiary);display:flex;flex-direction:column;align-items:center;gap:8px;}
@@ -218,12 +218,12 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 }
 
 /* ============ 手描きの蟻(このサイトの顔) ============ */
-.ant-mark{display:block;width:26px;height:26px;object-fit:contain;
+.ant-mark{display:block;width:38px;height:38px;object-fit:contain;
   transition:transform var(--dur-slow) var(--ease-bounce);}
 .brand-lockup:hover .ant-mark{transform:rotate(-16deg) scale(1.16);}
 
 .ant-stage{position:relative;display:grid;place-items:center;margin:0 auto clamp(6px,1.6vh,18px);
-  width:clamp(120px,17vh,196px);aspect-ratio:1;}
+  width:clamp(180px,25vh,294px);aspect-ratio:1;}
 .ant-ring{position:absolute;inset:-8%;border-radius:50%;border:1px dashed var(--hairline);
   transform:rotate(calc(var(--scroll)*260deg));transition:transform .12s linear;}
 .ant-ring::after{content:"";position:absolute;inset:14%;border-radius:50%;
@@ -349,7 +349,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 <nav class="brand-nav">
   <a class="brand-lockup" href="#top">
-    <img class="ant-mark" src="assets/hero-illust.png" alt="" width="26" height="26">
+    <img class="ant-mark" src="assets/hero-illust.png" alt="" width="38" height="38">
     STUDY APPS
     <span class="brand-lockup-sub">しだの学習アプリ</span>
   </a>
@@ -529,7 +529,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 <footer class="foot">
   <div class="foot-inner">
     <div class="foot-row">
-      <img class="ant-mark" src="assets/hero-illust.png" alt="" width="20" height="20">
+      <img class="ant-mark" src="assets/hero-illust.png" alt="" width="30" height="30" style="width:30px;height:30px">
       <span style="font-weight:700;letter-spacing:.14em">STUDY APPS</span>
       <span>しだの学習アプリ集</span>
     </div>
