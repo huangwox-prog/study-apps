@@ -21,18 +21,25 @@ export default function App() {
   let content = null;
   let shellClass = "app-shell";
 
+  // ホームはプロダクトページとして全幅で組む(演習画面だけ従来の幅に収める)
   if (view.screen === "home") {
-    content = (
-      <SetSelect
-        sets={ALL_SETS}
-        results={results}
-        onSelect={(setId) => {
-          setView({ screen: "exam", setId });
-          window.scrollTo({ top: 0 });
-        }}
-      />
+    return (
+      <>
+        <CityBackdrop />
+        <ThemeToggle />
+        <SetSelect
+          sets={ALL_SETS}
+          results={results}
+          onSelect={(setId) => {
+            setView({ screen: "exam", setId });
+            window.scrollTo({ top: 0 });
+          }}
+        />
+      </>
     );
-  } else if (view.screen === "exam") {
+  }
+
+  if (view.screen === "exam") {
     const examSet = ALL_SETS.find((s) => s.id === view.setId);
     shellClass = "app-shell cat-algo";
     content = <ExamRunner key={view.setId} examSet={examSet} onExit={goHome} />;
