@@ -66,7 +66,7 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
           <p className="kicker">ARCA 数学I ／ {greeting}</p>
           <h1 className="display">
             数学I。<br />
-            <span className="aurora-text nowrap">ぜんぶ、動き出す。</span>
+            <span className="aurora-text nowrap">ゼロから、イチまで。</span>
           </h1>
           <p className="lede">
             数と式・二次関数・三角比。{units.length}単元の演習と164問の口頭試問ドリル、

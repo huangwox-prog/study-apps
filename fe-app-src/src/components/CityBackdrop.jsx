@@ -118,6 +118,8 @@ export default function CityBackdrop() {
         const max = Math.max(1, document.body.scrollHeight - window.innerHeight);
         const sy = Math.min(1, window.scrollY / max);
         document.documentElement.style.setProperty("--sy", sy.toFixed(4));
+        // 固定ナビの下端を光らせる判定もここでまとめて行う
+        document.documentElement.classList.toggle("is-scrolled", window.scrollY > 12);
       });
     };
     onScroll();

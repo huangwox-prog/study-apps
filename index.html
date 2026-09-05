@@ -206,6 +206,17 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 @media (max-width:820px){.w-mid{display:none;}}
 @media (max-width:620px){.w-t3{display:none;}}
 
+/* 墨のカード:科目Bの札。骨格は数学Iの札と同じで、地だけが墨になる */
+.card.app-ink{
+  background:var(--ink);border-color:rgba(255,255,255,.12);
+  --text:#f4f4f6;--text-secondary:#a9abb4;--text-tertiary:#7b7d86;
+  --surface:rgba(255,255,255,.06);--surface-strong:rgba(255,255,255,.1);--surface-soft:rgba(255,255,255,.05);
+  --hairline:rgba(255,255,255,.12);--border:rgba(255,255,255,.1);
+  --arc-1:#6c85ff;--arc-2:#b077ff;--arc-3:#2ad9b8;--accent:#6c85ff;
+  --accent-glow:rgba(108,133,255,.45);--accent-soft:rgba(108,133,255,.16);
+  color:var(--text);
+}
+
 /* ============ 手描きの蟻(このサイトの顔) ============ */
 .ant-mark{display:block;width:26px;height:26px;object-fit:contain;
   transition:transform var(--dur-slow) var(--ease-bounce);}
@@ -363,7 +374,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
       <img class="ant" id="ant" src="assets/hero-illust.png" alt="手描きの蟻のイラスト" width="512" height="512">
     </div>
     <p class="kicker">Study Apps</p>
-    <h1 class="display">学ぶ道具は、<br><span class="aurora-text nowrap">自分で作る。</span></h1>
+    <h1 class="display">学ぶ道具は、<br><span class="aurora-text nowrap">自分で作れる。</span></h1>
     <p class="lede">
       生成AIと対話しながら、自分がつまずいたところに合わせて組み上げている学習アプリ。
       いまは数学Iと基本情報技術者試験 科目Bの2本に絞って育てています。
@@ -390,7 +401,7 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
   <div class="band-inner">
     <div class="section-head band-center" data-reveal>
       <p class="kicker">Flagship 01</p>
-      <h2 class="display-2">数学I。<span class="aurora-text nowrap">ぜんぶ、動き出す。</span></h2>
+      <h2 class="display-2">数学I。<span class="aurora-text nowrap">ゼロから、イチまで。</span></h2>
       <p class="lede">数と式・二次関数・三角比を1本に統合した、総合型選抜のための学習エンジン。</p>
     </div>
 
@@ -437,14 +448,14 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
 
 <!-- ---------- 基本情報 ---------- -->
 <section class="band" id="fe">
-  <div class="band-inner band-ink" style="padding:clamp(30px,5vw,64px)" data-reveal="scale">
-    <div class="section-head band-center">
+  <div class="band-inner">
+    <div class="section-head band-center" data-reveal>
       <p class="kicker">Flagship 02</p>
       <h2 class="display-2">科目B。<span class="aurora-text nowrap">本番の100分を、何度でも。</span></h2>
       <p class="lede">IPA公式サンプルの傾向を分析して組んだ、基本情報技術者試験 科目Bの模擬試験エンジン。</p>
     </div>
 
-    <a class="card app-card" href="fe-app/">
+    <a class="card app-card app-ink" href="fe-app/" data-reveal="scale">
       <div>
         <span class="badge accent">NEON DRILL</span>
         <h3>基本情報 科目B 模擬試験</h3>
