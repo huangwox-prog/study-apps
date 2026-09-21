@@ -12,6 +12,10 @@ import WeakSpots from "./WeakSpots.jsx";
 import ActivityLog from "./ActivityLog.jsx";
 import ProgressRail from "./ProgressRail.jsx";
 import OralStats from "./OralStats.jsx";
+import { ORAL_PROBLEMS, FIELDS as ORAL_FIELDS } from "../data/oral/index.js";
+
+// 口頭試問ドリルの問題数・分野数は問題データから出す(追加のたびに書き換えずに済むように)
+const ORAL_COUNT = ORAL_PROBLEMS.length;
 
 const CATEGORY_LABELS = { ns: "数と式", qf: "二次関数", tri: "三角比" };
 // 分野名を主役にし、その下に「この先どこへ続くか」を一言で添える
@@ -69,7 +73,7 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
             <span className="aurora-text nowrap">ゼロから、イチまで。</span>
           </h1>
           <p className="lede">
-            数と式・二次関数・三角比。{units.length}単元の演習と164問の口頭試問ドリル、
+            数と式・二次関数・三角比。{units.length}単元の演習と{ORAL_COUNT}問の口頭試問ドリル、
             そして卒業模擬試験までを、ひとつの弧の上に。
           </p>
           <div className="hero-actions">
@@ -82,7 +86,7 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
 
         <div className="hero-meta">
           <span className="hero-meta-item">
-            <span className="hero-meta-value">164</span>
+            <span className="hero-meta-value">{ORAL_COUNT}</span>
             <span className="hero-meta-label">口頭試問</span>
           </span>
           <span className="hero-meta-item">
@@ -107,20 +111,20 @@ export default function Dashboard({ units, progress, mistakeSummary, onOpenUnit,
             <p className="kicker">ORAL DRILL</p>
             <h2 className="display-2">言えたら、<span className="aurora-text nowrap">解けている。</span></h2>
             <p className="lede">
-              「これは何の問題か」「最初の一手は何か」を声に出す、分野別164問の分類ドリル。
+              「これは何の問題か」「最初の一手は何か」を声に出す、分野別{ORAL_COUNT}問の分類ドリル。
               手を動かす前の3秒を鍛える。
             </p>
           </div>
 
           <div className="feature-grid" data-reveal>
             <button className="card card-hover feature-card drill-card" onClick={onOpenOral}>
-              <span className="badge accent">164問</span>
+              <span className="badge accent">{ORAL_COUNT}問</span>
               <h3 style={{ margin: "14px 0 6px" }}>ドリルを始める</h3>
               <p className="text-secondary" style={{ fontSize: "0.92rem" }}>
                 分野・出題順・問題数を選んで開始。詰まったら手順に戻れる。
               </p>
               <ul className="arc-list">
-                <li>分野を選ぶ — 14分野から、今日やる範囲だけ</li>
+                <li>分野を選ぶ — {ORAL_FIELDS.length}分野から、今日やる範囲だけ</li>
                 <li>声に出す — 何の問題か、最初の一手は何か</li>
                 <li>自己採点 — 言えた/惜しい/言えないの3段階で記録</li>
               </ul>

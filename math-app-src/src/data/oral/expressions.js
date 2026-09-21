@@ -8,6 +8,11 @@ const FR = {
   category: CATEGORY.FACTOR_BY_ROOT,
   firstMove: MOVE.FACTOR_BY_ROOT,
 };
+const FS = {
+  field: "factor",
+  category: CATEGORY.FACTOR_SUBST,
+  firstMove: MOVE.FACTOR_SUBST,
+};
 const LI = { field: "linineq", category: CATEGORY.LIN_INEQ, firstMove: MOVE.TRANSPOSE };
 const SI = { field: "linineq", category: CATEGORY.SIM_INEQ, firstMove: MOVE.NUMBER_LINE };
 const AB = { field: "absineq", category: CATEGORY.ABS_INEQ, firstMove: MOVE.ABS_OFF };
@@ -120,7 +125,7 @@ export default [
     ],
   },
 
-  // ---------- 因数分解(18) ----------
+  // ---------- 因数分解(22) ----------
   {
     ...FA,
     id: "factor-01",
@@ -279,6 +284,51 @@ export default [
     solution: [
       "$x^2 - 2x - 1 = 0$ とおくと $x = 1 \\pm \\sqrt{1 + 1} = 1 \\pm \\sqrt{2}$",
       "$= (x - 1 - \\sqrt{2})(x - 1 + \\sqrt{2})$",
+    ],
+  },
+  {
+    ...FS,
+    id: "factor-19",
+    q: "$(x + y)^2 - 3(x + y) - 4$ を因数分解せよ。",
+    a: "$(x + y - 4)(x + y + 1)$",
+    solution: [
+      "$x + y = X$ とおくと $X^2 - 3X - 4$",
+      "$= (X - 4)(X + 1)$",
+      "$X$ を戻して $(x + y - 4)(x + y + 1)$",
+    ],
+  },
+  {
+    ...FS,
+    id: "factor-20",
+    q: "$x^4 - 5x^2 + 4$ を因数分解せよ。",
+    a: "$(x + 1)(x - 1)(x + 2)(x - 2)$",
+    solution: [
+      "$x^2 = X$ とおくと $X^2 - 5X + 4 = (X - 1)(X - 4)$",
+      "$= (x^2 - 1)(x^2 - 4)$",
+      "$= (x + 1)(x - 1)(x + 2)(x - 2)$",
+    ],
+  },
+  {
+    ...FS,
+    id: "factor-21",
+    q: "$x^2 + xy - 2x - y + 1$ を因数分解せよ。",
+    a: "$(x - 1)(x + y - 1)$",
+    solution: [
+      "次数の低い $y$ について整理: $= (x - 1)y + (x^2 - 2x + 1)$",
+      "$= (x - 1)y + (x - 1)^2$",
+      "共通因数 $x - 1$ でくくって $(x - 1)(x + y - 1)$",
+    ],
+  },
+  {
+    ...FS,
+    id: "factor-22",
+    q: "$x^2 + xy - 2y^2 - x + 7y - 6$ を因数分解せよ。",
+    a: "$(x + 2y - 3)(x - y + 2)$",
+    solution: [
+      "$x$ について整理: $= x^2 + (y - 1)x - (2y^2 - 7y + 6)$",
+      "定数項の部分は $-(2y - 3)(y - 2)$",
+      "たして $y - 1$ になる組は $2y - 3$ と $-(y - 2)$",
+      "$= (x + 2y - 3)(x - y + 2)$",
     ],
   },
 

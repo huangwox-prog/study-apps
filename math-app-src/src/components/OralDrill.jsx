@@ -155,7 +155,7 @@ export default function OralDrill({ onExit }) {
               onChange={() => setIncludeAdvanced((v) => !v)}
             />
             <span className="oral-check-label">
-              応用問題(場合分け・三角比の対称式)も出す
+              応用問題(場合分け・三角比の対称式・二重根号・整数部分と式の値)も出す
             </span>
             <span className="text-tertiary oral-check-count">{advancedInPool}</span>
           </label>
