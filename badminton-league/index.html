@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#f1f0ec">
 <title>CLEAR リーグ戦</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="バドミントン部のリーグ戦メーカー。選手と学校を入れると、実力の近い選手で A・B・C… のリーグに分け、総当たりの対戦表・星取表・順位を自動で作ります。">
+<meta name="description" content="バドミントン部のリーグ戦メーカー。選手と学校を入れると、ランクの近い選手で A・B・C… のリーグに分け、総当たりの対戦表・星取表・順位を自動で作ります。">
 <style>
 /* =====================================================================
    CLEAR — バドミントンのリーグ戦・トーナメント作り。名前は高い弧を描くショット「クリア」から。
@@ -380,7 +380,7 @@ tr:last-child td { border-bottom: none; }
 .lv-b.on { background: color-mix(in srgb, var(--accent) 20%, var(--surface-strong)); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 .lv-b.cur { background: var(--accent); color: var(--accent-text); border-color: var(--accent); transform: scale(1.08); }
 
-/* 実力メーター(弧のドット) */
+/* ランクメーター(弧のドット) */
 .lv { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; font-weight: 650; }
 .lv-bar { display: inline-flex; gap: 2px; }
 .lv-bar i { width: 4px; height: 12px; border-radius: 2px; background: var(--hairline); }
@@ -701,7 +701,7 @@ details.more[open] summary { margin-bottom: 12px; }
   .nav .lockup-sub { display: none; }
   .bm-row { grid-template-columns: 2.2em minmax(0, 1fr) auto; }
   .bm-round { display: none; }
-  /* 選手一覧:スマホでは1人を2〜3段のカードにして、横スクロールなしで実力を押せるように */
+  /* 選手一覧:スマホでは1人を2〜3段のカードにして、横スクロールなしでランクを押せるように */
   .ptable thead { display: none; }
   .ptable, .ptable tbody { display: block; }
   .ptable tr {
@@ -813,7 +813,7 @@ function normalize(raw) {
   ev.games = ev.games === 3 ? 3 : 1;
   ev.points = [11, 15, 21].includes(ev.points) ? ev.points : 21;
   ev.leagueCount = clamp(parseInt(ev.leagueCount, 10) || 4, 1, 26);
-  // リーグ分け:1リーグの人数と分け方(level=実力別 / balanced=どのリーグも同じ強さ)
+  // リーグ分け:1リーグの人数と分け方(level=ランク別 / balanced=どのリーグも同じ強さ)
   ev.groupSize = clamp(parseInt(ev.groupSize, 10) || 4, 3, 8);
   ev.splitMethod = ev.splitMethod === "balanced" || ev.splitMethod === "level" ? ev.splitMethod : ev.mode === "both" ? "balanced" : "level";
   return ev;
@@ -962,7 +962,7 @@ function groupSizesFor(e, n) {
 
 function autoAssign(e) {
   const rand = rng(Date.now());
-  // 同じ実力の中だけ順番をシャッフルしてから、強い順に並べる(sort は安定)
+  // 同じランクの中だけ順番をシャッフルしてから、強い順に並べる(sort は安定)
   const ps = shuffle(e.players.slice(), rand).sort((a, b) => b.level - a.level);
   const sizes = planSizes(ps.length, e.groupSize);
   const K = sizes.length;
@@ -979,7 +979,7 @@ function autoAssign(e) {
     });
     canSwap = (p, q) => pot[p.id] === pot[q.id];
   } else {
-    // 実力別:強い順に上から A・B・C… と区切る
+    // ランク別:強い順に上から A・B・C… と区切る
     groups = [];
     let k = 0;
     sizes.forEach((n) => { groups.push(ps.slice(k, k + n)); k += n; });
@@ -987,7 +987,7 @@ function autoAssign(e) {
   }
 
   if (e.spreadSchools) {
-    // 入れ替えてよい選手同士(実力別=実力差が許容内、均等=同じ段)だけ入れ替えて、同じ学校の重なりを減らす
+    // 入れ替えてよい選手同士(ランク別=ランク差が許容内、均等=同じ段)だけ入れ替えて、同じ学校の重なりを減らす
     for (let iter = 0; iter < 300; iter++) {
       let improved = false;
       for (let i = 0; i < K && !improved; i++) {
@@ -1381,13 +1381,13 @@ function levelMeter(lv) {
   for (let i = 1; i <= 10; i++) bars += `<i class="${i <= lv ? "on" : ""}"></i>`;
   return `<span class="lv"><span class="lv-bar" aria-hidden="true">${bars}</span>${lv}</span>`;
 }
-/* 実力ピッカー:1〜10 の数字ボタン。選んだ数字まで色で埋まる */
+/* ランクピッカー:1〜10 の数字ボタン。選んだ数字まで色で埋まる */
 function levelPicker(id, lv) {
   let s = "";
   for (let i = 1; i <= 10; i++) {
-    s += `<button type="button" class="lv-b ${i <= lv ? "on" : ""} ${i === lv ? "cur" : ""}" data-action="set-level" data-id="${id}" data-lv="${i}" aria-label="実力 ${i}" aria-pressed="${i === lv}">${i}</button>`;
+    s += `<button type="button" class="lv-b ${i <= lv ? "on" : ""} ${i === lv ? "cur" : ""}" data-action="set-level" data-id="${id}" data-lv="${i}" aria-label="ランク ${i}" aria-pressed="${i === lv}">${i}</button>`;
   }
-  return `<div class="lvpick" role="group" aria-label="実力(10がいちばん強い)">${s}</div>`;
+  return `<div class="lvpick" role="group" aria-label="ランク(10がいちばん強い)">${s}</div>`;
 }
 function paintPicker(el, lv) {
   el.querySelectorAll(".lv-b").forEach((b) => {
@@ -1640,26 +1640,26 @@ function playersHTML(e) {
   }).join("");
   return `${schoolsDatalist(e)}
   <section class="card">
-    <div class="card-head"><div><h2>${unit(e)}を追加</h2><p class="faint">${dbl ? "ペアごとに1行。実力はペアとしての強さで、10 がいちばん強い。だいたいで大丈夫です。" : "実力は 10 がいちばん強い。だいたいで大丈夫です(同じ数字の選手は同じくらいの強さとして扱います)。"}</p></div></div>
+    <div class="card-head"><div><h2>${unit(e)}を追加</h2><p class="faint">${dbl ? "ペアごとに1行。ランクはペアとしての強さで、10 がいちばん強い。だいたいで大丈夫です。" : "ランクは 10 がいちばん強い。だいたいで大丈夫です(同じ数字の選手は同じくらいの強さとして扱います)。"}</p></div></div>
     <form class="add-form ${dbl ? "dbl" : ""}" id="add-form">
       <label class="field field-name"><span>${dbl ? "1人目" : "名前"}</span><input class="input" id="new-name" required placeholder="例:山田 太郎" autocomplete="off"></label>
       ${dbl ? `<label class="field field-name"><span>2人目</span><input class="input" id="new-name2" placeholder="例:佐藤 次郎" autocomplete="off"></label>` : ""}
       <label class="field"><span>学校</span><input class="input" id="new-school" list="schools" placeholder="例:桜ヶ丘高" autocomplete="off"></label>
-      <div class="field field-level"><span>実力(10がいちばん強い)</span>${levelPicker("new", ui.newLevel)}</div>
+      <div class="field field-level"><span>ランク(10がいちばん強い)</span>${levelPicker("new", ui.newLevel)}</div>
       <button class="btn btn-primary" type="submit">追加</button>
     </form>
     <details class="paste" ${ui.pasteOpen ? "open" : ""}>
       <summary>Excel の名簿から貼り付ける</summary>
-      <p class="faint" style="margin:8px 0 0">Excel で名簿の範囲を選んでコピーし(見出しの行や番号・学年の列が入っていてもOK)、下の欄に貼り付けてください。どの列が${dbl ? "1人目・2人目" : "名前"}・学校・実力かを自動で見分けて、取り込む前に表で見せます。${dbl ? "「山田・佐藤」のように1つのセルに2人入っていてもOK。" : ""}</p>
+      <p class="faint" style="margin:8px 0 0">Excel で名簿の範囲を選んでコピーし(見出しの行や番号・学年の列が入っていてもOK)、下の欄に貼り付けてください。どの列が${dbl ? "1人目・2人目" : "名前"}・学校・ランクかを自動で見分けて、取り込む前に表で見せます。${dbl ? "「山田・佐藤」のように1つのセルに2人入っていてもOK。" : ""}</p>
       <textarea class="input" id="paste-box" data-input="paste" placeholder="${dbl ? "1人目	2人目	学校&#10;山田 太郎	佐藤 次郎	東高校&#10;鈴木・高橋	西高校" : "No.	氏名	学年	学校名&#10;1	山田　太郎	2	東高校&#10;2	佐藤　花子	1	西高校"}">${esc(ui.imp ? ui.imp.text : "")}</textarea>
       <div id="import-preview">${importPreviewHTML(e)}</div>
     </details>
   </section>
   <section class="card">
-    <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・実力を直すと、${hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。</p></div>
+    <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・ランクを直すと、${hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。</p></div>
       ${e.players.length ? `<button class="btn btn-aurora btn-sm" data-action="tab" data-tab="${next[0]}">${next[1]}</button>` : ""}</div>
     ${e.players.length ? `<div class="table-wrap"><table class="ptable ${dbl ? "dbl" : ""}">
-      <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>実力</th>${hasL ? "<th>リーグ</th>" : ""}<th></th></tr></thead>
+      <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>ランク</th>${hasL ? "<th>リーグ</th>" : ""}<th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>` : `<p class="muted">まだ${unit(e)}がいません。上のフォームか、Excel からの貼り付けで追加してください。</p>`}
   </section>`;
 }
@@ -1689,7 +1689,7 @@ function leaguesHTML(e) {
     <div class="card-head"><div><h2>リーグの分け方</h2><p class="faint">2つ選んで「リーグを作る」を押すだけです。</p></div></div>
     <div class="stack">
       <div class="field"><span>① 分け方</span><div class="choice-grid">
-        ${methodCard("level", "実力別に分ける", "同じくらいの強さの人どうしで試合。A がいちばん強い組。部内戦・練習向き", levelPic)}
+        ${methodCard("level", "ランク別に分ける", "同じくらいの強さの人どうしで試合。A がいちばん強い組。部内戦・練習向き", levelPic)}
         ${methodCard("balanced", "どのリーグも同じ強さにする", "強い人を各リーグに1人ずつ分ける。リーグのあとに決勝トーナメントをするとき向き", balPic)}
       </div></div>
       <div class="field"><span>② 1リーグの${unit(e)}の数</span>
@@ -1702,11 +1702,11 @@ function leaguesHTML(e) {
       <div class="field"><span>学校のばらし</span>
         <label class="check"><input type="checkbox" id="spread" data-change="spread" ${e.spreadSchools ? "checked" : ""}>同じ学校が同じリーグに固まらないようにする</label>
       </div>
-      <div class="field"><span>入れ替えてよい実力差</span>
+      <div class="field"><span>入れ替えてよいランク差</span>
         <select class="select" id="tolerance" data-change="tolerance" ${e.spreadSchools && e.splitMethod === "level" ? "" : "disabled"}>
-          <option value="0" ${e.tolerance === 0 ? "selected" : ""}>同じ実力の選手同士だけ</option>
-          <option value="1" ${e.tolerance === 1 ? "selected" : ""}>実力差 1 までOK</option>
-          <option value="2" ${e.tolerance === 2 ? "selected" : ""}>実力差 2 までOK</option>
+          <option value="0" ${e.tolerance === 0 ? "selected" : ""}>同じランクの選手同士だけ</option>
+          <option value="1" ${e.tolerance === 1 ? "selected" : ""}>ランク差 1 までOK</option>
+          <option value="2" ${e.tolerance === 2 ? "selected" : ""}>ランク差 2 までOK</option>
         </select>
       </div>
     </div></details>
@@ -1730,7 +1730,7 @@ function leaguesHTML(e) {
     return `<article class="card league-card ${lgClass(i)}">
       <div class="league-title"><span class="league-letter">${letter(i)}</span><div><h3>${letter(i)}リーグ</h3><span class="faint num">${count(e, ps.length)} · ${matchCount(ps.length)}試合</span></div></div>
       <div class="league-meta">
-        <span class="chip num">実力 ${range}</span><span class="chip num">平均 ${avg}</span>
+        <span class="chip num">ランク ${range}</span><span class="chip num">平均 ${avg}</span>
         ${dups.length ? dups.map(([s, c]) => `<span class="chip chip-warn">${esc(s)} ×${c}</span>`).join("") : ps.length ? `<span class="chip chip-ok">学校の重なりなし</span>` : ""}
       </div>
       <ul class="plist">${ps.map((p) => `<li>
@@ -1961,10 +1961,10 @@ function seedBoxHTML(e) {
   const opts = (cur) => `<option value="">—</option>` + Array.from({ length: max }, (_, k) => k + 1)
     .map((k) => `<option value="${k}" ${cur === k ? "selected" : ""}>第${k}シード</option>`).join("");
   return `<details class="seedbox" ${ui.seedOpen ? "open" : ""}>
-    <summary>シードを自分で決める${set ? `<span class="chip chip-live">${set}${isDbl(e) ? "組" : "人"} 指定中</span>` : `<span class="faint">(決めなければ実力順で自動)</span>`}</summary>
-    <p class="faint" style="margin:10px 0 12px">決めた${unit(e)}は、その番号のシード位置に入ります。第1と第2は決勝まで当たらず、第3・第4はそれぞれ別のブロックに分かれます。決めていない${unit(e)}は、残りの位置に実力順で入ります。</p>
+    <summary>シードを自分で決める${set ? `<span class="chip chip-live">${set}${isDbl(e) ? "組" : "人"} 指定中</span>` : `<span class="faint">(決めなければランク順で自動)</span>`}</summary>
+    <p class="faint" style="margin:10px 0 12px">決めた${unit(e)}は、その番号のシード位置に入ります。第1と第2は決勝まで当たらず、第3・第4はそれぞれ別のブロックに分かれます。決めていない${unit(e)}は、残りの位置にランク順で入ります。</p>
     <div class="seed-list">${rows.map((p) => `<div class="seed-row ${e.seeds[p.id] ? "is-set" : ""}">
-        <span class="pname">${esc(pname(e, p))}<span class="pschool">${esc(p.school)}${both ? "" : ` · 実力 ${p.level}`}</span></span>
+        <span class="pname">${esc(pname(e, p))}<span class="pschool">${esc(p.school)}${both ? "" : ` · ランク ${p.level}`}</span></span>
         <select class="select seed-select" id="seed-${p.id}" data-change="seed" data-id="${p.id}" aria-label="${esc(pname(e, p))}のシード">${opts(e.seeds[p.id] || 0)}</select>
       </div>`).join("")}</div>
     ${set ? `<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm" data-action="seed-clear">シードの指定をすべて解除</button></div>` : ""}
@@ -2294,13 +2294,13 @@ const PAIR_SEP = /[・\/／&＆]/;
 const toHalf = (s) => String(s || "").replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)).trim();
 
 /* ---- Excel 名簿の取り込み:列を見分けて、取り込む前に表で見せる ---- */
-const IMP_ROLES = [["name", "名前"], ["name2", "2人目(ダブルス)"], ["school", "学校"], ["level", "実力(1〜10)"], ["rank", "部内順位(1が強い)"], ["skip", "使わない"]];
+const IMP_ROLES = [["name", "名前"], ["name2", "2人目(ダブルス)"], ["school", "学校"], ["level", "ランク(1〜10)"], ["rank", "部内順位(1が強い)"], ["skip", "使わない"]];
 const IMP_KW = [
   [/2人目|パートナー|相方/, "name2"],
   [/名前|氏名|選手|プレーヤー|プレイヤー|ペア|1人目|^name$/i, "name"],
   [/学校|所属|チーム|校名|団体|クラブ/, "school"],
-  [/実力|レベル|強さ|^level$/i, "level"],
-  [/順位|ランク|ランキング|序列/, "rank"],
+  [/実力|ランク|レベル|強さ|^level$/i, "level"],
+  [/順位|ランキング|序列/, "rank"],
   [/^no\.?$|番号|学年|^年$|^組$|ふりがな|フリガナ|よみ|かな|性別|備考|学籍|^#$/i, "skip"],
 ];
 const SCHOOL_RE = /(高校|高等学校|高|中学校|中学|中|学園|学院|大学|小学校|小)$/;
@@ -2389,7 +2389,7 @@ function importPreviewHTML(e) {
   const imp = ui.imp;
   if (!imp) return "";
   const res = buildImport(e);
-  const sample = res.players.slice(0, 3).map((p) => `${esc(pname(e, p))}(${esc(p.school) || "学校なし"}・実力${p.level})`).join("、");
+  const sample = res.players.slice(0, 3).map((p) => `${esc(pname(e, p))}(${esc(p.school) || "学校なし"}・ランク${p.level})`).join("、");
   const notes = [res.dup ? `もう入っている名前 ${res.dup}件はとばします` : "", res.empty ? `名前が空の行 ${res.empty}件はとばします` : ""].filter(Boolean).join(" / ");
   let table = "";
   if (!imp.free) {
@@ -2427,7 +2427,7 @@ function parsePaste(text, dbl) {
     cols = cols.map((c) => c.trim()).filter((c, i) => c !== "" || i < 2);
     if (!cols[0] || /^(名前|氏名|選手|ペア|1人目)/.test(cols[0])) return;
     if (dbl) { out.push(parsePairCols(cols, sep)); return; }
-    // 「山田 太郎 桜ヶ丘高 8」のように名前に空白が入っているとき:最後が数字なら実力、その前が学校
+    // 「山田 太郎 桜ヶ丘高 8」のように名前に空白が入っているとき:最後が数字ならランク、その前が学校
     let level = 5;
     const last = cols[cols.length - 1];
     const lvNum = parseInt(String(last).replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)), 10);
@@ -2439,7 +2439,7 @@ function parsePaste(text, dbl) {
   });
   return out;
 }
-/* ダブルス1行:「1人目 2人目 学校 実力」/「山田・佐藤 学校 実力」 */
+/* ダブルス1行:「1人目 2人目 学校 ランク」/「山田・佐藤 学校 ランク」 */
 function parsePairCols(cols, sep) {
   let level = 5;
   const last = String(cols[cols.length - 1]);
@@ -2763,6 +2763,8 @@ app.addEventListener("input", (evt) => {
 
 /* ============ テーマ・背景 ============ */
 const root = document.documentElement;
+// はじめはライトモード。ボタンでダークを選んだ人だけ、次からもダークで開く
+root.dataset.theme = "light";
 try { const th = localStorage.getItem("arca-league-theme"); if (th === "dark" || th === "light") root.dataset.theme = th; } catch (e) {}
 // 上のバーの「ダークにする/ライトにする」。選んだほうをこの端末に覚える
 app.addEventListener("click", (evt) => {
