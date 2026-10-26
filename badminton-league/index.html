@@ -351,7 +351,18 @@ tr:last-child td { border-bottom: none; }
 .cell-input { width: 100%; min-width: 7em; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 6px 8px; }
 .cell-input:hover { border-color: var(--border-soft); background: var(--surface-strong); }
 .cell-input:focus { outline: none; border-color: var(--accent); background: var(--surface-strong); box-shadow: 0 0 0 3px var(--accent-soft); }
-.level-select { padding: 5px 8px; border-radius: 10px; }
+.lvpick { display: inline-flex; gap: 3px; flex-wrap: nowrap; }
+.lv-b {
+  width: 30px; height: 34px; border-radius: 8px; flex-shrink: 0;
+  font-size: 0.86rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  background: var(--surface-strong); color: var(--text-tertiary); border: 1px solid var(--border-soft);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-press);
+}
+.lv-b:first-child { border-radius: 8px 8px 8px 14px; }
+.lv-b:hover { border-color: var(--accent); color: var(--accent); }
+.lv-b:active { transform: scale(0.92); }
+.lv-b.on { background: color-mix(in srgb, var(--accent) 20%, var(--surface-strong)); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.lv-b.cur { background: var(--accent); color: var(--accent-text); border-color: var(--accent); transform: scale(1.08); }
 
 /* 実力メーター(弧のドット) */
 .lv { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; font-weight: 650; }
@@ -466,6 +477,14 @@ tr:last-child td { border-bottom: none; }
 .bracket-svg .bt { fill: var(--text); font-size: 12.5px; font-weight: 600; }
 .bracket-svg .bt.champ { fill: var(--accent); font-weight: 800; }
 .bracket-svg .bs { fill: var(--text-tertiary); font-size: 10.5px; font-weight: 500; }
+.bracket-svg .bseed { fill: var(--accent); font-size: 11px; font-weight: 800; }
+details.seedbox { margin-top: 16px; padding: 12px 16px; border-radius: 16px 16px 16px 30px; background: var(--surface-soft); border: 1px solid var(--border-soft); }
+details.seedbox summary { cursor: pointer; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+details.seedbox summary:hover { color: var(--accent); }
+.seed-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 6px 16px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+.seed-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--hairline); }
+.seed-row.is-set .pname { color: var(--accent); }
+.seed-select { padding: 5px 8px; font-size: 0.84rem; }
 .bracket-svg .bnode { cursor: pointer; }
 .bracket-svg .bnode rect { fill: var(--surface-strong); stroke: var(--border); stroke-width: 1; }
 .bracket-svg .bnode text { fill: var(--text-secondary); font-size: 10.5px; font-weight: 800; text-anchor: middle; font-variant-numeric: tabular-nums; }
@@ -563,7 +582,9 @@ details.more[open] summary { margin-bottom: 12px; }
   .progress-arc { width: 130px; height: 130px; justify-self: start; }
   .pa-value { font-size: 1.7rem; }
   .add-form, .add-form.dbl { grid-template-columns: 1fr 1fr; }
-  .add-form:not(.dbl) .field-name { grid-column: 1 / -1; }
+  .add-form:not(.dbl) .field-name, .add-form .field-level { grid-column: 1 / -1; }
+  .add-form .lvpick { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); }
+  .add-form .lv-b { width: auto; }
   .match { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "a b" "s s" "st st"; gap: 8px; }
   .m-side.a { grid-area: a; } .m-side.b { grid-area: b; } .m-scores { grid-area: s; } .m-status { grid-area: st; text-align: center; }
   .nav .lockup-sub { display: none; }
@@ -614,7 +635,7 @@ function toast(msg) {
 let events = {};
 let currentId = null;
 let ready = false;
-const ui = { view: "home", creating: false, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
+const ui = { newLevel: 5, view: "home", creating: false, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
 
 function today() {
   const d = new Date();
@@ -625,7 +646,7 @@ function normalize(raw) {
   const ev = Object.assign({
     name: "新しい大会", date: today(), type: "singles", games: 1, points: 21, leagueCount: 4,
     spreadSchools: true, tolerance: 0, players: [], leagues: [], results: {}, updatedAt: 0,
-    mode: null, tTop: 2, tThird: true, bracket: null,
+    mode: null, tTop: 2, tThird: true, bracket: null, seeds: {},
   }, clone(raw || {}));
   // 形式。古いデータは中身から推測する
   if (!["league", "tournament", "both"].includes(ev.mode)) {
@@ -636,8 +657,21 @@ function normalize(raw) {
   ev.tThird = ev.tThird !== false;
   const bs = ev.bracket && Array.isArray(ev.bracket.slots) ? ev.bracket.slots.length : 0;
   ev.bracket = bs >= 2 && (bs & (bs - 1)) === 0
-    ? { slots: ev.bracket.slots.map((x) => (x ? String(x) : null)), results: ev.bracket.results && typeof ev.bracket.results === "object" ? ev.bracket.results : {} }
+    ? {
+      slots: ev.bracket.slots.map((x) => (x ? String(x) : null)),
+      results: ev.bracket.results && typeof ev.bracket.results === "object" ? ev.bracket.results : {},
+      seeds: ev.bracket.seeds && typeof ev.bracket.seeds === "object" ? ev.bracket.seeds : {},
+    }
     : null;
+  // 手で決めたシード { 選手id: シード番号 }。消えた選手と重複番号は捨てる
+  const seedIds = new Set(ev.players.map((p) => p.id));
+  const usedSeed = new Set();
+  const seeds = {};
+  Object.entries(ev.seeds && typeof ev.seeds === "object" ? ev.seeds : {}).forEach(([id, s]) => {
+    const n = parseInt(s, 10);
+    if (seedIds.has(id) && n >= 1 && !usedSeed.has(n)) { seeds[id] = n; usedSeed.add(n); }
+  });
+  ev.seeds = seeds;
   ev.type = ev.type === "doubles" ? "doubles" : "singles";
   // ダブルスでは1件 = 1ペア(name と name2)。シングルスでは name2 は使わない
   ev.players = (ev.players || []).filter((p) => p && p.id).map((p) => ({
@@ -937,7 +971,8 @@ function seedPositions(N) {
 function roundName(K, r) { const d = K - r; return d === 0 ? "決勝" : d === 1 ? "準決勝" : d === 2 ? "準々決勝" : `${r}回戦`; }
 
 /* 出場者を強い順に並べる。tier が同じ(許容差以内)なら学校ばらしで入れ替えてよい */
-function bracketEntries(e) {
+/* 出場者(強い順、シード指定前) */
+function bracketCandidates(e) {
   if (e.mode === "both" && e.leagues.length) {
     const tiers = [];
     e.leagues.forEach((l) => standings(e, l).sorted.slice(0, e.tTop).forEach((r, k) => (tiers[k] = tiers[k] || []).push({ id: r.id, tier: -k })));
@@ -946,23 +981,37 @@ function bracketEntries(e) {
   const list = shuffle(e.players.slice(), rng(Date.now())).sort((a, b) => b.level - a.level).map((p) => ({ id: p.id, tier: p.level }));
   return { list, tol: e.tolerance };
 }
+/* 手で決めたシードをその番号に置き、残りは強い順のまま空いた番号へ詰める */
+function bracketEntries(e) {
+  const { list, tol } = bracketCandidates(e);
+  const ranked = new Array(list.length).fill(null);
+  const locked = new Set();
+  list.filter((x) => e.seeds[x.id] && e.seeds[x.id] <= list.length)
+    .sort((a, b) => e.seeds[a.id] - e.seeds[b.id])
+    .forEach((x) => { ranked[e.seeds[x.id] - 1] = x; locked.add(x.id); });
+  const rest = list.filter((x) => !locked.has(x.id));
+  for (let i = 0; i < ranked.length; i++) if (!ranked[i]) ranked[i] = rest.shift();
+  return { list: ranked, tol, locked };
+}
 
 function buildBracket(e) {
-  const { list, tol } = bracketEntries(e);
+  const { list, tol, locked } = bracketEntries(e);
   if (list.length < 2) return false;
   let N = 2;
   while (N < list.length) N *= 2;
   const slots = seedPositions(N).map((s) => (s <= list.length ? list[s - 1].id : null));
   if (e.spreadSchools) {
     const tier = {}; list.forEach((x) => (tier[x.id] = x.tier));
-    spreadBracket(e, slots, tier, tol);
+    spreadBracket(e, slots, tier, tol, locked);
   }
-  e.bracket = { slots, results: {} };
+  const seeds = {};
+  locked.forEach((id) => (seeds[id] = e.seeds[id]));
+  e.bracket = { slots, results: {}, seeds };
   return true;
 }
 
 /* 同じ学校が早い回戦で当たらないように、近い強さの選手同士で枠を入れ替える */
-function spreadBracket(e, slots, tier, tol) {
+function spreadBracket(e, slots, tier, tol, locked) {
   const pm = playerMap(e);
   const N = slots.length, K = Math.log2(N);
   const school = (i) => (slots[i] && pm[slots[i]] ? pm[slots[i]].school.trim() : "");
@@ -979,6 +1028,7 @@ function spreadBracket(e, slots, tier, tol) {
     for (let i = 0; i < N; i++) {
       for (let j = i + 1; j < N; j++) {
         if (!slots[i] || !slots[j] || school(i) === school(j)) continue;
+        if (locked && (locked.has(slots[i]) || locked.has(slots[j]))) continue;
         if (Math.abs(tier[slots[i]] - tier[slots[j]]) > tol) continue;
         const before = contrib(i) + contrib(j);
         [slots[i], slots[j]] = [slots[j], slots[i]];
@@ -1072,6 +1122,22 @@ function levelMeter(lv) {
   let bars = "";
   for (let i = 1; i <= 10; i++) bars += `<i class="${i <= lv ? "on" : ""}"></i>`;
   return `<span class="lv"><span class="lv-bar" aria-hidden="true">${bars}</span>${lv}</span>`;
+}
+/* 実力ピッカー:1〜10 の数字ボタン。選んだ数字まで色で埋まる */
+function levelPicker(id, lv) {
+  let s = "";
+  for (let i = 1; i <= 10; i++) {
+    s += `<button type="button" class="lv-b ${i <= lv ? "on" : ""} ${i === lv ? "cur" : ""}" data-action="set-level" data-id="${id}" data-lv="${i}" aria-label="実力 ${i}" aria-pressed="${i === lv}">${i}</button>`;
+  }
+  return `<div class="lvpick" role="group" aria-label="実力(10がいちばん強い)">${s}</div>`;
+}
+function paintPicker(el, lv) {
+  el.querySelectorAll(".lv-b").forEach((b) => {
+    const i = Number(b.dataset.lv);
+    b.classList.toggle("on", i <= lv);
+    b.classList.toggle("cur", i === lv);
+    b.setAttribute("aria-pressed", String(i === lv));
+  });
 }
 function levelOptions(sel) {
   let s = "";
@@ -1276,7 +1342,7 @@ function playersHTML(e) {
       <td><input class="cell-input" id="pn-${p.id}" data-change="p-name" data-id="${p.id}" value="${esc(p.name)}" aria-label="${dbl ? "1人目の名前" : "名前"}"></td>
       ${dbl ? `<td><input class="cell-input" id="pn2-${p.id}" data-change="p-name2" data-id="${p.id}" value="${esc(p.name2)}" placeholder="相方を入力" aria-label="2人目の名前"></td>` : ""}
       <td><input class="cell-input" id="ps-${p.id}" data-change="p-school" data-id="${p.id}" value="${esc(p.school)}" list="schools" aria-label="学校"></td>
-      <td><select class="select level-select" id="pl-${p.id}" data-change="p-level" data-id="${p.id}" aria-label="実力">${levelOptions(p.level)}</select></td>
+      <td>${levelPicker(p.id, p.level)}</td>
       <td>${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>
       <td style="text-align:right"><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(pname(e, p))}を削除" title="削除">${TRASH}</button></td>
     </tr>`;
@@ -1288,7 +1354,7 @@ function playersHTML(e) {
       <label class="field field-name"><span>${dbl ? "1人目" : "名前"}</span><input class="input" id="new-name" required placeholder="例:山田 太郎" autocomplete="off"></label>
       ${dbl ? `<label class="field field-name"><span>2人目</span><input class="input" id="new-name2" placeholder="例:佐藤 次郎" autocomplete="off"></label>` : ""}
       <label class="field"><span>学校</span><input class="input" id="new-school" list="schools" placeholder="例:桜ヶ丘高" autocomplete="off"></label>
-      <label class="field"><span>実力</span><select class="select" id="new-level">${levelOptions(5)}</select></label>
+      <div class="field field-level"><span>実力(10がいちばん強い)</span>${levelPicker("new", ui.newLevel)}</div>
       <button class="btn btn-primary" type="submit">追加</button>
     </form>
     <details class="paste">
@@ -1519,8 +1585,10 @@ function bracketHTML(e) {
     <div class="card-head"><div><h2>${both ? "決勝トーナメントを作る" : "トーナメントを作る"}</h2><p class="faint">${both ? "今のリーグ順位で、A1位・B1位…の順にシードを決めます。" : `登録した${count(e, e.players.length)}を、強い順にシードを決めて並べます。`}人数が足りない枠は不戦勝になります。</p></div></div>
     ${both ? `<div class="settings" style="margin-bottom:16px"><div class="field"><span>各リーグから出る${unit(e)}</span>
         <select class="select" id="t-top" data-change="t-top">${[1, 2, 3, 4].map((k) => `<option value="${k}" ${e.tTop === k ? "selected" : ""}>上位 ${k} 位まで</option>`).join("")}</select></div></div>` : ""}
-    <div class="row">
+    ${seedBoxHTML(e)}
+    <div class="row" style="margin-top:16px">
       <button class="btn btn-aurora" data-action="build" ${e.players.length < 2 ? "disabled" : ""}>${st ? "作り直す" : "トーナメントを作る"}</button>
+      ${st && ui.seedDirty ? `<span class="chip chip-warn">シードを変えました。「作り直す」で表に反映されます</span>` : ""}
     </div>
     <details class="more" ${ui.moreOpen ? "open" : ""}><summary>細かい設定</summary>
       <div class="settings">
@@ -1563,6 +1631,29 @@ function bracketHTML(e) {
       </div>
     </details>
   </section>`;
+}
+
+/* シードを手で決める欄。決めた番号の位置に固定し、残りは自動 */
+function seedBoxHTML(e) {
+  const pm = playerMap(e);
+  const { list } = bracketCandidates(e);
+  if (list.length < 2) return "";
+  const both = e.mode === "both";
+  const rows = (both ? list : list.slice().sort((a, b) => (e.seeds[a.id] || 99) - (e.seeds[b.id] || 99) || pm[b.id].level - pm[a.id].level || pname(e, pm[a.id]).localeCompare(pname(e, pm[b.id]), "ja")))
+    .map((x) => pm[x.id]).filter(Boolean);
+  const max = Math.min(list.length, 16);
+  const set = rows.filter((p) => e.seeds[p.id]).length;
+  const opts = (cur) => `<option value="">—</option>` + Array.from({ length: max }, (_, k) => k + 1)
+    .map((k) => `<option value="${k}" ${cur === k ? "selected" : ""}>第${k}シード</option>`).join("");
+  return `<details class="seedbox" ${ui.seedOpen ? "open" : ""}>
+    <summary>シードを自分で決める${set ? `<span class="chip chip-live">${set}${isDbl(e) ? "組" : "人"} 指定中</span>` : `<span class="faint">(決めなければ実力順で自動)</span>`}</summary>
+    <p class="faint" style="margin:10px 0 12px">決めた${unit(e)}は、その番号のシード位置に入ります。第1と第2は決勝まで当たらず、第3・第4はそれぞれ別のブロックに分かれます。決めていない${unit(e)}は、残りの位置に実力順で入ります。</p>
+    <div class="seed-list">${rows.map((p) => `<div class="seed-row ${e.seeds[p.id] ? "is-set" : ""}">
+        <span class="pname">${esc(pname(e, p))}<span class="pschool">${esc(p.school)}${both ? "" : ` · 実力 ${p.level}`}</span></span>
+        <select class="select seed-select" id="seed-${p.id}" data-change="seed" data-id="${p.id}" aria-label="${esc(pname(e, p))}のシード">${opts(e.seeds[p.id] || 0)}</select>
+      </div>`).join("")}</div>
+    ${set ? `<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm" data-action="seed-clear">シードの指定をすべて解除</button></div>` : ""}
+  </details>`;
 }
 
 function ranksHTML(e, st) {
@@ -1617,7 +1708,9 @@ function bracketSVG(e, st) {
     const h = s < half ? 0 : 1;
     const x = h === 0 ? nameW - 8 : W - nameW + 8;
     const champ = st.champion === id ? " champ" : "";
-    out += `<text class="bt${champ}" x="${x}" y="${leafY[s] + 4}" text-anchor="${h === 0 ? "end" : "start"}">${esc(pname(e, pm[id]))}<tspan class="bs"> ${esc(pm[id].school)}</tspan></text>`;
+    const sd = e.bracket.seeds && e.bracket.seeds[id];
+    const mark = sd ? `<tspan class="bseed">[${sd}]</tspan> ` : "";
+    out += `<text class="bt${champ}" x="${x}" y="${leafY[s] + 4}" text-anchor="${h === 0 ? "end" : "start"}">${mark}${esc(pname(e, pm[id]))}<tspan class="bs"> ${esc(pm[id].school)}</tspan></text>`;
   });
   // 決勝以外の回戦
   for (let ri = 0; ri < K - 1; ri++) {
@@ -1940,17 +2033,26 @@ app.addEventListener("click", (evt) => {
     case "close-copy": ui.copyText = null; render(); break;
     case "build":
       if (e.bracket) { ui.confirm = "rebuild"; render(); break; }
-      if (buildBracket(e)) { ui.bmatch = null; commit(); render(); toast("トーナメントを作りました"); } else toast("出場者が2人(2組)以上必要です");
+      if (buildBracket(e)) { ui.bmatch = null; ui.seedDirty = false; commit(); render(); toast("トーナメントを作りました"); } else toast("出場者が2人(2組)以上必要です");
       break;
     case "build-yes":
       ui.confirm = null;
-      if (buildBracket(e)) { ui.bmatch = null; commit(); render(); toast("トーナメントを作り直しました"); } else { render(); toast("出場者が2人(2組)以上必要です"); }
+      if (buildBracket(e)) { ui.bmatch = null; ui.seedDirty = false; commit(); render(); toast("トーナメントを作り直しました"); } else { render(); toast("出場者が2人(2組)以上必要です"); }
       break;
     case "bpick":
       ui.bmatch = btn.dataset.mid; render();
       { const p = document.getElementById("bpanel"); if (p) p.scrollIntoView({ block: "nearest", behavior: "smooth" }); const f = p && p.querySelector(".score"); if (f) f.focus({ preventScroll: true }); }
       break;
     case "bclose": ui.bmatch = null; render(); break;
+    case "set-level": {
+      // 押した場所で色だけ変える(表を並べ替えると押した行が動いてしまうため)
+      const lv = clamp(Number(btn.dataset.lv), 1, 10);
+      if (btn.dataset.id === "new") ui.newLevel = lv;
+      else { const p = e.players.find((x) => x.id === btn.dataset.id); if (!p) break; p.level = lv; commit(); }
+      paintPicker(btn.closest(".lvpick"), lv);
+      break;
+    }
+    case "seed-clear": e.seeds = {}; ui.seedDirty = !!e.bracket; commit(); render(); toast("シードの指定を解除しました"); break;
     case "copy-bracket": copyText(bracketTSV(e)); break;
     case "bswap": {
       const i = Number(document.getElementById("swap-a").value), j = Number(document.getElementById("swap-b").value);
@@ -1963,7 +2065,11 @@ app.addEventListener("click", (evt) => {
 });
 
 // 「細かい設定」の開閉は、描き直しても保つ
-app.addEventListener("toggle", (evt) => { if (evt.target.matches && evt.target.matches("details.more")) ui.moreOpen = evt.target.open; }, true);
+app.addEventListener("toggle", (evt) => {
+  if (!evt.target.matches) return;
+  if (evt.target.matches("details.more")) ui.moreOpen = evt.target.open;
+  if (evt.target.matches("details.seedbox")) ui.seedOpen = evt.target.open;
+}, true);
 
 app.addEventListener("submit", (evt) => {
   if (evt.target.id !== "add-form") return;
@@ -1971,14 +2077,13 @@ app.addEventListener("submit", (evt) => {
   const e = ev();
   const name = document.getElementById("new-name").value.trim();
   const school = document.getElementById("new-school").value.trim();
-  const level = parseInt(document.getElementById("new-level").value, 10) || 5;
+  const level = ui.newLevel;
   const n2 = document.getElementById("new-name2");
   const name2 = n2 ? n2.value.trim() : "";
   if (!name) return;
   e.players.push({ id: uid(), name, name2, school, level });
   commit(); render();
   const s = document.getElementById("new-school"); if (s) s.value = school;
-  const l = document.getElementById("new-level"); if (l) l.value = String(level);
   const n = document.getElementById("new-name"); if (n) n.focus();
   toast(`${name2 ? `${name}・${name2}` : name} を追加しました`);
 });
@@ -1995,6 +2100,12 @@ app.addEventListener("change", (evt) => {
     case "ev-date": e.date = t.value; commit(); render(); break;
     case "ev-games": e.games = Number(t.value) === 3 ? 3 : 1; commit(); render(); break;
     case "ev-points": e.points = Number(t.value); commit(); render(); break;
+    case "seed": {
+      const id = t.dataset.id, n = parseInt(t.value, 10);
+      if (n) { Object.keys(e.seeds).forEach((k) => { if (e.seeds[k] === n) delete e.seeds[k]; }); e.seeds[id] = n; }
+      else delete e.seeds[id];
+      ui.seedDirty = !!e.bracket; commit(); render(); break;
+    }
     case "ev-mode": e.mode = MODES[t.value] ? t.value : "league"; commit(); render(); break;
     case "t-top": e.tTop = clamp(Number(t.value), 1, 4); commit(); break;
     case "t-third": e.tThird = t.checked; commit(); render(); break;
