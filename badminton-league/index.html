@@ -516,6 +516,61 @@ details.seedbox summary:hover { color: var(--accent); }
 .bm-vs { min-width: 0; overflow-wrap: anywhere; line-height: 1.4; font-size: 0.92rem; }
 .bm-vs b { color: var(--success); }
 
+/* ============ リーグの分け方 ============ */
+.method { gap: 6px; }
+.method-pic { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: var(--surface-soft); }
+.method-pic > span { display: grid; grid-template-columns: 22px auto 1fr; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-secondary); }
+.method-pic em { font-style: normal; font-weight: 800; font-size: 1.2rem; line-height: 1; color: var(--lg); }
+.dots { display: inline-flex; gap: 3px; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--lg); }
+.dots.mix i { background: color-mix(in srgb, var(--text-tertiary) 55%, transparent); }
+.dots.mix i.s { background: var(--accent); }
+.dots.mix i.w { background: color-mix(in srgb, var(--text-tertiary) 30%, transparent); }
+.size-pick { display: flex; gap: 8px; flex-wrap: wrap; }
+.size-b {
+  min-width: 64px; padding: 10px 16px; border-radius: 14px 14px 14px 22px; font-size: 1.05rem; font-weight: 800;
+  background: var(--surface-strong); border: 2px solid var(--border-soft); color: var(--text-secondary);
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-press);
+}
+.size-b:hover { border-color: var(--accent); color: var(--accent); }
+.size-b:active { transform: scale(0.95); }
+.size-b.cur { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.plan-preview {
+  padding: 14px 18px; border-radius: 16px 16px 16px 30px; background: var(--accent-soft); color: var(--text);
+  font-size: 1.02rem; line-height: 1.6;
+}
+.plan-preview b { color: var(--accent); font-size: 1.15rem; letter-spacing: 0.04em; }
+
+/* リーグの切り替え */
+.league-switch {
+  display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 80px;
+  padding: 14px 16px; border-radius: 18px 18px 18px 32px; background: var(--surface); border: 1px solid var(--border-soft);
+}
+.switch-label { font-size: 0.86rem; font-weight: 700; color: var(--text-secondary); }
+.jump-btn { border-color: var(--lg); color: var(--lg); }
+
+/* ============ はじめの画面 ============ */
+.home-head { padding-block: clamp(12px, 4vw, 36px) 0; display: flex; flex-direction: column; gap: 6px; }
+.home-title { margin: 0; font-size: clamp(1.8rem, 1.2rem + 2.6vw, 2.8rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.2; }
+.home-head p { margin: 0; }
+.home-sub { margin: 0; font-size: 1.25rem; }
+.make-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.make-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; cursor: pointer;
+  padding: 20px 22px; border-radius: var(--radius) var(--radius) var(--radius) var(--arc-corner);
+  background: var(--surface-strong); border: 2px solid var(--border-soft); box-shadow: var(--shadow-sm);
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.make-card b { font-size: 1.2rem; letter-spacing: -0.02em; }
+.make-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.make-card.is-on { border-color: var(--accent); background: var(--accent-soft); }
+.make-card.is-on b { color: var(--accent); }
+.make-card.is-on .faint, .choice:has(input:checked) .faint { color: var(--text-secondary); }
+.make-icon { display: block; width: 72px; height: 54px; color: var(--text-secondary); margin-bottom: 4px; }
+.make-icon svg { width: 100%; height: 100%; }
+.make-icon.small { width: 48px; height: 36px; margin: 0; }
+.create { border: 2px solid var(--accent); }
+
 /* ============ 初期画面・作成 ============ */
 .back-btn {
   display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px 7px 12px; border-radius: 999px;
@@ -660,7 +715,7 @@ function toast(msg) {
 let events = {};
 let currentId = null;
 let ready = false;
-const ui = { newLevel: 5, view: "home", creating: false, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
+const ui = { newLevel: 5, view: "home", createMode: null, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
 
 function today() {
   const d = new Date();
@@ -669,7 +724,7 @@ function today() {
 
 function normalize(raw) {
   const ev = Object.assign({
-    name: "新しい大会", date: today(), type: "singles", games: 1, points: 21, leagueCount: 4,
+    name: "名前なし", date: today(), type: "singles", games: 1, points: 21, leagueCount: 4,
     spreadSchools: true, tolerance: 0, players: [], leagues: [], results: {}, updatedAt: 0,
     mode: null, tTop: 2, tThird: true, bracket: null, seeds: {},
   }, clone(raw || {}));
@@ -711,6 +766,9 @@ function normalize(raw) {
   ev.games = ev.games === 3 ? 3 : 1;
   ev.points = [11, 15, 21].includes(ev.points) ? ev.points : 21;
   ev.leagueCount = clamp(parseInt(ev.leagueCount, 10) || 4, 1, 26);
+  // リーグ分け:1リーグの人数と分け方(level=実力別 / balanced=どのリーグも同じ強さ)
+  ev.groupSize = clamp(parseInt(ev.groupSize, 10) || 4, 3, 8);
+  ev.splitMethod = ev.splitMethod === "balanced" || ev.splitMethod === "level" ? ev.splitMethod : ev.mode === "both" ? "balanced" : "level";
   return ev;
 }
 
@@ -767,7 +825,7 @@ const Store = {
     } catch (e) {
       this.pending.delete(id);
       setSaveState("error");
-      toast(e && e.code === "quota_exceeded" ? "保存容量がいっぱいです。古い大会を削除してください" : "保存できませんでした。この端末には残っています");
+      toast(e && e.code === "quota_exceeded" ? "保存容量がいっぱいです。使わなくなったものを削除してください" : "保存できませんでした。この端末には残っています");
     } finally {
       this.writing.delete(id);
     }
@@ -836,18 +894,53 @@ function dupCost(players) {
   return Object.values(c).reduce((s, n) => s + (n * (n - 1)) / 2, 0);
 }
 
+/* 「1リーグ◯人」から、リーグの数と各リーグの人数を決める。
+   3人未満のリーグ(試合が1つ以下)ができるならリーグを1つ減らす */
+function planSizes(n, size) {
+  if (n < 2) return n ? [n] : [];
+  let K = Math.max(1, Math.ceil(n / size));
+  while (K > 1 && Math.floor(n / K) < 3) K--;
+  const base = Math.floor(n / K), extra = n % K;
+  return Array.from({ length: K }, (_, i) => base + (i < extra ? 1 : 0));
+}
+
+/* 実際にできる各リーグの人数(均等はスネークで配るので、余りが入るリーグが変わる) */
+function groupSizesFor(e, n) {
+  const sizes = planSizes(n, e.groupSize);
+  if (e.splitMethod !== "balanced" || sizes.length < 2) return sizes;
+  const K = sizes.length, out = new Array(K).fill(0);
+  for (let i = 0; i < n; i++) { const r = Math.floor(i / K), j = i % K; out[r % 2 === 0 ? j : K - 1 - j]++; }
+  return out;
+}
+
 function autoAssign(e) {
   const rand = rng(Date.now());
-  const K = clamp(e.leagueCount, 1, Math.max(1, e.players.length));
   // 同じ実力の中だけ順番をシャッフルしてから、強い順に並べる(sort は安定)
   const ps = shuffle(e.players.slice(), rand).sort((a, b) => b.level - a.level);
-  const base = Math.floor(ps.length / K), extra = ps.length % K;
-  const groups = [];
-  let k = 0;
-  for (let i = 0; i < K; i++) { const n = base + (i < extra ? 1 : 0); groups.push(ps.slice(k, k + n)); k += n; }
+  const sizes = planSizes(ps.length, e.groupSize);
+  const K = sizes.length;
+  let groups, canSwap;
+  if (e.splitMethod === "balanced") {
+    // どのリーグも同じ強さに:強い順に A→B→C、次の段は C→B→A と折り返して配る(スネーク方式)。
+    // いちばん強い選手が各リーグに1人ずつ(=各リーグのシード)入る
+    groups = Array.from({ length: K }, () => []);
+    const pot = {};
+    ps.forEach((p, i) => {
+      const r = Math.floor(i / K), j = i % K;
+      groups[r % 2 === 0 ? j : K - 1 - j].push(p);
+      pot[p.id] = r;
+    });
+    canSwap = (p, q) => pot[p.id] === pot[q.id];
+  } else {
+    // 実力別:強い順に上から A・B・C… と区切る
+    groups = [];
+    let k = 0;
+    sizes.forEach((n) => { groups.push(ps.slice(k, k + n)); k += n; });
+    canSwap = (p, q) => Math.abs(p.level - q.level) <= e.tolerance;
+  }
 
   if (e.spreadSchools) {
-    // 実力差が許容範囲の選手同士だけ入れ替えて、同じ学校の重なりを減らす
+    // 入れ替えてよい選手同士(実力別=実力差が許容内、均等=同じ段)だけ入れ替えて、同じ学校の重なりを減らす
     for (let iter = 0; iter < 300; iter++) {
       let improved = false;
       for (let i = 0; i < K && !improved; i++) {
@@ -857,7 +950,7 @@ function autoAssign(e) {
           for (let a = 0; a < groups[i].length && !improved; a++) {
             for (let b = 0; b < groups[j].length && !improved; b++) {
               const p = groups[i][a], q = groups[j][b];
-              if (p.school === q.school || Math.abs(p.level - q.level) > e.tolerance) continue;
+              if (p.school === q.school || !canSwap(p, q)) continue;
               groups[i][a] = q; groups[j][b] = p;
               const after = dupCost(groups[i]) + dupCost(groups[j]);
               if (after < before) improved = true;
@@ -966,15 +1059,36 @@ function standings(e, league) {
     A.pf += o.pa; A.pa += o.pb; B.pf += o.pb; B.pa += o.pa;
     if (o.winner === A.id) { A.w++; B.l++; } else { B.w++; A.l++; }
   }
-  const h2h = (x, y) => { const o = outcome(e, x.id, y.id); return o.winner === x.id ? -1 : o.winner === y.id ? 1 : 0; };
-  const sorted = rows.slice().sort((x, y) =>
-    y.w - x.w || (y.gw - y.gl) - (x.gw - x.gl) || (y.pf - y.pa) - (x.pf - x.pa) || h2h(x, y) || x.order - y.order);
-  sorted.forEach((r, i) => {
-    const prev = sorted[i - 1];
-    r.rank = prev && prev.w === r.w && prev.gw - prev.gl === r.gw - r.gl && prev.pf - prev.pa === r.pf - r.pa && h2h(prev, r) === 0 ? prev.rank : i + 1;
+  // 順位は BWF 一般競技規程 16.2 のとおり:
+  // ①勝ち数 ②2人が並んだら直接対決の勝者 ③3人以上なら得失ゲーム差 → 得失点差
+  // (途中で2人に絞れたら直接対決) ④それでも並んだら同順位(抽選で決める)
+  const tiers = rankTiers(e, rows);
+  const sorted = [];
+  tiers.forEach((t) => {
+    const rank = sorted.length + 1;
+    t.sort((x, y) => x.order - y.order).forEach((r) => { r.rank = rank; r.lots = t.length > 1 && r.played > 0; sorted.push(r); });
   });
-  sorted.forEach((r) => (byId[r.id].rank = r.rank));
-  return { rows, sorted, finished, total: matchCount(ids.length) };
+  return { rows, sorted, finished, total: matchCount(ids.length), lots: tiers.some((t) => t.length > 1 && t[0].played > 0) };
+}
+function rankTiers(e, rows) {
+  const split = (arr, key) => {
+    const m = new Map();
+    arr.forEach((r) => { const k = key(r); if (!m.has(k)) m.set(k, []); m.get(k).push(r); });
+    return [...m.entries()].sort((a, b) => b[0] - a[0]).map((x) => x[1]);
+  };
+  const h2h = ([a, b]) => {
+    const w = outcome(e, a.id, b.id).winner;
+    return w === a.id ? [[a], [b]] : w === b.id ? [[b], [a]] : null;
+  };
+  const keys = [(r) => r.gw - r.gl, (r) => r.pf - r.pa];
+  const resolve = (grp, level) => {
+    if (grp.length === 1) return [grp];
+    if (grp.length === 2) { const h = h2h(grp); if (h) return h; }
+    if (level >= keys.length) return [grp];
+    const parts = split(grp, keys[level]);
+    return parts.flatMap((p) => resolve(p, level + 1));
+  };
+  return split(rows, (r) => r.w).flatMap((g) => resolve(g, 0));
 }
 
 /* 試合数は今の形式で使うものだけ数える(形式を変えたあとに残ったリーグ/トーナメントは数えない) */
@@ -1213,8 +1327,8 @@ app.addEventListener("focusout", () => {
 function navHTML(e) {
   return `<header class="nav">
     ${e
-      ? `<button class="back-btn" data-action="home"><span aria-hidden="true">‹</span> 大会一覧</button>`
-      : `<span class="lockup">${ARC_MARK(22)}ARCA<span class="lockup-sub">バドミントン大会</span></span>`}
+      ? `<button class="back-btn" data-action="home"><span aria-hidden="true">‹</span> はじめの画面</button>`
+      : `<span class="lockup">${ARC_MARK(22)}ARCA<span class="lockup-sub">リーグ戦・トーナメント</span></span>`}
     <div class="nav-right">${saveStateHTML()}${themeBtnHTML()}</div>
   </header>`;
 }
@@ -1230,11 +1344,16 @@ function themeBtnHTML() {
   return `<button class="theme-btn" data-action="theme" aria-label="${dark ? "ライトモードにする" : "ダークモードにする"}">${icon}<span>${dark ? "ライトにする" : "ダークにする"}</span></button>`;
 }
 
-/* --- 初期画面:大会一覧と、新しい大会の作成 --- */
+/* --- はじめの画面:何を作るか選ぶ / 続きから --- */
 const MODES = {
-  league: ["リーグ戦", "実力の近い者同士で A・B・C… のリーグに分けて総当たり"],
-  tournament: ["トーナメント", "勝ち抜き戦。シードを決めて A・B ブロックの表を作る"],
-  both: ["リーグ戦 → 決勝トーナメント", "リーグ戦のあと、各リーグの上位でトーナメント"],
+  league: ["リーグ戦", "A・B・C… のリーグに分けて、リーグの中で全員と1回ずつ試合"],
+  tournament: ["トーナメント", "負けたら終わりの勝ち抜き戦。シードを決めて表を作る"],
+  both: ["リーグ戦 → 決勝トーナメント", "まずリーグ戦。各リーグの上位で決勝トーナメント"],
+};
+const MODE_ICON = {
+  league: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><rect x="4" y="4" width="56" height="40" rx="6" stroke="currentColor" stroke-width="2.5"/><path d="M4 18h56M4 31h56M24 4v40M42 4v40" stroke="currentColor" stroke-width="2" opacity=".55"/><path d="M28 11h10M46 24h10M10 37h10" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg>`,
+  tournament: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><path d="M4 6h14v12H4M4 30h14v12H4M18 12h14v24H18M32 24h14" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M4 6h14v6h14v12h14" stroke="var(--accent)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="52" cy="24" r="6" fill="var(--accent)"/></svg>`,
+  both: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><rect x="2" y="10" width="24" height="28" rx="5" stroke="currentColor" stroke-width="2.5"/><path d="M2 24h24M14 10v28" stroke="currentColor" stroke-width="2" opacity=".55"/><path d="M30 24h6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><path d="M40 12h10v24H40M50 24h10" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="60" cy="24" r="3.5" fill="var(--accent)"/></svg>`,
 };
 function tabsFor(e) {
   const tabs = [["players", unit(e)]];
@@ -1243,23 +1362,21 @@ function tabsFor(e) {
   return tabs;
 }
 
-function createHTML(hasEvents) {
-  const radio = (name, value, title, desc, checked) => `<label class="choice">
-      <input type="radio" name="${name}" value="${value}" ${checked ? "checked" : ""}>
-      <b>${title}</b>${desc ? `<span class="faint">${desc}</span>` : ""}</label>`;
+/* 選んだ形式の「名前・シングルス/ダブルス」だけ聞く */
+function createHTML(mode) {
+  const radio = (value, title, checked) => `<label class="choice">
+      <input type="radio" name="c-type" value="${value}" ${checked ? "checked" : ""}><b>${title}</b></label>`;
+  const d = new Date();
   return `<section class="card create" id="create-card">
-    <div class="card-head"><div><h2>新しい大会を作る</h2><p class="faint">3つ選ぶだけ。あとから変えることもできます。</p></div></div>
+    <div class="card-head"><div class="title-with-letter"><span class="make-icon small">${MODE_ICON[mode]}</span><h2>${MODES[mode][0]}を作る</h2></div></div>
     <div class="stack">
-      <label class="field"><span>大会名</span><input class="input" id="c-name" placeholder="例:秋季リーグ戦" autocomplete="off"></label>
-      <div class="field"><span>種目</span><div class="choice-grid two">
-        ${radio("c-type", "singles", "シングルス", "", true)}${radio("c-type", "doubles", "ダブルス", "", false)}
-      </div></div>
-      <div class="field" id="c-mode-field"><span>形式(どれか1つ選んでください)</span><div class="choice-grid">
-        ${Object.entries(MODES).map(([k, [t, d]]) => radio("c-mode", k, t, d, false)).join("")}
+      <label class="field"><span>名前(あとで変えられます)</span><input class="input" id="c-name" placeholder="例:${d.getMonth() + 1}月 部内${mode === "tournament" ? "トーナメント" : "リーグ戦"}" autocomplete="off"></label>
+      <div class="field"><span>シングルス? ダブルス?</span><div class="choice-grid two">
+        ${radio("singles", "シングルス(1人ずつ)", true)}${radio("doubles", "ダブルス(2人1組)", false)}
       </div></div>
       <div class="row">
-        <button class="btn btn-aurora" data-action="create">作る</button>
-        ${hasEvents ? `<button class="btn btn-ghost" data-action="cancel-create">やめる</button>` : ""}
+        <button class="btn btn-aurora btn-lg" data-action="create">作って、選手を入れる ›</button>
+        <button class="btn btn-ghost" data-action="cancel-create">やめる</button>
       </div>
     </div>
   </section>`;
@@ -1267,33 +1384,27 @@ function createHTML(hasEvents) {
 
 function homeHTML() {
   const list = sortedEvents();
-  const intro = `<section class="empty" style="padding-block:clamp(20px,5vw,48px) 8px">
-    <svg class="shuttle-arc" viewBox="0 0 320 120" fill="none" aria-hidden="true">
-      <defs><linearGradient id="g-empty" x1="0" x2="1"><stop offset="0" stop-color="var(--arc-1)"/><stop offset=".52" stop-color="var(--arc-2)"/><stop offset="1" stop-color="var(--arc-3)"/></linearGradient></defs>
-      <path d="M10 110h300" stroke="currentColor" stroke-width="1" opacity=".4"/>
-      <path d="M160 110V70" stroke="currentColor" stroke-width="1.5" opacity=".5"/>
-      <path class="shuttle-path" d="M24 104C70 4 250 4 296 104" stroke="url(#g-empty)" stroke-width="5" stroke-linecap="round"/>
-      <circle cx="296" cy="104" r="6" fill="var(--arc-3)"/>
-    </svg>
-    <span class="kicker">Badminton</span>
-    <h2>${list.length ? "大会一覧" : "大会を作る"}</h2>
-  </section>`;
+  const pick = ui.createMode;
+  const make = Object.entries(MODES).map(([k, [t, d]]) => `<button class="make-card ${pick === k ? "is-on" : ""}" data-action="pick-mode" data-mode="${k}" aria-expanded="${pick === k}">
+      <span class="make-icon">${MODE_ICON[k]}</span><b>${t}を作る</b><span class="faint">${d}</span></button>`).join("");
   const cards = list.map((x) => {
     const t = totals(x);
     return `<button class="card event-card" data-action="open-event" data-id="${esc(x.id)}">
-      <span class="faint num">${esc(x.date || "")}</span>
       <b class="event-name">${esc(x.name)}</b>
-      <span class="row" style="gap:6px"><span class="chip">${isDbl(x) ? "ダブルス" : "シングルス"}</span><span class="chip chip-live">${MODES[x.mode][0]}</span></span>
-      <span class="faint num">${count(x, x.players.length)} · 試合 ${t.finished}/${t.total}</span>
+      <span class="row" style="gap:6px"><span class="chip chip-live">${MODES[x.mode][0]}</span><span class="chip">${isDbl(x) ? "ダブルス" : "シングルス"}</span></span>
+      <span class="faint num">${esc(x.date || "")} · ${count(x, x.players.length)} · 試合 ${t.finished}/${t.total} 終了</span>
     </button>`;
   }).join("");
-  const showCreate = ui.creating || !list.length;
-  return `${intro}
-    ${showCreate ? createHTML(list.length > 0) : `<div class="row" style="justify-content:center"><button class="btn btn-aurora btn-lg" data-action="new-event">＋ 新しい大会を作る</button></div>`}
-    ${list.length ? `<section class="stack"><h3 class="muted">これまでの大会</h3><div class="event-grid">${cards}</div></section>` : ""}
-    <p class="faint" style="text-align:center;margin:8px 0 0">試しに触ってみる:
-      <button class="link-btn" data-action="sample">シングルスのサンプル</button> ·
-      <button class="link-btn" data-action="sample" data-type="doubles">ダブルスのサンプル</button></p>`;
+  return `<section class="home-head">
+      <h1 class="home-title">何を作りますか？</h1>
+      <p class="muted">下から1つ選んでください。名前を決めたら、選手を入れる画面に進みます。</p>
+    </section>
+    <div class="make-grid">${make}</div>
+    ${pick ? createHTML(pick) : ""}
+    ${list.length ? `<section class="stack"><div><h2 class="home-sub">続きから</h2><p class="faint" style="margin:2px 0 0">前に作ったもの。押すと続きができます。</p></div><div class="event-grid">${cards}</div></section>` : ""}
+    <p class="faint" style="text-align:center;margin:8px 0 0">どんなものか見てみたいとき:
+      <button class="link-btn" data-action="sample">見本のリーグ戦を開く</button> ·
+      <button class="link-btn" data-action="sample" data-type="doubles">見本の決勝トーナメントつきを開く</button></p>`;
 }
 
 function heroHTML(e) {
@@ -1304,7 +1415,7 @@ function heroHTML(e) {
   return `<section class="hero">
     <div style="min-width:0">
       <span class="kicker">${isDbl(e) ? "ダブルス" : "シングルス"} · ${MODES[e.mode][0]}</span>
-      <textarea class="hero-name" id="ev-name" data-change="ev-name" rows="1" aria-label="大会名(押すと変えられます)">${esc(e.name)}</textarea>
+      <textarea class="hero-name" id="ev-name" data-change="ev-name" rows="1" aria-label="名前(押すと変えられます)">${esc(e.name)}</textarea>
       <div class="hero-sub">
         <label>日付 <input type="date" class="input" id="ev-date" data-change="ev-date" value="${esc(e.date)}"></label>
         <span>${e.points}点${e.games === 1 ? "1ゲーム" : "3ゲーム(2ゲーム先取)"}</span>
@@ -1336,8 +1447,8 @@ function heroHTML(e) {
         </label>
       </div>
       <div class="hero-actions">
-        <button class="btn btn-ghost btn-sm" data-action="dup-event">${unit(e)}をコピーして新しい大会</button>
-        <button class="btn btn-ghost btn-sm" data-action="ask-del-event">この大会を削除</button>
+        <button class="btn btn-ghost btn-sm" data-action="dup-event">同じ${unit(e)}で新しく作る</button>
+        <button class="btn btn-ghost btn-sm" data-action="ask-del-event">これを削除</button>
       </div>` : ""}
       <div class="hero-stats" id="hero-stats">${heroStatsHTML(e, t)}</div>
       ${confirmDel ? `<div class="confirm" style="margin-top:12px;background:rgba(255,111,107,.14);color:var(--ink-text)"><span>「${esc(e.name)}」を削除します。${unit(e)}と結果もすべて消えます。</span><button class="btn btn-sm" style="background:#ff6f6b;color:#08090d" data-action="del-event">削除する</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
@@ -1428,23 +1539,42 @@ function playersHTML(e) {
 function leaguesHTML(e) {
   const pm = playerMap(e);
   const n = e.players.length;
-  const K = clamp(e.leagueCount, 1, Math.max(1, n));
-  const per = n ? `1リーグ ${Math.floor(n / K)}${n % K ? `〜${Math.floor(n / K) + 1}` : ""}${isDbl(e) ? "組" : "人"}` : "";
+  const u = isDbl(e) ? "組" : "人";
+  const sizes = groupSizesFor(e, n);
   const confirm = ui.confirm === "reassign";
+  const dots = (k) => `<span class="dots">${"<i></i>".repeat(k)}</span>`;
+  const methodCard = (val, title, desc, pic) => `<label class="choice method ${e.splitMethod === val ? "is-on" : ""}">
+      <input type="radio" name="split" value="${val}" data-change="split" ${e.splitMethod === val ? "checked" : ""}>
+      <b>${title}</b><span class="faint">${desc}</span>${pic}</label>`;
+  const levelPic = `<span class="method-pic" aria-hidden="true">
+      <span class="lg-0"><em>A</em>${dots(4)}<small>強い</small></span>
+      <span class="lg-1"><em>B</em>${dots(4)}<small>ふつう</small></span>
+      <span class="lg-2"><em>C</em>${dots(4)}<small>これから</small></span></span>`;
+  const balPic = `<span class="method-pic" aria-hidden="true">
+      <span class="lg-0"><em>A</em><span class="dots mix"><i class="s"></i><i></i><i></i><i class="w"></i></span><small>強い人1人ずつ</small></span>
+      <span class="lg-1"><em>B</em><span class="dots mix"><i class="s"></i><i></i><i></i><i class="w"></i></span><small></small></span>
+      <span class="lg-2"><em>C</em><span class="dots mix"><i class="s"></i><i></i><i></i><i class="w"></i></span><small></small></span></span>`;
+  const preview = n < 2 ? `${unit(e)}を2${u}以上入れると分けられます`
+    : `${n}${u} → <b>${sizes.map((_, i) => letter(i)).join("・")}</b> の ${sizes.length} リーグ(${sizes.map((s) => `${s}${u}`).join("・")})`;
   const settings = `<section class="card">
-    <div class="card-head"><div><h2>リーグ分けの設定</h2><p class="faint">実力の高い順に並べて、上から A・B・C… に分けます。</p></div></div>
-    <div class="settings">
-      <div class="field"><span>リーグの数</span>
-        <div class="stepper"><button data-action="lc" data-d="-1" aria-label="減らす">−</button><output class="num">${e.leagueCount}</output><button data-action="lc" data-d="1" aria-label="増やす">＋</button></div>
+    <div class="card-head"><div><h2>リーグの分け方</h2><p class="faint">2つ選んで「リーグを作る」を押すだけです。</p></div></div>
+    <div class="stack">
+      <div class="field"><span>① 分け方</span><div class="choice-grid">
+        ${methodCard("level", "実力別に分ける", "同じくらいの強さの人どうしで試合。A がいちばん強い組。部内戦・練習向き", levelPic)}
+        ${methodCard("balanced", "どのリーグも同じ強さにする", "強い人を各リーグに1人ずつ分ける。リーグのあとに決勝トーナメントをするとき向き", balPic)}
+      </div></div>
+      <div class="field"><span>② 1リーグの${unit(e)}の数</span>
+        <div class="size-pick" role="group" aria-label="1リーグの${unit(e)}の数">${[3, 4, 5, 6].map((k) => `<button type="button" class="size-b ${e.groupSize === k ? "cur" : ""}" data-action="gsize" data-k="${k}" aria-pressed="${e.groupSize === k}">${k}${u}</button>`).join("")}</div>
+        <span class="faint">4${u}がふつう(1人3試合)。5${u}なら4試合、6${u}なら5試合ずつ。</span>
       </div>
-      <div class="field"><span>人数の目安</span><span class="muted" style="padding:8px 0;font-weight:600">${per || "—"}</span></div>
+      <div class="plan-preview">${preview}</div>
     </div>
     <details class="more" ${ui.moreOpen ? "open" : ""}><summary>細かい設定</summary><div class="settings">
       <div class="field"><span>学校のばらし</span>
         <label class="check"><input type="checkbox" id="spread" data-change="spread" ${e.spreadSchools ? "checked" : ""}>同じ学校が同じリーグに固まらないようにする</label>
       </div>
       <div class="field"><span>入れ替えてよい実力差</span>
-        <select class="select" id="tolerance" data-change="tolerance" ${e.spreadSchools ? "" : "disabled"}>
+        <select class="select" id="tolerance" data-change="tolerance" ${e.spreadSchools && e.splitMethod === "level" ? "" : "disabled"}>
           <option value="0" ${e.tolerance === 0 ? "selected" : ""}>同じ実力の選手同士だけ</option>
           <option value="1" ${e.tolerance === 1 ? "selected" : ""}>実力差 1 までOK</option>
           <option value="2" ${e.tolerance === 2 ? "selected" : ""}>実力差 2 までOK</option>
@@ -1452,14 +1582,14 @@ function leaguesHTML(e) {
       </div>
     </div></details>
     <div class="row" style="margin-top:18px">
-      <button class="btn btn-aurora" data-action="auto" ${n < 2 ? "disabled" : ""}>${e.leagues.length ? "自動で分け直す" : "自動で分ける"}</button>
-      ${e.leagues.length ? `<span class="faint">分けたあと、各選手の右のメニューで手動で移動もできます。</span>` : ""}
+      <button class="btn btn-aurora btn-lg" data-action="auto" ${n < 2 ? "disabled" : ""}>${e.leagues.length ? "この分け方で作り直す" : "リーグを作る"}</button>
+      ${e.leagues.length ? `<span class="faint">作ったあと、各${unit(e)}の右の「◯へ」で別のリーグに動かせます。</span>` : ""}
     </div>
     ${confirm ? `<div class="confirm" style="margin-top:14px"><span><b>今のリーグ分けを作り直します。</b>手動で動かした分は戻ります。入力済みのスコアは消えません(同じ組み合わせの試合があればそのまま残ります)。</span><button class="btn btn-primary btn-sm" data-action="auto-yes">作り直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
   </section>`;
 
   if (!e.leagues.length) {
-    return settings + `<section class="card"><p class="muted">${n < 2 ? `${unit(e)}を${count(e, 2)}以上登録すると、リーグに分けられます。` : "「自動で分ける」を押すと、ここにリーグが並びます。"}</p></section>`;
+    return settings + `<section class="card"><p class="muted" style="margin:0">${n < 2 ? `先に「${unit(e)}」の画面で${unit(e)}を入れてください。` : "「リーグを作る」を押すと、ここに A・B・C… のリーグが並びます。"}</p></section>`;
   }
   const moveOpts = (cur) => e.leagues.map((_, i) => `<option value="${i}" ${i === cur ? "selected" : ""}>${letter(i)}へ</option>`).join("") + `<option value="-1" ${cur === -1 ? "selected" : ""}>外す</option>`;
   const cards = e.leagues.map((l, i) => {
@@ -1522,7 +1652,8 @@ function hoshiHTML(e, li) {
   return `<div class="table-wrap"><table class="hoshi">
     <thead><tr><th class="name-cell">${unit(e)}</th>${head}<th>勝</th><th>敗</th><th>得失<br>ゲーム</th><th>得失点</th><th>順位</th></tr></thead>
     <tbody>${body}</tbody></table></div>
-    <p class="tie-note">順位は 勝ち数 → 得失ゲーム差 → 得失点差 → 直接対決 の順で決めています。○ 勝ち ● 負け。</p>`;
+    <p class="tie-note"><b>順位の決め方</b>(BWF 一般競技規程 16.2 と同じ):① 勝ち数が多い順 ② 2人が並んだら直接対決の勝者が上 ③ 3人以上並んだら 得失ゲーム差 → 得失点差(途中で2人に絞れたら直接対決)。○ 勝ち ● 負け。</p>
+    ${s.lots ? `<p class="tie-note" style="color:var(--warn)">同じ順位の${unit(e)}がいます。ルールでは抽選で決めます。</p>` : ""}`;
 }
 
 function matchRowHTML(e, a, b) {
@@ -1565,7 +1696,12 @@ function matchesHTML(e) {
       <div class="round-head"><h3>第${ri + 1}ラウンド</h3>${r.bye ? `<span class="bye">休み:${esc(pname(e, pm[r.bye]))}</span>` : ""}</div>
       ${r.pairs.map(([a, b]) => { num++; return matchRowHTML(e, a, b); }).join("")}
     </div>`).join("");
-  return `${leaguePillsHTML(e)}
+  const L = e.leagues.length;
+  const jump = (i, label) => `<button class="btn btn-secondary ${lgClass(i)} jump-btn" data-action="pick-league" data-id="${e.leagues[i].id}" data-scroll="1">${label}</button>`;
+  return `${L > 1 ? `<section class="league-switch" id="league-switch">
+      <span class="switch-label">リーグは ${L} つあります。押すと切り替わります</span>
+      ${leaguePillsHTML(e)}
+    </section>` : ""}
   <section class="card ${lgClass(li)}">
     <div class="card-head"><div class="title-with-letter"><span class="league-letter">${letter(li)}</span><div><h2>${letter(li)}リーグ 星取表</h2><p class="faint">スコアを入れると自動で更新されます。</p></div></div>
       <button class="btn btn-secondary btn-sm" data-action="x-hoshi-one" data-id="${l.id}">Excel にコピー</button></div>
@@ -1575,6 +1711,10 @@ function matchesHTML(e) {
     <div class="card-head"><div class="title-with-letter"><span class="league-letter">${letter(li)}</span><h2>${letter(li)}リーグ 対戦順とスコア入力</h2></div></div>
     <div class="card-head" style="margin-top:-8px"><div><p class="faint num">全${num}試合 · ${e.games === 1 ? `${e.points}点1ゲーム` : `${e.points}点3ゲーム(2ゲーム先取)`}。同じラウンドの試合は同時に進められます。</p></div></div>
     <div class="stack">${roundsHTML || `<p class="muted">2人以上いると試合が組めます。</p>`}</div>
+    ${L > 1 ? `<div class="row" style="justify-content:space-between;margin-top:18px">
+      ${li > 0 ? jump(li - 1, `‹ ${letter(li - 1)}リーグへ`) : "<span></span>"}
+      ${li < L - 1 ? jump(li + 1, `次は ${letter(li + 1)}リーグ ›`) : ""}
+    </div>` : ""}
   </section>`;
 }
 
@@ -2066,7 +2206,7 @@ function makeSample(type) {
     ["見本 陽菜", "桜ヶ丘高", 6], ["見本 湊", "港北高", 6], ["見本 結衣", "緑川高", 5], ["見本 大翔", "青葉高", 5],
     ["見本 凛", "桜ヶ丘高", 4], ["見本 悠真", "港北高", 4], ["見本 美咲", "緑川高", 3], ["見本 颯太", "青葉高", 3],
   ];
-  const e = normalize({ name: "サンプル大会(練習用)", leagueCount: 4 });
+  const e = normalize({ name: "見本:部内リーグ戦(練習用)", mode: "league", groupSize: 4, splitMethod: "level" });
   e.id = uid();
   e.players = data.map(([name, school, level]) => ({ id: uid(), name, school, level }));
   autoAssign(e);
@@ -2086,7 +2226,7 @@ function makeDoublesSample() {
     ["見本 大翔", "見本 悠真", "緑川高", 6], ["見本 凛", "見本 美咲", "青葉高", 5], ["見本 颯太", "見本 樹", "桜ヶ丘高", 5],
     ["見本 芽依", "見本 紬", "港北高", 4], ["見本 蒼", "見本 律", "緑川高", 4], ["見本 杏", "見本 澪", "青葉高", 3],
   ];
-  const e = normalize({ name: "サンプル大会 ダブルス(練習用)", type: "doubles", games: 3, leagueCount: 3 });
+  const e = normalize({ name: "見本:ダブルス リーグ戦→決勝トーナメント(練習用)", type: "doubles", mode: "both", games: 3, groupSize: 4, splitMethod: "balanced" });
   e.id = uid();
   e.players = data.map(([name, name2, school, level]) => ({ id: uid(), name, name2, school, level }));
   autoAssign(e);
@@ -2096,9 +2236,9 @@ function makeDoublesSample() {
 }
 
 function newEvent(players, opts) {
-  const e = normalize(Object.assign({ name: players ? `${ev().name}(コピー)` : "新しい大会", date: today() }, opts || {}));
+  const e = normalize(Object.assign({ name: players ? `${ev().name}(コピー)` : "名前なし", date: today() }, opts || {}));
   e.id = uid();
-  if (players) { e.players = clone(players); e.type = ev().type; e.mode = ev().mode; e.leagueCount = ev().leagueCount; e.games = ev().games; e.points = ev().points; }
+  if (players) { e.players = clone(players); e.type = ev().type; e.mode = ev().mode; e.groupSize = ev().groupSize; e.splitMethod = ev().splitMethod; e.games = ev().games; e.points = ev().points; }
   events[e.id] = e;
   openEvent(e.id);
   Store.save(e);
@@ -2106,7 +2246,7 @@ function newEvent(players, opts) {
 }
 function openEvent(id) {
   currentId = id;
-  Object.assign(ui, { view: "event", creating: false, showSettings: false, exportOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
+  Object.assign(ui, { view: "event", createMode: null, showSettings: false, exportOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
   window.scrollTo({ top: 0 });
 }
 
@@ -2121,29 +2261,31 @@ app.addEventListener("click", (evt) => {
       // 今の形式にない画面へは行かない(行けないボタンを押して最初の画面に戻るのを防ぐ)
       if (!tabsFor(e).some(([k]) => k === btn.dataset.tab)) break;
       ui.tab = btn.dataset.tab; ui.confirm = null; ui.copyText = null; render(); window.scrollTo({ top: 0 }); break;
-    case "home": Object.assign(ui, { view: "home", creating: false, confirm: null, copyText: null }); render(); window.scrollTo({ top: 0 }); break;
+    case "home": Object.assign(ui, { view: "home", createMode: null, confirm: null, copyText: null }); render(); window.scrollTo({ top: 0 }); break;
     case "open-event": openEvent(btn.dataset.id); render(); break;
-    case "new-event": ui.view = "home"; ui.creating = true; render(); { const n = document.getElementById("c-name"); if (n) { n.scrollIntoView({ block: "center" }); n.focus({ preventScroll: true }); } } break;
-    case "cancel-create": ui.creating = false; render(); break;
+    case "new-event": Object.assign(ui, { view: "home", createMode: null }); render(); window.scrollTo({ top: 0 }); break;
+    case "pick-mode": {
+      ui.createMode = ui.createMode === btn.dataset.mode ? null : btn.dataset.mode;
+      render();
+      const n = document.getElementById("c-name");
+      if (n) { document.getElementById("create-card").scrollIntoView({ block: "nearest", behavior: "smooth" }); n.focus({ preventScroll: true }); }
+      break;
+    }
+    case "cancel-create": ui.createMode = null; render(); break;
     case "create": {
-      const pick = (name) => (document.querySelector(`input[name="${name}"]:checked`) || {}).value;
-      if (!pick("c-mode")) {
-        const f = document.getElementById("c-mode-field");
-        f.classList.add("need-pick");
-        f.scrollIntoView({ block: "center", behavior: "smooth" });
-        toast("形式(リーグ戦かトーナメントか)を選んでください");
-        break;
-      }
-      const name = document.getElementById("c-name").value.trim() || "新しい大会";
-      newEvent(null, { name, type: pick("c-type"), mode: pick("c-mode") });
+      const mode = MODES[ui.createMode] ? ui.createMode : "league";
+      const type = (document.querySelector('input[name="c-type"]:checked') || {}).value;
+      const d = new Date();
+      const name = document.getElementById("c-name").value.trim() || `${MODES[mode][0]} ${d.getMonth() + 1}/${d.getDate()}`;
+      newEvent(null, { name, type, mode, splitMethod: mode === "both" ? "balanced" : "level" });
       toast(`「${name}」を作りました。まず${unit(ev())}を入れてください`);
       break;
     }
     case "toggle-settings": ui.showSettings = !ui.showSettings; ui.confirm = null; render(); break;
-    case "dup-event": newEvent(e.players); toast(`${unit(e)}をコピーした新しい大会を作りました`); break;
+    case "dup-event": newEvent(e.players); toast(`${unit(e)}をコピーして新しく作りました`); break;
     case "sample": { const s = makeSample(btn.dataset.type); events[s.id] = s; openEvent(s.id); ui.tab = "matches"; Store.save(s); render(); break; }
     case "ask-del-event": ui.confirm = "del-event"; render(); break;
-    case "del-event": { const id = e.id; delete events[id]; currentId = null; Object.assign(ui, { view: "home", confirm: null, showSettings: false }); Store.remove(id); render(); toast("大会を削除しました"); break; }
+    case "del-event": { const id = e.id; delete events[id]; currentId = null; Object.assign(ui, { view: "home", confirm: null, showSettings: false }); Store.remove(id); render(); toast("削除しました"); break; }
     case "cancel": ui.confirm = null; render(); break;
     case "import": {
       const box = document.getElementById("paste-box");
@@ -2157,10 +2299,13 @@ app.addEventListener("click", (evt) => {
       e.leagues.forEach((l) => (l.playerIds = l.playerIds.filter((x) => x !== id)));
       commit(); render(); break;
     }
-    case "lc": e.leagueCount = clamp(e.leagueCount + Number(btn.dataset.d), 1, 26); commit(); render(); break;
+    case "gsize": e.groupSize = clamp(Number(btn.dataset.k), 3, 8); commit(); render(); break;
     case "auto": if (e.leagues.length) { ui.confirm = "reassign"; render(); } else { autoAssign(e); commit(); render(); toast(`${e.leagues.length}つのリーグに分けました`); } break;
     case "auto-yes": ui.confirm = null; autoAssign(e); commit(); render(); toast(`${e.leagues.length}つのリーグに分け直しました`); break;
-    case "pick-league": ui.league = btn.dataset.id; ui.copyText = null; render(); break;
+    case "pick-league":
+      ui.league = btn.dataset.id; ui.copyText = null; render();
+      if (btn.dataset.scroll) { const s = document.getElementById("league-switch"); if (s) s.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      break;
     case "toggle-export": ui.exportOpen = !ui.exportOpen; ui.copyText = null; render(); break;
     case "x-hoshi-one": { const li = e.leagues.findIndex((l) => l.id === btn.dataset.id); copyTables([hoshiBlock(e, li)], `${letter(li)}リーグの星取表`); break; }
     case "x-hoshi": copyTables(e.leagues.map((_, i) => hoshiBlock(e, i)), "星取表"); break;
@@ -2232,7 +2377,7 @@ app.addEventListener("change", (evt) => {
   const e = ev();
   const p = t.dataset.id ? e.players.find((x) => x.id === t.dataset.id) : null;
   switch (k) {
-    case "ev-name": e.name = t.value.trim() || "無題の大会"; commit(); render(); break;
+    case "ev-name": e.name = t.value.trim() || "名前なし"; commit(); render(); break;
     case "ev-date": e.date = t.value; commit(); render(); break;
     case "ev-games": e.games = Number(t.value) === 3 ? 3 : 1; commit(); render(); break;
     case "ev-points": e.points = Number(t.value); commit(); render(); break;
@@ -2251,6 +2396,7 @@ app.addEventListener("change", (evt) => {
     case "p-school": if (p) { p.school = t.value.trim(); commit(); } break;
     case "p-level": if (p) { p.level = clamp(Number(t.value), 1, 10); commit(); render(); } break;
     case "spread": e.spreadSchools = t.checked; commit(); render(); break;
+    case "split": e.splitMethod = t.value === "balanced" ? "balanced" : "level"; commit(); render(); break;
     case "tolerance": e.tolerance = Number(t.value); commit(); break;
     case "move": {
       const to = Number(t.value);
