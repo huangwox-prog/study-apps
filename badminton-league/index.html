@@ -610,8 +610,17 @@ details.seedbox summary:hover { color: var(--accent); }
 .need-pick:not(:has(input:checked)) .choice { border-color: var(--warn); }
 .need-pick:not(:has(input:checked)) > span { color: var(--warn); }
 .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
-.event-card { display: flex; flex-direction: column; gap: 6px; text-align: left; cursor: pointer; transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
-.event-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.event-card { display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 0; transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
+.event-card:hover { border-color: var(--accent); }
+.event-open { display: flex; flex-direction: column; gap: 6px; text-align: left; width: 100%; padding: 18px 20px 6px; cursor: pointer; border-radius: inherit; }
+.event-del {
+  align-self: flex-end; display: inline-flex; align-items: center; gap: 4px; margin: 0 12px 10px;
+  padding: 5px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; color: var(--text-tertiary);
+}
+.event-del:hover { background: var(--error-soft); color: var(--error); }
+.event-card.is-confirm { padding: 18px 20px; border-color: var(--error); background: var(--error-soft); }
+.btn-del { background: var(--error); color: var(--bg); }
+.btn-del:hover { filter: brightness(1.08); }
 .event-name { font-size: 1.15rem; letter-spacing: -0.02em; line-height: 1.35; overflow-wrap: anywhere; }
 .link-btn { color: var(--accent); font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
 details.more { margin-top: 16px; border-top: 1px solid var(--hairline); padding-top: 12px; }
@@ -1449,11 +1458,24 @@ function homeHTML() {
       <span class="make-icon">${MODE_ICON[k]}</span><b>${t}を作る</b><span class="faint">${d}</span></button>`).join("");
   const cards = list.map((x) => {
     const t = totals(x);
-    return `<button class="card event-card" data-action="open-event" data-id="${esc(x.id)}">
-      <b class="event-name">${esc(x.name)}</b>
-      <span class="row" style="gap:6px"><span class="chip chip-live">${MODES[x.mode][0]}</span><span class="chip">${isDbl(x) ? "ダブルス" : "シングルス"}</span></span>
-      <span class="faint num">${esc(x.date || "")} · ${count(x, x.players.length)} · 試合 ${t.finished}/${t.total} 終了</span>
-    </button>`;
+    if (ui.confirmDel === x.id) {
+      return `<div class="card event-card is-confirm">
+        <b class="event-name">「${esc(x.name)}」を削除しますか？</b>
+        <span class="faint">${count(x, x.players.length)}と、入れた結果もすべて消えます。元に戻せません。</span>
+        <span class="row" style="margin-top:4px">
+          <button class="btn btn-sm btn-del" data-action="del-home-yes" data-id="${esc(x.id)}">削除する</button>
+          <button class="btn btn-ghost btn-sm" data-action="del-home-no">やめる</button>
+        </span>
+      </div>`;
+    }
+    return `<div class="card event-card">
+      <button class="event-open" data-action="open-event" data-id="${esc(x.id)}">
+        <b class="event-name">${esc(x.name)}</b>
+        <span class="row" style="gap:6px"><span class="chip chip-live">${MODES[x.mode][0]}</span><span class="chip">${isDbl(x) ? "ダブルス" : "シングルス"}</span></span>
+        <span class="faint num">${esc(x.date || "")} · ${count(x, x.players.length)} · 試合 ${t.finished}/${t.total} 終了</span>
+      </button>
+      <button class="event-del" data-action="del-home" data-id="${esc(x.id)}" aria-label="「${esc(x.name)}」を削除" title="削除">${TRASH}<span>削除</span></button>
+    </div>`;
   }).join("");
   return `<section class="home-head">
       <h1 class="home-title">何を作りますか？</h1>
@@ -2456,7 +2478,18 @@ app.addEventListener("click", (evt) => {
       if (!tabsFor(e).some(([k]) => k === btn.dataset.tab)) break;
       ui.tab = btn.dataset.tab; ui.confirm = null; ui.copyText = null; render(); window.scrollTo({ top: 0 }); break;
     case "home": Object.assign(ui, { view: "home", createMode: null, confirm: null, copyText: null }); render(); window.scrollTo({ top: 0 }); break;
-    case "open-event": openEvent(btn.dataset.id); render(); break;
+    case "open-event": ui.confirmDel = null; openEvent(btn.dataset.id); render(); break;
+    case "del-home": ui.confirmDel = btn.dataset.id; render(); break;
+    case "del-home-no": ui.confirmDel = null; render(); break;
+    case "del-home-yes": {
+      const id = btn.dataset.id;
+      const name = events[id] ? events[id].name : "";
+      delete events[id];
+      if (currentId === id) currentId = null;
+      ui.confirmDel = null;
+      Store.remove(id); render(); toast(`「${name}」を削除しました`);
+      break;
+    }
     case "new-event": Object.assign(ui, { view: "home", createMode: null }); render(); window.scrollTo({ top: 0 }); break;
     case "pick-mode": {
       ui.createMode = ui.createMode === btn.dataset.mode ? null : btn.dataset.mode;
