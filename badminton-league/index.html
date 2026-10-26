@@ -533,6 +533,8 @@ details.seedbox summary:hover { color: var(--accent); }
 .choice:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
 .choice:has(input:checked) b { color: var(--accent); }
 .choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+.need-pick:not(:has(input:checked)) .choice { border-color: var(--warn); }
+.need-pick:not(:has(input:checked)) > span { color: var(--warn); }
 .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
 .event-card { display: flex; flex-direction: column; gap: 6px; text-align: left; cursor: pointer; transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease); }
 .event-card:hover { border-color: var(--accent); transform: translateY(-2px); }
@@ -1209,8 +1211,8 @@ function createHTML(hasEvents) {
       <div class="field"><span>種目</span><div class="choice-grid two">
         ${radio("c-type", "singles", "シングルス", "", true)}${radio("c-type", "doubles", "ダブルス", "", false)}
       </div></div>
-      <div class="field"><span>形式</span><div class="choice-grid">
-        ${Object.entries(MODES).map(([k, [t, d]], i) => radio("c-mode", k, t, d, i === 0)).join("")}
+      <div class="field" id="c-mode-field"><span>形式(どれか1つ選んでください)</span><div class="choice-grid">
+        ${Object.entries(MODES).map(([k, [t, d]]) => radio("c-mode", k, t, d, false)).join("")}
       </div></div>
       <div class="row">
         <button class="btn btn-aurora" data-action="create">作る</button>
@@ -1335,15 +1337,18 @@ function schoolsDatalist(e) {
 }
 function playersHTML(e) {
   const dbl = isDbl(e);
+  // トーナメントだけの大会では、リーグの列と「リーグ分けへ」は出さない
+  const hasL = e.mode !== "tournament";
+  const next = hasL ? ["leagues", "リーグ分けへ"] : ["bracket", "トーナメントへ"];
   const list = e.players.slice().sort((a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja") || a.name.localeCompare(b.name, "ja"));
   const rows = list.map((p) => {
-    const li = leagueIndexOf(e, p.id);
+    const li = hasL ? leagueIndexOf(e, p.id) : -1;
     return `<tr>
       <td><input class="cell-input" id="pn-${p.id}" data-change="p-name" data-id="${p.id}" value="${esc(p.name)}" aria-label="${dbl ? "1人目の名前" : "名前"}"></td>
       ${dbl ? `<td><input class="cell-input" id="pn2-${p.id}" data-change="p-name2" data-id="${p.id}" value="${esc(p.name2)}" placeholder="相方を入力" aria-label="2人目の名前"></td>` : ""}
       <td><input class="cell-input" id="ps-${p.id}" data-change="p-school" data-id="${p.id}" value="${esc(p.school)}" list="schools" aria-label="学校"></td>
       <td>${levelPicker(p.id, p.level)}</td>
-      <td>${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>
+      ${hasL ? `<td>${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>` : ""}
       <td style="text-align:right"><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(pname(e, p))}を削除" title="削除">${TRASH}</button></td>
     </tr>`;
   }).join("");
@@ -1368,10 +1373,10 @@ function playersHTML(e) {
     </details>
   </section>
   <section class="card">
-    <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・実力を直すと、リーグ表や結果にもそのまま反映されます。</p></div>
-      ${e.players.length ? `<button class="btn btn-aurora btn-sm" data-action="tab" data-tab="leagues">リーグ分けへ</button>` : ""}</div>
+    <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・実力を直すと、${hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。</p></div>
+      ${e.players.length ? `<button class="btn btn-aurora btn-sm" data-action="tab" data-tab="${next[0]}">${next[1]}</button>` : ""}</div>
     ${e.players.length ? `<div class="table-wrap"><table>
-      <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>実力</th><th>リーグ</th><th></th></tr></thead>
+      <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>実力</th>${hasL ? "<th>リーグ</th>" : ""}<th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>` : `<p class="muted">まだ${unit(e)}がいません。上のフォームか、Excel からの貼り付けで追加してください。</p>`}
   </section>`;
 }
@@ -1994,13 +1999,23 @@ app.addEventListener("click", (evt) => {
   const a = btn.dataset.action;
   const e = ev();
   switch (a) {
-    case "tab": ui.tab = btn.dataset.tab; ui.confirm = null; ui.copyText = null; render(); window.scrollTo({ top: 0 }); break;
+    case "tab":
+      // 今の形式にない画面へは行かない(行けないボタンを押して最初の画面に戻るのを防ぐ)
+      if (!tabsFor(e).some(([k]) => k === btn.dataset.tab)) break;
+      ui.tab = btn.dataset.tab; ui.confirm = null; ui.copyText = null; render(); window.scrollTo({ top: 0 }); break;
     case "home": Object.assign(ui, { view: "home", creating: false, confirm: null, copyText: null }); render(); window.scrollTo({ top: 0 }); break;
     case "open-event": openEvent(btn.dataset.id); render(); break;
     case "new-event": ui.view = "home"; ui.creating = true; render(); { const n = document.getElementById("c-name"); if (n) { n.scrollIntoView({ block: "center" }); n.focus({ preventScroll: true }); } } break;
     case "cancel-create": ui.creating = false; render(); break;
     case "create": {
       const pick = (name) => (document.querySelector(`input[name="${name}"]:checked`) || {}).value;
+      if (!pick("c-mode")) {
+        const f = document.getElementById("c-mode-field");
+        f.classList.add("need-pick");
+        f.scrollIntoView({ block: "center", behavior: "smooth" });
+        toast("形式(リーグ戦かトーナメントか)を選んでください");
+        break;
+      }
       const name = document.getElementById("c-name").value.trim() || "新しい大会";
       newEvent(null, { name, type: pick("c-type"), mode: pick("c-mode") });
       toast(`「${name}」を作りました。まず${unit(ev())}を入れてください`);
