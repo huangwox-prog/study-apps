@@ -465,9 +465,18 @@ tr:last-child td { border-bottom: none; }
 .m-side.b { text-align: right; }
 .m-side .pname { transition: color var(--dur-fast) var(--ease); }
 .m-side.win .pname { color: var(--success); }
-.m-side.win .pname::after { content: " ○"; }
-.m-side.b.win .pname::after { content: ""; }
-.m-side.b.win .pname::before { content: "○ "; }
+.qwin {
+  display: inline-flex; align-items: center; justify-content: center; margin-top: 6px; min-width: 64px;
+  padding: 6px 14px; border-radius: 999px; font-size: 0.86rem; font-weight: 800;
+  background: var(--surface-soft); border: 1.5px solid var(--border); color: var(--text-secondary);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-press);
+}
+.qwin:hover { border-color: var(--success); color: var(--success); }
+.qwin:active { transform: scale(0.94); }
+.qwin.on { background: var(--success); border-color: var(--success); color: var(--bg); }
+.m-side.b .qwin { margin-left: auto; }
+.m-side { display: flex; flex-direction: column; }
+.m-side.b { align-items: flex-end; }
 .m-scores { display: flex; flex-direction: column; gap: 4px; align-items: center; }
 .game { display: flex; align-items: center; gap: 4px; }
 .game-label { font-size: 0.66rem; color: var(--text-tertiary); width: 2.4em; text-align: right; margin-right: 2px; }
@@ -558,12 +567,23 @@ details.seedbox summary:hover { color: var(--accent); }
 .plan-preview b { color: var(--accent); font-size: 1.15rem; letter-spacing: 0.04em; }
 
 /* リーグの切り替え */
+/* 上に残るリーグの切り替え:A B C D の大きなボタン */
 .league-switch {
-  display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 80px;
-  padding: 14px 16px; border-radius: 18px 18px 18px 32px; background: var(--surface); border: 1px solid var(--border-soft);
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 62px); z-index: 30;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 12px; border-radius: 18px 18px 18px 32px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent); border: 1px solid var(--border-soft);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: var(--shadow-sm);
 }
-.switch-label { font-size: 0.86rem; font-weight: 700; color: var(--text-secondary); }
-.jump-btn { border-color: var(--lg); color: var(--lg); }
+.switch-label { font-size: 0.84rem; font-weight: 800; color: var(--text-secondary); white-space: nowrap; }
+.league-switch .league-pills { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
+.league-switch .league-pill {
+  flex-direction: column; justify-content: center; gap: 0; padding: 6px 4px; border-radius: 14px 14px 14px 22px;
+  border: 2px solid var(--lg); background: var(--surface-strong); color: var(--lg);
+}
+.league-switch .lp-letter { font-size: 1.6rem; font-weight: 800; line-height: 1.1; }
+.league-switch .league-pill small { font-size: 0.72rem; font-weight: 700; color: inherit; opacity: 0.85; }
+.league-switch .league-pill.is-active { background: var(--lg); color: var(--on-lg); box-shadow: 0 0 0 3px var(--lg-soft); }
 
 /* ============ はじめの画面 ============ */
 .home-head { padding-block: clamp(12px, 4vw, 36px) 0; display: flex; flex-direction: column; gap: 6px; }
@@ -1043,23 +1063,38 @@ function setScore(e, a, b, gi, side, val) {
   const r = e.results[key] || (e.results[key] = { g: [] });
   while (r.g.length <= gi) r.g.push([null, null]);
   r.g[gi][a < b ? side : 1 - side] = val;
-  if (r.g.every((x) => x[0] == null && x[1] == null) && !r.wo) delete e.results[key];
+  delete r.win; // 点数を入れたら「勝ち負けだけ」は使わない
+  cleanResult(e.results, key);
 }
+const isEmptyGames = (g) => !g || g.every((x) => x[0] == null && x[1] == null);
+function cleanResult(R, key) { const r = R[key]; if (r && isEmptyGames(r.g) && !r.wo && !r.win) delete R[key]; }
 /* 棄権(不戦勝):who が棄権した側。空なら取り消し */
 function setWo(e, a, b, who) {
   const key = keyOf(a, b);
   const r = e.results[key] || (e.results[key] = { g: [] });
-  if (who) r.wo = who; else delete r.wo;
-  if (!r.wo && r.g.every((x) => x[0] == null && x[1] == null)) delete e.results[key];
+  if (who) { r.wo = who; delete r.win; } else delete r.wo;
+  cleanResult(e.results, key);
+}
+/* 勝ち負けだけ:who が勝った側。点数は消す。空なら取り消し */
+function setWin(e, a, b, who) {
+  const key = keyOf(a, b);
+  const r = e.results[key] || (e.results[key] = { g: [] });
+  if (who) { r.win = who; r.g = []; delete r.wo; } else delete r.win;
+  cleanResult(e.results, key);
 }
 function woOf(e, a, b) { const r = e.results[keyOf(a, b)]; return (r && r.wo) || null; }
-function outcome(e, a, b) { return outcomeOf(e, gamesOf(e, a, b), a, b, woOf(e, a, b)); }
-function outcomeOf(e, games, a, b, wo) {
+function winOf(e, a, b) { const r = e.results[keyOf(a, b)]; return (r && r.win) || null; }
+function outcome(e, a, b) { return outcomeOf(e, gamesOf(e, a, b), a, b, woOf(e, a, b), winOf(e, a, b)); }
+function outcomeOf(e, games, a, b, wo, win) {
   const need = e.games === 1 ? 1 : 2;
   if (wo === a || wo === b) {
     // 棄権は相手の不戦勝。得失は「必要なゲーム数 × 点数 対 0」で数える(学校の大会でよく使う扱い)
     const winner = wo === a ? b : a, P = need * e.points;
     return { winner, wo, ga: winner === a ? need : 0, gb: winner === b ? need : 0, pa: winner === a ? P : 0, pb: winner === b ? P : 0, started: true };
+  }
+  if ((win === a || win === b) && isEmptyGames(games)) {
+    // 勝ち負けだけ:ゲームは 2-0(1ゲームなら 1-0)、点数は数えない
+    return { winner: win, quick: true, ga: win === a ? need : 0, gb: win === b ? need : 0, pa: 0, pb: 0, started: true };
   }
   let ga = 0, gb = 0, pa = 0, pb = 0, started = false;
   games.slice(0, e.games).forEach(([x, y]) => {
@@ -1093,7 +1128,7 @@ function gameWarn(e, x, y) {
   if (w === cap) return !(l === cap - 1 || l === cap - 2);
   return true;
 }
-function scoreText(e, o) { return o.wo ? "不戦" : e.games === 1 ? `${o.pa}-${o.pb}` : `${o.ga}-${o.gb}`; }
+function scoreText(e, o) { return o.wo ? "不戦" : o.quick ? "" : e.games === 1 ? `${o.pa}-${o.pb}` : `${o.ga}-${o.gb}`; }
 
 function standings(e, league) {
   const pm = playerMap(e);
@@ -1242,7 +1277,7 @@ function bracketState(e) {
     if (n.a && n.a !== "?" && n.b && n.b !== "?") {
       const res = B.results[n.mid];
       const same = res && res.a === n.a && res.b === n.b;
-      n.o = outcomeOf(e, same ? res.g || [] : [], n.a, n.b, same ? res.wo : null);
+      n.o = outcomeOf(e, same ? res.g || [] : [], n.a, n.b, same ? res.wo : null, same ? res.win : null);
       n.out = n.o.winner || "?";
     } else n.out = "?";
   };
@@ -1303,14 +1338,29 @@ function setBScore(e, n, gi, side, val) {
   if (!r || r.a !== n.a || r.b !== n.b) r = R[n.mid] = { a: n.a, b: n.b, g: [] };
   while (r.g.length <= gi) r.g.push([null, null]);
   r.g[gi][side] = val;
-  if (r.g.every((x) => x[0] == null && x[1] == null) && !r.wo) delete R[n.mid];
+  delete r.win;
+  cleanResult(R, n.mid);
 }
-function setBWo(e, n, who) {
+function bResult(e, n) {
   const R = e.bracket.results;
   let r = R[n.mid];
   if (!r || r.a !== n.a || r.b !== n.b) r = R[n.mid] = { a: n.a, b: n.b, g: [] };
-  if (who) r.wo = who; else delete r.wo;
-  if (!r.wo && r.g.every((x) => x[0] == null && x[1] == null)) delete R[n.mid];
+  return r;
+}
+function setBWo(e, n, who) {
+  const r = bResult(e, n);
+  if (who) { r.wo = who; delete r.win; } else delete r.wo;
+  cleanResult(e.bracket.results, n.mid);
+}
+function setBWin(e, n, who) {
+  const r = bResult(e, n);
+  if (who) { r.win = who; r.g = []; delete r.wo; } else delete r.win;
+  cleanResult(e.bracket.results, n.mid);
+}
+/* 「勝ち」ボタン:押すとその人の勝ち(点数なし)。もう一度押すと取り消し */
+function quickWinHTML(o, me, attrs) {
+  const on = o && o.winner === me && (o.quick || !o.wo);
+  return `<button type="button" class="qwin ${o && o.winner === me ? "on" : ""}" ${attrs} data-w="${me}" aria-pressed="${!!on}">${o && o.winner === me ? "○ 勝ち" : "勝ち"}</button>`;
 }
 /* 棄権のメニュー(リーグ・トーナメント共通) */
 function woSelectHTML(e, a, b, cur, attrs) {
@@ -1704,7 +1754,7 @@ function leaguesHTML(e) {
 function leaguePillsHTML(e) {
   return `<div class="league-pills" role="tablist" aria-label="リーグ">${e.leagues.map((l, i) => {
     const s = standings(e, l);
-    return `<button class="league-pill ${lgClass(i)} ${l.id === ui.league ? "is-active" : ""}" data-action="pick-league" data-id="${l.id}" role="tab" aria-selected="${l.id === ui.league}"><span class="badge">${letter(i)}</span>${letter(i)}リーグ <small>${s.finished}/${s.total}</small></button>`;
+    return `<button class="league-pill ${lgClass(i)} ${l.id === ui.league ? "is-active" : ""}" data-action="pick-league" data-id="${l.id}" role="tab" aria-selected="${l.id === ui.league}" aria-label="${letter(i)}リーグ(${s.finished}/${s.total}試合終了)"><span class="lp-letter">${letter(i)}</span><small>${s.finished}/${s.total}</small></button>`;
   }).join("")}</div>`;
 }
 
@@ -1731,7 +1781,7 @@ function hoshiHTML(e, li) {
   return `<div class="table-wrap"><table class="hoshi">
     <thead><tr><th class="name-cell">${unit(e)}</th>${head}<th>勝</th><th>敗</th><th>得失<br>ゲーム</th><th>得失点</th><th>順位</th></tr></thead>
     <tbody>${body}</tbody></table></div>
-    <p class="tie-note"><b>順位の決め方</b>(BWF 一般競技規程 16.2 と同じ):① 勝ち数が多い順 ② 2人が並んだら直接対決の勝者が上 ③ 3人以上並んだら 得失ゲーム差 → 得失点差(途中で2人に絞れたら直接対決)。○ 勝ち ● 負け。</p>
+    <p class="tie-note"><b>順位の決め方</b>(BWF 一般競技規程 16.2 と同じ):① 勝ち数が多い順 ② 2人が並んだら直接対決の勝者が上 ③ 3人以上並んだら 得失ゲーム差 → 得失点差(途中で2人に絞れたら直接対決)。○ 勝ち ● 負け。「勝ち」ボタンだけで入れた試合は ${e.games === 1 ? "1-0" : "2-0"}(点数なし)として数えます。</p>
     ${s.lots ? `<p class="tie-note" style="color:var(--warn)">同じ順位の${unit(e)}がいます。ルールでは抽選で決めます。</p>` : ""}`;
 }
 
@@ -1752,14 +1802,15 @@ function matchRowHTML(e, a, b) {
   }
   inputs += woSelectHTML(e, a, b, wo, `id="wo-${keyOf(a, b)}" data-change="wo" data-a="${a}" data-b="${b}"`);
   return `<div class="match ${o.winner ? "is-done" : ""}" id="m-${keyOf(a, b)}">
-    <div class="m-side a ${o.winner === a ? "win" : ""}"><span class="pname">${pnameStack(e, pm[a])}</span><span class="pschool">${esc(pm[a].school)}</span></div>
+    <div class="m-side a ${o.winner === a ? "win" : ""}"><span class="pname">${pnameStack(e, pm[a])}</span><span class="pschool">${esc(pm[a].school)}</span>${quickWinHTML(o, a, `data-action="qwin" data-a="${a}" data-b="${b}"`)}</div>
     <div class="m-scores">${inputs}</div>
-    <div class="m-side b ${o.winner === b ? "win" : ""}"><span class="pname">${pnameStack(e, pm[b])}</span><span class="pschool">${esc(pm[b].school)}</span></div>
+    <div class="m-side b ${o.winner === b ? "win" : ""}"><span class="pname">${pnameStack(e, pm[b])}</span><span class="pschool">${esc(pm[b].school)}</span>${quickWinHTML(o, b, `data-action="qwin" data-a="${a}" data-b="${b}"`)}</div>
     <div class="m-status">${statusChip(e, a, b, o)}</div>
   </div>`;
 }
 function statusChip(e, a, b, o) {
   if (o.wo) return `<span class="chip chip-warn">不戦勝</span>`;
+  if (o.quick) return `<span class="chip chip-ok">終了</span>`;
   const games = gamesOf(e, a, b);
   if (games.some(([x, y]) => gameWarn(e, x, y))) return `<span class="chip chip-warn" title="${e.points}点ゲームとして点数がおかしい可能性があります">点数を確認</span>`;
   if (extraGame(e, games)) return `<span class="chip chip-warn" title="もう勝ちが決まったあとのゲームに点が入っています">いらないゲームあり</span>`;
@@ -1780,9 +1831,8 @@ function matchesHTML(e) {
       ${r.pairs.map(([a, b]) => { num++; return matchRowHTML(e, a, b); }).join("")}
     </div>`).join("");
   const L = e.leagues.length;
-  const jump = (i, label) => `<button class="btn btn-secondary ${lgClass(i)} jump-btn" data-action="pick-league" data-id="${e.leagues[i].id}" data-scroll="1">${label}</button>`;
   return `${L > 1 ? `<section class="league-switch" id="league-switch">
-      <span class="switch-label">リーグは ${L} つあります。押すと切り替わります</span>
+      <span class="switch-label">リーグを選ぶ</span>
       ${leaguePillsHTML(e)}
     </section>` : ""}
   <section class="card ${lgClass(li)}">
@@ -1794,10 +1844,6 @@ function matchesHTML(e) {
     <div class="card-head"><div class="title-with-letter"><span class="league-letter">${letter(li)}</span><h2>${letter(li)}リーグ 対戦順とスコア入力</h2></div></div>
     <div class="card-head" style="margin-top:-8px"><div><p class="faint num">全${num}試合 · ${e.games === 1 ? `${e.points}点1ゲーム` : `${e.points}点3ゲーム(2ゲーム先取)`}。同じラウンドの試合は同時に進められます。</p></div></div>
     <div class="stack">${roundsHTML || `<p class="muted">2人以上いると試合が組めます。</p>`}</div>
-    ${L > 1 ? `<div class="row" style="justify-content:space-between;margin-top:18px">
-      ${li > 0 ? jump(li - 1, `‹ ${letter(li - 1)}リーグへ`) : "<span></span>"}
-      ${li < L - 1 ? jump(li + 1, `次は ${letter(li + 1)}リーグ ›`) : ""}
-    </div>` : ""}
   </section>`;
 }
 
@@ -1808,6 +1854,7 @@ function refreshMatch(e, a, b) {
     row.classList.toggle("is-done", !!o.winner);
     row.querySelector(".m-side.a").classList.toggle("win", o.winner === a);
     row.querySelector(".m-side.b").classList.toggle("win", o.winner === b);
+    row.querySelectorAll(".qwin").forEach((bt) => { bt.outerHTML = quickWinHTML(o, bt.dataset.w, `data-action="qwin" data-a="${a}" data-b="${b}"`); });
     row.querySelector(".m-status").innerHTML = statusChip(e, a, b, o);
     const games = gamesOf(e, a, b);
     row.querySelectorAll(".game").forEach((gEl, gi) => {
@@ -2041,7 +2088,7 @@ function bmListHTML(e, st) {
   return bracketMatches(st).map((n) => {
     const A = sideName(e, n, 0), B = sideName(e, n, 1);
     const w = n.o && n.o.winner;
-    const status = w ? `<span class="chip chip-ok num">${scoreText(e, n.o)}</span>` : n.o && n.o.started ? `<span class="chip chip-live">入力中</span>` : `<span class="chip">未</span>`;
+    const status = w ? `<span class="chip chip-ok num">${scoreText(e, n.o) || "終了"}</span>` : n.o && n.o.started ? `<span class="chip chip-live">入力中</span>` : `<span class="chip">未</span>`;
     const nameA = w === n.a ? `<b>${esc(A.text)}</b>` : esc(A.text);
     const nameB = w === n.b ? `<b>${esc(B.text)}</b>` : esc(B.text);
     return `<button class="bm-row ${ui.bmatch === n.mid ? "is-sel" : ""}" data-action="bpick" data-mid="${n.mid}">
@@ -2074,9 +2121,9 @@ function bpanelHTML(e, st, n) {
   return `<div class="card-head"><div class="title-with-letter"><span class="league-letter" style="--lg:var(--accent);--on-lg:var(--accent-text);font-size:1.2rem">${n.num}</span><div><h2>第${n.num}試合</h2><span class="faint">${n.label}</span></div></div>
       <button class="btn btn-ghost btn-sm" data-action="bclose">閉じる</button></div>
     ${ready ? `<div class="match ${w ? "is-done" : ""}" id="bp-match">
-      <div class="m-side a ${w === n.a ? "win" : ""}">${A.html}</div>
+      <div class="m-side a ${w === n.a ? "win" : ""}">${A.html}${quickWinHTML(n.o, n.a, `data-action="bqwin" data-mid="${n.mid}"`)}</div>
       <div class="m-scores">${inputs}</div>
-      <div class="m-side b ${w === n.b ? "win" : ""}">${B.html}</div>
+      <div class="m-side b ${w === n.b ? "win" : ""}">${B.html}${quickWinHTML(n.o, n.b, `data-action="bqwin" data-mid="${n.mid}"`)}</div>
       <div class="m-status" id="bp-status">${bStatusChip(e, n)}</div>
     </div>` : `<p class="muted" style="margin:0">${esc(A.text)} 対 ${esc(B.text)}。前の試合の結果が入ると、対戦相手が決まります。</p>`}`;
 }
@@ -2084,6 +2131,7 @@ function bStatusChip(e, n) {
   const res = e.bracket.results[n.mid];
   const games = res && res.a === n.a && res.b === n.b ? res.g : [];
   if (n.o && n.o.wo) return `<span class="chip chip-warn">不戦勝</span>`;
+  if (n.o && n.o.quick) return `<span class="chip chip-ok">終了</span>`;
   if (games.slice(0, e.games).some(([x, y]) => gameWarn(e, x, y))) return `<span class="chip chip-warn">点数を確認</span>`;
   if (extraGame(e, games)) return `<span class="chip chip-warn">いらないゲームあり</span>`;
   if (n.o && n.o.winner) return `<span class="chip chip-ok">終了</span>`;
@@ -2104,6 +2152,7 @@ function refreshBracket(e, mid) {
     row.classList.toggle("is-done", !!w);
     row.querySelector(".m-side.a").classList.toggle("win", w === n.a);
     row.querySelector(".m-side.b").classList.toggle("win", w === n.b);
+    row.querySelectorAll(".qwin").forEach((bt) => { bt.outerHTML = quickWinHTML(n.o, bt.dataset.w, `data-action="bqwin" data-mid="${n.mid}"`); });
     document.getElementById("bp-status").innerHTML = bStatusChip(e, n);
     const res = e.bracket.results[mid];
     const games = res ? res.g : [];
@@ -2122,7 +2171,7 @@ function copyBoxHTML() {
 
 /* ============ Excel への書き出し ============ */
 // 「2-1」「21-15」は Excel で日付に化けるので、全角の「－」でつなぐ
-function xlScore(e, o) { return o.wo ? "不戦" : e.games === 1 ? `${o.pa}－${o.pb}` : `${o.ga}－${o.gb}`; }
+function xlScore(e, o) { return o.wo ? "不戦" : o.quick ? "" : e.games === 1 ? `${o.pa}－${o.pb}` : `${o.ga}－${o.gb}`; }
 function xlGames(e, games) {
   const out = [];
   for (let g = 0; g < e.games; g++) { const [x, y] = games[g] || [null, null]; out.push(x == null || y == null ? "" : `${x}－${y}`); }
@@ -2479,6 +2528,25 @@ app.addEventListener("click", (evt) => {
       ui.tab = btn.dataset.tab; ui.confirm = null; ui.copyText = null; render(); window.scrollTo({ top: 0 }); break;
     case "home": Object.assign(ui, { view: "home", createMode: null, confirm: null, copyText: null }); render(); window.scrollTo({ top: 0 }); break;
     case "open-event": ui.confirmDel = null; openEvent(btn.dataset.id); render(); break;
+    case "qwin": {
+      const { a, b, w } = btn.dataset;
+      const o = outcome(e, a, b);
+      if (o.winner === w && !o.quick && !o.wo) { toast("点数で勝ちが決まっています。変えるときは点数を消してください"); break; }
+      const hadScores = !isEmptyGames(gamesOf(e, a, b));
+      setWin(e, a, b, o.winner === w && o.quick ? null : w);
+      commit(); render();
+      if (hadScores && o.winner !== w) toast("点数を消して、勝ち負けだけにしました");
+      break;
+    }
+    case "bqwin": {
+      const n = findNode(bracketState(e), btn.dataset.mid);
+      if (!n) break;
+      const w = btn.dataset.w, o = n.o || {};
+      if (o.winner === w && !o.quick && !o.wo) { toast("点数で勝ちが決まっています。変えるときは点数を消してください"); break; }
+      setBWin(e, n, o.winner === w && o.quick ? null : w);
+      commit(); render();
+      break;
+    }
     case "del-home": ui.confirmDel = btn.dataset.id; render(); break;
     case "del-home-no": ui.confirmDel = null; render(); break;
     case "del-home-yes": {
@@ -2535,7 +2603,8 @@ app.addEventListener("click", (evt) => {
     case "auto-yes": ui.confirm = null; autoAssign(e); commit(); render(); toast(`${e.leagues.length}つのリーグに分け直しました`); break;
     case "pick-league":
       ui.league = btn.dataset.id; ui.copyText = null; render();
-      if (btn.dataset.scroll) { const s = document.getElementById("league-switch"); if (s) s.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      // 下までスクロールしていたら、選んだリーグの頭(星取表)まで戻す
+      { const c = document.querySelector(".league-switch + .card"); if (c && c.getBoundingClientRect().top < 0) window.scrollBy({ top: c.getBoundingClientRect().top - 150 }); }
       break;
     case "toggle-export": ui.exportOpen = !ui.exportOpen; ui.copyText = null; render(); break;
     case "x-hoshi-one": { const li = e.leagues.findIndex((l) => l.id === btn.dataset.id); copyTables([hoshiBlock(e, li)], `${letter(li)}リーグの星取表`); break; }
