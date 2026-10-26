@@ -23,8 +23,9 @@
   --surface-strong: #ffffff;
   --surface-soft: rgba(9, 10, 14, 0.035);
   --text: #0b0c11;
-  --text-secondary: #55575f;
-  --text-tertiary: #8b8d96;
+  --text-secondary: #4a4c54;
+  /* 補足の文字(学校名・見出し・説明)。紙の上で 4.5:1 以上になる濃さ */
+  --text-tertiary: #656771;
   --border: rgba(9, 10, 14, 0.14);
   --border-soft: rgba(9, 10, 14, 0.09);
   --highlight: rgba(255, 255, 255, 0.9);
@@ -44,13 +45,13 @@
   --accent-glow: rgba(47, 76, 240, 0.34);
   --accent-text: #ffffff;
 
-  --lg-a: #2f4cf0; --lg-b: #8134ea; --lg-c: #08967e; --lg-d: #d9480f;
-  --lg-e: #c2255c; --lg-f: #8f6400; --lg-g: #0c8599; --lg-h: #5f6470;
+  --lg-a: #2f4cf0; --lg-b: #8134ea; --lg-c: #057562; --lg-d: #c2410c;
+  --lg-e: #c2255c; --lg-f: #8f6400; --lg-g: #0b7285; --lg-h: #5f6470;
   --on-lg: #ffffff;
 
-  --success: #1f7d55;
+  --success: #186a46;
   --success-soft: rgba(31, 125, 85, 0.12);
-  --warn: #9a6a1f;
+  --warn: #8a5c12;
   --warn-soft: rgba(154, 106, 31, 0.13);
   --error: #b23b3b;
   --error-soft: rgba(178, 59, 59, 0.11);
@@ -58,7 +59,7 @@
   /* 墨カードの中だけで使う色(テーマに関係なく墨の上) */
   --ink-text: #f4f4f6;
   --ink-text-2: #a9abb4;
-  --ink-text-3: #7b7d86;
+  --ink-text-3: #9799a3;
   --ink-line: rgba(255, 255, 255, 0.14);
   --ink-surface: rgba(255, 255, 255, 0.07);
   --ink-border: rgba(255, 255, 255, 0.12);
@@ -88,13 +89,13 @@
   :root:not([data-theme="light"]) {
     --bg: #08090d; --bg-deep: #05060a;
     --surface: rgba(255, 255, 255, 0.055); --surface-strong: rgba(255, 255, 255, 0.09); --surface-soft: rgba(255, 255, 255, 0.045);
-    --text: #f4f4f6; --text-secondary: #a7a9b3; --text-tertiary: #74767f;
+    --text: #f4f4f6; --text-secondary: #b6b8c1; --text-tertiary: #9a9ca6;
     --border: rgba(255, 255, 255, 0.16); --border-soft: rgba(255, 255, 255, 0.1);
     --highlight: rgba(255, 255, 255, 0.12); --hairline: rgba(255, 255, 255, 0.12);
     --arc-1: #6c85ff; --arc-2: #b077ff; --arc-3: #2ad9b8;
     --arc-1-soft: rgba(108, 133, 255, 0.16); --arc-2-soft: rgba(176, 119, 255, 0.16); --arc-3-soft: rgba(42, 217, 184, 0.15);
-    --accent: #6c85ff; --accent-hover: #8298ff; --accent-soft: rgba(108, 133, 255, 0.16); --accent-glow: rgba(108, 133, 255, 0.45); --accent-text: #06070b;
-    --success: #3fc98a; --success-soft: rgba(63, 201, 138, 0.15);
+    --accent: #8399ff; --accent-hover: #97aaff; --accent-soft: rgba(108, 133, 255, 0.16); --accent-glow: rgba(108, 133, 255, 0.45); --accent-text: #06070b;
+    --success: #52d69a; --success-soft: rgba(63, 201, 138, 0.15);
     --warn: #e0a54a; --warn-soft: rgba(224, 165, 74, 0.15);
     --error: #ff6f6b; --error-soft: rgba(255, 111, 107, 0.14);
     --ink: #111319;
@@ -108,13 +109,13 @@
 :root[data-theme="dark"] {
   --bg: #08090d; --bg-deep: #05060a;
   --surface: rgba(255, 255, 255, 0.055); --surface-strong: rgba(255, 255, 255, 0.09); --surface-soft: rgba(255, 255, 255, 0.045);
-  --text: #f4f4f6; --text-secondary: #a7a9b3; --text-tertiary: #74767f;
+  --text: #f4f4f6; --text-secondary: #b6b8c1; --text-tertiary: #9a9ca6;
   --border: rgba(255, 255, 255, 0.16); --border-soft: rgba(255, 255, 255, 0.1);
   --highlight: rgba(255, 255, 255, 0.12); --hairline: rgba(255, 255, 255, 0.12);
   --arc-1: #6c85ff; --arc-2: #b077ff; --arc-3: #2ad9b8;
   --arc-1-soft: rgba(108, 133, 255, 0.16); --arc-2-soft: rgba(176, 119, 255, 0.16); --arc-3-soft: rgba(42, 217, 184, 0.15);
-  --accent: #6c85ff; --accent-hover: #8298ff; --accent-soft: rgba(108, 133, 255, 0.16); --accent-glow: rgba(108, 133, 255, 0.45); --accent-text: #06070b;
-  --success: #3fc98a; --success-soft: rgba(63, 201, 138, 0.15);
+  --accent: #8399ff; --accent-hover: #97aaff; --accent-soft: rgba(108, 133, 255, 0.16); --accent-glow: rgba(108, 133, 255, 0.45); --accent-text: #06070b;
+  --success: #52d69a; --success-soft: rgba(63, 201, 138, 0.15);
   --warn: #e0a54a; --warn-soft: rgba(224, 165, 74, 0.15);
   --error: #ff6f6b; --error-soft: rgba(255, 111, 107, 0.14);
   --ink: #111319;
@@ -238,7 +239,7 @@ h3 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.015em; margin: 0; 
 .hero > * { position: relative; }
 .hero .kicker { color: var(--ink-text-3); }
 .hero-name {
-  display: block; width: 100%;
+  display: block; width: 100%; resize: none; overflow: hidden; field-sizing: content;
   background: transparent; border: none; border-bottom: 1px dashed transparent;
   color: var(--ink-text); padding: 4px 0; margin: 6px 0 4px;
   font-size: clamp(1.7rem, 1.1rem + 2.6vw, 2.8rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1.15;
@@ -249,6 +250,8 @@ h3 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.015em; margin: 0; 
 .hero-sub label { display: inline-flex; align-items: center; gap: 8px; }
 .hero .select, .hero .input { background: var(--ink-surface); border-color: var(--ink-border); color: var(--ink-text); padding: 5px 10px; font-size: 0.86rem; }
 .hero .select option { color: #0b0c11; background: #fff; }
+/* 墨の上の日付欄:カレンダーのアイコンが黒くて見えないので暗い配色にする */
+.hero input[type="date"] { color-scheme: dark; }
 .hero-stats { display: flex; flex-wrap: wrap; gap: 14px 34px; margin-top: 20px; }
 .stat-value { display: block; font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.2rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .stat-label { font-size: 0.74rem; color: var(--ink-text-3); letter-spacing: 0.06em; }
@@ -573,15 +576,15 @@ details.more[open] summary { margin-bottom: 12px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .copybox textarea { width: 100%; min-height: 120px; font-family: ui-monospace, Consolas, monospace; font-size: 0.8rem; margin-top: 8px; }
 
-.theme-toggle {
-  position: fixed; right: calc(clamp(14px, 3vw, 26px) + env(safe-area-inset-right, 0px)); bottom: calc(clamp(14px, 3vw, 26px) + env(safe-area-inset-bottom, 0px));
-  z-index: 60; width: 46px; height: 46px; border-radius: 50% 50% 50% 12px; display: grid; place-items: center;
-  background: var(--surface-strong); border: 1px solid var(--border-soft); box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
-  transition: transform var(--dur) var(--ease-bounce);
+.theme-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px 7px 11px; border-radius: 999px 999px 999px 10px;
+  font-size: 0.84rem; font-weight: 700; white-space: nowrap;
+  background: var(--surface-strong); color: var(--text); border: 1px solid var(--border);
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-press);
 }
-.theme-toggle:hover { transform: translateY(-3px) rotate(-8deg); }
-.theme-toggle svg { color: var(--text); }
+.theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+.theme-btn:active { transform: scale(0.95); }
+.theme-btn svg { flex-shrink: 0; }
 
 .loading { padding: 80px 0; text-align: center; color: var(--text-tertiary); }
 
@@ -598,6 +601,23 @@ details.more[open] summary { margin-bottom: 12px; }
   .nav .lockup-sub { display: none; }
   .bm-row { grid-template-columns: 2.2em minmax(0, 1fr) auto; }
   .bm-round { display: none; }
+  /* 選手一覧:スマホでは1人を2〜3段のカードにして、横スクロールなしで実力を押せるように */
+  .ptable thead { display: none; }
+  .ptable, .ptable tbody { display: block; }
+  .ptable tr {
+    display: grid; gap: 6px 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--hairline);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+    grid-template-areas: "name school league del" "level level level level";
+  }
+  .ptable.dbl tr { grid-template-areas: "name name2 league del" "school school school school" "level level level level"; }
+  .ptable tr:last-child { border-bottom: none; }
+  .ptable td { display: block; padding: 0; border: none; min-width: 0; }
+  .ptable .c-name { grid-area: name; } .ptable .c-name2 { grid-area: name2; } .ptable .c-school { grid-area: school; }
+  .ptable .c-level { grid-area: level; } .ptable .c-league { grid-area: league; } .ptable .c-del { grid-area: del; }
+  .ptable .cell-input { min-width: 0; border-color: var(--border-soft); background: var(--surface-strong); }
+  .ptable .lvpick { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); width: 100%; }
+  .ptable .lv-b { width: auto; }
+  .save-state { font-size: 0; gap: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -609,9 +629,6 @@ details.more[open] summary { margin-bottom: 12px; }
 <div class="bg-glow" aria-hidden="true"></div>
 <div class="bg-ring" aria-hidden="true"></div>
 <div id="app"><div class="loading">読み込み中…</div></div>
-<button class="theme-toggle" id="theme-toggle" aria-label="ライト/ダークを切り替え" title="ライト/ダークを切り替え">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-</button>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -671,23 +688,22 @@ function normalize(raw) {
       seeds: ev.bracket.seeds && typeof ev.bracket.seeds === "object" ? ev.bracket.seeds : {},
     }
     : null;
+  ev.type = ev.type === "doubles" ? "doubles" : "singles";
+  // ダブルスでは1件 = 1ペア(name と name2)。シングルスでは name2 は使わない
+  ev.players = (Array.isArray(ev.players) ? ev.players : []).filter((p) => p && p.id).map((p) => ({
+    id: String(p.id), name: String(p.name || ""), name2: String(p.name2 || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 5, 1, 10),
+  }));
+  const ids = new Set(ev.players.map((p) => p.id));
   // 手で決めたシード { 選手id: シード番号 }。消えた選手と重複番号は捨てる
-  const seedIds = new Set(ev.players.map((p) => p.id));
   const usedSeed = new Set();
   const seeds = {};
   Object.entries(ev.seeds && typeof ev.seeds === "object" ? ev.seeds : {}).forEach(([id, s]) => {
     const n = parseInt(s, 10);
-    if (seedIds.has(id) && n >= 1 && !usedSeed.has(n)) { seeds[id] = n; usedSeed.add(n); }
+    if (ids.has(id) && n >= 1 && !usedSeed.has(n)) { seeds[id] = n; usedSeed.add(n); }
   });
   ev.seeds = seeds;
-  ev.type = ev.type === "doubles" ? "doubles" : "singles";
-  // ダブルスでは1件 = 1ペア(name と name2)。シングルスでは name2 は使わない
-  ev.players = (ev.players || []).filter((p) => p && p.id).map((p) => ({
-    id: String(p.id), name: String(p.name || ""), name2: String(p.name2 || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 5, 1, 10),
-  }));
-  const ids = new Set(ev.players.map((p) => p.id));
   const seen = new Set();
-  ev.leagues = (ev.leagues || []).map((l, i) => ({
+  ev.leagues = (Array.isArray(ev.leagues) ? ev.leagues : []).filter((l) => l && typeof l === "object").map((l) => ({
     id: String(l.id || uid()),
     playerIds: (l.playerIds || []).filter((id) => ids.has(id) && !seen.has(id) && seen.add(id)),
   }));
@@ -961,10 +977,11 @@ function standings(e, league) {
   return { rows, sorted, finished, total: matchCount(ids.length) };
 }
 
+/* 試合数は今の形式で使うものだけ数える(形式を変えたあとに残ったリーグ/トーナメントは数えない) */
 function totals(e) {
   let finished = 0, total = 0;
-  e.leagues.forEach((l) => { const s = standings(e, l); finished += s.finished; total += s.total; });
-  const st = bracketState(e);
+  if (e.mode !== "tournament") e.leagues.forEach((l) => { const s = standings(e, l); finished += s.finished; total += s.total; });
+  const st = e.mode !== "league" ? bracketState(e) : null;
   if (st) bracketMatches(st).forEach((n) => { total++; if (n.o && n.o.winner) finished++; });
   return { finished, total };
 }
@@ -1167,7 +1184,16 @@ function render() {
   else if (ui.tab === "bracket") body = bracketHTML(e);
   else body = overviewHTML(e);
   app.innerHTML = navHTML(e) + `<main class="page">${heroHTML(e)}${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${tabsHTML(e)}${body}</main>`;
+  fitName();
 }
+/* 大会名の欄を中身の行数に合わせる(field-sizing が効かないブラウザ用) */
+function fitName() {
+  const t = document.getElementById("ev-name");
+  if (!t) return;
+  t.style.height = "auto";
+  t.style.height = t.scrollHeight + "px";
+}
+addEventListener("resize", fitName);
 
 let renderDeferred = false;
 function safeRender() {
@@ -1189,8 +1215,19 @@ function navHTML(e) {
     ${e
       ? `<button class="back-btn" data-action="home"><span aria-hidden="true">‹</span> 大会一覧</button>`
       : `<span class="lockup">${ARC_MARK(22)}ARCA<span class="lockup-sub">バドミントン大会</span></span>`}
-    <div class="nav-right">${saveStateHTML()}</div>
+    <div class="nav-right">${saveStateHTML()}${themeBtnHTML()}</div>
   </header>`;
+}
+function isDarkNow() {
+  const t = document.documentElement.dataset.theme;
+  return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function themeBtnHTML() {
+  const dark = isDarkNow();
+  const icon = dark
+    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
+  return `<button class="theme-btn" data-action="theme" aria-label="${dark ? "ライトモードにする" : "ダークモードにする"}">${icon}<span>${dark ? "ライトにする" : "ダークにする"}</span></button>`;
 }
 
 /* --- 初期画面:大会一覧と、新しい大会の作成 --- */
@@ -1232,7 +1269,6 @@ function homeHTML() {
   const list = sortedEvents();
   const intro = `<section class="empty" style="padding-block:clamp(20px,5vw,48px) 8px">
     <svg class="shuttle-arc" viewBox="0 0 320 120" fill="none" aria-hidden="true">
-    <svg class="shuttle-arc" viewBox="0 0 320 120" fill="none" aria-hidden="true">
       <defs><linearGradient id="g-empty" x1="0" x2="1"><stop offset="0" stop-color="var(--arc-1)"/><stop offset=".52" stop-color="var(--arc-2)"/><stop offset="1" stop-color="var(--arc-3)"/></linearGradient></defs>
       <path d="M10 110h300" stroke="currentColor" stroke-width="1" opacity=".4"/>
       <path d="M160 110V70" stroke="currentColor" stroke-width="1.5" opacity=".5"/>
@@ -1268,7 +1304,7 @@ function heroHTML(e) {
   return `<section class="hero">
     <div style="min-width:0">
       <span class="kicker">${isDbl(e) ? "ダブルス" : "シングルス"} · ${MODES[e.mode][0]}</span>
-      <input class="hero-name" id="ev-name" data-change="ev-name" value="${esc(e.name)}" aria-label="大会名">
+      <textarea class="hero-name" id="ev-name" data-change="ev-name" rows="1" aria-label="大会名(押すと変えられます)">${esc(e.name)}</textarea>
       <div class="hero-sub">
         <label>日付 <input type="date" class="input" id="ev-date" data-change="ev-date" value="${esc(e.date)}"></label>
         <span>${e.points}点${e.games === 1 ? "1ゲーム" : "3ゲーム(2ゲーム先取)"}</span>
@@ -1304,7 +1340,7 @@ function heroHTML(e) {
         <button class="btn btn-ghost btn-sm" data-action="ask-del-event">この大会を削除</button>
       </div>` : ""}
       <div class="hero-stats" id="hero-stats">${heroStatsHTML(e, t)}</div>
-      ${confirmDel ? `<div class="confirm" style="margin-top:12px;background:rgba(255,111,107,.14);color:var(--ink-text)"><span>「${esc(e.name)}」を削除します。選手と結果もすべて消えます。</span><button class="btn btn-sm" style="background:#ff6f6b;color:#08090d" data-action="del-event">削除する</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
+      ${confirmDel ? `<div class="confirm" style="margin-top:12px;background:rgba(255,111,107,.14);color:var(--ink-text)"><span>「${esc(e.name)}」を削除します。${unit(e)}と結果もすべて消えます。</span><button class="btn btn-sm" style="background:#ff6f6b;color:#08090d" data-action="del-event">削除する</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
     </div>
     <div class="progress-arc" id="hero-arc" aria-label="試合の進み具合 ${pct}%">
       <svg viewBox="0 0 200 200" aria-hidden="true">
@@ -1351,12 +1387,12 @@ function playersHTML(e) {
   const rows = list.map((p) => {
     const li = hasL ? leagueIndexOf(e, p.id) : -1;
     return `<tr>
-      <td><input class="cell-input" id="pn-${p.id}" data-change="p-name" data-id="${p.id}" value="${esc(p.name)}" aria-label="${dbl ? "1人目の名前" : "名前"}"></td>
-      ${dbl ? `<td><input class="cell-input" id="pn2-${p.id}" data-change="p-name2" data-id="${p.id}" value="${esc(p.name2)}" placeholder="相方を入力" aria-label="2人目の名前"></td>` : ""}
-      <td><input class="cell-input" id="ps-${p.id}" data-change="p-school" data-id="${p.id}" value="${esc(p.school)}" list="schools" aria-label="学校"></td>
-      <td>${levelPicker(p.id, p.level)}</td>
-      ${hasL ? `<td>${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>` : ""}
-      <td style="text-align:right"><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(pname(e, p))}を削除" title="削除">${TRASH}</button></td>
+      <td class="c-name"><input class="cell-input" id="pn-${p.id}" data-change="p-name" data-id="${p.id}" value="${esc(p.name)}" placeholder="名前" aria-label="${dbl ? "1人目の名前" : "名前"}"></td>
+      ${dbl ? `<td class="c-name2"><input class="cell-input" id="pn2-${p.id}" data-change="p-name2" data-id="${p.id}" value="${esc(p.name2)}" placeholder="相方を入力" aria-label="2人目の名前"></td>` : ""}
+      <td class="c-school"><input class="cell-input" id="ps-${p.id}" data-change="p-school" data-id="${p.id}" value="${esc(p.school)}" list="schools" placeholder="学校" aria-label="学校"></td>
+      <td class="c-level">${levelPicker(p.id, p.level)}</td>
+      ${hasL ? `<td class="c-league">${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>` : ""}
+      <td class="c-del" style="text-align:right"><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(pname(e, p))}を削除" title="削除">${TRASH}</button></td>
     </tr>`;
   }).join("");
   return `${schoolsDatalist(e)}
@@ -1382,7 +1418,7 @@ function playersHTML(e) {
   <section class="card">
     <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・実力を直すと、${hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。</p></div>
       ${e.players.length ? `<button class="btn btn-aurora btn-sm" data-action="tab" data-tab="${next[0]}">${next[1]}</button>` : ""}</div>
-    ${e.players.length ? `<div class="table-wrap"><table>
+    ${e.players.length ? `<div class="table-wrap"><table class="ptable ${dbl ? "dbl" : ""}">
       <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>実力</th>${hasL ? "<th>リーグ</th>" : ""}<th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>` : `<p class="muted">まだ${unit(e)}がいません。上のフォームか、Excel からの貼り付けで追加してください。</p>`}
   </section>`;
@@ -2230,8 +2266,14 @@ app.addEventListener("change", (evt) => {
   }
 });
 
+// 大会名は1行の名前なので、Enter で確定する
+app.addEventListener("keydown", (evt) => {
+  if (evt.target.id === "ev-name" && evt.key === "Enter" && !evt.isComposing) { evt.preventDefault(); evt.target.blur(); }
+});
+
 app.addEventListener("input", (evt) => {
   const t = evt.target;
+  if (t.id === "ev-name") { fitName(); return; }
   if (t.dataset.input !== "score" && t.dataset.input !== "bscore") return;
   const clean = t.value.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)).replace(/[^0-9]/g, "").slice(0, 2);
   if (clean !== t.value) t.value = clean;
@@ -2253,10 +2295,13 @@ app.addEventListener("input", (evt) => {
 /* ============ テーマ・背景 ============ */
 const root = document.documentElement;
 try { const th = localStorage.getItem("arca-league-theme"); if (th === "dark" || th === "light") root.dataset.theme = th; } catch (e) {}
-document.getElementById("theme-toggle").addEventListener("click", () => {
-  const isDark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-  root.dataset.theme = isDark ? "light" : "dark";
+// 上のバーの「ダークにする/ライトにする」。選んだほうをこの端末に覚える
+app.addEventListener("click", (evt) => {
+  const btn = evt.target.closest('[data-action="theme"]');
+  if (!btn) return;
+  root.dataset.theme = isDarkNow() ? "light" : "dark";
   try { localStorage.setItem("arca-league-theme", root.dataset.theme); } catch (e) {}
+  btn.outerHTML = themeBtnHTML();
 });
 let ticking = false;
 addEventListener("scroll", () => {
