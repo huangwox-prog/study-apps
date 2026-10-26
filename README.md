@@ -22,6 +22,7 @@
 | 一次不等式特訓 | 負の数で割る際の不等号の向きを重点練習 | [開く](https://huangwox-prog.github.io/study-apps/ichiji-futoshiki.html) |
 | 絶対値特訓 | 絶対値を含む方程式・不等式の場合分け練習 | [開く](https://huangwox-prog.github.io/study-apps/zettaichi.html) |
 | ポモドーロタイマー | 作業25分・休憩5分/15分。集中セッションを自動記録 | [開く](https://huangwox-prog.github.io/study-apps/pomodoro/) |
+| バドミントン大会メーカー | シングルス・ダブルスのリーグ戦(実力順に A・B・C…)とトーナメント表を自動作成。星取表・順位つき | [開く](https://huangwox-prog.github.io/study-apps/badminton-league/) |
 
 目次ページでは、力を入れている2アプリ(数学Ⅰ・FE科目B)だけを紹介しています。上の表にある単発アプリは目次からは辿れませんが、リンクから直接開けます。
 
