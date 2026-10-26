@@ -544,6 +544,12 @@ details.more { margin-top: 16px; border-top: 1px solid var(--hairline); padding-
 details.more summary { cursor: pointer; font-weight: 650; color: var(--text-secondary); font-size: 0.9rem; }
 details.more summary:hover { color: var(--accent); }
 details.more[open] summary { margin-bottom: 12px; }
+.btn-excel { background: #1d6f42; color: #fff; }
+.btn-excel:hover { background: #185c37; transform: translateY(-1px); }
+.export-card { border-color: color-mix(in srgb, #1d6f42 45%, transparent); }
+.export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.export-grid .choice { text-align: left; }
+.export-grid .choice:hover { border-color: #1d6f42; }
 .hero-settings { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ink-line); }
 
 /* 空の状態 */
@@ -1160,7 +1166,7 @@ function render() {
   else if (ui.tab === "matches") body = matchesHTML(e);
   else if (ui.tab === "bracket") body = bracketHTML(e);
   else body = overviewHTML(e);
-  app.innerHTML = navHTML(e) + `<main class="page">${heroHTML(e)}${tabsHTML(e)}${body}</main>`;
+  app.innerHTML = navHTML(e) + `<main class="page">${heroHTML(e)}${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${tabsHTML(e)}${body}</main>`;
 }
 
 let renderDeferred = false;
@@ -1267,6 +1273,7 @@ function heroHTML(e) {
         <label>日付 <input type="date" class="input" id="ev-date" data-change="ev-date" value="${esc(e.date)}"></label>
         <span>${e.points}点${e.games === 1 ? "1ゲーム" : "3ゲーム(2ゲーム先取)"}</span>
         <button class="btn btn-ghost btn-sm" data-action="toggle-settings" aria-expanded="${ui.showSettings}">${ui.showSettings ? "設定を閉じる" : "設定を変える"}</button>
+        <button class="btn btn-sm btn-excel" data-action="toggle-export" aria-expanded="${!!ui.exportOpen}">Excelに貼り付け</button>
       </div>
       ${ui.showSettings ? `<div class="hero-sub hero-settings">
         <label>形式
@@ -1525,10 +1532,9 @@ function matchesHTML(e) {
   return `${leaguePillsHTML(e)}
   <section class="card ${lgClass(li)}">
     <div class="card-head"><div class="title-with-letter"><span class="league-letter">${letter(li)}</span><div><h2>${letter(li)}リーグ 星取表</h2><p class="faint">スコアを入れると自動で更新されます。</p></div></div>
-      <button class="btn btn-secondary btn-sm" data-action="copy-league" data-id="${l.id}">Excel用にコピー</button></div>
+      <button class="btn btn-secondary btn-sm" data-action="x-hoshi-one" data-id="${l.id}">Excel にコピー</button></div>
     <div id="hoshi-${l.id}">${l.playerIds.length >= 2 ? hoshiHTML(e, li) : `<p class="muted">2人以上いると試合が組めます。</p>`}</div>
   </section>
-  ${ui.copyText ? copyBoxHTML() : ""}
   <section class="card ${lgClass(li)}">
     <div class="card-head"><div class="title-with-letter"><span class="league-letter">${letter(li)}</span><h2>${letter(li)}リーグ 対戦順とスコア入力</h2></div></div>
     <div class="card-head" style="margin-top:-8px"><div><p class="faint num">全${num}試合 · ${e.games === 1 ? `${e.points}点1ゲーム` : `${e.points}点3ゲーム(2ゲーム先取)`}。同じラウンドの試合は同時に進められます。</p></div></div>
@@ -1575,8 +1581,7 @@ function overviewHTML(e) {
       </table></div></article>`;
   }).join("");
   return `<section class="card"><div class="card-head"><div><h2>全リーグの順位</h2><p class="faint">${esc(e.name)}(${esc(e.date)})</p></div>
-    <button class="btn btn-secondary btn-sm" data-action="copy-all">全リーグを Excel用にコピー</button></div></section>
-    ${ui.copyText ? copyBoxHTML() : ""}
+    <button class="btn btn-secondary btn-sm" data-action="x-rank">順位表を Excel にコピー</button></div></section>
     <div class="overview">${cards}</div>`;
 }
 
@@ -1615,11 +1620,10 @@ function bracketHTML(e) {
   return settings + `
   <section class="card">
     <div class="card-head"><div><h2>トーナメント表</h2><p class="faint">四角の数字が試合番号。押すとスコアを入れられます。勝ち上がった線が色つきになります。</p></div>
-      <button class="btn btn-secondary btn-sm" data-action="copy-bracket">Excel用にコピー</button></div>
+      <button class="btn btn-secondary btn-sm" data-action="x-bracket">Excel にコピー</button></div>
     <div class="ranks" id="branks">${ranksHTML(e, st)}</div>
     <div class="bracket-wrap"><div id="bracket-svg">${bracketSVG(e, st)}</div></div>
   </section>
-  ${ui.copyText ? copyBoxHTML() : ""}
   <section class="card" id="bpanel">${bpanelHTML(e, st, sel)}</section>
   <section class="card">
     <div class="card-head"><div><h2>試合一覧</h2><p class="faint">試合番号の順。押すとスコア入力が開きます。</p></div></div>
@@ -1847,49 +1851,127 @@ function refreshBracket(e, mid) {
   refreshHero(e);
 }
 
-function bracketTSV(e) {
-  const st = bracketState(e);
-  const lines = [`${e.name}\t${e.date}\tトーナメント`, ["試合番号", "回戦", "対戦1", "学校", "対戦2", "学校", "スコア", "勝者"].join("\t")];
-  const pm = playerMap(e);
-  bracketMatches(st).forEach((n) => {
-    const A = sideName(e, n, 0), B = sideName(e, n, 1);
-    const sa = pm[n.a] ? pm[n.a].school : "", sb = pm[n.b] ? pm[n.b].school : "";
-    const w = n.o && n.o.winner;
-    lines.push([n.num, n.label, A.text, sa, B.text, sb, w ? scoreText(e, n.o) : "", w ? pname(e, pm[w]) : ""].join("\t"));
-  });
-  return lines.join("\n");
-}
-
 function copyBoxHTML() {
   return `<section class="card copybox"><div class="card-head"><div><h3>コピー用テキスト</h3><p class="faint">自動でコピーできなかったので、下を全部選んでコピーし、Excel に貼り付けてください。</p></div><button class="btn btn-ghost btn-sm" data-action="close-copy">閉じる</button></div>
     <textarea class="input" id="copy-area" readonly>${esc(ui.copyText)}</textarea></section>`;
 }
 
-/* ============ Excel 用テキスト ============ */
-function leagueTSV(e, li) {
+/* ============ Excel への書き出し ============ */
+// 「2-1」「21-15」は Excel で日付に化けるので、全角の「－」でつなぐ
+function xlScore(e, o) { return e.games === 1 ? `${o.pa}－${o.pb}` : `${o.ga}－${o.gb}`; }
+function xlGames(e, games) {
+  const out = [];
+  for (let g = 0; g < e.games; g++) { const [x, y] = games[g] || [null, null]; out.push(x == null || y == null ? "" : `${x}－${y}`); }
+  return out;
+}
+function gameHeads(e) { return e.games === 1 ? ["スコア"] : ["第1ゲーム", "第2ゲーム", "第3ゲーム"]; }
+
+/* 星取表(1リーグ) */
+function hoshiBlock(e, li) {
   const l = e.leagues[li];
   const pm = playerMap(e);
   const s = standings(e, l);
   const anyDone = s.finished > 0;
-  const lines = [`${letter(li)}リーグ`, [unit(e), "学校", ...l.playerIds.map((id) => pname(e, pm[id])), "勝", "敗", "得失ゲーム", "得失点", "順位"].join("\t")];
+  const rows = [[unit(e), "学校", ...l.playerIds.map((id) => pname(e, pm[id])), "勝", "敗", "得失ゲーム", "得失点", "順位"]];
   s.rows.forEach((r) => {
     const cells = l.playerIds.map((cid) => {
       if (cid === r.id) return "＼";
       const o = outcome(e, r.id, cid);
-      if (!o.winner) return "";
-      return (o.winner === r.id ? "○" : "●") + scoreText(e, o);
+      return o.winner ? (o.winner === r.id ? "○" : "●") + xlScore(e, o) : "";
     });
-    lines.push([pname(e, r.p), r.p.school, ...cells, r.w, r.l, r.gw - r.gl, r.pf - r.pa, anyDone ? r.rank : ""].join("\t"));
+    rows.push([pname(e, r.p), r.p.school, ...cells, r.w, r.l, r.gw - r.gl, r.pf - r.pa, anyDone ? r.rank : ""]);
   });
-  return lines.join("\n");
+  return { title: `${letter(li)}リーグ 星取表`, rows };
 }
-function copyText(text) {
-  const done = () => { ui.copyText = null; toast("コピーしました。Excel に貼り付けられます"); render(); };
-  const fail = () => { ui.copyText = text; render(); const ta = document.getElementById("copy-area"); if (ta) { ta.focus(); ta.select(); } };
+/* 順位表(全リーグ) */
+function standingsBlock(e) {
+  const rows = [["リーグ", "順位", unit(e), "学校", "試合", "勝", "敗", "得失ゲーム", "得失点"]];
+  e.leagues.forEach((l, li) => {
+    const s = standings(e, l);
+    s.sorted.forEach((r) => rows.push([`${letter(li)}リーグ`, s.finished ? r.rank : "", pname(e, r.p), r.p.school, r.played, r.w, r.l, r.gw - r.gl, r.pf - r.pa]));
+  });
+  return { title: "順位表", rows };
+}
+/* 試合結果の一覧(リーグ戦の全試合) */
+function leagueMatchesBlock(e) {
+  const pm = playerMap(e);
+  const rows = [["リーグ", "ラウンド", `${unit(e)}1`, "学校", `${unit(e)}2`, "学校", ...gameHeads(e), "勝者"]];
+  e.leagues.forEach((l, li) => {
+    roundRobin(l.playerIds).forEach((r, ri) => r.pairs.forEach(([a, b]) => {
+      const o = outcome(e, a, b);
+      rows.push([`${letter(li)}リーグ`, ri + 1, pname(e, pm[a]), pm[a].school, pname(e, pm[b]), pm[b].school, ...xlGames(e, gamesOf(e, a, b)), o.winner ? pname(e, pm[o.winner]) : ""]);
+    }));
+  });
+  return { title: "試合結果の一覧", rows };
+}
+/* トーナメントの結果 */
+function bracketBlocks(e) {
+  const st = bracketState(e);
+  const pm = playerMap(e);
+  const rows = [["試合番号", "回戦", `${unit(e)}1`, "学校", `${unit(e)}2`, "学校", ...gameHeads(e), "勝者"]];
+  bracketMatches(st).forEach((n) => {
+    const A = sideName(e, n, 0), B = sideName(e, n, 1);
+    const res = e.bracket.results[n.mid];
+    const games = res && res.a === n.a && res.b === n.b ? res.g : [];
+    const w = n.o && n.o.winner;
+    rows.push([n.num, n.label, A.text, pm[n.a] ? pm[n.a].school : "", B.text, pm[n.b] ? pm[n.b].school : "", ...xlGames(e, games), w ? pname(e, pm[w]) : ""]);
+  });
+  const f = st.final;
+  const champ = st.champion && st.champion !== "?" ? st.champion : null;
+  const runner = f.real && f.o && f.o.winner ? (f.o.winner === f.a ? f.b : f.a) : null;
+  const thirds = st.third ? (st.third.o && st.third.o.winner ? [st.third.o.winner] : [])
+    : st.K >= 2 ? st.rounds[st.K - 2].filter((s) => s.real && s.o && s.o.winner).map((s) => (s.o.winner === s.a ? s.b : s.a)) : [];
+  const rank = [["順位", unit(e), "学校"]];
+  const add = (label, id) => rank.push([label, id ? pname(e, pm[id]) : "", id ? pm[id].school : ""]);
+  add("優勝", champ); add("準優勝", runner);
+  if (thirds.length) thirds.forEach((id) => add("3位", id)); else add("3位", null);
+  return [{ title: "トーナメント 最終順位", rows: rank }, { title: "トーナメント 試合結果", rows }];
+}
+
+/* 表をクリップボードへ。Excel は HTML の表を受け取るので両方入れる。文字のセルは「文字列」指定 */
+function copyTables(blocks, what) {
+  const e = ev();
+  const width = Math.max(2, ...blocks.flatMap((b) => b.rows.map((r) => r.length)));
+  const text = [`${e.name}\t${e.date}`, ...blocks.map((b) => [b.title, ...b.rows.map((r) => r.join("\t"))].join("\n"))].join("\n\n");
+  const td = (v, head) => {
+    const st = (head ? "font-weight:bold;background:#eef0f7;" : "") + "border:1px solid #c8cad3;";
+    return typeof v === "number" ? `<td style="${st}">${v}</td>` : `<td style="${st}mso-number-format:'\\@'">${esc(v)}</td>`;
+  };
+  const html = `<meta charset="utf-8"><table>`
+    + `<tr><td colspan="${width}" style="font-weight:bold;font-size:14pt">${esc(e.name)} ${esc(e.date)}</td></tr>`
+    + blocks.map((b) => `<tr><td colspan="${width}"></td></tr><tr><td colspan="${width}" style="font-weight:bold">${esc(b.title)}</td></tr>`
+      + b.rows.map((r, i) => `<tr>${r.map((v) => td(v, i === 0)).join("")}</tr>`).join("")).join("")
+    + `</table>`;
+  const done = () => { ui.copyText = null; render(); toast(`${what}をコピーしました。Excel で貼りたいセルを選んで Ctrl+V`); };
+  const fail = () => { ui.copyText = text; render(); const ta = document.getElementById("copy-area"); if (ta) { ta.scrollIntoView({ block: "center" }); ta.focus(); ta.select(); } };
+  const plain = () => { try { navigator.clipboard.writeText(text).then(done, fail); } catch (err) { fail(); } };
   try {
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fail);
+    if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+      navigator.clipboard.write([new ClipboardItem({
+        "text/plain": new Blob([text], { type: "text/plain" }),
+        "text/html": new Blob([html], { type: "text/html" }),
+      })]).then(done, plain);
+    } else if (navigator.clipboard && navigator.clipboard.writeText) plain();
     else fail();
-  } catch (err) { fail(); }
+  } catch (err) { plain(); }
+}
+
+/* どの画面からでも開ける「Excelに貼り付け」 */
+function exportHTML(e) {
+  const items = [];
+  if (e.mode !== "tournament" && e.leagues.length) {
+    items.push(["x-hoshi", "星取表(全リーグ)", "○●とスコアの表。リーグごとに並びます"]);
+    items.push(["x-rank", "順位表(全リーグ)", "順位・勝敗・得失ゲーム・得失点"]);
+    items.push(["x-lmatch", "試合結果の一覧", "対戦ごとのスコアと勝者"]);
+  }
+  if (e.mode !== "league" && e.bracket) items.push(["x-bracket", "トーナメントの結果", "優勝〜3位と、試合番号ごとのスコア"]);
+  return `<section class="card export-card">
+    <div class="card-head"><div><h2>Excelに貼り付け</h2><p class="faint">ボタンを押すとコピーされます。Excel で貼り付けたいセルを1つ選んで Ctrl+V。スコアは日付に化けないようにしてあります。</p></div>
+      <button class="btn btn-ghost btn-sm" data-action="toggle-export">閉じる</button></div>
+    ${items.length
+      ? `<div class="export-grid">${items.map(([a, t, d]) => `<button class="choice" data-action="${a}"><b>${t}</b><span class="faint">${d}</span></button>`).join("")}</div>`
+      : `<p class="muted" style="margin:0">まだコピーできる表がありません。${e.mode === "tournament" ? "トーナメント" : "リーグ"}を作ると、ここからコピーできます。</p>`}
+  </section>`;
 }
 
 /* ============ 取り込み・サンプル ============ */
@@ -1988,7 +2070,7 @@ function newEvent(players, opts) {
 }
 function openEvent(id) {
   currentId = id;
-  Object.assign(ui, { view: "event", creating: false, showSettings: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
+  Object.assign(ui, { view: "event", creating: false, showSettings: false, exportOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
   window.scrollTo({ top: 0 });
 }
 
@@ -2043,8 +2125,12 @@ app.addEventListener("click", (evt) => {
     case "auto": if (e.leagues.length) { ui.confirm = "reassign"; render(); } else { autoAssign(e); commit(); render(); toast(`${e.leagues.length}つのリーグに分けました`); } break;
     case "auto-yes": ui.confirm = null; autoAssign(e); commit(); render(); toast(`${e.leagues.length}つのリーグに分け直しました`); break;
     case "pick-league": ui.league = btn.dataset.id; ui.copyText = null; render(); break;
-    case "copy-league": { const li = e.leagues.findIndex((l) => l.id === btn.dataset.id); copyText(`${e.name}\t${e.date}\n` + leagueTSV(e, li)); break; }
-    case "copy-all": copyText(`${e.name}\t${e.date}\n\n` + e.leagues.map((_, i) => leagueTSV(e, i)).join("\n\n")); break;
+    case "toggle-export": ui.exportOpen = !ui.exportOpen; ui.copyText = null; render(); break;
+    case "x-hoshi-one": { const li = e.leagues.findIndex((l) => l.id === btn.dataset.id); copyTables([hoshiBlock(e, li)], `${letter(li)}リーグの星取表`); break; }
+    case "x-hoshi": copyTables(e.leagues.map((_, i) => hoshiBlock(e, i)), "星取表"); break;
+    case "x-rank": copyTables([standingsBlock(e)], "順位表"); break;
+    case "x-lmatch": copyTables([leagueMatchesBlock(e)], "試合結果の一覧"); break;
+    case "x-bracket": copyTables(bracketBlocks(e), "トーナメントの結果"); break;
     case "close-copy": ui.copyText = null; render(); break;
     case "build":
       if (e.bracket) { ui.confirm = "rebuild"; render(); break; }
@@ -2068,7 +2154,6 @@ app.addEventListener("click", (evt) => {
       break;
     }
     case "seed-clear": e.seeds = {}; ui.seedDirty = !!e.bracket; commit(); render(); toast("シードの指定を解除しました"); break;
-    case "copy-bracket": copyText(bracketTSV(e)); break;
     case "bswap": {
       const i = Number(document.getElementById("swap-a").value), j = Number(document.getElementById("swap-b").value);
       if (i === j) { toast("別々の2人(2組)を選んでください"); break; }
