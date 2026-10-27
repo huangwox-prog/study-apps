@@ -7,8 +7,8 @@
 
 | もの | 場所 |
 |---|---|
-| アプリ本体(この1ファイルだけ) | `badminton-league/index.html` |
-| 公開ページ(GitHub Pages) | https://huangwox-prog.github.io/study-apps/badminton-league/ |
+| アプリ本体(この1ファイルだけ) | `clear/index.html` |
+| 公開ページ(GitHub Pages) | https://huangwox-prog.github.io/study-apps/clear/ (前の …/badminton-league/ を開くと自動でここへ移る) |
 | claude.ai 版(持ち主だけが開ける) | https://claude.ai/artifact/6oAYFc7wQDsfhPSrSaPSWK |
 
 - GitHub 版は保存先がブラウザ(localStorage、キー `arca-league-v1`)。端末ごとに別のデータ。
