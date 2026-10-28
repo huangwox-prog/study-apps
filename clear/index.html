@@ -739,6 +739,8 @@ details.more[open] summary { margin-bottom: 12px; }
 .school-legend .chip { color: var(--lg); background: var(--lg-soft); font-weight: 750; }
 .sc-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lg); display: inline-block; }
 .rchip[class*="lg-"] { color: var(--lg); }
+.pnext .select { max-width: 260px; }
+.choice-grid.three { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 .pairbox { margin-top: 14px; padding: 12px 14px; border-radius: 16px 16px 16px 28px; background: var(--surface-soft); border: 1px solid var(--border-soft); }
 .pair-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .pairchip { display: inline-flex; align-items: center; gap: 2px; padding: 4px 4px 4px 6px; border-radius: 12px 12px 12px 20px; background: var(--surface-strong); border: 1px solid var(--border-soft); }
@@ -2493,7 +2495,8 @@ function pRoundHTML(e, ri, cumAll) {
 function practiceHTML(e) {
   const p = e.practice, n = e.players.length;
   if (n < 2) return `<section class="card"><p class="muted">先に「選手」で、名前と学校とランクを入れてください(2人以上)。</p><div class="row" style="margin-top:12px"><button class="btn btn-aurora btn-sm" data-action="tab" data-tab="players">選手へ</button></div></section>`;
-  const kind = ui.nextKind || p.kind;
+  // 次の回転の形式は3択:シングルス / ダブルス(毎回組み替え) / ダブルス(ペア固定)
+  const sel = pNextSel(e), kind = sel === "singles" ? "singles" : "doubles";
   const lastDay = p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1;
   const maxDay = Math.max(1, ...p.rounds.map((x) => x.day));
   const day = ui.nextDay || lastDay;
@@ -2505,7 +2508,7 @@ function practiceHTML(e) {
   const sorted = e.players.slice().sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "ja"));
   const dayOffNext = new Set(pDayOff(e, day, p.rounds.length));
   const restChips = sorted.map((x) => dayOffNext.has(x.id) ? `<span class="rchip ${SC.cls(x.school)} off" title="今日はもう休み(回転の「今日の休みをやめる」で戻せます)">${esc(x.name || "(名前なし)")}</span>` : `<button type="button" class="rchip ${SC.cls(x.school)} ${nextRest.includes(x.id) ? "on" : ""}" data-action="pnext-rest" data-id="${x.id}" aria-pressed="${nextRest.includes(x.id)}">${esc(x.name || "(名前なし)")}</button>`).join("");
-  const radio = (v, t) => `<label class="choice"><input type="radio" name="p-kind" value="${v}" data-change="pnext-kind" ${kind === v ? "checked" : ""}><b>${t}</b></label>`;
+  const radio = (v, t) => `<label class="choice"><input type="radio" name="p-kind" value="${v}" data-change="pnext-kind" ${sel === v ? "checked" : ""}><b>${t}</b></label>`;
   const cumAll = pCum(e);
   return `<section class="card">
     <div class="card-head"><div><h2>回転ごとの対戦</h2><p class="faint">「第1回転」「第2回転」…と、回転ごとに実力の近い人どうしで組みます。前の回転と同じ相手・同じ相方はなるべく避けます。組んだあと、名前をドラッグして入れ替えられます。</p></div></div>
@@ -2513,15 +2516,11 @@ function practiceHTML(e) {
       <div class="field"><span>組むときのランク差</span><select class="select" data-change="p-tol" aria-label="ランク差の許容">${tolOpts}</select></div>
       <div class="field"><span>学校</span><label class="check"><input type="checkbox" data-change="p-avoid" ${p.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label>
         <label class="check"><input type="checkbox" data-change="p-samepair" ${p.samePair ? "checked" : ""}>ダブルスのペアは同じ学校どうし</label></div>
-      <div class="field"><span>ダブルスのペア</span><select class="select" data-change="p-pairmode" aria-label="ダブルスのペア">
-        <option value="rotate" ${p.pairMode === "rotate" ? "selected" : ""}>回転ごとに組み替える</option>
-        <option value="fixed" ${p.pairMode === "fixed" ? "selected" : ""}>ペアを固定する</option>
-      </select></div>
     </div>
     ${legend}
-    ${p.pairMode === "fixed" ? pPairsHTML(e, SC) : ""}
     <div class="pnext">
-      <div class="field"><span>次の回転の形式</span><div class="choice-grid two">${radio("singles", "シングルス")}${radio("doubles", p.pairMode === "fixed" ? "ダブルス(固定ペア)" : "ダブルス(ペアは毎回組み替え)")}</div></div>
+      <div class="field" style="grid-column:1/-1"><span>次の回転の形式</span><div class="choice-grid three">${radio("singles", "シングルス")}${radio("doubles", "ダブルス(ペアは毎回組み替え)")}${radio("fixed", "ダブルス(ペア固定)")}</div>
+        ${sel === "fixed" ? pPairsHTML(e, SC) : ""}</div>
       <div class="field"><span>何日目</span><select class="select" data-change="pnext-day" aria-label="何日目">${dayOpts}</select></div>
       <div class="field" style="grid-column:1/-1"><span>次の回転だけ休む人(体調不良・休憩など。なければ何も押さない)${dayOffNext.size ? `。「今日は休み」の${dayOffNext.size}人は自動で外します` : ""}</span><div class="rchips">${restChips}</div></div>
       <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
@@ -3454,6 +3453,12 @@ function openEvent(id) {
 }
 
 /* ============ 操作 ============ */
+/* 次の回転の形式(3択)。選んでいなければ、前に作った形式のまま */
+function pNextSel(e) {
+  const p = e.practice;
+  if (ui.nextKind === "singles" || ui.nextKind === "doubles" || ui.nextKind === "fixed") return ui.nextKind === "singles" ? "singles" : p.pairMode === "fixed" ? "fixed" : "doubles";
+  return p.kind === "doubles" ? (p.pairMode === "fixed" ? "fixed" : "doubles") : "singles";
+}
 function pRoundById(e, id) { return e.practice.rounds.find((r) => r.id === id); }
 function pRegen(e, r, must, msg) {
   r.rest = [...new Set(r.rest.concat(pDayOff(e, r.day, e.practice.rounds.indexOf(r))))];
@@ -3627,7 +3632,7 @@ app.addEventListener("click", (evt) => {
       break;
     }
     case "padd": {
-      const p = e.practice, kind = ui.nextKind || p.kind;
+      const p = e.practice, kind = pNextSel(e) === "singles" ? "singles" : "doubles";
       const day = ui.nextDay || (p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1);
       const rest = [...new Set((ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id)).concat(pDayOff(e, day, p.rounds.length)))];
       const fixed = kind === "doubles" && p.pairMode === "fixed";
@@ -3791,11 +3796,19 @@ app.addEventListener("change", (evt) => {
     case "p-tol": e.practice.tol = clamp(Number(t.value), 0, 9); commit(); render(); break;
     case "p-avoid": e.practice.avoidSchool = t.checked; commit(); render(); break;
     case "p-samepair": e.practice.samePair = t.checked; commit(); render(); break;
-    case "p-pairmode": e.practice.pairMode = t.value === "fixed" ? "fixed" : "rotate"; if (e.practice.pairMode === "fixed" && !pPairs(e).length) pAutoPairs(e); commit(); render(); break;
     case "p-day": { const r = pRoundById(e, t.dataset.r); if (r) { r.day = clamp(Number(t.value), 1, 30); commit(); render(); } break; }
     case "pnext-day": ui.nextDay = Number(t.value); break;
     case "p-sheet-round": ui.pSheetRound = t.value; render(); break;
-    case "pnext-kind": ui.nextKind = t.value === "doubles" ? "doubles" : "singles"; break;
+    case "pnext-kind": {
+      const v = ["singles", "doubles", "fixed"].includes(t.value) ? t.value : "singles";
+      ui.nextKind = v;
+      if (v !== "singles") {
+        e.practice.pairMode = v === "fixed" ? "fixed" : "rotate";
+        if (v === "fixed" && !pPairs(e).length) pAutoPairs(e);
+        commit();
+      }
+      render(); break;
+    }
     case "t-top": e.tTop = clamp(Number(t.value), 1, 4); commit(); break;
     case "t-third": e.tThird = t.checked; commit(); render(); break;
     case "ev-type": e.type = t.value === "doubles" ? "doubles" : "singles"; commit(); render(); break;
