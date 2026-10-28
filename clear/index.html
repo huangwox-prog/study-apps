@@ -713,6 +713,64 @@ details.more[open] summary { margin-bottom: 12px; }
 
 .loading { padding: 80px 0; text-align: center; color: var(--text-tertiary); }
 
+/* ============ 練習試合 ============ */
+.chip-err { background: var(--error-soft); color: var(--error); }
+.confirm.perr { background: var(--error-soft); }
+.confirm.perr b { color: var(--error); }
+.pround .confirm { margin-top: 10px; }
+.pnext { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 14px 18px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--hairline); align-items: end; }
+.rchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rchip { padding: 5px 12px; border-radius: 999px; font-size: 0.84rem; font-weight: 650; background: var(--surface-strong); border: 1px solid var(--border-soft); color: var(--text-secondary); }
+.rchip:hover { border-color: var(--warn); }
+.rchip.on { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.rchip.on::before { content: "休 "; }
+.pmatch {
+  display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px 12px; align-items: center;
+  padding: 10px 14px; border-radius: 16px 16px 16px 28px; background: var(--surface-strong); border: 1px solid var(--border-soft);
+}
+.pmatch.is-done { border-color: color-mix(in srgb, var(--success) 35%, transparent); }
+.pm-num { font-weight: 800; color: var(--accent); font-size: 1.1rem; }
+.pm-side { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pm-side.b { align-items: flex-end; text-align: right; }
+.pm-side.win .pname { color: var(--success); }
+.pm-side .qwin { align-self: flex-start; margin-left: 0; }
+.pm-side.b .qwin { align-self: flex-end; }
+.pm-slots { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.pm-side.b .pm-slots { align-items: stretch; }
+.pslot {
+  display: flex; flex-direction: column; line-height: 1.3; padding: 6px 10px; border-radius: 10px 10px 10px 16px;
+  border: 1px dashed transparent; cursor: grab; touch-action: none; min-width: 0;
+}
+.pslot:hover { background: var(--surface-soft); border-color: var(--border); }
+.pslot.empty { cursor: default; border-color: var(--error); background: var(--error-soft); color: var(--error); }
+.pslot.empty .pname { color: var(--error); }
+.pslot.is-dup { border: 2px solid var(--error); background: var(--error-soft); }
+.pslot.drag-src, .bchip.drag-src { opacity: 0.35; }
+[data-drop="pslot"].drop-over { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); }
+.m-scores .pm-st { margin-top: 2px; }
+.pm-issues { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.pm-issues .chip { white-space: normal; }
+.bench { padding: 12px 14px; border-radius: 16px 16px 16px 28px; border: 2px dashed var(--border); background: var(--surface-soft); }
+.bench-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin-bottom: 8px; }
+.bench-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.bchip {
+  display: inline-grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; align-items: center; padding: 6px 6px 6px 12px;
+  border-radius: 12px 12px 12px 20px; background: var(--surface-strong); border: 1px solid var(--border-soft); cursor: grab; touch-action: none; line-height: 1.3;
+}
+.bchip .pschool { grid-column: 1; }
+.bchip button { grid-column: 2; grid-row: 1 / span 2; }
+.bchip.is-warn { border-color: var(--warn); background: var(--warn-soft); }
+.bchip.is-rest { opacity: 0.85; }
+.bchip.is-rest .pname::after { content: "  休み"; font-size: 0.74rem; color: var(--text-tertiary); }
+.pdelta { display: block; font-size: 0.76rem; font-weight: 800; }
+.pdelta.up { color: var(--success); }
+.pdelta.down { color: var(--error); }
+.pstat td.stat .sc { display: block; font-size: 0.72rem; color: var(--text-tertiary); }
+.cell-play { color: var(--accent); font-weight: 800; }
+.cell-rest { color: var(--text-tertiary); font-weight: 700; }
+.cell-none { color: var(--warn); font-weight: 800; }
+.lv-b { width: 32px; }
+
 @media (max-width: 760px) {
   .hero { grid-template-columns: 1fr; }
   .progress-arc { width: 130px; height: 130px; justify-self: start; }
@@ -743,6 +801,10 @@ details.more[open] summary { margin-bottom: 12px; }
   .ptable .lvpick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; }
   .ptable .lv-b { width: auto; }
   .save-state { font-size: 0; gap: 0; }
+  .pnext { grid-template-columns: 1fr; }
+  .pmatch { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "n n" "a b" "s s" "i i"; }
+  .pm-num { grid-area: n; font-size: 0.9rem; }
+  .pm-side.a { grid-area: a; } .pm-side.b { grid-area: b; } .pmatch .m-scores { grid-area: s; } .pm-issues { grid-area: i; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -772,9 +834,7 @@ details.more[open] summary { margin-bottom: 12px; }
 
 /* ============ 小道具 ============ */
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const RANK_MAX = 5; // ランクは 1〜5(5 がいちばん強い)
-/* 1〜10 の値を 1〜5 に(10・9→5、8・7→4 …) */
-const to5 = (v) => clamp(Math.ceil(v / 2), 1, RANK_MAX);
+const RANK_MAX = 10; // ランクは 1〜10(10 がいちばん強い)。5段階の時期もあったが、10段階に戻した
 // 保存キーは旧名(arca-)のまま。変えると、今までの端末に保存したデータが読めなくなる
 const LS_KEY = "arca-league-v1";
 const app = document.getElementById("app");
@@ -800,7 +860,7 @@ function toast(msg) {
 let events = {};
 let currentId = null;
 let ready = false;
-const ui = { newLevel: 3, view: "home", createMode: null, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
+const ui = { newLevel: 5, nextKind: null, nextDay: null, nextRest: [], pSort: "level", view: "home", createMode: null, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
 
 function today() {
   const d = new Date();
@@ -811,10 +871,10 @@ function normalize(raw) {
   const ev = Object.assign({
     name: "名前なし", date: today(), type: "singles", games: 1, points: 21, leagueCount: 4,
     spreadSchools: true, tolerance: 0, players: [], leagues: [], results: {}, updatedAt: 0,
-    mode: null, tTop: 2, tThird: true, bracket: null, seeds: {},
+    mode: null, tTop: 2, tThird: true, bracket: null, seeds: {}, practice: null,
   }, clone(raw || {}));
   // 形式。古いデータは中身から推測する
-  if (!["league", "tournament", "both"].includes(ev.mode)) {
+  if (!["league", "tournament", "both", "practice"].includes(ev.mode)) {
     const hasL = ev.leagues && ev.leagues.length, hasB = !!(ev.bracket && ev.bracket.slots);
     ev.mode = hasB && (hasL || ev.tSource === "league") ? "both" : hasB ? "tournament" : "league";
   }
@@ -833,8 +893,8 @@ function normalize(raw) {
   ev.players = (Array.isArray(ev.players) ? ev.players : []).filter((p) => p && p.id).map((p) => ({
     id: String(p.id), name: String(p.name || ""), name2: String(p.name2 || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, 10),
   }));
-  // ランクは前は 1〜10 だった。古いデータは 1〜5 に換算してから使う
-  if (ev.rankScale !== RANK_MAX) { ev.players.forEach((p) => (p.level = to5(p.level))); ev.rankScale = RANK_MAX; }
+  // ランクは 1〜10 の数字をそのまま使う(換算はしない)
+  ev.rankScale = RANK_MAX;
   ev.players.forEach((p) => (p.level = clamp(p.level, 1, RANK_MAX)));
   const ids = new Set(ev.players.map((p) => p.id));
   // 手で決めたシード { 選手id: シード番号 }。消えた選手と重複番号は捨てる
@@ -851,6 +911,30 @@ function normalize(raw) {
     playerIds: (l.playerIds || []).filter((id) => ids.has(id) && !seen.has(id) && seen.add(id)),
   }));
   ev.results = ev.results && typeof ev.results === "object" ? ev.results : {};
+  // 練習試合:回転(ラウンド)ごとの対戦。同じ人が2回入っていてもそのまま残す(画面でエラーにするため)
+  {
+    const pr = ev.practice && typeof ev.practice === "object" ? ev.practice : {};
+    const tol = parseInt(pr.tol, 10);
+    const side = (arr, n) => Array.from({ length: n }, (_, i) => { const id = Array.isArray(arr) ? arr[i] : null; return id && ids.has(String(id)) ? String(id) : null; });
+    ev.practice = {
+      tol: Number.isNaN(tol) ? 2 : clamp(tol, 0, 9),
+      avoidSchool: pr.avoidSchool !== false,
+      kind: pr.kind === "doubles" ? "doubles" : "singles",
+      rounds: (Array.isArray(pr.rounds) ? pr.rounds : []).filter((r) => r && typeof r === "object").map((r) => {
+        const kind = r.kind === "doubles" ? "doubles" : "singles", n = kind === "doubles" ? 2 : 1;
+        return {
+          id: String(r.id || uid()), day: clamp(parseInt(r.day, 10) || 1, 1, 30), kind,
+          rest: [...new Set((Array.isArray(r.rest) ? r.rest : []).map(String).filter((id) => ids.has(id)))],
+          matches: (Array.isArray(r.matches) ? r.matches : []).filter((m) => m && typeof m === "object").map((m) => ({
+            id: String(m.id || uid()), a: side(m.a, n), b: side(m.b, n),
+            g: (Array.isArray(m.g) ? m.g : []).slice(0, 3).map((x) => [x && x[0] != null ? Number(x[0]) : null, x && x[1] != null ? Number(x[1]) : null]),
+            win: m.win === "a" || m.win === "b" ? m.win : null,
+          })),
+        };
+      }),
+    };
+    if (ev.mode === "practice") ev.type = "singles"; // 練習試合の選手は1人ずつ。ダブルスはペアを回転ごとに組む
+  }
   ev.games = ev.games === 3 ? 3 : 1;
   ev.points = [11, 15, 21].includes(ev.points) ? ev.points : 21;
   ev.leagueCount = clamp(parseInt(ev.leagueCount, 10) || 4, 1, 26);
@@ -1241,10 +1325,171 @@ function rankTiers(e, rows) {
 /* 試合数は今の形式で使うものだけ数える(形式を変えたあとに残ったリーグ/トーナメントは数えない) */
 function totals(e) {
   let finished = 0, total = 0;
+  if (e.mode === "practice") {
+    e.practice.rounds.forEach((r) => r.matches.forEach((m) => { total++; if (pOutcome(e, m).winner) finished++; }));
+    return { finished, total };
+  }
   if (e.mode !== "tournament") e.leagues.forEach((l) => { const s = standings(e, l); finished += s.finished; total += s.total; });
   const st = e.mode !== "league" ? bracketState(e) : null;
   if (st) bracketMatches(st).forEach((n) => { total++; if (n.o && n.o.winner) finished++; });
   return { finished, total };
+}
+
+/* ============ 練習試合 ============
+   選手は1人ずつ登録(ダブルスも、ペアは回転ごとに組む)。回転(ラウンド)ごとに
+   「実力が近い人どうし・前の回転と同じ相手や相方を避けて」自動で組み、あとはドラッグで直せる。
+   e.practice = { tol: ランク差の許容, avoidSchool, kind, rounds: [ { id, day, kind, rest:[選手id], matches:[ { id, a:[id…], b:[id…], g, win } ] } ] } */
+const P_KIND = { singles: "シングルス", doubles: "ダブルス" };
+function pOutcome(e, m) { return outcomeOf(e, (m.g || []).slice(0, e.games), "a", "b", null, m.win); }
+function pPlaced(r) { const out = []; r.matches.forEach((m) => m.a.concat(m.b).forEach((x) => x && out.push(x))); return out; }
+function pName(pm, id) { return id && pm[id] ? pm[id].name || "(名前なし)" : "—"; }
+/* ri より前の回転で、だれとだれが対戦・ペアになったか、何試合入ったか */
+function pHistory(e, upto) {
+  const faced = {}, partner = {}, games = {};
+  const add = (o, a, b, n) => { const k = keyOf(a, b); (o[k] || (o[k] = [])).push(n); };
+  e.practice.rounds.slice(0, upto).forEach((r, ri) => r.matches.forEach((m) => {
+    const A = m.a.filter(Boolean), B = m.b.filter(Boolean);
+    A.forEach((x) => B.forEach((y) => add(faced, x, y, ri + 1)));
+    if (A.length === 2) add(partner, A[0], A[1], ri + 1);
+    if (B.length === 2) add(partner, B[0], B[1], ri + 1);
+    A.concat(B).forEach((x) => (games[x] = (games[x] || 0) + 1));
+  }));
+  return { faced, partner, games };
+}
+/* 1試合の「悪さ」。小さいほどよい組み合わせ(ランク差・同じ相手・同じ相方・同じ学校) */
+function pMatchCost(H, tol, avoid, A, B) {
+  let c = 0;
+  for (const x of A) for (const y of B) {
+    const d = Math.abs(x.level - y.level);
+    c += d * 1.5 + (d > tol ? (d - tol) * 40 : 0);
+    const f = H.faced[keyOf(x.id, y.id)];
+    if (f) c += f.length * 120;
+    if (avoid && x.school && x.school === y.school) c += 10;
+  }
+  if (A.length === 2) {
+    c += Math.abs(A[0].level + A[1].level - B[0].level - B[1].level) * 3;
+    [A, B].forEach(([p, q]) => {
+      const f = H.partner[keyOf(p.id, q.id)];
+      if (f) c += f.length * 100;
+      c += Math.abs(p.level - q.level) * 0.3;
+    });
+  }
+  return c;
+}
+/* 1回転ぶんの組み合わせを作る。rest は休みの人。upto はこの回転の番号(これより前の回転を見て重ならないようにする) */
+function genRound(e, kind, rest, upto) {
+  const H = pHistory(e, upto), tol = e.practice.tol, avoid = e.practice.avoidSchool;
+  const size = kind === "doubles" ? 4 : 2;
+  const pool = e.players.filter((p) => !rest.includes(p.id));
+  const nm = Math.floor(pool.length / size), nSlot = nm * size;
+  if (nm < 1) return { matches: [], bench: pool.map((p) => p.id) };
+  const maxG = Math.max(0, ...pool.map((p) => H.games[p.id] || 0));
+  const sitCost = (p) => 25 * (maxG - (H.games[p.id] || 0)); // 試合数の少ない人は、待機にしない
+  const rand = rng((Date.now() ^ (upto * 7919)) >>> 0);
+  let best = null, bestCost = Infinity;
+  for (let t = 0; t < 10; t++) {
+    // 待機は、試合数の多い人から。残りをランク順に並べて、近い人が隣り合うようにする
+    const byGames = shuffle(pool.slice(), rand).sort((a, b) => (H.games[b.id] || 0) - (H.games[a.id] || 0));
+    const bench = byGames.slice(0, pool.length - nSlot);
+    const inSet = new Set(bench.map((p) => p.id));
+    const slots = shuffle(pool.filter((p) => !inSet.has(p.id)), rand).sort((a, b) => b.level - a.level);
+    const arr = slots.concat(bench);
+    const costAt = (k) => (k < nSlot
+      ? (() => { const m = Math.floor(k / size) * size; return pMatchCost(H, tol, avoid, arr.slice(m, m + size / 2), arr.slice(m + size / 2, m + size)); })()
+      : sitCost(arr[k]));
+    const total = () => { let c = 0; for (let m = 0; m < nSlot; m += size) c += costAt(m); for (let k = nSlot; k < arr.length; k++) c += costAt(k); return c; };
+    let cur = total();
+    let local = arr.slice(), localCost = cur;
+    const N = 3500;
+    for (let it = 0; it < N; it++) {
+      const i = Math.floor(rand() * arr.length), j = Math.floor(rand() * arr.length);
+      if (i === j || (i >= nSlot && j >= nSlot)) continue;
+      const mi = i < nSlot ? Math.floor(i / size) : -1, mj = j < nSlot ? Math.floor(j / size) : -1;
+      if (mi === mj && mi >= 0 && size === 2) continue;
+      const touch = (k) => (k < nSlot ? Math.floor(k / size) * size : k);
+      const keys = [...new Set([touch(i), touch(j)])];
+      const before = keys.reduce((s, k) => s + costAt(k), 0);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      const after = keys.reduce((s, k) => s + costAt(k), 0);
+      const T = 6 * (1 - it / N);
+      if (after <= before || rand() < Math.exp(-(after - before) / Math.max(T, 0.01))) {
+        cur += after - before;
+        if (cur < localCost - 1e-9) { localCost = cur; local = arr.slice(); }
+      } else [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    if (localCost < bestCost) { bestCost = localCost; best = local; }
+  }
+  const matches = [];
+  for (let m = 0; m < nSlot; m += size) {
+    const part = best.slice(m, m + size);
+    matches.push({ id: uid(), a: part.slice(0, size / 2).map((p) => p.id), b: part.slice(size / 2).map((p) => p.id), g: [], win: null });
+  }
+  const avg = (m) => m.a.concat(m.b).reduce((s, id) => s + e.players.find((p) => p.id === id).level, 0) / size;
+  matches.sort((x, y) => avg(y) - avg(x));
+  return { matches, bench: best.slice(nSlot).map((p) => p.id) };
+}
+/* 回転ごとの、そこまでの試合数(入っている数) */
+function pCum(e) {
+  const out = [], cnt = {};
+  e.practice.rounds.forEach((r) => { pPlaced(r).forEach((id) => (cnt[id] = (cnt[id] || 0) + 1)); out.push({ ...cnt }); });
+  return out;
+}
+/* 注意の洗い出し。{ per: 試合ごとの注意, dup, unplaced, resting } */
+function pIssues(e, ri) {
+  const r = e.practice.rounds[ri], pm = playerMap(e), tol = e.practice.tol, H = pHistory(e, ri);
+  const placed = pPlaced(r), cnt = {};
+  placed.forEach((id) => (cnt[id] = (cnt[id] || 0) + 1));
+  const dup = Object.keys(cnt).filter((id) => cnt[id] > 1);
+  // その日に何試合目か(上限チェック)
+  const dayCnt = {};
+  e.practice.rounds.slice(0, ri + 1).filter((x) => x.day === r.day).forEach((x) => pPlaced(x).forEach((id) => (dayCnt[id] = (dayCnt[id] || 0) + 1)));
+  const per = r.matches.map((m) => {
+    const out = [];
+    const A = m.a.filter(Boolean), B = m.b.filter(Boolean);
+    if (A.length < m.a.length || B.length < m.b.length) out.push({ lv: "err", t: "空きがあります" });
+    const both = A.concat(B);
+    both.filter((id, i) => both.indexOf(id) !== i || dup.includes(id)).forEach((id) => out.push({ lv: "err", t: `${pName(pm, id)} が同じ回転に2回入っています` }));
+    if (A.length && B.length) {
+      let maxD = 0;
+      A.forEach((x) => B.forEach((y) => { if (pm[x] && pm[y]) maxD = Math.max(maxD, Math.abs(pm[x].level - pm[y].level)); }));
+      if (maxD > tol) out.push({ lv: "warn", t: `ランク差 ${maxD}(許容は ${tol} まで)` });
+      A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "warn", t: `${pName(pm, x)} と ${pName(pm, y)} は第${f[0]}回転でも対戦` }); }));
+    }
+    [A, B].forEach((S) => { if (S.length === 2) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は第${f[0]}回転でもペア` }); } });
+    both.filter((id, i) => both.indexOf(id) === i && dayCnt[id] > e.maxPerDay).forEach((id) => out.push({ lv: "warn", t: `${pName(pm, id)} は${r.day}日目に${dayCnt[id]}試合目(上限${e.maxPerDay})` }));
+    return out;
+  });
+  const unplaced = e.players.filter((p) => !placed.includes(p.id) && !r.rest.includes(p.id)).map((p) => p.id);
+  return { per, dup, unplaced, resting: r.rest.filter((id) => pm[id]) };
+}
+/* 個人の成績(試合数・勝敗・日ごとの勝率) */
+function pStats(e) {
+  const rounds = e.practice.rounds;
+  const days = [...new Set(rounds.map((r) => r.day))].sort((a, b) => a - b);
+  const rate = (w, l) => (w + l ? Math.round((w / (w + l)) * 100) : null);
+  const rows = e.players.map((p) => {
+    const byR = rounds.map((r) => (pPlaced(r).includes(p.id) ? "play" : r.rest.includes(p.id) ? "rest" : "none"));
+    let games = 0, w = 0, l = 0;
+    const day = {};
+    days.forEach((d) => (day[d] = { g: 0, w: 0, l: 0 }));
+    rounds.forEach((r) => r.matches.forEach((m) => {
+      const side = m.a.includes(p.id) ? "a" : m.b.includes(p.id) ? "b" : null;
+      if (!side) return;
+      games++; day[r.day].g++;
+      const o = pOutcome(e, m);
+      if (o.winner) { if (o.winner === side) { w++; day[r.day].w++; } else { l++; day[r.day].l++; } }
+    }));
+    // 日ごとの勝率と、前の日からの増減(ポイント)
+    let prev = null;
+    days.forEach((d) => {
+      const x = day[d];
+      x.rate = rate(x.w, x.l);
+      x.delta = x.rate != null && prev != null ? x.rate - prev : null;
+      if (x.rate != null) prev = x.rate;
+    });
+    return { p, byR, games, w, l, rate: rate(w, l), day };
+  });
+  return { rows, days };
 }
 
 /* ============ トーナメント ============ */
@@ -1462,13 +1707,13 @@ function levelMeter(lv) {
   for (let i = 1; i <= RANK_MAX; i++) bars += `<i class="${i <= lv ? "on" : ""}"></i>`;
   return `<span class="lv"><span class="lv-bar" aria-hidden="true">${bars}</span>${lv}</span>`;
 }
-/* ランクピッカー:1〜5 の数字ボタン。選んだ数字まで色で埋まる */
+/* ランクピッカー:1〜10 の数字ボタン。選んだ数字まで色で埋まる */
 function levelPicker(id, lv) {
   let s = "";
   for (let i = 1; i <= RANK_MAX; i++) {
     s += `<button type="button" class="lv-b ${i <= lv ? "on" : ""} ${i === lv ? "cur" : ""}" data-action="set-level" data-id="${id}" data-lv="${i}" aria-label="ランク ${i}" aria-pressed="${i === lv}">${i}</button>`;
   }
-  return `<div class="lvpick" role="group" aria-label="ランク(5がいちばん強い)">${s}</div>`;
+  return `<div class="lvpick" role="group" aria-label="ランク(10がいちばん強い)">${s}</div>`;
 }
 function paintPicker(el, lv) {
   el.querySelectorAll(".lv-b").forEach((b) => {
@@ -1496,6 +1741,8 @@ function render() {
   else if (ui.tab === "leagues") body = leaguesHTML(e);
   else if (ui.tab === "matches") body = matchesHTML(e);
   else if (ui.tab === "bracket") body = bracketHTML(e);
+  else if (ui.tab === "rounds") body = practiceHTML(e);
+  else if (ui.tab === "pstats") body = pstatsHTML(e);
   else body = overviewHTML(e);
   app.innerHTML = navHTML(e) + `<main class="page">${heroHTML(e)}${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${tabsHTML(e)}${body}</main>`;
   fitName();
@@ -1546,16 +1793,19 @@ function themeBtnHTML() {
 
 /* --- はじめの画面:何を作るか選ぶ / 続きから --- */
 const MODES = {
+  practice: ["練習試合", "実力の近い人どうしで、回転ごとに相手を変えて対戦。ダブルスのペアも組み替え。日ごとの勝率つき"],
   league: ["リーグ戦", "A・B・C… のリーグに分けて、リーグの中で全員と1回ずつ試合"],
   tournament: ["トーナメント", "負けたら終わりの勝ち抜き戦。シードを決めて表を作る"],
   both: ["リーグ戦 → 決勝トーナメント", "まずリーグ戦。各リーグの上位で決勝トーナメント"],
 };
 const MODE_ICON = {
+  practice: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><path d="M6 12h22M36 12h22M6 24h22M36 24h22M6 36h22M36 36h22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><path d="M28 12l8 12-8 12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="24" r="3" fill="var(--accent)"/></svg>`,
   league: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><rect x="4" y="4" width="56" height="40" rx="6" stroke="currentColor" stroke-width="2.5"/><path d="M4 18h56M4 31h56M24 4v40M42 4v40" stroke="currentColor" stroke-width="2" opacity=".55"/><path d="M28 11h10M46 24h10M10 37h10" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg>`,
   tournament: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><path d="M4 6h14v12H4M4 30h14v12H4M18 12h14v24H18M32 24h14" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M4 6h14v6h14v12h14" stroke="var(--accent)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="52" cy="24" r="6" fill="var(--accent)"/></svg>`,
   both: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><rect x="2" y="10" width="24" height="28" rx="5" stroke="currentColor" stroke-width="2.5"/><path d="M2 24h24M14 10v28" stroke="currentColor" stroke-width="2" opacity=".55"/><path d="M30 24h6" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><path d="M40 12h10v24H40M50 24h10" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="60" cy="24" r="3.5" fill="var(--accent)"/></svg>`,
 };
 function tabsFor(e) {
+  if (e.mode === "practice") return [["players", "選手"], ["rounds", "対戦(回転ごと)"], ["pstats", "成績"]];
   const tabs = [["players", unit(e)]];
   if (e.mode !== "tournament") tabs.push(["leagues", "リーグ分け"], ["matches", "試合と結果"], ["overview", "順位"]);
   if (e.mode !== "league") tabs.push(["bracket", e.mode === "both" ? "決勝トーナメント" : "トーナメント"]);
@@ -1570,9 +1820,9 @@ function createHTML(mode) {
   return `<section class="card create" id="create-card">
     <div class="card-head"><div class="title-with-letter"><span class="make-icon small">${MODE_ICON[mode]}</span><h2>${MODES[mode][0]}を作る</h2></div></div>
     <div class="stack">
-      <label class="field"><span>名前(あとで変えられます)</span><input class="input" id="c-name" placeholder="例:${d.getMonth() + 1}月 部内${mode === "tournament" ? "トーナメント" : "リーグ戦"}" autocomplete="off"></label>
-      <div class="field"><span>シングルス? ダブルス?</span><div class="choice-grid two">
-        ${radio("singles", "シングルス(1人ずつ)", true)}${radio("doubles", "ダブルス(2人1組)", false)}
+      <label class="field"><span>名前(あとで変えられます)</span><input class="input" id="c-name" placeholder="例:${d.getMonth() + 1}月 ${mode === "practice" ? "合同練習試合" : `部内${mode === "tournament" ? "トーナメント" : "リーグ戦"}`}" autocomplete="off"></label>
+      <div class="field"><span>${mode === "practice" ? "最初の回転の形式(回転ごとに変えられます)" : "シングルス? ダブルス?"}</span><div class="choice-grid two">
+        ${mode === "practice" ? radio("singles", "シングルス(1対1)", true) + radio("doubles", "ダブルス(ペアは回転ごとに組み替え)", false) : radio("singles", "シングルス(1人ずつ)", true) + radio("doubles", "ダブルス(2人1組)", false)}
       </div></div>
       <div class="row">
         <button class="btn btn-aurora btn-lg" data-action="create">作って、選手を入れる ›</button>
@@ -1616,6 +1866,7 @@ function homeHTML() {
     ${pick ? createHTML(pick) : ""}
     ${list.length ? `<section class="stack"><div><h2 class="home-sub">続きから</h2><p class="faint" style="margin:2px 0 0">前に作ったもの。押すと続きができます。</p></div><div class="event-grid">${cards}</div></section>` : ""}
     <p class="faint" style="text-align:center;margin:8px 0 0">どんなものか見てみたいとき:
+      <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合を開く</button> ·
       <button class="link-btn" data-action="sample">見本のリーグ戦を開く</button> ·
       <button class="link-btn" data-action="sample" data-type="doubles">見本の決勝トーナメントつきを開く</button></p>`;
 }
@@ -1627,7 +1878,7 @@ function heroHTML(e) {
   const confirmDel = ui.confirm === "del-event";
   return `<section class="hero">
     <div style="min-width:0">
-      <span class="kicker">${isDbl(e) ? "ダブルス" : "シングルス"} · ${MODES[e.mode][0]}</span>
+      <span class="kicker">${e.mode === "practice" ? "" : `${isDbl(e) ? "ダブルス" : "シングルス"} · `}${MODES[e.mode][0]}</span>
       <textarea class="hero-name" id="ev-name" data-change="ev-name" rows="1" aria-label="名前(押すと変えられます)">${esc(e.name)}</textarea>
       <div class="hero-sub">
         <label>日付 <input type="date" class="input" id="ev-date" data-change="ev-date" value="${esc(e.date)}"></label>
@@ -1641,12 +1892,12 @@ function heroHTML(e) {
             ${Object.entries(MODES).map(([k, [t]]) => `<option value="${k}" ${e.mode === k ? "selected" : ""}>${t}</option>`).join("")}
           </select>
         </label>
-        <label>種目
+        ${e.mode === "practice" ? "" : `<label>種目
           <select class="select" id="ev-type" data-change="ev-type">
             <option value="singles" ${isDbl(e) ? "" : "selected"}>シングルス</option>
             <option value="doubles" ${isDbl(e) ? "selected" : ""}>ダブルス</option>
           </select>
-        </label>
+        </label>`}
         <label>試合形式
           <select class="select" id="ev-games" data-change="ev-games">
             <option value="1" ${e.games === 1 ? "selected" : ""}>1ゲームマッチ</option>
@@ -1684,7 +1935,7 @@ function heroHTML(e) {
 function heroStatsHTML(e, t) {
   return `<div><span class="stat-value">${e.players.length}</span><span class="stat-label">${unit(e)}</span></div>
     <div><span class="stat-value">${new Set(e.players.map((p) => p.school.trim()).filter(Boolean)).size}</span><span class="stat-label">学校</span></div>
-    ${e.mode !== "tournament" ? `<div><span class="stat-value">${e.leagues.length}</span><span class="stat-label">リーグ</span></div>` : ""}
+    ${e.mode === "practice" ? `<div><span class="stat-value">${e.practice.rounds.length}</span><span class="stat-label">回転</span></div>` : e.mode !== "tournament" ? `<div><span class="stat-value">${e.leagues.length}</span><span class="stat-label">リーグ</span></div>` : ""}
     <div><span class="stat-value">${t.finished}<span style="font-size:.55em;color:var(--ink-text-3)"> / ${t.total}</span></span><span class="stat-label">試合 終了 / 全体</span></div>`;
 }
 function refreshHero(e) {
@@ -1710,8 +1961,14 @@ function schoolsDatalist(e) {
 function playersHTML(e) {
   const dbl = isDbl(e);
   // トーナメントだけの大会では、リーグの列と「リーグ分けへ」は出さない
-  const hasL = e.mode !== "tournament";
-  const next = hasL ? ["leagues", "リーグ分けへ"] : ["bracket", "トーナメントへ"];
+  const prac = e.mode === "practice";
+  const hasL = e.mode === "league" || e.mode === "both";
+  const next = prac ? ["rounds", "対戦をつくる"] : hasL ? ["leagues", "リーグ分けへ"] : ["bracket", "トーナメントへ"];
+  const gcount = {};
+  if (prac) e.practice.rounds.forEach((r) => pPlaced(r).forEach((id) => (gcount[id] = (gcount[id] || 0) + 1)));
+  const dupKey = (p) => `${p.name}|${p.name2}|${p.school}`.replace(/[\s　]+/g, "");
+  const keyCount = {};
+  e.players.forEach((p) => (keyCount[dupKey(p)] = (keyCount[dupKey(p)] || 0) + 1));
   const list = e.players.slice().sort((a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja") || a.name.localeCompare(b.name, "ja"));
   const rows = list.map((p) => {
     const li = hasL ? leagueIndexOf(e, p.id) : -1;
@@ -1720,18 +1977,18 @@ function playersHTML(e) {
       ${dbl ? `<td class="c-name2"><input class="cell-input" id="pn2-${p.id}" data-change="p-name2" data-id="${p.id}" value="${esc(p.name2)}" placeholder="相方を入力" aria-label="2人目の名前"></td>` : ""}
       <td class="c-school"><input class="cell-input" id="ps-${p.id}" data-change="p-school" data-id="${p.id}" value="${esc(p.school)}" list="schools" placeholder="学校" aria-label="学校"></td>
       <td class="c-level">${levelPicker(p.id, p.level)}</td>
-      ${hasL ? `<td class="c-league">${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>` : ""}
+      ${hasL ? `<td class="c-league">${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>` : prac ? `<td class="c-league"><span class="chip num">${gcount[p.id] || 0}試合</span>${keyCount[dupKey(p)] > 1 ? ` <span class="chip chip-err">重複</span>` : ""}</td>` : ""}
       <td class="c-del" style="text-align:right"><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(pname(e, p))}を削除" title="削除">${TRASH}</button></td>
     </tr>`;
   }).join("");
   return `${schoolsDatalist(e)}
   <section class="card">
-    <div class="card-head"><div><h2>${unit(e)}を追加</h2><p class="faint">${dbl ? "ペアごとに1行。ランクはペアとしての強さで、1〜5 の5段階(5がいちばん強い)。だいたいで大丈夫です。" : "ランクは 1〜5 の5段階で、5 がいちばん強い。だいたいで大丈夫です(同じ数字の選手は同じくらいの強さとして扱います)。"}</p></div></div>
+    <div class="card-head"><div><h2>${unit(e)}を追加</h2><p class="faint">${dbl ? "ペアごとに1行。ランクはペアとしての強さで、1〜10 の10段階(10がいちばん強い)。" : "ランクは 1〜10 の10段階で、10 がいちばん強い。同じ数字の選手は同じくらいの強さとして扱います。"}</p></div></div>
     <form class="add-form ${dbl ? "dbl" : ""}" id="add-form">
       <label class="field field-name"><span>${dbl ? "1人目" : "名前"}</span><input class="input" id="new-name" required placeholder="例:山田 太郎" autocomplete="off"></label>
       ${dbl ? `<label class="field field-name"><span>2人目</span><input class="input" id="new-name2" placeholder="例:佐藤 次郎" autocomplete="off"></label>` : ""}
       <label class="field"><span>学校</span><input class="input" id="new-school" list="schools" placeholder="例:桜ヶ丘高" autocomplete="off"></label>
-      <div class="field field-level"><span>ランク(5がいちばん強い)</span>${levelPicker("new", ui.newLevel)}</div>
+      <div class="field field-level"><span>ランク(10がいちばん強い)</span>${levelPicker("new", ui.newLevel)}</div>
       <button class="btn btn-primary" type="submit">追加</button>
     </form>
     <details class="paste" ${ui.pasteOpen ? "open" : ""}>
@@ -1742,10 +1999,10 @@ function playersHTML(e) {
     </details>
   </section>
   <section class="card">
-    <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・ランクを直すと、${hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。</p></div>
+    <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・ランクを直すと、${prac ? "対戦表" : hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。${prac ? "同じ名前・同じ学校が2人いると「重複」と出ます。" : ""}</p></div>
       ${e.players.length ? `<button class="btn btn-aurora btn-sm" data-action="tab" data-tab="${next[0]}">${next[1]}</button>` : ""}</div>
     ${e.players.length ? `<div class="table-wrap"><table class="ptable ${dbl ? "dbl" : ""}">
-      <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>ランク</th>${hasL ? "<th>リーグ</th>" : ""}<th></th></tr></thead>
+      <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>ランク</th>${hasL ? "<th>リーグ</th>" : prac ? "<th>試合数</th>" : ""}<th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>` : `<p class="muted">まだ${unit(e)}がいません。上のフォームか、Excel からの貼り付けで追加してください。</p>`}
   </section>`;
 }
@@ -1949,6 +2206,24 @@ function matchesHTML(e) {
   </section>`;
 }
 
+function refreshPMatch(e, m) {
+  const row = document.getElementById(`pm-${m.id}`);
+  if (row) {
+    const o = pOutcome(e, m);
+    row.classList.toggle("is-done", !!o.winner);
+    row.querySelector(".pm-side.a").classList.toggle("win", o.winner === "a");
+    row.querySelector(".pm-side.b").classList.toggle("win", o.winner === "b");
+    const r = e.practice.rounds.find((x) => x.matches.includes(m));
+    row.querySelectorAll(".qwin").forEach((bt) => { bt.outerHTML = quickWinHTML(o, bt.dataset.w, `data-action="pqwin" data-r="${r.id}" data-m="${m.id}"`); });
+    row.querySelector(".pm-st").innerHTML = pStatusChip(e, m, o);
+    row.querySelectorAll(".game").forEach((gEl, gi) => {
+      const [x, y] = (m.g || [])[gi] || [null, null];
+      const bad = gameWarn(e, x, y);
+      gEl.querySelectorAll(".score").forEach((inp) => inp.classList.toggle("bad", bad));
+    });
+  }
+  refreshHero(e);
+}
 function refreshMatch(e, a, b) {
   const row = document.getElementById(`m-${keyOf(a, b)}`);
   if (row) {
@@ -1991,6 +2266,188 @@ function overviewHTML(e) {
   return `<section class="card"><div class="card-head"><div><h2>全リーグの順位</h2><p class="faint">${esc(e.name)}(${esc(e.date)})</p></div>
     <button class="btn btn-secondary btn-sm" data-action="x-rank">順位表を Excel にコピー</button></div></section>
     <div class="overview">${cards}</div>`;
+}
+
+/* --- 練習試合:回転ごとの対戦 --- */
+function pRateText(x) { return x == null ? "—" : `${x}%`; }
+function pDeltaHTML(d) { return d == null ? "" : `<span class="pdelta ${d > 0 ? "up" : d < 0 ? "down" : ""}">${d > 0 ? "+" : d < 0 ? "−" : "±"}${Math.abs(d)}%</span>`; }
+function pStatusChip(e, m, o) {
+  if (o.quick) return `<span class="chip chip-ok">終了</span>`;
+  const games = (m.g || []).slice(0, e.games).map((x) => [x[0], x[1]]);
+  if (games.some(([x, y]) => gameWarn(e, x, y))) return `<span class="chip chip-warn" title="${e.points}点ゲームとして点数がおかしい可能性があります">点数を確認</span>`;
+  if (extraGame(e, games)) return `<span class="chip chip-warn">いらないゲームあり</span>`;
+  if (o.winner) return `<span class="chip chip-ok">終了</span>`;
+  if (o.started) return `<span class="chip chip-live">入力中</span>`;
+  return `<span class="chip">未</span>`;
+}
+function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds) {
+  const ref = `${r.id}|m|${mi}|${side}|${pos}`;
+  if (!pid) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span><span class="pschool">ここにドラッグ</span></div>`;
+  const p = playerMap(e)[pid];
+  if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span></div>`;
+  return `<div class="pslot ${dupIds.includes(pid) ? "is-dup" : ""}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="ドラッグして入れ替え">
+    <span class="pname"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
+    <span class="pschool">${esc(p.school)} · ランク${p.level} · ${cum[pid] || 0}試合目</span></div>`;
+}
+function pMatchHTML(e, r, mi, iss, cum) {
+  const m = r.matches[mi], o = pOutcome(e, m);
+  const attrs = `data-r="${r.id}" data-m="${m.id}"`;
+  let inputs = "";
+  for (let g = 0; g < e.games; g++) {
+    const [x, y] = (m.g || [])[g] || [null, null];
+    const bad = gameWarn(e, x, y);
+    inputs += `<div class="game">${e.games > 1 ? `<span class="game-label">第${g + 1}G</span>` : ""}
+      <input class="score ${bad ? "bad" : ""}" inputmode="numeric" autocomplete="off" maxlength="2" data-input="pscore" ${attrs} data-g="${g}" data-s="0" value="${x ?? ""}" aria-label="左の側 第${g + 1}ゲームの点数">
+      <span class="faint">-</span>
+      <input class="score ${bad ? "bad" : ""}" inputmode="numeric" autocomplete="off" maxlength="2" data-input="pscore" ${attrs} data-g="${g}" data-s="1" value="${y ?? ""}" aria-label="右の側 第${g + 1}ゲームの点数"></div>`;
+  }
+  const side = (S, key) => `<div class="pm-side ${key} ${o.winner === key ? "win" : ""}">
+      <div class="pm-slots">${S.map((pid, pos) => pSlotHTML(e, r, mi, key, pos, pid, cum, iss.dup)).join("")}</div>
+      ${quickWinHTML(o, key, `data-action="pqwin" ${attrs}`)}</div>`;
+  const chips = iss.per[mi].map((x) => `<span class="chip ${x.lv === "err" ? "chip-err" : "chip-warn"}">${x.lv === "err" ? "エラー:" : ""}${esc(x.t)}</span>`).join("");
+  return `<div class="pmatch ${o.winner ? "is-done" : ""}" id="pm-${m.id}">
+    <div class="pm-num num">${mi + 1}</div>
+    ${side(m.a, "a")}
+    <div class="m-scores">${inputs}<span class="pm-st">${pStatusChip(e, m, o)}</span></div>
+    ${side(m.b, "b")}
+    ${chips ? `<div class="pm-issues">${chips}</div>` : ""}
+  </div>`;
+}
+function pBenchHTML(e, r, iss, cum) {
+  const pm = playerMap(e);
+  const chip = (id, resting) => {
+    const p = pm[id];
+    return `<span class="bchip ${resting ? "is-rest" : "is-warn"}" data-drag="pslot" data-drag-id="${r.id}|b|${id}" data-drag-label="${esc(p.name)}">
+      <span class="pname"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
+      <span class="pschool">${esc(p.school)} · ランク${p.level} · ここまで${cum[id] || 0}試合</span>
+      <button type="button" class="btn btn-ghost btn-sm" data-action="prest" data-r="${r.id}" data-id="${id}">${resting ? "休みをやめる" : "休みにする"}</button></span>`;
+  };
+  return `<div class="bench" data-drop="pslot" data-drop-id="${r.id}|bench">
+    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここにドラッグで外せます。外した人は「休みにする」を押すと、休みとして扱います</span></div>
+    <div class="bench-list">
+      ${iss.unplaced.map((id) => chip(id, false)).join("")}
+      ${iss.resting.map((id) => chip(id, true)).join("")}
+      ${iss.unplaced.length + iss.resting.length ? "" : `<span class="faint">全員が試合に入っています</span>`}
+    </div></div>`;
+}
+function pRoundHTML(e, ri, cumAll) {
+  const r = e.practice.rounds[ri], pm = playerMap(e);
+  const iss = pIssues(e, ri), cum = cumAll[ri];
+  const maxDay = Math.max(1, ...e.practice.rounds.map((x) => x.day));
+  const dayOpts = Array.from({ length: Math.max(maxDay + 1, r.day) }, (_, k) => k + 1).map((d) => `<option value="${d}" ${r.day === d ? "selected" : ""}>${d}日目</option>`).join("");
+  const done = r.matches.filter((m) => pOutcome(e, m).winner).length;
+  const askRegen = ui.confirm === `preg:${r.id}`, askDel = ui.confirm === `pdel:${r.id}`;
+  const needMore = r.kind === "doubles" ? 4 : 2;
+  const msgs = [];
+  if (iss.dup.length) msgs.push(`<div class="confirm perr"><b>エラー:</b><span>${iss.dup.map((id) => esc(pName(pm, id))).join("、")} が同じ回転に2回入っています。ドラッグで直してください。</span></div>`);
+  if (iss.unplaced.length) msgs.push(`<div class="confirm"><b>確認:</b><span>${iss.unplaced.map((id) => esc(pName(pm, id))).join("、")} がこの回転の試合に入っていません。${r.kind === "doubles" ? "ダブルスは4人で1試合なので、4で割り切れないぶんは待機になります。" : ""}わざと抜かすなら、下の「休みにする」を押してください。</span></div>`);
+  if (!r.matches.length) msgs.push(`<div class="confirm"><span>休みを除いて ${needMore} 人以上いないと試合が組めません。</span></div>`);
+  return `<section class="card pround" id="pr-${r.id}">
+    <div class="card-head">
+      <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div>
+      <div class="row">
+        <label class="faint">日 <select class="select" data-change="p-day" data-r="${r.id}" aria-label="何日目の回転か">${dayOpts}</select></label>
+        <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">この回転を組み直す</button>
+        <button class="btn btn-ghost btn-sm btn-danger" data-action="pdel" data-r="${r.id}">削除</button>
+      </div>
+    </div>
+    ${askRegen ? `<div class="confirm"><span>入れた結果を消して、組み直しますか？</span><button class="btn btn-sm btn-primary" data-action="preg-yes" data-r="${r.id}">組み直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
+    ${askDel ? `<div class="confirm"><span>第${ri + 1}回転を削除します。結果も消えます。</span><button class="btn btn-sm btn-del" data-action="pdel-yes" data-r="${r.id}">削除する</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
+    ${msgs.join("")}
+    <div class="stack" style="margin-top:12px">
+      ${r.matches.map((_, mi) => pMatchHTML(e, r, mi, iss, cum)).join("")}
+      ${pBenchHTML(e, r, iss, cum)}
+    </div>
+  </section>`;
+}
+function practiceHTML(e) {
+  const p = e.practice, n = e.players.length;
+  if (n < 2) return `<section class="card"><p class="muted">先に「選手」で、名前と学校とランクを入れてください(2人以上)。</p><div class="row" style="margin-top:12px"><button class="btn btn-aurora btn-sm" data-action="tab" data-tab="players">選手へ</button></div></section>`;
+  const kind = ui.nextKind || p.kind;
+  const lastDay = p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1;
+  const maxDay = Math.max(1, ...p.rounds.map((x) => x.day));
+  const day = ui.nextDay || lastDay;
+  const nextRest = (ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id));
+  const tolOpts = Array.from({ length: 10 }, (_, k) => k).map((k) => `<option value="${k}" ${p.tol === k ? "selected" : ""}>${k === 0 ? "同じランクの人だけ" : `ランク差 ${k} まで(±${k})`}</option>`).join("");
+  const dayOpts = Array.from({ length: Math.max(maxDay + 1, day) }, (_, k) => k + 1).map((d) => `<option value="${d}" ${day === d ? "selected" : ""}>${d}日目</option>`).join("");
+  const sorted = e.players.slice().sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "ja"));
+  const restChips = sorted.map((x) => `<button type="button" class="rchip ${nextRest.includes(x.id) ? "on" : ""}" data-action="pnext-rest" data-id="${x.id}" aria-pressed="${nextRest.includes(x.id)}">${esc(x.name || "(名前なし)")}</button>`).join("");
+  const radio = (v, t) => `<label class="choice"><input type="radio" name="p-kind" value="${v}" data-change="pnext-kind" ${kind === v ? "checked" : ""}><b>${t}</b></label>`;
+  const cumAll = pCum(e);
+  return `<section class="card">
+    <div class="card-head"><div><h2>回転ごとの対戦</h2><p class="faint">「第1回転」「第2回転」…と、回転ごとに実力の近い人どうしで組みます。前の回転と同じ相手・同じ相方はなるべく避けます。組んだあと、名前をドラッグして入れ替えられます。</p></div></div>
+    <div class="settings">
+      <div class="field"><span>組むときのランク差</span><select class="select" data-change="p-tol" aria-label="ランク差の許容">${tolOpts}</select></div>
+      <div class="field"><span>学校</span><label class="check"><input type="checkbox" data-change="p-avoid" ${p.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label></div>
+    </div>
+    <div class="pnext">
+      <div class="field"><span>次の回転の形式</span><div class="choice-grid two">${radio("singles", "シングルス")}${radio("doubles", "ダブルス(ペアは毎回組み替え)")}</div></div>
+      <div class="field"><span>何日目</span><select class="select" data-change="pnext-day" aria-label="何日目">${dayOpts}</select></div>
+      <div class="field" style="grid-column:1/-1"><span>この回転は休む人(体調不良・休憩など。なければ何も押さない)</span><div class="rchips">${restChips}</div></div>
+      <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
+    </div>
+  </section>
+  ${p.rounds.length ? p.rounds.map((_, ri) => pRoundHTML(e, ri, cumAll)).join("") : `<section class="card"><p class="muted">まだ回転がありません。上の「第1回転を作る」を押してください。</p></section>`}`;
+}
+
+/* --- 練習試合:成績(試合数・勝率・日ごとの増減) --- */
+function pstatsHTML(e) {
+  const p = e.practice;
+  if (!p.rounds.length) return `<section class="card"><p class="muted">回転を作って結果を入れると、ここに試合数と勝率が並びます。</p><div class="row" style="margin-top:12px"><button class="btn btn-aurora btn-sm" data-action="tab" data-tab="rounds">対戦へ</button></div></section>`;
+  const { rows, days } = pStats(e);
+  const sort = ui.pSort || "level";
+  const list = rows.slice().sort((a, b) =>
+    sort === "rate" ? (b.rate ?? -1) - (a.rate ?? -1) || b.games - a.games
+    : sort === "games" ? a.games - b.games || b.p.level - a.p.level
+    : b.p.level - a.p.level || a.p.name.localeCompare(b.p.name, "ja"));
+  const maxG = Math.max(0, ...rows.map((r) => r.games));
+  const low = rows.filter((r) => r.games <= maxG - 2);
+  const dayHead = days.map((d) => `<th>${d}日目<br>勝率</th>`).join("");
+  const body = list.map((r) => {
+    const isLow = r.games <= maxG - 2;
+    return `<tr>
+      <td class="name-cell"><span class="pname">${esc(r.p.name || "(名前なし)")}</span><span class="pschool">${esc(r.p.school)} · ランク${r.p.level}</span></td>
+      <td class="stat"><b>${r.games}</b>${isLow ? ` <span class="chip chip-warn">少なめ</span>` : ""}</td>
+      <td class="stat">${r.w}勝${r.l}敗</td>
+      <td class="stat"><b>${pRateText(r.rate)}</b></td>
+      ${days.map((d) => { const x = r.day[d]; return `<td class="stat">${x.g ? `${pRateText(x.rate)}<span class="sc">${x.w}勝${x.l}敗 / ${x.g}試合</span>${pDeltaHTML(x.delta)}` : `<span class="faint">—</span>`}</td>`; }).join("")}
+    </tr>`;
+  }).join("");
+  const sym = { play: `<span class="cell-play">●</span>`, rest: `<span class="cell-rest">休</span>`, none: `<span class="cell-none">未</span>` };
+  const grid = list.map((r) => `<tr><td class="name-cell"><span class="pname">${esc(r.p.name || "(名前なし)")}</span></td>${r.byR.map((s) => `<td>${sym[s]}</td>`).join("")}<td class="stat"><b>${r.games}</b></td></tr>`).join("");
+  const sortBtn = (k, t) => `<button class="btn btn-sm ${sort === k ? "btn-primary" : "btn-secondary"}" data-action="psort" data-sort="${k}">${t}</button>`;
+  return `<section class="card">
+    <div class="card-head"><div><h2>試合数と勝率</h2><p class="faint">勝率は、結果を入れた試合だけで数えます。日ごとの勝率の下の「+25%」は、前の日の勝率からの増減です。</p></div>
+      <button class="btn btn-secondary btn-sm" data-action="x-pstats">Excel にコピー</button></div>
+    ${low.length ? `<div class="confirm" style="margin-bottom:12px"><b>試合数が少ない人:</b><span>${low.map((r) => `${esc(r.p.name)}(${r.games}試合)`).join("、")}。いちばん多い人は ${maxG} 試合です。</span></div>` : ""}
+    <div class="row" style="margin-bottom:10px"><span class="faint">並び順</span>${sortBtn("level", "ランク順")}${sortBtn("rate", "勝率順")}${sortBtn("games", "試合数の少ない順")}</div>
+    <div class="table-wrap"><table class="hoshi pstat">
+      <thead><tr><th class="name-cell">選手</th><th>試合数</th><th>勝敗</th><th>全体の<br>勝率</th>${dayHead}</tr></thead>
+      <tbody>${body}</tbody></table></div>
+  </section>
+  <section class="card">
+    <div class="card-head"><div><h2>回転ごとの出場</h2><p class="faint">● 試合に入っている / 休 休みにした / 未 試合に入っていない(休みにもしていない)</p></div></div>
+    <div class="table-wrap"><table class="hoshi pstat">
+      <thead><tr><th class="name-cell">選手</th>${p.rounds.map((_, i) => `<th>第${i + 1}</th>`).join("")}<th>計</th></tr></thead>
+      <tbody>${grid}</tbody></table></div>
+  </section>`;
+}
+function pMatchesBlock(e) {
+  const pm = playerMap(e);
+  const rows = [["回転", "日目", "形式", "試合", "左の側", "右の側", ...gameHeads(e), "勝者"]];
+  const names = (S) => S.map((id) => pName(pm, id)).join("・");
+  e.practice.rounds.forEach((r, ri) => r.matches.forEach((m, mi) => {
+    const o = pOutcome(e, m);
+    rows.push([ri + 1, r.day, P_KIND[r.kind], mi + 1, names(m.a), names(m.b), ...xlGames(e, (m.g || []).slice(0, e.games)), o.winner ? names(m[o.winner]) : ""]);
+  }));
+  return { title: "練習試合 対戦と結果", rows };
+}
+function pStatsBlock(e) {
+  const { rows, days } = pStats(e);
+  const out = [["選手", "学校", "ランク", "試合数", "勝", "敗", "勝率", ...days.flatMap((d) => [`${d}日目 勝率`, `${d}日目 増減`])]];
+  rows.forEach((r) => out.push([r.p.name, r.p.school, r.p.level, r.games, r.w, r.l, r.rate == null ? "" : `${r.rate}%`,
+    ...days.flatMap((d) => { const x = r.day[d]; return [x.rate == null ? "" : `${x.rate}%`, x.delta == null ? "" : `${x.delta > 0 ? "+" : ""}${x.delta}%`]; })]));
+  return { title: "練習試合 成績", rows: out };
 }
 
 /* --- トーナメント --- */
@@ -2491,18 +2948,22 @@ function copyTables(blocks, what) {
 /* どの画面からでも開ける「Excelに貼り付け」 */
 function exportHTML(e) {
   const items = [];
-  if (e.mode !== "tournament" && e.leagues.length) {
+  if ((e.mode === "league" || e.mode === "both") && e.leagues.length) {
     items.push(["x-hoshi", "星取表(全リーグ)", "○●とスコアの表。リーグごとに並びます"]);
     items.push(["x-rank", "順位表(全リーグ)", "順位・勝敗・得失ゲーム・得失点"]);
     items.push(["x-lmatch", "試合結果の一覧", "対戦ごとのスコアと勝者"]);
   }
-  if (e.mode !== "league" && e.bracket) items.push(["x-bracket", "トーナメントの結果", "優勝〜3位と、試合番号ごとのスコア"]);
+  if (e.mode === "practice" && e.practice.rounds.length) {
+    items.push(["x-pmatches", "回転ごとの対戦と結果", "回転・試合ごとの組み合わせとスコア、勝者"]);
+    items.push(["x-pstats", "成績(試合数・勝率・日ごと)", "選手ごとの試合数と勝率、日ごとの増減"]);
+  }
+  if ((e.mode === "tournament" || e.mode === "both") && e.bracket) items.push(["x-bracket", "トーナメントの結果", "優勝〜3位と、試合番号ごとのスコア"]);
   return `<section class="card export-card">
     <div class="card-head"><div><h2>Excelに貼り付け</h2><p class="faint">ボタンを押すとコピーされます。Excel で貼り付けたいセルを1つ選んで Ctrl+V。スコアは日付に化けないようにしてあります。</p></div>
       <button class="btn btn-ghost btn-sm" data-action="toggle-export">閉じる</button></div>
     ${items.length
       ? `<div class="export-grid">${items.map(([a, t, d]) => `<button class="choice" data-action="${a}"><b>${t}</b><span class="faint">${d}</span></button>`).join("")}</div>`
-      : `<p class="muted" style="margin:0">まだコピーできる表がありません。${e.mode === "tournament" ? "トーナメント" : "リーグ"}を作ると、ここからコピーできます。</p>`}
+      : `<p class="muted" style="margin:0">まだコピーできる表がありません。${e.mode === "practice" ? "回転" : e.mode === "tournament" ? "トーナメント" : "リーグ"}を作ると、ここからコピーできます。</p>`}
   </section>`;
 }
 
@@ -2511,7 +2972,7 @@ const PAIR_SEP = /[・\/／&＆]/;
 const toHalf = (s) => String(s || "").replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)).trim();
 
 /* ---- Excel 名簿の取り込み:列を見分けて、取り込む前に表で見せる ---- */
-const IMP_ROLES = [["name", "名前"], ["name2", "2人目(ダブルス)"], ["school", "学校"], ["level", "ランク(1〜5)"], ["rank", "部内順位(1が強い)"], ["skip", "使わない"]];
+const IMP_ROLES = [["name", "名前"], ["name2", "2人目(ダブルス)"], ["school", "学校"], ["level", "ランク(1〜10)"], ["rank", "部内順位(1が強い)"], ["skip", "使わない"]];
 const IMP_KW = [
   [/2人目|パートナー|相方/, "name2"],
   [/名前|氏名|選手|プレーヤー|プレイヤー|ペア|1人目|^name$/i, "name"],
@@ -2581,15 +3042,12 @@ function buildImport(e) {
     const ci = Object.fromEntries(["name", "name2", "school", "level", "rank"].map((r) => [r, imp.roles.indexOf(r)]));
     if (ci.name < 0) return { players: [], empty: 0, dup: 0, noName: true };
     const n = body.length;
-    // ランクの列に 6 以上があれば 1〜10 の表とみなして 1〜5 に換算する
-    const lvVals = ci.level >= 0 ? body.map((r) => parseInt(toHalf(r[ci.level]), 10)).filter((v) => v > 0) : [];
-    const tenScale = lvVals.some((v) => v > RANK_MAX);
     players = body.map((r) => {
       let name = (r[ci.name] || "").trim();
       let name2 = ci.name2 >= 0 ? (r[ci.name2] || "").trim() : "";
       if (dbl && !name2 && PAIR_SEP.test(name)) [name, name2 = ""] = name.split(PAIR_SEP).map((s) => s.trim());
       let level = 3;
-      if (ci.level >= 0) { const v = parseInt(toHalf(r[ci.level]), 10); if (v) level = tenScale ? to5(v) : clamp(v, 1, RANK_MAX); }
+      if (ci.level >= 0) { const v = parseInt(toHalf(r[ci.level]), 10); if (v) level = clamp(v, 1, RANK_MAX); }
       else if (ci.rank >= 0) { const v = parseInt(toHalf(r[ci.rank]), 10); if (v) level = clamp(RANK_MAX - Math.floor(((v - 1) * RANK_MAX) / Math.max(n, 1)), 1, RANK_MAX); }
       return { id: uid(), name, name2, school: ci.school >= 0 ? (r[ci.school] || "").trim() : "", level };
     });
@@ -2652,7 +3110,7 @@ function parsePaste(text, dbl) {
     let level = 3;
     const last = cols[cols.length - 1];
     const lvNum = parseInt(String(last).replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)), 10);
-    if (cols.length >= 2 && /^[0-9０-９]+$/.test(String(last))) { level = lvNum > RANK_MAX ? to5(lvNum) : clamp(lvNum, 1, RANK_MAX); cols = cols.slice(0, -1); }
+    if (cols.length >= 2 && /^[0-9０-９]+$/.test(String(last))) { level = clamp(lvNum, 1, RANK_MAX); cols = cols.slice(0, -1); }
     let name, school = "";
     if (cols.length >= 3 && !line.includes("\t") && !line.includes(",")) { school = cols[cols.length - 1]; name = cols.slice(0, -1).join(" "); }
     else { name = cols[0]; school = cols[1] || ""; }
@@ -2665,7 +3123,7 @@ function parsePairCols(cols, sep) {
   let level = 3;
   const last = String(cols[cols.length - 1]);
   if (cols.length >= 2 && /^[0-9０-９]+$/.test(last)) {
-    const v10 = parseInt(last.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)), 10); level = v10 > RANK_MAX ? to5(v10) : clamp(v10, 1, RANK_MAX);
+    const v10 = parseInt(last.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)), 10); level = clamp(v10, 1, RANK_MAX);
     cols = cols.slice(0, -1);
   }
   let name = "", name2 = "", school = "";
@@ -2686,6 +3144,7 @@ function parsePairCols(cols, sep) {
 
 function makeSample(type) {
   if (type === "doubles") return makeDoublesSample();
+  if (type === "practice") return makePracticeSample();
   const data = [
     // 見本の選手はすべて架空の人物
     ["桐生 蓮", "桜ヶ丘高", 5], ["早瀬 葵", "港北高", 5], ["柏木 湊", "緑川高", 4], ["鳴海 陽菜", "桜ヶ丘高", 4],
@@ -2695,7 +3154,7 @@ function makeSample(type) {
   ];
   const e = normalize({ name: "見本:部内リーグ戦(練習用)", mode: "league", groupSize: 4, splitMethod: "level" });
   e.id = uid();
-  e.players = data.map(([name, school, level]) => ({ id: uid(), name, school, level }));
+  e.players = data.map(([name, school, level], i) => ({ id: uid(), name, school, level: level * 2 - 1 + (i % 2) }));
   autoAssign(e);
   // 最初のリーグに少しだけ結果を入れておく
   const rr = roundRobin(e.leagues[0].playerIds);
@@ -2716,10 +3175,30 @@ function makeDoublesSample() {
   ];
   const e = normalize({ name: "見本:ダブルス リーグ戦→決勝トーナメント(練習用)", type: "doubles", mode: "both", games: 3, groupSize: 4, splitMethod: "balanced" });
   e.id = uid();
-  e.players = data.map(([name, name2, school, level]) => ({ id: uid(), name, name2, school, level }));
+  e.players = data.map(([name, name2, school, level], i) => ({ id: uid(), name, name2, school, level: level * 2 - 1 + (i % 2) }));
   autoAssign(e);
   const [a, b] = roundRobin(e.leagues[0].playerIds)[0].pairs[0];
   [[21, 17], [19, 21], [21, 14]].forEach(([x, y], g) => { setScore(e, a, b, g, 0, x); setScore(e, a, b, g, 1, y); });
+  return e;
+}
+
+function makePracticeSample() {
+  const data = [
+    // 見本の選手はすべて架空の人物
+    ["桐生 蓮", "桜ヶ丘高", 9], ["早瀬 葵", "港北高", 9], ["柏木 湊", "緑川高", 8], ["鳴海 陽菜", "桜ヶ丘高", 8],
+    ["朝倉 大翔", "青葉高", 7], ["白石 結衣", "港北高", 7], ["水城 悠真", "緑川高", 6], ["宮坂 凛", "青葉高", 6],
+    ["篠原 颯太", "桜ヶ丘高", 5], ["一ノ瀬 美咲", "港北高", 5], ["九条 樹", "緑川高", 4], ["真柴 芽依", "青葉高", 4],
+    ["瀬戸 律", "桜ヶ丘高", 3], ["日向 紬", "港北高", 3], ["高峰 蒼", "緑川高", 2], ["藤代 澪", "青葉高", 2],
+  ];
+  const e = normalize({ name: "見本:合同練習試合(練習用)", mode: "practice", games: 1 });
+  e.id = uid();
+  e.players = data.map(([name, school, level]) => ({ id: uid(), name, name2: "", school, level }));
+  const plan = [["singles", 1], ["singles", 1], ["doubles", 2]];
+  plan.forEach(([kind, day], i) => {
+    const g = genRound(e, kind, [], e.practice.rounds.length);
+    e.practice.rounds.push({ id: uid(), day, kind, rest: [], matches: g.matches });
+    g.matches.forEach((m, k) => { m.win = (k + i) % 3 === 0 ? "b" : "a"; });
+  });
   return e;
 }
 
@@ -2734,11 +3213,50 @@ function newEvent(players, opts) {
 }
 function openEvent(id) {
   currentId = id;
-  Object.assign(ui, { view: "event", createMode: null, showSettings: false, exportOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
+  Object.assign(ui, { nextKind: null, nextDay: null, nextRest: [], view: "event", createMode: null, showSettings: false, exportOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
   window.scrollTo({ top: 0 });
 }
 
 /* ============ 操作 ============ */
+function pRoundById(e, id) { return e.practice.rounds.find((r) => r.id === id); }
+function pRegen(e, r) {
+  const g = genRound(e, r.kind, r.rest, e.practice.rounds.indexOf(r));
+  r.matches = g.matches;
+  commit(); render(); toast("組み直しました");
+}
+/* ドラッグで入れ替え。参照は「回転id|m|試合|側|位置」(枠)、「回転id|b|選手id」(試合に入っていない人)、「回転id|bench」(その置き場) */
+function pDrop(fromRef, toRef) {
+  const e = ev(), f = fromRef.split("|"), t = toRef.split("|");
+  const r = pRoundById(e, f[0]);
+  if (!r || f[0] !== t[0]) { toast("別の回転には動かせません"); return; }
+  const slotOf = (x) => { const m = r.matches[Number(x[2])]; return m && { get: () => m[x[3]][Number(x[4])], set: (v) => { m[x[3]][Number(x[4])] = v; } }; };
+  const pm = playerMap(e);
+  let msg = "";
+  if (f[1] === "m") {
+    const A = slotOf(f);
+    if (!A) return;
+    if (t[1] === "m") {
+      const B = slotOf(t);
+      if (!B || (f[2] === t[2] && f[3] === t[3] && f[4] === t[4])) return;
+      const x = A.get(), y = B.get();
+      A.set(y); B.set(x);
+      msg = `${pName(pm, x)} と ${y ? pName(pm, y) : "空き"} を入れ替えました`;
+    } else {
+      const x = A.get();
+      A.set(null);
+      msg = `${pName(pm, x)} を試合から外しました`;
+    }
+  } else if (f[1] === "b") {
+    if (t[1] !== "m") return;
+    const B = slotOf(t);
+    if (!B) return;
+    const old = B.get();
+    B.set(f[2]);
+    r.rest = r.rest.filter((x) => x !== f[2]);
+    msg = `${pName(pm, f[2])} を入れました${old ? `(${pName(pm, old)} は試合から外れました)` : ""}`;
+  }
+  commit(); render(); toast(msg);
+}
 app.addEventListener("click", (evt) => {
   const btn = evt.target.closest("[data-action]");
   if (!btn) return;
@@ -2795,13 +3313,13 @@ app.addEventListener("click", (evt) => {
       const type = (document.querySelector('input[name="c-type"]:checked') || {}).value;
       const d = new Date();
       const name = document.getElementById("c-name").value.trim() || `${MODES[mode][0]} ${d.getMonth() + 1}/${d.getDate()}`;
-      newEvent(null, { name, type, mode, splitMethod: mode === "both" ? "balanced" : "level" });
-      toast(`「${name}」を作りました。まず${unit(ev())}を入れてください`);
+      newEvent(null, { name, type: mode === "practice" ? "singles" : type, mode, splitMethod: mode === "both" ? "balanced" : "level", practice: mode === "practice" ? { kind: type === "doubles" ? "doubles" : "singles" } : null });
+      toast(`「${name}」を作りました。まず${mode === "practice" ? "選手" : unit(ev())}を入れてください`);
       break;
     }
     case "toggle-settings": ui.showSettings = !ui.showSettings; ui.confirm = null; render(); break;
     case "dup-event": newEvent(e.players); toast(`${unit(e)}をコピーして新しく作りました`); break;
-    case "sample": { const s = makeSample(btn.dataset.type); events[s.id] = s; openEvent(s.id); ui.tab = "matches"; Store.save(s); render(); break; }
+    case "sample": { const s = makeSample(btn.dataset.type); events[s.id] = s; openEvent(s.id); ui.tab = s.mode === "practice" ? "rounds" : "matches"; Store.save(s); render(); break; }
     case "ask-del-event": ui.confirm = "del-event"; render(); break;
     case "del-event": { const id = e.id; delete events[id]; currentId = null; Object.assign(ui, { view: "home", confirm: null, showSettings: false }); Store.remove(id); render(); toast("削除しました"); break; }
     case "cancel": ui.confirm = null; render(); break;
@@ -2819,6 +3337,10 @@ app.addEventListener("click", (evt) => {
       const id = btn.dataset.id;
       e.players = e.players.filter((p) => p.id !== id);
       e.leagues.forEach((l) => (l.playerIds = l.playerIds.filter((x) => x !== id)));
+      e.practice.rounds.forEach((r) => {
+        r.rest = r.rest.filter((x) => x !== id);
+        r.matches.forEach((m) => { m.a = m.a.map((x) => (x === id ? null : x)); m.b = m.b.map((x) => (x === id ? null : x)); });
+      });
       commit(); render(); break;
     }
     case "gsize": e.groupSize = clamp(Number(btn.dataset.k), 3, 8); commit(); render(); break;
@@ -2835,6 +3357,54 @@ app.addEventListener("click", (evt) => {
     case "x-rank": copyTables([standingsBlock(e)], "順位表"); break;
     case "x-lmatch": copyTables([leagueMatchesBlock(e)], "試合結果の一覧"); break;
     case "x-bracket": copyTables(bracketBlocks(e), "トーナメントの結果"); break;
+    case "x-pmatches": copyTables([pMatchesBlock(e)], "回転ごとの対戦と結果"); break;
+    case "x-pstats": copyTables([pStatsBlock(e)], "成績"); break;
+    case "psort": ui.pSort = btn.dataset.sort; render(); break;
+    case "pqwin": {
+      const r = pRoundById(e, btn.dataset.r), m = r && r.matches.find((x) => x.id === btn.dataset.m);
+      if (!m) break;
+      const o = pOutcome(e, m), w = btn.dataset.w;
+      if (o.winner === w && !o.quick) { toast("点数で勝ちが決まっています。変えるときは点数を消してください"); break; }
+      const hadScores = !isEmptyGames(m.g);
+      m.win = o.winner === w && o.quick ? null : w;
+      if (m.win) m.g = [];
+      commit(); render();
+      if (hadScores && m.win) toast("点数を消して、勝ち負けだけにしました");
+      break;
+    }
+    case "padd": {
+      const p = e.practice, kind = ui.nextKind || p.kind;
+      const rest = (ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id));
+      const day = ui.nextDay || (p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1);
+      const g = genRound(e, kind, rest, p.rounds.length);
+      if (!g.matches.length) { toast(`休みを除いて ${kind === "doubles" ? 4 : 2} 人以上必要です`); break; }
+      p.rounds.push({ id: uid(), day, kind, rest, matches: g.matches });
+      p.kind = kind; ui.nextRest = []; ui.nextDay = day; ui.confirm = null;
+      commit(); render();
+      toast(`第${p.rounds.length}回転を作りました${g.bench.length ? `(${g.bench.length}人は待機)` : ""}`);
+      { const c = document.getElementById(`pr-${p.rounds[p.rounds.length - 1].id}`); if (c) c.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      break;
+    }
+    case "pnext-rest": {
+      const id = btn.dataset.id;
+      ui.nextRest = ui.nextRest.includes(id) ? ui.nextRest.filter((x) => x !== id) : ui.nextRest.concat(id);
+      btn.classList.toggle("on", ui.nextRest.includes(id)); btn.setAttribute("aria-pressed", String(ui.nextRest.includes(id)));
+      break;
+    }
+    case "prest": {
+      const r = pRoundById(e, btn.dataset.r); if (!r) break;
+      const id = btn.dataset.id;
+      r.rest = r.rest.includes(id) ? r.rest.filter((x) => x !== id) : r.rest.concat(id);
+      commit(); render(); break;
+    }
+    case "preg": {
+      const r = pRoundById(e, btn.dataset.r); if (!r) break;
+      if (r.matches.some((m) => m.win || !isEmptyGames(m.g))) { ui.confirm = `preg:${r.id}`; render(); break; }
+      pRegen(e, r); break;
+    }
+    case "preg-yes": { const r = pRoundById(e, btn.dataset.r); ui.confirm = null; if (r) pRegen(e, r); break; }
+    case "pdel": ui.confirm = `pdel:${btn.dataset.r}`; render(); break;
+    case "pdel-yes": e.practice.rounds = e.practice.rounds.filter((r) => r.id !== btn.dataset.r); ui.confirm = null; commit(); render(); toast("回転を削除しました"); break;
     case "print-bracket":
       fillPrint();
       try { window.print(); } catch (err) { toast("印刷の画面を開けませんでした"); }
@@ -2890,6 +3460,11 @@ app.addEventListener("submit", (evt) => {
   const n2 = document.getElementById("new-name2");
   const name2 = n2 ? n2.value.trim() : "";
   if (!name) return;
+  const norm = (x) => String(x || "").replace(/[\s　]+/g, "");
+  if (e.players.some((p) => norm(p.name) === norm(name) && norm(p.name2) === norm(name2) && norm(p.school) === norm(school))) {
+    toast(`エラー:${name2 ? `${name}・${name2}` : name}(${school || "学校なし"})はもう登録されています`);
+    return;
+  }
   e.players.push({ id: uid(), name, name2, school, level });
   commit(); render();
   const s = document.getElementById("new-school"); if (s) s.value = school;
@@ -2931,7 +3506,12 @@ app.addEventListener("change", (evt) => {
       else delete e.seeds[id];
       ui.seedDirty = !!e.bracket; commit(); render(); break;
     }
-    case "ev-mode": e.mode = MODES[t.value] ? t.value : "league"; commit(); render(); break;
+    case "ev-mode": e.mode = MODES[t.value] ? t.value : "league"; if (e.mode === "practice") e.type = "singles"; commit(); render(); break;
+    case "p-tol": e.practice.tol = clamp(Number(t.value), 0, 9); commit(); render(); break;
+    case "p-avoid": e.practice.avoidSchool = t.checked; commit(); break;
+    case "p-day": { const r = pRoundById(e, t.dataset.r); if (r) { r.day = clamp(Number(t.value), 1, 30); commit(); render(); } break; }
+    case "pnext-day": ui.nextDay = Number(t.value); break;
+    case "pnext-kind": ui.nextKind = t.value === "doubles" ? "doubles" : "singles"; break;
     case "t-top": e.tTop = clamp(Number(t.value), 1, 4); commit(); break;
     case "t-third": e.tThird = t.checked; commit(); render(); break;
     case "ev-type": e.type = t.value === "doubles" ? "doubles" : "singles"; commit(); render(); break;
@@ -2970,6 +3550,8 @@ function onDrop(kind, fromId, toId) {
     [s[i], s[j]] = [s[j], s[i]];
     commit(); render();
     toast(`${pname(e, pm[s[j]])} と ${pname(e, pm[s[i]])} を入れ替えました`);
+  } else if (kind === "pslot") {
+    pDrop(fromId, toId);
   } else if (kind === "member") {
     // リーグ分け:選手を別のリーグへ(-1 はどこにも入れない)
     const to = Number(toId);
@@ -3007,18 +3589,32 @@ addEventListener("pointermove", (evt) => {
     document.body.classList.add("is-dragging");
   }
   evt.preventDefault();
+  drag.cx = evt.clientX; drag.cy = evt.clientY;
   drag.ghost.style.transform = `translate(${evt.clientX + 12}px, ${evt.clientY + 12}px)`;
-  const t = dragTargetAt(evt.clientX, evt.clientY, drag.kind);
+  updateDropTarget();
+  if (!drag.raf) drag.raf = requestAnimationFrame(autoScroll);
+}, { passive: false });
+function updateDropTarget() {
+  const t = dragTargetAt(drag.cx, drag.cy, drag.kind);
   if (t !== drag.over) {
     if (drag.over) drag.over.classList.remove("drop-over");
     drag.over = t;
     if (t) t.classList.add("drop-over");
   }
-}, { passive: false });
+}
+/* 画面の上下の端まで持っていくと、ドラッグしたままスクロールする(長い対戦表の下の置き場へ運べるように) */
+function autoScroll() {
+  if (!drag || !drag.on) return;
+  const edge = 80, y = drag.cy;
+  const v = y < edge ? -Math.ceil((edge - y) / 4) : y > innerHeight - edge ? Math.ceil((y - (innerHeight - edge)) / 4) : 0;
+  if (v) { scrollBy(0, v); updateDropTarget(); }
+  drag.raf = requestAnimationFrame(autoScroll);
+}
 function endDrag(evt, cancel) {
   if (!drag) return;
   const d = drag;
   drag = null;
+  if (d.raf) cancelAnimationFrame(d.raf);
   if (d.ghost) d.ghost.remove();
   d.el.classList.remove("drag-src");
   if (d.over) d.over.classList.remove("drop-over");
@@ -3048,11 +3644,23 @@ app.addEventListener("input", (evt) => {
     if (box) box.innerHTML = importPreviewHTML(ev());
     return;
   }
-  if (t.dataset.input !== "score" && t.dataset.input !== "bscore") return;
+  if (t.dataset.input !== "score" && t.dataset.input !== "bscore" && t.dataset.input !== "pscore") return;
   const clean = t.value.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)).replace(/[^0-9]/g, "").slice(0, 2);
   if (clean !== t.value) t.value = clean;
   const e = ev();
   const val = clean === "" ? null : clamp(parseInt(clean, 10), 0, 99);
+  if (t.dataset.input === "pscore") {
+    const r = pRoundById(e, t.dataset.r), m = r && r.matches.find((x) => x.id === t.dataset.m);
+    if (!m) return;
+    const gi = Number(t.dataset.g);
+    while (m.g.length <= gi) m.g.push([null, null]);
+    m.g[gi][Number(t.dataset.s)] = val;
+    m.win = null;
+    if (isEmptyGames(m.g)) m.g = [];
+    commit();
+    refreshPMatch(e, m);
+    return;
+  }
   if (t.dataset.input === "bscore") {
     const n = findNode(bracketState(e), t.dataset.mid);
     if (!n) return;
