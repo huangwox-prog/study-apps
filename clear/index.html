@@ -802,6 +802,9 @@ details.more[open] summary { margin-bottom: 12px; }
 .sheet .sh-g i { font-style: normal; color: var(--text-tertiary); padding: 0 4px; }
 .sheet .sh-round td { text-align: left; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
 .preg-row { padding: 4px 2px 0; }
+.chip-dup { background: color-mix(in srgb, var(--lg-b) 14%, transparent); color: var(--lg-b); font-weight: 750; }
+.pmatch.has-dup { border: 2px solid color-mix(in srgb, var(--lg-b) 50%, transparent); }
+.sheet .sh-dup { display: block; font-size: 0.66rem; font-weight: 800; color: var(--lg-b); }
 .btn-lg { padding: 13px 28px; font-size: 1.02rem; }
 .pdelta { display: block; font-size: 0.76rem; font-weight: 800; }
 .pdelta.up { color: var(--success); }
@@ -1438,21 +1441,24 @@ function pHistory(e, upto) {
   return { faced, partner, games };
 }
 /* 1試合の「悪さ」。小さいほどよい組み合わせ(ランク差・同じ相手・同じ相方・同じ学校) */
+/* 優先の順:①ランク差の設定を守る ②なるべく他校と当てる ③前と同じ相手(かぶり)を避ける。
+   先生の希望で、かぶりがあってもいいから他校と当てる(かぶった試合には表示が出る) */
 function pMatchCost(H, tol, avoid, A, B, fixed, samePair) {
   let c = 0;
   if (fixed) {
     // 固定ペアは、ペアの平均ランクどうしで比べる(ペアの中の差は変えられないので)
     const d = Math.abs(pAvg(A) - pAvg(B));
-    c += d * 6 + (d > tol ? (d - tol) * 80 : 0);
+    c += d * 6 + (d > tol ? (d - tol) * 400 : 0);
   }
   for (const x of A) for (const y of B) {
     const d = Math.abs(x.level - y.level);
-    if (!fixed) c += d * 1.5 + (d > tol ? (d - tol) * 40 : 0);
-    // 前と同じ相手:シングルスは強く避ける。ダブルスは相手が2人いるので、1人ずつは軽めに
+    const one = A.length === 1; // ダブルスは相手が2人いるので、1人ずつの重さは小さめ
+    if (!fixed) c += d * 1.5 + (d > tol ? (d - tol) * (one ? 300 : 150) : 0);
+    // 同じ学校どうし(他校と当てたいので、かぶりより重い)
+    if (avoid && x.school && x.school === y.school) c += one ? 150 : 50;
+    // 前と同じ相手(かぶり)
     const f = H.faced[keyOf(x.id, y.id)];
-    if (f) c += f.length * (A.length === 1 ? 120 : 40);
-    // 同じ学校どうし:シングルスはランク差1つぶんくらい、ダブルスは相手1人ごとに少しずつ重くする
-    if (avoid && x.school && x.school === y.school) c += A.length === 1 ? 30 : 20;
+    if (f) c += f.length * (one ? 100 : 30);
   }
   if (A.length === 2) {
     c += Math.abs(A[0].level + A[1].level - B[0].level - B[1].level) * 3;
@@ -1593,7 +1599,7 @@ function pIssues(e, ri) {
         A.forEach((x) => B.forEach((y) => { if (pm[x] && pm[y] && pm[x].school.trim() && pm[x].school.trim() === pm[y].school.trim()) same.push(`${pName(pm, x)} と ${pName(pm, y)}`); }));
         if (same.length) out.push({ lv: "info", t: `同じ学校どうし:${same.join("、")}` });
       }
-      A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "warn", t: `${pName(pm, x)} と ${pName(pm, y)} は第${f[0]}回転でも対戦` }); }));
+      A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "dup", t: `かぶり:${pName(pm, x)} と ${pName(pm, y)} は第${f.join("・第")}回転でも対戦` }); }));
     }
     if (e.practice.samePair) [A, B].forEach((S) => { if (S.length === 2 && pm[S[0]] && pm[S[1]] && pm[S[0]].school.trim() !== pm[S[1]].school.trim()) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は別の学校どうしのペア` }); });
     if (!r.fixed) [A, B].forEach((S) => { if (S.length === 2) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は第${f[0]}回転でもペア` }); } });
@@ -2449,8 +2455,9 @@ function pMatchHTML(e, r, mi, iss, cum) {
   const side = (S, key) => `<div class="pm-side ${key} ${o.winner === key ? "win" : ""}">
       <div class="pm-slots">${S.map((pid, pos) => pSlotHTML(e, r, mi, key, pos, pid, cum, iss.dup)).join("")}</div>
       ${quickWinHTML(o, key, `data-action="pqwin" ${attrs}`)}</div>`;
-  const chips = iss.per[mi].map((x) => `<span class="chip ${x.lv === "err" ? "chip-err" : x.lv === "warn" ? "chip-warn" : ""}">${x.lv === "err" ? "エラー:" : ""}${esc(x.t)}</span>`).join("");
-  return `<div class="pmatch ${o.winner ? "is-done" : ""}" id="pm-${m.id}">
+  const hasDup = iss.per[mi].some((x) => x.lv === "dup");
+  const chips = iss.per[mi].map((x) => `<span class="chip ${x.lv === "err" ? "chip-err" : x.lv === "warn" ? "chip-warn" : x.lv === "dup" ? "chip-dup" : ""}">${x.lv === "err" ? "エラー:" : ""}${esc(x.t)}</span>`).join("");
+  return `<div class="pmatch ${o.winner ? "is-done" : ""} ${hasDup ? "has-dup" : ""}" id="pm-${m.id}">
     <div class="pm-num num">${mi + 1}</div>
     ${side(m.a, "a")}
     <div class="m-scores">${inputs}<span class="pm-st">${pStatusChip(e, m, o)}</span></div>
@@ -2495,7 +2502,7 @@ function pRoundHTML(e, ri, cumAll) {
   if (!r.matches.length) msgs.push(`<div class="confirm"><span>休みを除いて ${needMore} 人以上いないと試合が組めません。</span></div>`);
   return `<section class="card pround" id="pr-${r.id}">
     <div class="card-head">
-      <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div>
+      <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了${(() => { const n = iss.per.filter((x) => x.some((y) => y.lv === "dup")).length; return n ? ` <span class="chip chip-dup">かぶり ${n}試合</span>` : ""; })()}</p></div></div>
       <div class="row">
         <label class="faint">日 <select class="select" data-change="p-day" data-r="${r.id}" aria-label="何日目の回転か">${dayOpts}</select></label>
         <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">組み直す(シャッフル)</button>
@@ -2635,7 +2642,7 @@ function pSheetData(e) {
   const sel = ui.pSheetRound == null || ui.pSheetRound === "all" ? "all" : Number(ui.pSheetRound);
   const list = sel === "all" ? rounds.map((r, i) => [r, i]) : rounds[sel] ? [[rounds[sel], sel]] : [];
   const need = e.games === 1 ? 1 : 2;
-  const rows = [];
+  const rows = [], hist = {};
   list.forEach(([r, ri]) => r.matches.forEach((m, mi) => {
     const o = pOutcome(e, m);
     const games = (m.g || []).slice(0, e.games);
@@ -2647,7 +2654,9 @@ function pSheetData(e) {
       name: ids.map((id) => (id && pm[id] ? pm[id].name || "(名前なし)" : "")),
       school: [...new Set(ids.map((id) => (id && pm[id] ? pm[id].school : "")).filter(Boolean))],
     });
-    rows.push({ r, ri, num: mi + 1, A: side(m.a), B: side(m.b), games, o, gA, gB, shown: o.started || !!o.winner });
+    const H = hist[ri] || (hist[ri] = pHistory(e, ri));
+    const dup = m.a.some((x) => x && m.b.some((y) => y && H.faced[keyOf(x, y)]));
+    rows.push({ r, ri, num: mi + 1, A: side(m.a), B: side(m.b), games, o, gA, gB, dup, shown: o.started || !!o.winner });
   }));
   return { rows, sel };
 }
@@ -2669,7 +2678,7 @@ function pSheetHTML(e) {
     }
     const winA = x.o.winner === "a", winB = x.o.winner === "b";
     return `${head}<tr>
-      <td class="num">${x.num}</td><td class="num">${x.ri + 1}</td>
+      <td class="num">${x.num}${x.dup ? `<small class="sh-dup">かぶり</small>` : ""}</td><td class="num">${x.ri + 1}</td>
       <td class="sh-id num">${stack(x.A.no)}</td><td class="num">${stack(x.A.rank)}</td>
       ${nameCell(x.A)}
       <td class="sh-gc num ${winA ? "sh-win" : ""}">${x.shown ? x.gA : ""}</td>
