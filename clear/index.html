@@ -748,6 +748,15 @@ details.more[open] summary { margin-bottom: 12px; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   .shuttle-path { stroke-dashoffset: 0; }
 }
+/* 印刷用の組み合わせ表(A4 縦)。印刷するときだけ、これ以外を隠す */
+#print-area { display: none; }
+@media print {
+  @page { size: A4 portrait; margin: 8mm; }
+  body.has-print { background: #fff !important; }
+  body.has-print > *:not(#print-area) { display: none !important; }
+  body.has-print #print-area { display: block; }
+  #print-area svg { display: block; width: 100%; height: auto; max-height: 280mm; }
+}
 </style>
 </head>
 <body>
@@ -755,6 +764,7 @@ details.more[open] summary { margin-bottom: 12px; }
 <div class="bg-ring" aria-hidden="true"></div>
 <div id="app"><div class="loading">読み込み中…</div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="print-area" aria-hidden="true"></div>
 
 <script>
 (() => {
@@ -2019,7 +2029,8 @@ function bracketHTML(e) {
   return settings + `
   <section class="card">
     <div class="card-head"><div><h2>トーナメント表</h2><p class="faint">四角の数字が試合番号。押すとスコアを入れられます。勝ち上がった線が色つきになります。<b>名前をドラッグして別の名前の上で離すと、場所を入れ替えられます。</b></p></div>
-      <button class="btn btn-secondary btn-sm" data-action="x-bracket">Excel にコピー</button></div>
+      <div class="row"><button class="btn btn-secondary btn-sm" data-action="print-bracket">印刷する</button>
+      <button class="btn btn-secondary btn-sm" data-action="x-bracket">Excel にコピー</button></div></div>
     <div class="ranks" id="branks">${ranksHTML(e, st)}</div>
     <div class="bracket-wrap"><div id="bracket-svg">${bracketSVG(e, st)}</div></div>
   </section>
@@ -2186,6 +2197,101 @@ function bracketSVG(e, st) {
   }
   return `<svg class="bracket-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="トーナメント表">${out}</svg>`;
 }
+
+/* 印刷用の組み合わせ表(試合前に配る白紙の表)。A4 縦、左半分と右半分から中央の決勝へ向かう形 */
+function printSheetSVG(e, st) {
+  const pm = playerMap(e);
+  const { N, K, rounds, slots } = st;
+  const dbl = isDbl(e);
+  const W = 720, H = 1018, cx = W / 2, half = N / 2;
+  const top = 92, bottom = H - (st.third ? 110 : 30);
+  const rowsOf = (h) => slots.slice(h * half, (h + 1) * half).filter(Boolean).length;
+  const maxRows = Math.max(rowsOf(0), rowsOf(1), 1);
+  const rowH = Math.min(100, (bottom - top) / maxRows);
+  const lines = dbl ? 3 : 2;
+  const fs = Math.min(15, rowH / (lines * 1.25));
+  const boxW = dbl ? 150 : 136, nameX = 22;
+  const lx = nameX + boxW + 26; // 線の始まり(名前と番号の右)
+  const colW = K >= 2 ? (cx - 18 - lx) / (K - 1) : 0;
+  const X = (h, r) => (h === 0 ? lx + r * colW : W - (lx + r * colW));
+  // 名前は枠の幅いっぱいに均等に広げる(組み合わせ表でよく使う均等割付)
+  const spread = (s, x, y, size, weight) => {
+    const len = [...s].length;
+    const fit = len > 1 ? ` textLength="${boxW}" lengthAdjust="${len * size <= boxW ? "spacing" : "spacingAndGlyphs"}"` : "";
+    const ax = len > 1 ? x : x + boxW / 2;
+    return `<text x="${ax}" y="${y}" font-size="${size}" font-weight="${weight}"${len > 1 ? "" : ` text-anchor="middle"`}${fit}>${esc(s)}</text>`;
+  };
+  const leafY = {};
+  let out = "";
+  let no = 1;
+  [0, 1].forEach((h) => {
+    let k = 0;
+    for (let s = h * half; s < (h + 1) * half; s++) {
+      const p = slots[s] && pm[slots[s]];
+      if (!p) continue;
+      const y = top + rowH * (k++ + 0.5);
+      leafY[s] = y;
+      const texts = dbl ? [p.name || "", p.name2 || ""] : [p.name || ""];
+      if (p.school) texts.push(`(${p.school})`);
+      const tx = h === 0 ? nameX : W - nameX - boxW;
+      texts.forEach((t, i) => {
+        const ty = y + (i - (texts.length - 1) / 2) * fs * 1.2 + fs * 0.36;
+        out += spread(t, tx, ty, i === texts.length - 1 && p.school ? fs * 0.92 : fs, i === texts.length - 1 && p.school ? 400 : 700);
+      });
+      out += `<text x="${h === 0 ? lx - 6 : W - lx + 6}" y="${y + fs * 0.32}" font-size="${fs * 0.85}" text-anchor="${h === 0 ? "end" : "start"}">${no++}</text>`;
+    }
+  });
+  const yOf = {};
+  rounds.forEach((nodes, ri) => nodes.forEach((n) => {
+    const ys = ri === 0 ? [leafY[2 * n.i], leafY[2 * n.i + 1]] : [yOf[rounds[ri - 1][2 * n.i].mid], yOf[rounds[ri - 1][2 * n.i + 1].mid]];
+    const ok = ys.filter((v) => v != null);
+    n.childY = ys;
+    yOf[n.mid] = ok.length === 2 ? (ok[0] + ok[1]) / 2 : ok.length ? ok[0] : null;
+  }));
+  const numFs = Math.max(8, Math.min(11, fs * 0.75));
+  for (let ri = 0; ri < K - 1; ri++) {
+    const per = rounds[ri].length;
+    rounds[ri].forEach((n) => {
+      const y = yOf[n.mid];
+      if (y == null) return;
+      const h = n.i < per / 2 ? 0 : 1;
+      n.childY.forEach((cy) => { if (cy != null) out += `<path d="M${X(h, ri)} ${cy}H${X(h, ri + 1)}V${y}"/>`; });
+      if (n.real) out += `<text x="${X(h, ri + 1) + (h === 0 ? -3 : 3)}" y="${y + numFs * 0.35}" font-size="${numFs}" text-anchor="${h === 0 ? "end" : "start"}">${n.num}</text>`;
+    });
+  }
+  // 決勝: 左右の準決勝から中央へ。中央の縦の短い線の下に試合番号
+  const f = st.final;
+  const [yl, yr] = f.childY;
+  const fy = yl != null && yr != null ? (yl + yr) / 2 : yl != null ? yl : yr;
+  if (yl != null) out += `<path d="M${X(0, K - 1)} ${yl}${yl === fy ? "" : `H${cx - 12}V${fy}`}H${cx}"/>`;
+  if (yr != null) out += `<path d="M${X(1, K - 1)} ${yr}${yr === fy ? "" : `H${cx + 12}V${fy}`}H${cx}"/>`;
+  if (f.real) out += `<path d="M${cx} ${fy}V${fy - 12}"/><text x="${cx}" y="${fy + numFs + 3}" font-size="${numFs}" text-anchor="middle">${f.num}</text>`;
+  // 3位決定戦: 下の中央に小さな山形
+  const t = st.third;
+  if (t) {
+    const ty = Math.min(H - 62, top + maxRows * rowH + 70);
+    out += `<text x="${cx}" y="${ty - 22}" font-size="${numFs + 1}" text-anchor="middle">3位決定戦</text>
+      <path d="M${cx - 28} ${ty + 26}V${ty}H${cx + 28}V${ty + 26}M${cx} ${ty}V${ty - 10}"/>
+      <text x="${cx}" y="${ty + numFs + 3}" font-size="${numFs}" text-anchor="middle">${t.num}</text>`;
+  }
+  const kind = e.mode === "both" ? "決勝トーナメント" : "トーナメント";
+  const sub = `${kind}・${dbl ? "ダブルス" : "シングルス"}(${count(e, Object.keys(leafY).length)})　${e.date || ""}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="'Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif" fill="#000">
+    <text x="${cx}" y="38" font-size="22" font-weight="700" text-anchor="middle">${esc(e.name)}</text>
+    <text x="${cx}" y="62" font-size="12" text-anchor="middle">${esc(sub)}</text>
+    <g fill="none" stroke="#000" stroke-width="1.3">${out.match(/<path[^>]*>/g)?.join("") || ""}</g>
+    ${out.replace(/<path[^>]*>/g, "")}</svg>`;
+}
+/* 印刷の直前に、開いているトーナメントの組み合わせ表を用意する。なければ普段の画面をそのまま印刷 */
+function fillPrint() {
+  const area = document.getElementById("print-area");
+  const e = ev();
+  const st = e && ui.view !== "home" && ui.tab === "bracket" ? bracketState(e) : null;
+  area.innerHTML = st ? printSheetSVG(e, st) : "";
+  document.body.classList.toggle("has-print", !!st);
+}
+addEventListener("beforeprint", fillPrint);
+addEventListener("afterprint", () => document.body.classList.remove("has-print"));
 
 function sideName(e, n, side) {
   const id = side === 0 ? n.a : n.b;
@@ -2729,6 +2835,10 @@ app.addEventListener("click", (evt) => {
     case "x-rank": copyTables([standingsBlock(e)], "順位表"); break;
     case "x-lmatch": copyTables([leagueMatchesBlock(e)], "試合結果の一覧"); break;
     case "x-bracket": copyTables(bracketBlocks(e), "トーナメントの結果"); break;
+    case "print-bracket":
+      fillPrint();
+      try { window.print(); } catch (err) { toast("印刷の画面を開けませんでした"); }
+      break;
     case "close-copy": ui.copyText = null; render(); break;
     case "build":
       if (e.bracket) { ui.confirm = "rebuild"; render(); break; }
