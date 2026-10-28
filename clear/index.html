@@ -2493,7 +2493,14 @@ function practiceHTML(e) {
       <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
     </div>
   </section>
-  ${p.rounds.length ? p.rounds.map((_, ri) => pRoundHTML(e, ri, cumAll)).join("") : `<section class="card"><p class="muted">まだ回転がありません。上の「第1回転を作る」を押してください。</p></section>`}`;
+  ${p.rounds.length ? p.rounds.map((_, ri) => pRoundHTML(e, ri, cumAll)).join("") : `<section class="card"><p class="muted">まだ回転がありません。上の「第1回転を作る」を押してください。</p></section>`}
+  ${p.rounds.length ? `<section class="card pnext-bottom">
+    <div class="row">
+      <button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>
+      <span class="faint">${P_KIND[kind]}${kind === "doubles" ? (p.pairMode === "fixed" ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${day}日目${nextRest.length ? ` · ${nextRest.length}人休み` : ""}</span>
+      <button class="btn btn-ghost btn-sm" data-action="pnext-top">形式・日・休む人を変える</button>
+    </div>
+  </section>` : ""}`;
 }
 
 /* 固定ペアの編集:名前を別の名前の上に落とすと、その2人がペアになる */
@@ -3594,6 +3601,7 @@ app.addEventListener("click", (evt) => {
       { const c = document.getElementById(`pr-${p.rounds[p.rounds.length - 1].id}`); if (c) c.scrollIntoView({ block: "start", behavior: "smooth" }); }
       break;
     }
+    case "pnext-top": { const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
     case "pnext-rest": {
       const id = btn.dataset.id;
       ui.nextRest = ui.nextRest.includes(id) ? ui.nextRest.filter((x) => x !== id) : ui.nextRest.concat(id);
