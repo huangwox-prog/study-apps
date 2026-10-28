@@ -732,7 +732,22 @@ details.more[open] summary { margin-bottom: 12px; }
 .pm-num { font-weight: 800; color: var(--accent); font-size: 1.1rem; }
 .pm-side { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .pm-side.b { align-items: flex-end; text-align: right; }
-.pm-side.win .pname { color: var(--success); }
+.pm-side.win .pslot { background: var(--success-soft); }
+.sc-name { color: var(--lg, inherit); }
+.cell-input.sc-name { font-weight: 650; }
+.school-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.school-legend .chip { color: var(--lg); background: var(--lg-soft); font-weight: 750; }
+.sc-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lg); display: inline-block; }
+.rchip[class*="lg-"] { color: var(--lg); }
+.pairbox { margin-top: 14px; padding: 12px 14px; border-radius: 16px 16px 16px 28px; background: var(--surface-soft); border: 1px solid var(--border-soft); }
+.pair-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.pairchip { display: inline-flex; align-items: center; gap: 2px; padding: 4px 4px 4px 6px; border-radius: 12px 12px 12px 20px; background: var(--surface-strong); border: 1px solid var(--border-soft); }
+.pairname { display: inline-flex; flex-direction: column; line-height: 1.25; padding: 4px 8px; border-radius: 10px; cursor: grab; touch-action: none; }
+.pairname:hover { background: var(--surface-soft); }
+.pairname.drag-src { opacity: 0.35; }
+[data-drop="pair"].drop-over { outline: 3px solid var(--accent); background: var(--accent-soft); }
+.pair-single { margin-top: 10px; }
+.pair-single .pair-list { margin-top: 6px; }
 .pm-side .qwin { align-self: flex-start; margin-left: 0; }
 .pm-side.b .qwin { align-self: flex-end; }
 .pm-slots { display: flex; flex-direction: column; gap: 4px; width: 100%; }
@@ -920,10 +935,17 @@ function normalize(raw) {
       tol: Number.isNaN(tol) ? 2 : clamp(tol, 0, 9),
       avoidSchool: pr.avoidSchool !== false,
       kind: pr.kind === "doubles" ? "doubles" : "singles",
+      // ダブルスのペア:rotate=回転ごとに組み替え / fixed=決めたペアのまま
+      pairMode: pr.pairMode === "fixed" ? "fixed" : "rotate",
+      pairs: (() => {
+        const used = new Set();
+        return (Array.isArray(pr.pairs) ? pr.pairs : []).map((x) => (Array.isArray(x) ? x.map(String) : []))
+          .filter(([a, b]) => a && b && a !== b && ids.has(a) && ids.has(b) && !used.has(a) && !used.has(b) && used.add(a) && used.add(b));
+      })(),
       rounds: (Array.isArray(pr.rounds) ? pr.rounds : []).filter((r) => r && typeof r === "object").map((r) => {
         const kind = r.kind === "doubles" ? "doubles" : "singles", n = kind === "doubles" ? 2 : 1;
         return {
-          id: String(r.id || uid()), day: clamp(parseInt(r.day, 10) || 1, 1, 30), kind,
+          id: String(r.id || uid()), day: clamp(parseInt(r.day, 10) || 1, 1, 30), kind, fixed: kind === "doubles" && !!r.fixed,
           rest: [...new Set((Array.isArray(r.rest) ? r.rest : []).map(String).filter((id) => ids.has(id)))],
           matches: (Array.isArray(r.matches) ? r.matches : []).filter((m) => m && typeof m === "object").map((m) => ({
             id: String(m.id || uid()), a: side(m.a, n), b: side(m.b, n),
@@ -1342,6 +1364,14 @@ function totals(e) {
 const P_KIND = { singles: "シングルス", doubles: "ダブルス" };
 function pOutcome(e, m) { return outcomeOf(e, (m.g || []).slice(0, e.games), "a", "b", null, m.win); }
 function pPlaced(r) { const out = []; r.matches.forEach((m) => m.a.concat(m.b).forEach((x) => x && out.push(x))); return out; }
+function tolLabel(k) { return k === 0 ? "同じランクだけ" : `前後${k}まで`; }
+/* 学校ごとの色。学校名の50音順に、リーグと同じ8色を順に割り当てる */
+function schoolColors(e) {
+  const list = [...new Set(e.players.map((p) => p.school.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ja"));
+  const m = {};
+  list.forEach((s, i) => (m[s] = `lg-${i % 8}`));
+  return { cls: (school) => m[String(school || "").trim()] || "", list };
+}
 function pName(pm, id) { return id && pm[id] ? pm[id].name || "(名前なし)" : "—"; }
 /* ri より前の回転で、だれとだれが対戦・ペアになったか、何試合入ったか */
 function pHistory(e, upto) {
@@ -1357,18 +1387,25 @@ function pHistory(e, upto) {
   return { faced, partner, games };
 }
 /* 1試合の「悪さ」。小さいほどよい組み合わせ(ランク差・同じ相手・同じ相方・同じ学校) */
-function pMatchCost(H, tol, avoid, A, B) {
+function pMatchCost(H, tol, avoid, A, B, fixed) {
   let c = 0;
+  if (fixed) {
+    // 固定ペアは、ペアの平均ランクどうしで比べる(ペアの中の差は変えられないので)
+    const d = Math.abs(pAvg(A) - pAvg(B));
+    c += d * 6 + (d > tol ? (d - tol) * 80 : 0);
+  }
   for (const x of A) for (const y of B) {
     const d = Math.abs(x.level - y.level);
-    c += d * 1.5 + (d > tol ? (d - tol) * 40 : 0);
+    if (!fixed) c += d * 1.5 + (d > tol ? (d - tol) * 40 : 0);
+    // 前と同じ相手:シングルスは強く避ける。ダブルスは相手が2人いるので、1人ずつは軽めに
     const f = H.faced[keyOf(x.id, y.id)];
-    if (f) c += f.length * 120;
-    if (avoid && x.school && x.school === y.school) c += 10;
+    if (f) c += f.length * (A.length === 1 ? 120 : 40);
+    // 同じ学校どうし:シングルスはランク差1つぶんくらい、ダブルスは相手1人ごとに少しずつ重くする
+    if (avoid && x.school && x.school === y.school) c += A.length === 1 ? 30 : 20;
   }
   if (A.length === 2) {
     c += Math.abs(A[0].level + A[1].level - B[0].level - B[1].level) * 3;
-    [A, B].forEach(([p, q]) => {
+    if (!fixed) [A, B].forEach(([p, q]) => {
       const f = H.partner[keyOf(p.id, q.id)];
       if (f) c += f.length * 100;
       c += Math.abs(p.level - q.level) * 0.3;
@@ -1376,37 +1413,71 @@ function pMatchCost(H, tol, avoid, A, B) {
   }
   return c;
 }
-/* 1回転ぶんの組み合わせを作る。rest は休みの人。upto はこの回転の番号(これより前の回転を見て重ならないようにする) */
+function pAvg(S) { return S.reduce((s, p) => s + p.level, 0) / S.length; }
+/* 固定ペアのうち、2人とも今いる選手のもの */
+function pPairs(e) {
+  const ids = new Set(e.players.map((p) => p.id));
+  return e.practice.pairs.filter(([a, b]) => ids.has(a) && ids.has(b));
+}
+function pPartnerOf(e, id) { const pr = pPairs(e).find((x) => x.includes(id)); return pr ? (pr[0] === id ? pr[1] : pr[0]) : null; }
+/* 固定ペアを自動で作る:同じ学校の中で、ランクの近い人どうし。余った人は学校をまたいで組む */
+function pAutoPairs(e) {
+  const left = e.players.slice().sort((a, b) => b.level - a.level);
+  const pairs = [];
+  const take = (pred) => {
+    for (let i = 0; i < left.length; i++) {
+      const j = left.findIndex((q, k) => k > i && pred(left[i], q));
+      if (j > 0) { pairs.push([left[i].id, left[j].id]); left.splice(j, 1); left.splice(i, 1); i--; }
+    }
+  };
+  take((p, q) => p.school.trim() && p.school.trim() === q.school.trim());
+  take(() => true);
+  e.practice.pairs = pairs;
+}
+/* 1回転ぶんの組み合わせを作る。rest は休みの人。upto はこの回転の番号(これより前の回転を見て重ならないようにする)。
+   組む単位(unit)は、シングルスとダブルス(毎回組み替え)は1人、ダブルス(ペア固定)は2人 */
 function genRound(e, kind, rest, upto) {
   const H = pHistory(e, upto), tol = e.practice.tol, avoid = e.practice.avoidSchool;
-  const size = kind === "doubles" ? 4 : 2;
+  const fixed = kind === "doubles" && e.practice.pairMode === "fixed";
   const pool = e.players.filter((p) => !rest.includes(p.id));
-  const nm = Math.floor(pool.length / size), nSlot = nm * size;
-  if (nm < 1) return { matches: [], bench: pool.map((p) => p.id) };
-  const maxG = Math.max(0, ...pool.map((p) => H.games[p.id] || 0));
-  const sitCost = (p) => 25 * (maxG - (H.games[p.id] || 0)); // 試合数の少ない人は、待機にしない
+  const inPool = new Set(pool.map((p) => p.id));
+  const pm = playerMap(e);
+  let units, leftover = [];
+  if (fixed) {
+    units = pPairs(e).filter(([a, b]) => inPool.has(a) && inPool.has(b)).map(([a, b]) => [pm[a], pm[b]]);
+    const used = new Set(units.flat().map((p) => p.id));
+    leftover = pool.filter((p) => !used.has(p.id)).map((p) => p.id); // ペアがいない・相方が休み
+  } else units = pool.map((p) => [p]);
+  const size = fixed ? 2 : kind === "doubles" ? 4 : 2, half = size / 2;
+  const nm = Math.floor(units.length / size), nSlot = nm * size;
+  if (nm < 1) return { matches: [], bench: pool.map((p) => p.id), leftover };
+  const gOf = (p) => H.games[p.id] || 0;
+  const maxG = Math.max(0, ...pool.map(gOf));
+  const sitCost = (u) => u.reduce((s, p) => s + 25 * (maxG - gOf(p)), 0); // 試合数の少ない人は、待機にしない
+  const lvl = (u) => u.reduce((s, p) => s + p.level, 0) / u.length;
   const rand = rng((Date.now() ^ (upto * 7919)) >>> 0);
   let best = null, bestCost = Infinity;
   for (let t = 0; t < 10; t++) {
     // 待機は、試合数の多い人から。残りをランク順に並べて、近い人が隣り合うようにする
-    const byGames = shuffle(pool.slice(), rand).sort((a, b) => (H.games[b.id] || 0) - (H.games[a.id] || 0));
-    const bench = byGames.slice(0, pool.length - nSlot);
-    const inSet = new Set(bench.map((p) => p.id));
-    const slots = shuffle(pool.filter((p) => !inSet.has(p.id)), rand).sort((a, b) => b.level - a.level);
+    const byGames = shuffle(units.slice(), rand).sort((a, b) => b.reduce((s, p) => s + gOf(p), 0) - a.reduce((s, p) => s + gOf(p), 0));
+    const bench = byGames.slice(0, units.length - nSlot);
+    const slots = shuffle(units.filter((u) => !bench.includes(u)), rand).sort((a, b) => lvl(b) - lvl(a));
     const arr = slots.concat(bench);
-    const costAt = (k) => (k < nSlot
-      ? (() => { const m = Math.floor(k / size) * size; return pMatchCost(H, tol, avoid, arr.slice(m, m + size / 2), arr.slice(m + size / 2, m + size)); })()
-      : sitCost(arr[k]));
-    const total = () => { let c = 0; for (let m = 0; m < nSlot; m += size) c += costAt(m); for (let k = nSlot; k < arr.length; k++) c += costAt(k); return c; };
-    let cur = total();
+    const costAt = (k) => {
+      if (k >= nSlot) return sitCost(arr[k]);
+      const m = Math.floor(k / size) * size;
+      return pMatchCost(H, tol, avoid, arr.slice(m, m + half).flat(), arr.slice(m + half, m + size).flat(), fixed);
+    };
+    let cur = 0;
+    for (let m = 0; m < nSlot; m += size) cur += costAt(m);
+    for (let k = nSlot; k < arr.length; k++) cur += costAt(k);
     let local = arr.slice(), localCost = cur;
     const N = 3500;
     for (let it = 0; it < N; it++) {
       const i = Math.floor(rand() * arr.length), j = Math.floor(rand() * arr.length);
       if (i === j || (i >= nSlot && j >= nSlot)) continue;
-      const mi = i < nSlot ? Math.floor(i / size) : -1, mj = j < nSlot ? Math.floor(j / size) : -1;
-      if (mi === mj && mi >= 0 && size === 2) continue;
       const touch = (k) => (k < nSlot ? Math.floor(k / size) * size : k);
+      if (size === 2 && touch(i) === touch(j)) continue;
       const keys = [...new Set([touch(i), touch(j)])];
       const before = keys.reduce((s, k) => s + costAt(k), 0);
       [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -1421,12 +1492,12 @@ function genRound(e, kind, rest, upto) {
   }
   const matches = [];
   for (let m = 0; m < nSlot; m += size) {
-    const part = best.slice(m, m + size);
-    matches.push({ id: uid(), a: part.slice(0, size / 2).map((p) => p.id), b: part.slice(size / 2).map((p) => p.id), g: [], win: null });
+    const ids = (from, to) => best.slice(from, to).flat().map((p) => p.id);
+    matches.push({ id: uid(), a: ids(m, m + half), b: ids(m + half, m + size), g: [], win: null });
   }
-  const avg = (m) => m.a.concat(m.b).reduce((s, id) => s + e.players.find((p) => p.id === id).level, 0) / size;
+  const avg = (m) => m.a.concat(m.b).reduce((s, id) => s + pm[id].level, 0) / (m.a.length + m.b.length);
   matches.sort((x, y) => avg(y) - avg(x));
-  return { matches, bench: best.slice(nSlot).map((p) => p.id) };
+  return { matches, bench: best.slice(nSlot).flat().map((p) => p.id).concat(leftover), leftover };
 }
 /* 回転ごとの、そこまでの試合数(入っている数) */
 function pCum(e) {
@@ -1450,12 +1521,22 @@ function pIssues(e, ri) {
     const both = A.concat(B);
     both.filter((id, i) => both.indexOf(id) !== i || dup.includes(id)).forEach((id) => out.push({ lv: "err", t: `${pName(pm, id)} が同じ回転に2回入っています` }));
     if (A.length && B.length) {
-      let maxD = 0;
-      A.forEach((x) => B.forEach((y) => { if (pm[x] && pm[y]) maxD = Math.max(maxD, Math.abs(pm[x].level - pm[y].level)); }));
-      if (maxD > tol) out.push({ lv: "warn", t: `ランク差 ${maxD}(許容は ${tol} まで)` });
+      if (r.fixed && A.length === 2 && B.length === 2) {
+        const d = Math.abs(pAvg(A.map((x) => pm[x])) - pAvg(B.map((x) => pm[x])));
+        if (d > tol) out.push({ lv: "warn", t: `ペアの平均ランクの差 ${Math.round(d * 10) / 10}(設定は${tolLabel(tol)})` });
+      } else {
+        let maxD = 0;
+        A.forEach((x) => B.forEach((y) => { if (pm[x] && pm[y]) maxD = Math.max(maxD, Math.abs(pm[x].level - pm[y].level)); }));
+        if (maxD > tol) out.push({ lv: "warn", t: `ランク差 ${maxD}(設定は${tolLabel(tol)})` });
+      }
+      if (e.practice.avoidSchool) {
+        const same = [];
+        A.forEach((x) => B.forEach((y) => { if (pm[x] && pm[y] && pm[x].school.trim() && pm[x].school.trim() === pm[y].school.trim()) same.push(`${pName(pm, x)} と ${pName(pm, y)}`); }));
+        if (same.length) out.push({ lv: "info", t: `同じ学校どうし:${same.join("、")}` });
+      }
       A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "warn", t: `${pName(pm, x)} と ${pName(pm, y)} は第${f[0]}回転でも対戦` }); }));
     }
-    [A, B].forEach((S) => { if (S.length === 2) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は第${f[0]}回転でもペア` }); } });
+    if (!r.fixed) [A, B].forEach((S) => { if (S.length === 2) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は第${f[0]}回転でもペア` }); } });
     both.filter((id, i) => both.indexOf(id) === i && dayCnt[id] > e.maxPerDay).forEach((id) => out.push({ lv: "warn", t: `${pName(pm, id)} は${r.day}日目に${dayCnt[id]}試合目(上限${e.maxPerDay})` }));
     return out;
   });
@@ -1970,10 +2051,11 @@ function playersHTML(e) {
   const keyCount = {};
   e.players.forEach((p) => (keyCount[dupKey(p)] = (keyCount[dupKey(p)] || 0) + 1));
   const list = e.players.slice().sort((a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja") || a.name.localeCompare(b.name, "ja"));
+  const sc = schoolColors(e);
   const rows = list.map((p) => {
     const li = hasL ? leagueIndexOf(e, p.id) : -1;
     return `<tr>
-      <td class="c-name"><input class="cell-input" id="pn-${p.id}" data-change="p-name" data-id="${p.id}" value="${esc(p.name)}" placeholder="名前" aria-label="${dbl ? "1人目の名前" : "名前"}"></td>
+      <td class="c-name ${sc.cls(p.school)}"><input class="cell-input sc-name" id="pn-${p.id}" data-change="p-name" data-id="${p.id}" value="${esc(p.name)}" placeholder="名前" aria-label="${dbl ? "1人目の名前" : "名前"}"></td>
       ${dbl ? `<td class="c-name2"><input class="cell-input" id="pn2-${p.id}" data-change="p-name2" data-id="${p.id}" value="${esc(p.name2)}" placeholder="相方を入力" aria-label="2人目の名前"></td>` : ""}
       <td class="c-school"><input class="cell-input" id="ps-${p.id}" data-change="p-school" data-id="${p.id}" value="${esc(p.school)}" list="schools" placeholder="学校" aria-label="学校"></td>
       <td class="c-level">${levelPicker(p.id, p.level)}</td>
@@ -2285,8 +2367,8 @@ function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds) {
   if (!pid) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span><span class="pschool">ここにドラッグ</span></div>`;
   const p = playerMap(e)[pid];
   if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span></div>`;
-  return `<div class="pslot ${dupIds.includes(pid) ? "is-dup" : ""}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="ドラッグして入れ替え">
-    <span class="pname"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
+  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="ドラッグして入れ替え">
+    <span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
     <span class="pschool">${esc(p.school)} · ランク${p.level} · ${cum[pid] || 0}試合目</span></div>`;
 }
 function pMatchHTML(e, r, mi, iss, cum) {
@@ -2304,7 +2386,7 @@ function pMatchHTML(e, r, mi, iss, cum) {
   const side = (S, key) => `<div class="pm-side ${key} ${o.winner === key ? "win" : ""}">
       <div class="pm-slots">${S.map((pid, pos) => pSlotHTML(e, r, mi, key, pos, pid, cum, iss.dup)).join("")}</div>
       ${quickWinHTML(o, key, `data-action="pqwin" ${attrs}`)}</div>`;
-  const chips = iss.per[mi].map((x) => `<span class="chip ${x.lv === "err" ? "chip-err" : "chip-warn"}">${x.lv === "err" ? "エラー:" : ""}${esc(x.t)}</span>`).join("");
+  const chips = iss.per[mi].map((x) => `<span class="chip ${x.lv === "err" ? "chip-err" : x.lv === "warn" ? "chip-warn" : ""}">${x.lv === "err" ? "エラー:" : ""}${esc(x.t)}</span>`).join("");
   return `<div class="pmatch ${o.winner ? "is-done" : ""}" id="pm-${m.id}">
     <div class="pm-num num">${mi + 1}</div>
     ${side(m.a, "a")}
@@ -2317,8 +2399,8 @@ function pBenchHTML(e, r, iss, cum) {
   const pm = playerMap(e);
   const chip = (id, resting) => {
     const p = pm[id];
-    return `<span class="bchip ${resting ? "is-rest" : "is-warn"}" data-drag="pslot" data-drag-id="${r.id}|b|${id}" data-drag-label="${esc(p.name)}">
-      <span class="pname"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
+    return `<span class="bchip ${schoolColors(e).cls(p.school)} ${resting ? "is-rest" : "is-warn"}" data-drag="pslot" data-drag-id="${r.id}|b|${id}" data-drag-label="${esc(p.name)}">
+      <span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
       <span class="pschool">${esc(p.school)} · ランク${p.level} · ここまで${cum[id] || 0}試合</span>
       <button type="button" class="btn btn-ghost btn-sm" data-action="prest" data-r="${r.id}" data-id="${id}">${resting ? "休みをやめる" : "休みにする"}</button></span>`;
   };
@@ -2344,7 +2426,7 @@ function pRoundHTML(e, ri, cumAll) {
   if (!r.matches.length) msgs.push(`<div class="confirm"><span>休みを除いて ${needMore} 人以上いないと試合が組めません。</span></div>`);
   return `<section class="card pround" id="pr-${r.id}">
     <div class="card-head">
-      <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div>
+      <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div>
       <div class="row">
         <label class="faint">日 <select class="select" data-change="p-day" data-r="${r.id}" aria-label="何日目の回転か">${dayOpts}</select></label>
         <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">この回転を組み直す</button>
@@ -2368,10 +2450,12 @@ function practiceHTML(e) {
   const maxDay = Math.max(1, ...p.rounds.map((x) => x.day));
   const day = ui.nextDay || lastDay;
   const nextRest = (ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id));
-  const tolOpts = Array.from({ length: 10 }, (_, k) => k).map((k) => `<option value="${k}" ${p.tol === k ? "selected" : ""}>${k === 0 ? "同じランクの人だけ" : `ランク差 ${k} まで(±${k})`}</option>`).join("");
+  const tolOpts = Array.from({ length: 10 }, (_, k) => k).map((k) => `<option value="${k}" ${p.tol === k ? "selected" : ""}>${tolLabel(k)}${k ? `(8なら ${Math.max(1, 8 - k)}〜${Math.min(10, 8 + k)})` : "(8なら 8 だけ)"}</option>`).join("");
+  const SC = schoolColors(e);
+  const legend = SC.list.length ? `<div class="school-legend">${SC.list.map((sc) => `<span class="chip ${SC.cls(sc)}"><i class="sc-dot"></i>${esc(sc)} ${e.players.filter((x) => x.school.trim() === sc).length}人</span>`).join("")}</div>` : "";
   const dayOpts = Array.from({ length: Math.max(maxDay + 1, day) }, (_, k) => k + 1).map((d) => `<option value="${d}" ${day === d ? "selected" : ""}>${d}日目</option>`).join("");
   const sorted = e.players.slice().sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "ja"));
-  const restChips = sorted.map((x) => `<button type="button" class="rchip ${nextRest.includes(x.id) ? "on" : ""}" data-action="pnext-rest" data-id="${x.id}" aria-pressed="${nextRest.includes(x.id)}">${esc(x.name || "(名前なし)")}</button>`).join("");
+  const restChips = sorted.map((x) => `<button type="button" class="rchip ${SC.cls(x.school)} ${nextRest.includes(x.id) ? "on" : ""}" data-action="pnext-rest" data-id="${x.id}" aria-pressed="${nextRest.includes(x.id)}">${esc(x.name || "(名前なし)")}</button>`).join("");
   const radio = (v, t) => `<label class="choice"><input type="radio" name="p-kind" value="${v}" data-change="pnext-kind" ${kind === v ? "checked" : ""}><b>${t}</b></label>`;
   const cumAll = pCum(e);
   return `<section class="card">
@@ -2379,9 +2463,15 @@ function practiceHTML(e) {
     <div class="settings">
       <div class="field"><span>組むときのランク差</span><select class="select" data-change="p-tol" aria-label="ランク差の許容">${tolOpts}</select></div>
       <div class="field"><span>学校</span><label class="check"><input type="checkbox" data-change="p-avoid" ${p.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label></div>
+      <div class="field"><span>ダブルスのペア</span><select class="select" data-change="p-pairmode" aria-label="ダブルスのペア">
+        <option value="rotate" ${p.pairMode === "rotate" ? "selected" : ""}>回転ごとに組み替える</option>
+        <option value="fixed" ${p.pairMode === "fixed" ? "selected" : ""}>ペアを固定する</option>
+      </select></div>
     </div>
+    ${legend}
+    ${p.pairMode === "fixed" ? pPairsHTML(e, SC) : ""}
     <div class="pnext">
-      <div class="field"><span>次の回転の形式</span><div class="choice-grid two">${radio("singles", "シングルス")}${radio("doubles", "ダブルス(ペアは毎回組み替え)")}</div></div>
+      <div class="field"><span>次の回転の形式</span><div class="choice-grid two">${radio("singles", "シングルス")}${radio("doubles", p.pairMode === "fixed" ? "ダブルス(固定ペア)" : "ダブルス(ペアは毎回組み替え)")}</div></div>
       <div class="field"><span>何日目</span><select class="select" data-change="pnext-day" aria-label="何日目">${dayOpts}</select></div>
       <div class="field" style="grid-column:1/-1"><span>この回転は休む人(体調不良・休憩など。なければ何も押さない)</span><div class="rchips">${restChips}</div></div>
       <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
@@ -2390,11 +2480,28 @@ function practiceHTML(e) {
   ${p.rounds.length ? p.rounds.map((_, ri) => pRoundHTML(e, ri, cumAll)).join("") : `<section class="card"><p class="muted">まだ回転がありません。上の「第1回転を作る」を押してください。</p></section>`}`;
 }
 
+/* 固定ペアの編集:名前を別の名前の上に落とすと、その2人がペアになる */
+function pPairsHTML(e, SC) {
+  const pm = playerMap(e), pairs = pPairs(e);
+  const paired = new Set(pairs.flat());
+  const single = e.players.filter((x) => !paired.has(x.id)).sort((a, b) => b.level - a.level);
+  const nameChip = (id) => { const x = pm[id]; return `<span class="pairname ${SC.cls(x.school)}" data-drag="pair" data-drag-id="${id}" data-drag-label="${esc(x.name)}" data-drop="pair" data-drop-id="${id}"><span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(x.name || "(名前なし)")}</span><span class="pschool">${esc(x.school)} · ${x.level}</span></span>`; };
+  return `<div class="pairbox">
+    <div class="row"><b>固定ペア <span class="num">${pairs.length}組</span></b>
+      <button class="btn btn-secondary btn-sm" data-action="pauto-pairs">自動でペアを作る</button>
+      ${pairs.length ? `<button class="btn btn-ghost btn-sm" data-action="pclear-pairs">全部解除</button>` : ""}</div>
+    <p class="faint" style="margin:4px 0 10px">自動は、同じ学校のランクが近い人どうしで組みます。名前をドラッグして別の人の上に落とすと、その2人がペアになります。</p>
+    <div class="pair-list">${pairs.map(([a, b], i) => `<span class="pairchip">${nameChip(a)}<span class="faint">・</span>${nameChip(b)}<button type="button" class="icon-btn" data-action="punpair" data-i="${i}" aria-label="このペアを解除" title="解除">×</button></span>`).join("")}</div>
+    ${single.length ? `<div class="pair-single"><b class="warn-text">ペアがいない人 ${single.length}人</b>(ダブルスの回転では待機になります)<div class="pair-list">${single.map((x) => nameChip(x.id)).join("")}</div></div>` : ""}
+  </div>`;
+}
+
 /* --- 練習試合:成績(試合数・勝率・日ごとの増減) --- */
 function pstatsHTML(e) {
   const p = e.practice;
   if (!p.rounds.length) return `<section class="card"><p class="muted">回転を作って結果を入れると、ここに試合数と勝率が並びます。</p><div class="row" style="margin-top:12px"><button class="btn btn-aurora btn-sm" data-action="tab" data-tab="rounds">対戦へ</button></div></section>`;
   const { rows, days } = pStats(e);
+  const SC = schoolColors(e);
   const sort = ui.pSort || "level";
   const list = rows.slice().sort((a, b) =>
     sort === "rate" ? (b.rate ?? -1) - (a.rate ?? -1) || b.games - a.games
@@ -2406,7 +2513,7 @@ function pstatsHTML(e) {
   const body = list.map((r) => {
     const isLow = r.games <= maxG - 2;
     return `<tr>
-      <td class="name-cell"><span class="pname">${esc(r.p.name || "(名前なし)")}</span><span class="pschool">${esc(r.p.school)} · ランク${r.p.level}</span></td>
+      <td class="name-cell ${SC.cls(r.p.school)}"><span class="pname sc-name">${esc(r.p.name || "(名前なし)")}</span><span class="pschool">${esc(r.p.school)} · ランク${r.p.level}</span></td>
       <td class="stat"><b>${r.games}</b>${isLow ? ` <span class="chip chip-warn">少なめ</span>` : ""}</td>
       <td class="stat">${r.w}勝${r.l}敗</td>
       <td class="stat"><b>${pRateText(r.rate)}</b></td>
@@ -2414,7 +2521,7 @@ function pstatsHTML(e) {
     </tr>`;
   }).join("");
   const sym = { play: `<span class="cell-play">●</span>`, rest: `<span class="cell-rest">休</span>`, none: `<span class="cell-none">未</span>` };
-  const grid = list.map((r) => `<tr><td class="name-cell"><span class="pname">${esc(r.p.name || "(名前なし)")}</span></td>${r.byR.map((s) => `<td>${sym[s]}</td>`).join("")}<td class="stat"><b>${r.games}</b></td></tr>`).join("");
+  const grid = list.map((r) => `<tr><td class="name-cell ${SC.cls(r.p.school)}"><span class="pname sc-name">${esc(r.p.name || "(名前なし)")}</span></td>${r.byR.map((s) => `<td>${sym[s]}</td>`).join("")}<td class="stat"><b>${r.games}</b></td></tr>`).join("");
   const sortBtn = (k, t) => `<button class="btn btn-sm ${sort === k ? "btn-primary" : "btn-secondary"}" data-action="psort" data-sort="${k}">${t}</button>`;
   return `<section class="card">
     <div class="card-head"><div><h2>試合数と勝率</h2><p class="faint">勝率は、結果を入れた試合だけで数えます。日ごとの勝率の下の「+25%」は、前の日の勝率からの増減です。</p></div>
@@ -3222,6 +3329,7 @@ function pRoundById(e, id) { return e.practice.rounds.find((r) => r.id === id); 
 function pRegen(e, r) {
   const g = genRound(e, r.kind, r.rest, e.practice.rounds.indexOf(r));
   r.matches = g.matches;
+  r.fixed = r.kind === "doubles" && e.practice.pairMode === "fixed";
   commit(); render(); toast("組み直しました");
 }
 /* ドラッグで入れ替え。参照は「回転id|m|試合|側|位置」(枠)、「回転id|b|選手id」(試合に入っていない人)、「回転id|bench」(その置き場) */
@@ -3376,9 +3484,11 @@ app.addEventListener("click", (evt) => {
       const p = e.practice, kind = ui.nextKind || p.kind;
       const rest = (ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id));
       const day = ui.nextDay || (p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1);
+      const fixed = kind === "doubles" && p.pairMode === "fixed";
+      if (fixed && pPairs(e).length < 2) { toast("ペア固定のときは、先にペアを2組以上決めてください(「自動でペアを作る」でも作れます)"); break; }
       const g = genRound(e, kind, rest, p.rounds.length);
-      if (!g.matches.length) { toast(`休みを除いて ${kind === "doubles" ? 4 : 2} 人以上必要です`); break; }
-      p.rounds.push({ id: uid(), day, kind, rest, matches: g.matches });
+      if (!g.matches.length) { toast(fixed ? "休みを除いて、そろっているペアが2組以上必要です" : `休みを除いて ${kind === "doubles" ? 4 : 2} 人以上必要です`); break; }
+      p.rounds.push({ id: uid(), day, kind, fixed, rest, matches: g.matches });
       p.kind = kind; ui.nextRest = []; ui.nextDay = day; ui.confirm = null;
       commit(); render();
       toast(`第${p.rounds.length}回転を作りました${g.bench.length ? `(${g.bench.length}人は待機)` : ""}`);
@@ -3404,6 +3514,9 @@ app.addEventListener("click", (evt) => {
     }
     case "preg-yes": { const r = pRoundById(e, btn.dataset.r); ui.confirm = null; if (r) pRegen(e, r); break; }
     case "pdel": ui.confirm = `pdel:${btn.dataset.r}`; render(); break;
+    case "pauto-pairs": pAutoPairs(e); commit(); render(); toast(`${e.practice.pairs.length}組のペアを作りました`); break;
+    case "pclear-pairs": e.practice.pairs = []; commit(); render(); break;
+    case "punpair": { const pr = pPairs(e)[Number(btn.dataset.i)]; if (pr) { e.practice.pairs = e.practice.pairs.filter((x) => x[0] !== pr[0] || x[1] !== pr[1]); commit(); render(); } break; }
     case "pdel-yes": e.practice.rounds = e.practice.rounds.filter((r) => r.id !== btn.dataset.r); ui.confirm = null; commit(); render(); toast("回転を削除しました"); break;
     case "print-bracket":
       fillPrint();
@@ -3508,7 +3621,8 @@ app.addEventListener("change", (evt) => {
     }
     case "ev-mode": e.mode = MODES[t.value] ? t.value : "league"; if (e.mode === "practice") e.type = "singles"; commit(); render(); break;
     case "p-tol": e.practice.tol = clamp(Number(t.value), 0, 9); commit(); render(); break;
-    case "p-avoid": e.practice.avoidSchool = t.checked; commit(); break;
+    case "p-avoid": e.practice.avoidSchool = t.checked; commit(); render(); break;
+    case "p-pairmode": e.practice.pairMode = t.value === "fixed" ? "fixed" : "rotate"; if (e.practice.pairMode === "fixed" && !pPairs(e).length) pAutoPairs(e); commit(); render(); break;
     case "p-day": { const r = pRoundById(e, t.dataset.r); if (r) { r.day = clamp(Number(t.value), 1, 30); commit(); render(); } break; }
     case "pnext-day": ui.nextDay = Number(t.value); break;
     case "pnext-kind": ui.nextKind = t.value === "doubles" ? "doubles" : "singles"; break;
@@ -3552,6 +3666,13 @@ function onDrop(kind, fromId, toId) {
     toast(`${pname(e, pm[s[j]])} と ${pname(e, pm[s[i]])} を入れ替えました`);
   } else if (kind === "pslot") {
     pDrop(fromId, toId);
+  } else if (kind === "pair") {
+    // 固定ペア:落とした先の人とペアにする(2人がそれまで組んでいたペアは解く)
+    if (fromId === toId) return;
+    const pm = playerMap(e);
+    e.practice.pairs = e.practice.pairs.filter((x) => !x.includes(fromId) && !x.includes(toId)).concat([[toId, fromId]]);
+    commit(); render();
+    toast(`${pName(pm, toId)}・${pName(pm, fromId)} をペアにしました`);
   } else if (kind === "member") {
     // リーグ分け:選手を別のリーグへ(-1 はどこにも入れない)
     const to = Number(toId);
