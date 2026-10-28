@@ -3467,6 +3467,17 @@ function pRegen(e, r, must, msg) {
   r.fixed = r.kind === "doubles" && e.practice.pairMode === "fixed";
   commit(); render(); toast(msg || "組み直しました");
 }
+/* 休みをやめた人を試合に戻す。結果がまだなければその人を入れて組み直し、結果があれば空いている枠に入れる */
+function pBringBack(e, r, id) {
+  const name = pName(playerMap(e), id);
+  r.rest = r.rest.filter((x) => x !== id);
+  if (pFresh(r)) { pRegen(e, r, [id], `${name} を試合に戻して組み直しました`); return; }
+  for (const m of r.matches) for (const k of ["a", "b"]) {
+    const i = m[k].indexOf(null);
+    if (i >= 0) { m[k][i] = id; commit(); render(); toast(`${name} を空いていた枠に戻しました`); return; }
+  }
+  commit(); render(); toast(`${name} の休みをやめました。空いている枠がないので、入れたい枠へドラッグしてください`);
+}
 /* まだ結果を入れていない回転か(それなら、ドラッグのたびに自動で組み直してよい) */
 function pFresh(r) { return !r.matches.some((m) => m.win || !isEmptyGames(m.g)); }
 /* ドラッグで入れ替え。参照は「回転id|m|試合|側|位置」(枠)、「回転id|b|選手id」(試合に入っていない人)、
@@ -3659,8 +3670,8 @@ app.addEventListener("click", (evt) => {
       const r = pRoundById(e, btn.dataset.r); if (!r) break;
       const id = btn.dataset.id, ri = e.practice.rounds.indexOf(r);
       e.practice.dayOff = e.practice.dayOff.filter((x) => !(x.id === id && x.day === r.day));
-      e.practice.rounds.forEach((x, k) => { if (k >= ri && x.day === r.day) x.rest = x.rest.filter((y) => y !== id); });
-      commit(); render(); toast(`${pName(playerMap(e), id)} の今日の休みをやめました`);
+      e.practice.rounds.forEach((x, k) => { if (k > ri && x.day === r.day) x.rest = x.rest.filter((y) => y !== id); });
+      pBringBack(e, r, id);
       break;
     }
     case "pnext-top": { const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
@@ -3673,11 +3684,8 @@ app.addEventListener("click", (evt) => {
     case "prest": {
       const r = pRoundById(e, btn.dataset.r); if (!r) break;
       const id = btn.dataset.id;
-      if (r.rest.includes(id)) {
-        // 休みをやめた人は、まだ結果のない回転ならすぐ入れて組み直す
-        r.rest = r.rest.filter((x) => x !== id);
-        if (pFresh(r)) { pRegen(e, r, [id], `${pName(playerMap(e), id)} を入れて組み直しました`); break; }
-      } else r.rest = r.rest.concat(id);
+      if (r.rest.includes(id)) { pBringBack(e, r, id); break; }
+      r.rest = r.rest.concat(id);
       commit(); render(); break;
     }
     case "preg": {
