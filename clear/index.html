@@ -859,6 +859,26 @@ details.more[open] summary { margin-bottom: 12px; }
   body.has-print > *:not(#print-area) { display: none !important; }
   body.has-print #print-area { display: block; }
   #print-area svg { display: block; width: 100%; height: auto; max-height: 280mm; }
+  /* 練習試合の成績:紙は白地に黒。画面がダークでもライトの色で刷る */
+  #print-area {
+    --text: #000; --text-secondary: #222; --text-tertiary: #444; --border: #000; --hairline: #888; --border-soft: #888;
+    --surface: transparent; --surface-strong: transparent; --surface-soft: transparent;
+    --accent: #2f4cf0; --accent-soft: rgba(47, 76, 240, 0.1); --success: #186a46; --warn: #8a5c12; --warn-soft: rgba(154, 106, 31, 0.13); --error: #b23b3b;
+    --lg-a: #2f4cf0; --lg-b: #8134ea; --lg-c: #057562; --lg-d: #c2410c; --lg-e: #c2255c; --lg-f: #8f6400; --lg-g: #0b7285; --lg-h: #5f6470;
+    color: #000;
+  }
+  #print-area * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #print-area .pp { font-size: 9pt; }
+  #print-area .pp-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1.5px solid #000; padding-bottom: 2mm; margin-bottom: 4mm; font-size: 13pt; }
+  #print-area .pp-head span { font-size: 10pt; }
+  #print-area .card { background: none; border: none; box-shadow: none; padding: 0; margin: 0 0 6mm; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  #print-area .card::before { display: none; }
+  #print-area .card-head { margin-bottom: 2mm; }
+  #print-area h2 { font-size: 12pt; }
+  #print-area .table-wrap { overflow: visible; margin: 0; padding: 0; }
+  #print-area table { font-size: 8.5pt; }
+  #print-area tr { break-inside: avoid; }
+  #print-area .confirm { padding: 2mm 3mm; margin-bottom: 3mm; }
 }
 </style>
 </head>
@@ -1919,6 +1939,9 @@ const MODES = {
   tournament: ["トーナメント", "負けたら終わりの勝ち抜き戦。シードを決めて表を作る"],
   both: ["リーグ戦 → 決勝トーナメント", "まずリーグ戦。各リーグの上位で決勝トーナメント"],
 };
+/* 今は選べないようにしている形式。消したのではなく隠しているだけなので、ここから外せば元どおり出る。
+   (すでに作ったものは、これまでどおり開ける) */
+const HIDDEN_MODES = ["both"];
 const MODE_ICON = {
   practice: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><path d="M6 12h22M36 12h22M6 24h22M36 24h22M6 36h22M36 36h22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".55"/><path d="M28 12l8 12-8 12" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="24" r="3" fill="var(--accent)"/></svg>`,
   league: `<svg viewBox="0 0 64 48" fill="none" aria-hidden="true"><rect x="4" y="4" width="56" height="40" rx="6" stroke="currentColor" stroke-width="2.5"/><path d="M4 18h56M4 31h56M24 4v40M42 4v40" stroke="currentColor" stroke-width="2" opacity=".55"/><path d="M28 11h10M46 24h10M10 37h10" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg>`,
@@ -1956,7 +1979,7 @@ function createHTML(mode) {
 function homeHTML() {
   const list = sortedEvents();
   const pick = ui.createMode;
-  const make = Object.entries(MODES).map(([k, [t, d]]) => `<button class="make-card ${pick === k ? "is-on" : ""}" data-action="pick-mode" data-mode="${k}" aria-expanded="${pick === k}">
+  const make = Object.entries(MODES).filter(([k]) => !HIDDEN_MODES.includes(k)).map(([k, [t, d]]) => `<button class="make-card ${pick === k ? "is-on" : ""}" data-action="pick-mode" data-mode="${k}" aria-expanded="${pick === k}">
       <span class="make-icon">${MODE_ICON[k]}</span><b>${t}を作る</b><span class="faint">${d}</span></button>`).join("");
   const cards = list.map((x) => {
     const t = totals(x);
@@ -1988,8 +2011,8 @@ function homeHTML() {
     ${list.length ? `<section class="stack"><div><h2 class="home-sub">続きから</h2><p class="faint" style="margin:2px 0 0">前に作ったもの。押すと続きができます。</p></div><div class="event-grid">${cards}</div></section>` : ""}
     <p class="faint" style="text-align:center;margin:8px 0 0">どんなものか見てみたいとき:
       <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合を開く</button> ·
-      <button class="link-btn" data-action="sample">見本のリーグ戦を開く</button> ·
-      <button class="link-btn" data-action="sample" data-type="doubles">見本の決勝トーナメントつきを開く</button></p>`;
+      <button class="link-btn" data-action="sample">見本のリーグ戦を開く</button>${HIDDEN_MODES.includes("both") ? "" : ` ·
+      <button class="link-btn" data-action="sample" data-type="doubles">見本の決勝トーナメントつきを開く</button>`}</p>`;
 }
 
 function heroHTML(e) {
@@ -2010,7 +2033,7 @@ function heroHTML(e) {
       ${ui.showSettings ? `<div class="hero-sub hero-settings">
         <label>形式
           <select class="select" id="ev-mode" data-change="ev-mode">
-            ${Object.entries(MODES).map(([k, [t]]) => `<option value="${k}" ${e.mode === k ? "selected" : ""}>${t}</option>`).join("")}
+            ${Object.entries(MODES).filter(([k]) => !HIDDEN_MODES.includes(k) || e.mode === k).map(([k, [t]]) => `<option value="${k}" ${e.mode === k ? "selected" : ""}>${t}</option>`).join("")}
           </select>
         </label>
         ${e.mode === "practice" ? "" : `<label>種目
@@ -2583,7 +2606,8 @@ function pstatsHTML(e) {
   const sortBtn = (k, t) => `<button class="btn btn-sm ${sort === k ? "btn-primary" : "btn-secondary"}" data-action="psort" data-sort="${k}">${t}</button>`;
   return viewBar + `<section class="card">
     <div class="card-head"><div><h2>試合数と勝率</h2><p class="faint">勝率は、結果を入れた試合だけで数えます。日ごとの勝率の下の「+25%」は、前の日の勝率からの増減です。</p></div>
-      <button class="btn btn-secondary btn-sm" data-action="x-pstats">Excel にコピー</button></div>
+      <div class="row"><button class="btn btn-secondary btn-sm" data-action="print-practice" title="印刷の画面で「PDFに保存」を選んでください">PDFで保存</button>
+      <button class="btn btn-secondary btn-sm" data-action="x-pstats">Excel にコピー</button></div></div>
     ${low.length ? `<div class="confirm" style="margin-bottom:12px"><b>試合数が少ない人:</b><span>${low.map((r) => `${esc(r.p.name)}(${r.games}試合)`).join("、")}。いちばん多い人は ${maxG} 試合です。</span></div>` : ""}
     <div class="row" style="margin-bottom:10px"><span class="faint">並び順</span>${sortBtn("level", "ランク順")}${sortBtn("rate", "勝率順")}${sortBtn("games", "試合数の少ない順")}</div>
     <div class="table-wrap"><table class="hoshi pstat">
@@ -2658,6 +2682,7 @@ function pSheetHTML(e) {
   return `<section class="card">
     <div class="card-head"><div><h2>対戦結果表</h2><p class="faint">${esc(e.name)}(${esc(e.date)})。紙の対戦表と同じ並びです。選手番号は「選手」タブの登録順。勝った側のゲーム数に色がつきます。「勝ち」ボタンだけで入れた試合は ${e.games === 1 ? "1-0" : "2-0"} と表示します。</p></div>
       <div class="row"><select class="select" data-change="p-sheet-round" aria-label="表示する回転">${opts}</select>
+      <button class="btn btn-secondary btn-sm" data-action="print-practice" title="印刷の画面で「PDFに保存」を選んでください">PDFで保存</button>
       <button class="btn btn-secondary btn-sm" data-action="x-psheet">Excel にコピー</button></div></div>
     <div class="table-wrap"><table class="sheet">
       <thead><tr><th>試合<br>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>ゲーム<br>数</th><th>得点</th><th>ゲーム<br>数</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead>
@@ -2985,9 +3010,28 @@ function printSheetSVG(e, st) {
 function fillPrint() {
   const area = document.getElementById("print-area");
   const e = ev();
-  const st = e && ui.view !== "home" && ui.tab === "bracket" ? bracketState(e) : null;
-  area.innerHTML = st ? printSheetSVG(e, st) : "";
-  document.body.classList.toggle("has-print", !!st);
+  let html = "";
+  if (e && ui.view !== "home") {
+    const st = ui.tab === "bracket" ? bracketState(e) : null;
+    if (st) html = printSheetSVG(e, st);
+    else if (ui.tab === "pstats" && e.mode === "practice" && e.practice.rounds.length) html = practicePrintHTML(e);
+  }
+  area.innerHTML = html;
+  document.body.classList.toggle("has-print", !!html);
+}
+/* 練習試合の成績を印刷用に(いま見ている形:対戦結果表 / 試合数と勝率+回転ごとの出場)。ボタンや並び替えは外す */
+function practicePrintHTML(e) {
+  const box = document.createElement("div");
+  box.innerHTML = pstatsHTML(e);
+  box.querySelectorAll(".view-switch, button, select, .card-head p, .row").forEach((n) => n.remove());
+  return `<div class="pp"><div class="pp-head"><b>${esc(e.name)}</b><span>${esc(e.date || "")}</span></div>${box.innerHTML}</div>`;
+}
+/* claude.ai の中では印刷の画面が開けない(PDF 保存もできない) */
+function canPrint() { return !(window.claude && typeof window.claude.use === "function"); }
+function doPrint() {
+  if (!canPrint()) { toast("claude.ai の中では印刷・PDF保存ができません。公開ページ(GitHub)で開いて保存してください"); return; }
+  fillPrint();
+  try { window.print(); } catch (err) { toast("印刷の画面を開けませんでした"); }
 }
 addEventListener("beforeprint", fillPrint);
 addEventListener("afterprint", () => document.body.classList.remove("has-print"));
@@ -3699,10 +3743,8 @@ app.addEventListener("click", (evt) => {
     case "pclear-pairs": e.practice.pairs = []; commit(); render(); break;
     case "punpair": { const pr = pPairs(e)[Number(btn.dataset.i)]; if (pr) { e.practice.pairs = e.practice.pairs.filter((x) => x[0] !== pr[0] || x[1] !== pr[1]); commit(); render(); } break; }
     case "pdel-yes": e.practice.rounds = e.practice.rounds.filter((r) => r.id !== btn.dataset.r); ui.confirm = null; commit(); render(); toast("回転を削除しました"); break;
-    case "print-bracket":
-      fillPrint();
-      try { window.print(); } catch (err) { toast("印刷の画面を開けませんでした"); }
-      break;
+    case "print-bracket": doPrint(); break;
+    case "print-practice": doPrint(); break;
     case "close-copy": ui.copyText = null; render(); break;
     case "build":
       if (e.bracket) { ui.confirm = "rebuild"; render(); break; }
