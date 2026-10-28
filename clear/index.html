@@ -2405,7 +2405,7 @@ function pBenchHTML(e, r, iss, cum) {
       <button type="button" class="btn btn-ghost btn-sm" data-action="prest" data-r="${r.id}" data-id="${id}">${resting ? "休みをやめる" : "休みにする"}</button></span>`;
   };
   return `<div class="bench" data-drop="pslot" data-drop-id="${r.id}|bench">
-    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここにドラッグで外せます。外した人は「休みにする」を押すと、休みとして扱います</span></div>
+    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここにドラッグした人は休みになり、組み直しても入りません。戻すときは「休みをやめる」か、試合の枠へドラッグ</span></div>
     <div class="bench-list">
       ${iss.unplaced.map((id) => chip(id, false)).join("")}
       ${iss.resting.map((id) => chip(id, true)).join("")}
@@ -2429,7 +2429,7 @@ function pRoundHTML(e, ri, cumAll) {
       <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div>
       <div class="row">
         <label class="faint">日 <select class="select" data-change="p-day" data-r="${r.id}" aria-label="何日目の回転か">${dayOpts}</select></label>
-        <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">この回転を組み直す</button>
+        <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">${iss.resting.length ? `休みの${iss.resting.length}人を除いて組み直す` : "この回転を組み直す"}</button>
         <button class="btn btn-ghost btn-sm btn-danger" data-action="pdel" data-r="${r.id}">削除</button>
       </div>
     </div>
@@ -3350,9 +3350,11 @@ function pDrop(fromRef, toRef) {
       A.set(y); B.set(x);
       msg = `${pName(pm, x)} と ${y ? pName(pm, y) : "空き"} を入れ替えました`;
     } else {
+      // 置き場へ外した人は休みにする(「組み直す」を押しても、また入らないように)
       const x = A.get();
       A.set(null);
-      msg = `${pName(pm, x)} を試合から外しました`;
+      if (x && !r.rest.includes(x)) r.rest.push(x);
+      msg = `${pName(pm, x)} を外して休みにしました。「組み直す」で残りの人で組み直せます`;
     }
   } else if (f[1] === "b") {
     if (t[1] !== "m") return;
