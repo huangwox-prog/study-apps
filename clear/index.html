@@ -761,6 +761,7 @@ details.more[open] summary { margin-bottom: 12px; }
 .pslot.empty .pname { color: var(--error); }
 .pslot.is-dup { border: 2px solid var(--error); background: var(--error-soft); }
 .pslot.drag-src, .bchip.drag-src { opacity: 0.35; }
+.pmatches.drop-over { outline: 3px dashed var(--accent); outline-offset: 6px; border-radius: 18px; }
 [data-drop="pslot"].drop-over { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); }
 .m-scores .pm-st { margin-top: 2px; }
 .pm-issues { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -1471,7 +1472,7 @@ function pAutoPairs(e) {
 }
 /* 1回転ぶんの組み合わせを作る。rest は休みの人。upto はこの回転の番号(これより前の回転を見て重ならないようにする)。
    組む単位(unit)は、シングルスとダブルス(毎回組み替え)は1人、ダブルス(ペア固定)は2人 */
-function genRound(e, kind, rest, upto) {
+function genRound(e, kind, rest, upto, must = []) {
   const H = pHistory(e, upto), tol = e.practice.tol, avoid = e.practice.avoidSchool;
   const fixed = kind === "doubles" && e.practice.pairMode === "fixed";
   const pool = e.players.filter((p) => !rest.includes(p.id));
@@ -1488,7 +1489,8 @@ function genRound(e, kind, rest, upto) {
   if (nm < 1) return { matches: [], bench: pool.map((p) => p.id), leftover };
   const gOf = (p) => H.games[p.id] || 0;
   const maxG = Math.max(0, ...pool.map(gOf));
-  const sitCost = (u) => u.reduce((s, p) => s + 25 * (maxG - gOf(p)), 0); // 試合数の少ない人は、待機にしない
+  // 試合数の少ない人は待機にしない。must(ドラッグで戻した人)は必ず試合に入れる
+  const sitCost = (u) => u.reduce((s, p) => s + 25 * (maxG - gOf(p)) + (must.includes(p.id) ? 5000 : 0), 0);
   const lvl = (u) => u.reduce((s, p) => s + p.level, 0) / u.length;
   const rand = rng((Date.now() ^ (upto * 7919)) >>> 0);
   let best = null, bestCost = Infinity;
@@ -2447,7 +2449,7 @@ function pBenchHTML(e, r, iss, cum) {
       <span class="bchip-btns">${btns}</span></span>`;
   };
   return `<div class="bench" data-drop="pslot" data-drop-id="${r.id}|bench">
-    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここにドラッグした人は、この回転だけ休みになります(組み直しても入りません)。その日の残りをずっと休むときは「今日はもう休み」。戻すときは「休みをやめる」か、試合の枠へドラッグ</span></div>
+    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここへドラッグした人は、この回転だけ休みになり、残りの人ですぐ組み直します。戻すときは、名前を上の試合のほうへドラッグ(その人を入れてすぐ組み直します)。その日の残りをずっと休むときは「今日はもう休み」</span></div>
     <div class="bench-list">
       ${iss.unplaced.map((id) => chip(id, false)).join("")}
       ${iss.resting.map((id) => chip(id, true)).join("")}
@@ -2471,6 +2473,7 @@ function pRoundHTML(e, ri, cumAll) {
       <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div>
       <div class="row">
         <label class="faint">日 <select class="select" data-change="p-day" data-r="${r.id}" aria-label="何日目の回転か">${dayOpts}</select></label>
+        <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">組み直す(シャッフル)</button>
         <button class="btn btn-ghost btn-sm btn-danger" data-action="pdel" data-r="${r.id}">削除</button>
       </div>
     </div>
@@ -2478,12 +2481,12 @@ function pRoundHTML(e, ri, cumAll) {
     ${askDel ? `<div class="confirm"><span>第${ri + 1}回転を削除します。結果も消えます。</span><button class="btn btn-sm btn-del" data-action="pdel-yes" data-r="${r.id}">削除する</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
     ${msgs.join("")}
     <div class="stack" style="margin-top:12px">
-      ${r.matches.map((_, mi) => pMatchHTML(e, r, mi, iss, cum)).join("")}
+      <div class="pmatches stack" data-drop="pslot" data-drop-id="${r.id}|area">${r.matches.map((_, mi) => pMatchHTML(e, r, mi, iss, cum)).join("")}</div>
       ${pBenchHTML(e, r, iss, cum)}
-      <div class="row preg-row">
-        <button class="btn ${iss.resting.length ? "btn-primary" : "btn-secondary"} btn-lg" data-action="preg" data-r="${r.id}">${iss.resting.length ? `休みの${iss.resting.length}人を除いて、第${ri + 1}回転を組み直す` : `第${ri + 1}回転を組み直す`}</button>
-        <span class="faint">${iss.resting.length ? "休みにした人を外して、残りの人で組み合わせを作り直します" : "今の組み合わせを、自動でもう一度作り直します"}</span>
-      </div>
+      ${iss.resting.length ? `<div class="row preg-row">
+        <button class="btn btn-primary btn-lg" data-action="preg" data-r="${r.id}">休みの${iss.resting.length}人を除いて、第${ri + 1}回転を組み直す</button>
+        <span class="faint">休みにした人を外して、残りの人で組み合わせを作り直します</span>
+      </div>` : ""}
     </div>
   </section>`;
 }
@@ -3452,14 +3455,18 @@ function openEvent(id) {
 
 /* ============ 操作 ============ */
 function pRoundById(e, id) { return e.practice.rounds.find((r) => r.id === id); }
-function pRegen(e, r) {
+function pRegen(e, r, must, msg) {
   r.rest = [...new Set(r.rest.concat(pDayOff(e, r.day, e.practice.rounds.indexOf(r))))];
-  const g = genRound(e, r.kind, r.rest, e.practice.rounds.indexOf(r));
+  const g = genRound(e, r.kind, r.rest, e.practice.rounds.indexOf(r), must || []);
   r.matches = g.matches;
   r.fixed = r.kind === "doubles" && e.practice.pairMode === "fixed";
-  commit(); render(); toast("組み直しました");
+  commit(); render(); toast(msg || "組み直しました");
 }
-/* ドラッグで入れ替え。参照は「回転id|m|試合|側|位置」(枠)、「回転id|b|選手id」(試合に入っていない人)、「回転id|bench」(その置き場) */
+/* まだ結果を入れていない回転か(それなら、ドラッグのたびに自動で組み直してよい) */
+function pFresh(r) { return !r.matches.some((m) => m.win || !isEmptyGames(m.g)); }
+/* ドラッグで入れ替え。参照は「回転id|m|試合|側|位置」(枠)、「回転id|b|選手id」(試合に入っていない人)、
+   「回転id|bench」(その置き場)、「回転id|area」(試合の並んでいるところ全体)。
+   結果をまだ入れていない回転では、置き場へ投げる・置き場から戻すたびに、その場で組み直す */
 function pDrop(fromRef, toRef) {
   const e = ev(), f = fromRef.split("|"), t = toRef.split("|");
   const r = pRoundById(e, f[0]);
@@ -3476,21 +3483,28 @@ function pDrop(fromRef, toRef) {
       const x = A.get(), y = B.get();
       A.set(y); B.set(x);
       msg = `${pName(pm, x)} と ${y ? pName(pm, y) : "空き"} を入れ替えました`;
-    } else {
-      // 置き場へ外した人は休みにする(「組み直す」を押しても、また入らないように)
+    } else if (t[1] === "bench") {
+      // 置き場へ外した人は休みにする(組み直しても、また入らないように)
       const x = A.get();
+      if (!x) return;
+      if (!r.rest.includes(x)) r.rest.push(x);
+      if (pFresh(r)) { pRegen(e, r, [], `${pName(pm, x)} を休みにして、残りの人で組み直しました`); return; }
       A.set(null);
-      if (x && !r.rest.includes(x)) r.rest.push(x);
-      msg = `${pName(pm, x)} を外して休みにしました。「組み直す」で残りの人で組み直せます`;
-    }
+      msg = `${pName(pm, x)} を外して休みにしました(結果が入っているので、組み直しはしていません)`;
+    } else return;
   } else if (f[1] === "b") {
-    if (t[1] !== "m") return;
+    const id = f[2];
+    if (t[1] !== "m" && t[1] !== "area") return;
+    // 置き場から試合のほうへ戻した人は、休みをやめて必ず試合に入れる
+    r.rest = r.rest.filter((x) => x !== id);
+    e.practice.dayOff = e.practice.dayOff.filter((x) => !(x.id === id && x.day === r.day));
+    if (pFresh(r)) { pRegen(e, r, [id], `${pName(pm, id)} を入れて組み直しました`); return; }
+    if (t[1] !== "m") { commit(); render(); toast("結果が入っている回転なので、入れたい枠の上に落としてください"); return; }
     const B = slotOf(t);
     if (!B) return;
     const old = B.get();
-    B.set(f[2]);
-    r.rest = r.rest.filter((x) => x !== f[2]);
-    msg = `${pName(pm, f[2])} を入れました${old ? `(${pName(pm, old)} は試合から外れました)` : ""}`;
+    B.set(id);
+    msg = `${pName(pm, id)} を入れました${old ? `(${pName(pm, old)} は試合から外れました)` : ""}`;
   }
   commit(); render(); toast(msg);
 }
@@ -3654,7 +3668,11 @@ app.addEventListener("click", (evt) => {
     case "prest": {
       const r = pRoundById(e, btn.dataset.r); if (!r) break;
       const id = btn.dataset.id;
-      r.rest = r.rest.includes(id) ? r.rest.filter((x) => x !== id) : r.rest.concat(id);
+      if (r.rest.includes(id)) {
+        // 休みをやめた人は、まだ結果のない回転ならすぐ入れて組み直す
+        r.rest = r.rest.filter((x) => x !== id);
+        if (pFresh(r)) { pRegen(e, r, [id], `${pName(playerMap(e), id)} を入れて組み直しました`); break; }
+      } else r.rest = r.rest.concat(id);
       commit(); render(); break;
     }
     case "preg": {
