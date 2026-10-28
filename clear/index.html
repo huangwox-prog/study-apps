@@ -505,6 +505,23 @@ tr:last-child td { border-bottom: none; }
 .bracket-svg .bt { fill: var(--text); font-size: 12.5px; font-weight: 600; }
 .bracket-svg .bt.champ { fill: var(--accent); font-weight: 800; }
 .bracket-svg .bs { fill: var(--text-tertiary); font-size: 10.5px; font-weight: 500; }
+/* ドラッグ&ドロップ */
+.bracket-svg .bslot { cursor: grab; touch-action: none; }
+.bracket-svg .bhit { fill: transparent; }
+.bracket-svg .bslot:hover .bhit { fill: var(--surface-soft); stroke: var(--border); stroke-dasharray: 4 3; }
+.bracket-svg .bslot.drop-over .bhit { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; stroke-dasharray: none; }
+.bracket-svg .bslot.drag-src { opacity: 0.35; }
+.drag-member { cursor: grab; touch-action: none; display: block; border-radius: 8px; }
+.drag-member:hover { background: var(--surface-soft); }
+.drag-member.drag-src { opacity: 0.35; }
+.grip { color: var(--text-tertiary); margin-right: 6px; font-size: 0.9em; }
+[data-drop="member"].drop-over { outline: 3px solid var(--accent); outline-offset: 2px; }
+.is-dragging, .is-dragging * { cursor: grabbing !important; user-select: none; }
+.drag-ghost {
+  position: fixed; left: 0; top: 0; z-index: 200; pointer-events: none;
+  padding: 6px 14px; border-radius: 999px 999px 999px 8px; font-weight: 800; font-size: 0.9rem;
+  background: var(--accent); color: var(--accent-text); box-shadow: var(--shadow);
+}
 .bracket-svg .bseed { fill: var(--accent); font-size: 11px; font-weight: 800; }
 details.seedbox { margin-top: 16px; padding: 12px 16px; border-radius: 16px 16px 16px 30px; background: var(--surface-soft); border: 1px solid var(--border-soft); }
 details.seedbox summary { cursor: pointer; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -1221,10 +1238,31 @@ function totals(e) {
 }
 
 /* ============ トーナメント ============ */
-/* シード位置:1 と 2 が両端、3・4 が各ブロックの反対側…という標準の並び */
+/* シード位置(日本の組み合わせ表の形):
+   第1は Aブロックの一番上、第2は Bブロックの一番上、第3は Bブロックの一番下、第4は Aブロックの一番下。
+   それより下の段も同じ考え方で、区切りごとに「強いほうが外側の端、相手のシードは反対の端」に置く。
+   8枠なら A=[1,8,5,4] B=[2,7,6,3]。返り値は 枠の順に並べたシード番号 */
 function seedPositions(N) {
-  let pos = [1];
-  while (pos.length < N) { const m = pos.length * 2 + 1; pos = pos.flatMap((s) => [s, m - s]); }
+  const pos = new Array(N);
+  // lo から size 枠の区切りに seed s がいる(atTop なら区切りの一番上、そうでなければ一番下)
+  const place = (lo, size, s, atTop, topLevel) => {
+    if (size === 1) { pos[lo] = s; return; }
+    const half = size / 2;
+    const partner = (N / size) * 2 + 1 - s; // この区切りで s と分かれる相手のシード
+    if (topLevel) {
+      // いちばん上の区切り:第1は上のブロックの上、第2は下のブロックの上
+      place(lo, half, s, true, false);
+      place(lo + half, half, partner, true, false);
+    } else if (atTop) {
+      place(lo, half, s, true, false);
+      place(lo + half, half, partner, false, false);
+    } else {
+      place(lo, half, partner, true, false);
+      place(lo + half, half, s, false, false);
+    }
+  };
+  if (N === 1) return [1];
+  place(0, N, 1, true, true);
   return pos;
 }
 function roundName(K, r) { const d = K - r; return d === 0 ? "決勝" : d === 1 ? "準決勝" : d === 2 ? "準々決勝" : `${r}回戦`; }
@@ -1753,7 +1791,7 @@ function leaguesHTML(e) {
     </div></details>
     <div class="row" style="margin-top:18px">
       <button class="btn btn-aurora btn-lg" data-action="auto" ${n < 2 ? "disabled" : ""}>${e.leagues.length ? "この分け方で作り直す" : "リーグを作る"}</button>
-      ${e.leagues.length ? `<span class="faint">作ったあと、各${unit(e)}の右の「◯へ」で別のリーグに動かせます。</span>` : ""}
+      ${e.leagues.length ? `<span class="faint">作ったあと、名前をドラッグして別のリーグのカードで離すか、右の「◯へ」で動かせます。</span>` : ""}
     </div>
     ${confirm ? `<div class="confirm" style="margin-top:14px"><span><b>今のリーグ分けを作り直します。</b>手動で動かした分は戻ります。入力済みのスコアは消えません(同じ組み合わせの試合があればそのまま残ります)。</span><button class="btn btn-primary btn-sm" data-action="auto-yes">作り直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
   </section>`;
@@ -1768,24 +1806,24 @@ function leaguesHTML(e) {
     const dups = Object.entries(cnt).filter(([, c]) => c > 1);
     const avg = ps.length ? (ps.reduce((s, p) => s + p.level, 0) / ps.length).toFixed(1) : "—";
     const range = ps.length ? `${Math.min(...ps.map((p) => p.level))}〜${Math.max(...ps.map((p) => p.level))}` : "—";
-    return `<article class="card league-card ${lgClass(i)}">
+    return `<article class="card league-card ${lgClass(i)}" data-drop="member" data-drop-id="${i}">
       <div class="league-title"><span class="league-letter">${letter(i)}</span><div><h3>${letter(i)}リーグ</h3><span class="faint num">${count(e, ps.length)} · ${matchCount(ps.length)}試合</span></div></div>
       <div class="league-meta">
         <span class="chip num">ランク ${range}</span><span class="chip num">平均 ${avg}</span>
         ${dups.length ? dups.map(([s, c]) => `<span class="chip chip-warn">${esc(s)} ×${c}</span>`).join("") : ps.length ? `<span class="chip chip-ok">学校の重なりなし</span>` : ""}
       </div>
       <ul class="plist">${ps.map((p) => `<li>
-        <span class="pname">${esc(pname(e, p))}<span class="pschool ${cnt[p.school.trim()] > 1 ? "dup" : ""}">${esc(p.school) || "学校未入力"}</span></span>
+        <span class="pname drag-member" data-drag="member" data-drag-id="${p.id}" data-drag-label="${esc(pname(e, p))}" title="ドラッグして別のリーグへ"><span class="grip" aria-hidden="true">⠿</span>${esc(pname(e, p))}<span class="pschool ${cnt[p.school.trim()] > 1 ? "dup" : ""}">${esc(p.school) || "学校未入力"}</span></span>
         ${levelMeter(p.level)}
         <select class="select move-select" id="mv-${p.id}" data-change="move" data-id="${p.id}" aria-label="${esc(pname(e, p))}の移動先">${moveOpts(i)}</select>
       </li>`).join("") || `<li><span class="faint">${unit(e)}がいません</span></li>`}</ul>
     </article>`;
   }).join("");
   const un = unassigned(e);
-  const unCard = un.length ? `<article class="card">
+  const unCard = un.length ? `<article class="card" data-drop="member" data-drop-id="-1">
       <div class="league-title"><span class="league-letter" style="background:var(--text-tertiary)">?</span><div><h3>どのリーグにも入っていない${unit(e)}</h3><span class="faint">あとから追加した${unit(e)}はここに入ります</span></div></div>
       <ul class="plist" style="margin-top:10px">${un.map((p) => `<li>
-        <span class="pname">${esc(pname(e, p))}<span class="pschool">${esc(p.school)}</span></span>${levelMeter(p.level)}
+        <span class="pname drag-member" data-drag="member" data-drag-id="${p.id}" data-drag-label="${esc(pname(e, p))}" title="ドラッグしてリーグへ"><span class="grip" aria-hidden="true">⠿</span>${esc(pname(e, p))}<span class="pschool">${esc(p.school)}</span></span>${levelMeter(p.level)}
         <select class="select move-select" id="mv-${p.id}" data-change="move" data-id="${p.id}" aria-label="${esc(pname(e, p))}の移動先">${moveOpts(-1)}</select>
       </li>`).join("")}</ul></article>` : "";
   return settings + `<div class="league-grid">${cards}${unCard}</div>`;
@@ -1980,7 +2018,7 @@ function bracketHTML(e) {
   const opts = st.slots.map((id, i) => (id ? `<option value="${i}">${i + 1}. ${esc(pname(e, pm[id]))}</option>` : "")).join("");
   return settings + `
   <section class="card">
-    <div class="card-head"><div><h2>トーナメント表</h2><p class="faint">四角の数字が試合番号。押すとスコアを入れられます。勝ち上がった線が色つきになります。</p></div>
+    <div class="card-head"><div><h2>トーナメント表</h2><p class="faint">四角の数字が試合番号。押すとスコアを入れられます。勝ち上がった線が色つきになります。<b>名前をドラッグして別の名前の上で離すと、場所を入れ替えられます。</b></p></div>
       <button class="btn btn-secondary btn-sm" data-action="x-bracket">Excel にコピー</button></div>
     <div class="ranks" id="branks">${ranksHTML(e, st)}</div>
     <div class="bracket-wrap"><div id="bracket-svg">${bracketSVG(e, st)}</div></div>
@@ -2094,7 +2132,11 @@ function bracketSVG(e, st) {
     const champ = st.champion === id ? " champ" : "";
     const sd = e.bracket.seeds && e.bracket.seeds[id];
     const mark = sd ? `<tspan class="bseed">[${sd}]</tspan> ` : "";
-    out += `<text class="bt${champ}" x="${x}" y="${leafY[s] + 4}" text-anchor="${h === 0 ? "end" : "start"}">${mark}${esc(pname(e, pm[id]))}<tspan class="bs"> ${esc(pm[id].school)}</tspan></text>`;
+    // 名前はドラッグして、別の名前の上で離すと入れ替わる(つかみやすいよう透明の帯を敷く)
+    const hx = h === 0 ? 0 : W - nameW + 4;
+    out += `<g class="bslot" data-drag="slot" data-drag-id="${s}" data-drop="slot" data-drop-id="${s}" data-drag-label="${esc(pname(e, pm[id]))}">
+      <rect class="bhit" x="${hx}" y="${leafY[s] - rowH / 2 + 1}" width="${nameW - 4}" height="${rowH - 2}" rx="8"/>
+      <text class="bt${champ}" x="${x}" y="${leafY[s] + 4}" text-anchor="${h === 0 ? "end" : "start"}">${mark}${esc(pname(e, pm[id]))}<tspan class="bs"> ${esc(pm[id].school)}</tspan></text></g>`;
   });
   // 決勝以外の回戦
   for (let ri = 0; ri < K - 1; ri++) {
@@ -2803,6 +2845,83 @@ app.addEventListener("change", (evt) => {
     }
   }
 });
+
+/* ---- ドラッグ&ドロップ(マウスでも指でも) ----
+   data-drag="種類" の要素をつかんで、同じ種類の data-drop の上で離すと onDrop が呼ばれる。
+   少し動かすまではドラッグにしない(ただのクリックやスクロールと区別する) */
+let drag = null;
+function onDrop(kind, fromId, toId) {
+  const e = ev();
+  if (kind === "slot") {
+    // トーナメント表:2つの枠の選手を入れ替える
+    const s = e.bracket.slots, i = Number(fromId), j = Number(toId);
+    if (i === j || !s[i] || !s[j]) return;
+    const pm = playerMap(e);
+    [s[i], s[j]] = [s[j], s[i]];
+    commit(); render();
+    toast(`${pname(e, pm[s[j]])} と ${pname(e, pm[s[i]])} を入れ替えました`);
+  } else if (kind === "member") {
+    // リーグ分け:選手を別のリーグへ(-1 はどこにも入れない)
+    const to = Number(toId);
+    const from = leagueIndexOf(e, fromId);
+    if (from === to) return;
+    const pm = playerMap(e);
+    e.leagues.forEach((l) => (l.playerIds = l.playerIds.filter((x) => x !== fromId)));
+    if (to >= 0 && e.leagues[to]) {
+      e.leagues[to].playerIds.push(fromId);
+      e.leagues[to].playerIds.sort((x, y) => pm[y].level - pm[x].level);
+    }
+    commit(); render();
+    toast(`${pname(e, pm[fromId])} を${to >= 0 ? `${letter(to)}リーグへ` : "リーグから外しました"}${to >= 0 ? "動かしました" : ""}`);
+  }
+}
+function dragTargetAt(x, y, kind) {
+  const el = document.elementFromPoint(x, y);
+  return el && el.closest(`[data-drop="${kind}"]`);
+}
+app.addEventListener("pointerdown", (evt) => {
+  const el = evt.target.closest("[data-drag]");
+  if (!el || evt.button > 0 || evt.target.closest("select,button,input,textarea")) return;
+  drag = { el, kind: el.dataset.drag, id: el.dataset.dragId, label: el.dataset.dragLabel || "", x: evt.clientX, y: evt.clientY, on: false, ghost: null, over: null };
+});
+addEventListener("pointermove", (evt) => {
+  if (!drag) return;
+  if (!drag.on) {
+    if (Math.hypot(evt.clientX - drag.x, evt.clientY - drag.y) < 6) return;
+    drag.on = true;
+    drag.ghost = document.createElement("div");
+    drag.ghost.className = "drag-ghost";
+    drag.ghost.textContent = drag.label;
+    document.body.appendChild(drag.ghost);
+    drag.el.classList.add("drag-src");
+    document.body.classList.add("is-dragging");
+  }
+  evt.preventDefault();
+  drag.ghost.style.transform = `translate(${evt.clientX + 12}px, ${evt.clientY + 12}px)`;
+  const t = dragTargetAt(evt.clientX, evt.clientY, drag.kind);
+  if (t !== drag.over) {
+    if (drag.over) drag.over.classList.remove("drop-over");
+    drag.over = t;
+    if (t) t.classList.add("drop-over");
+  }
+}, { passive: false });
+function endDrag(evt, cancel) {
+  if (!drag) return;
+  const d = drag;
+  drag = null;
+  if (d.ghost) d.ghost.remove();
+  d.el.classList.remove("drag-src");
+  if (d.over) d.over.classList.remove("drop-over");
+  document.body.classList.remove("is-dragging");
+  if (d.on) suppressClickUntil = Date.now() + 350; // ドラッグ直後のクリック(試合番号など)は無視する
+  if (!d.on || cancel || !d.over) return;
+  onDrop(d.kind, d.id, d.over.dataset.dropId);
+}
+let suppressClickUntil = 0;
+addEventListener("click", (c) => { if (Date.now() < suppressClickUntil) { c.stopPropagation(); c.preventDefault(); } }, true);
+addEventListener("pointerup", (evt) => endDrag(evt, false));
+addEventListener("pointercancel", (evt) => endDrag(evt, true));
+addEventListener("keydown", (evt) => { if (evt.key === "Escape") endDrag(evt, true); });
 
 // 大会名は1行の名前なので、Enter で確定する
 app.addEventListener("keydown", (evt) => {
