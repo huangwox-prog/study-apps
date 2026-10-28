@@ -773,7 +773,12 @@ details.more[open] summary { margin-bottom: 12px; }
   border-radius: 12px 12px 12px 20px; background: var(--surface-strong); border: 1px solid var(--border-soft); cursor: grab; touch-action: none; line-height: 1.3;
 }
 .bchip .pschool { grid-column: 1; }
-.bchip button { grid-column: 2; grid-row: 1 / span 2; }
+.bchip-btns { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; gap: 2px; }
+.bchip-btns .btn { padding: 4px 10px; font-size: 0.78rem; }
+.bchip.is-off { border-style: dashed; opacity: 0.85; }
+.bchip.is-off .pname::after { content: "  今日は休み"; font-size: 0.74rem; color: var(--text-tertiary); }
+.rchip.off { border-style: dashed; color: var(--text-tertiary); cursor: default; }
+.rchip.off::after { content: " 今日は休み"; font-size: 0.72rem; }
 .bchip.is-warn { border-color: var(--warn); background: var(--warn-soft); }
 .bchip.is-rest { opacity: 0.85; }
 .bchip.is-rest .pname::after { content: "  休み"; font-size: 0.74rem; color: var(--text-tertiary); }
@@ -958,6 +963,9 @@ function normalize(raw) {
         return (Array.isArray(pr.pairs) ? pr.pairs : []).map((x) => (Array.isArray(x) ? x.map(String) : []))
           .filter(([a, b]) => a && b && a !== b && ids.has(a) && ids.has(b) && !used.has(a) && !used.has(b) && used.add(a) && used.add(b));
       })(),
+      // その日はもう休む人:{ id, day, fromId(休み始めた回転) }
+      dayOff: (Array.isArray(pr.dayOff) ? pr.dayOff : []).filter((x) => x && ids.has(String(x.id)))
+        .map((x) => ({ id: String(x.id), day: clamp(parseInt(x.day, 10) || 1, 1, 30), fromId: String(x.fromId || "") })),
       rounds: (Array.isArray(pr.rounds) ? pr.rounds : []).filter((r) => r && typeof r === "object").map((r) => {
         const kind = r.kind === "doubles" ? "doubles" : "singles", n = kind === "doubles" ? 2 : 1;
         return {
@@ -1430,6 +1438,11 @@ function pMatchCost(H, tol, avoid, A, B, fixed) {
   return c;
 }
 function pAvg(S) { return S.reduce((s, p) => s + p.level, 0) / S.length; }
+/* その日はもう休む人(ri 番目の回転の時点で)。休み始めた回転が消えていたら、その日の最初から */
+function pDayOff(e, day, ri) {
+  const R = e.practice.rounds;
+  return [...new Set(e.practice.dayOff.filter((x) => x.day === day && ri >= Math.max(0, R.findIndex((r) => r.id === x.fromId))).map((x) => x.id))];
+}
 /* 固定ペアのうち、2人とも今いる選手のもの */
 function pPairs(e) {
   const ids = new Set(e.players.map((p) => p.id));
@@ -2413,15 +2426,21 @@ function pMatchHTML(e, r, mi, iss, cum) {
 }
 function pBenchHTML(e, r, iss, cum) {
   const pm = playerMap(e);
+  const off = new Set(pDayOff(e, r.day, e.practice.rounds.indexOf(r)));
+  const btn = (act, id, t) => `<button type="button" class="btn btn-ghost btn-sm" data-action="${act}" data-r="${r.id}" data-id="${id}">${t}</button>`;
   const chip = (id, resting) => {
     const p = pm[id];
-    return `<span class="bchip ${schoolColors(e).cls(p.school)} ${resting ? "is-rest" : "is-warn"}" data-drag="pslot" data-drag-id="${r.id}|b|${id}" data-drag-label="${esc(p.name)}">
+    const st = off.has(id) ? "is-off" : resting ? "is-rest" : "is-warn";
+    const btns = off.has(id) ? btn("pdayoff-cancel", id, "今日の休みをやめる")
+      : resting ? btn("prest", id, "休みをやめる") + btn("pdayoff", id, "今日はもう休み")
+      : btn("prest", id, "この回転だけ休み") + btn("pdayoff", id, "今日はもう休み");
+    return `<span class="bchip ${schoolColors(e).cls(p.school)} ${st}" data-drag="pslot" data-drag-id="${r.id}|b|${id}" data-drag-label="${esc(p.name)}">
       <span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
       <span class="pschool">${esc(p.school)} · ランク${p.level} · ここまで${cum[id] || 0}試合</span>
-      <button type="button" class="btn btn-ghost btn-sm" data-action="prest" data-r="${r.id}" data-id="${id}">${resting ? "休みをやめる" : "休みにする"}</button></span>`;
+      <span class="bchip-btns">${btns}</span></span>`;
   };
   return `<div class="bench" data-drop="pslot" data-drop-id="${r.id}|bench">
-    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここにドラッグした人は休みになり、組み直しても入りません。戻すときは「休みをやめる」か、試合の枠へドラッグ</span></div>
+    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここにドラッグした人は、この回転だけ休みになります(組み直しても入りません)。その日の残りをずっと休むときは「今日はもう休み」。戻すときは「休みをやめる」か、試合の枠へドラッグ</span></div>
     <div class="bench-list">
       ${iss.unplaced.map((id) => chip(id, false)).join("")}
       ${iss.resting.map((id) => chip(id, true)).join("")}
@@ -2471,7 +2490,8 @@ function practiceHTML(e) {
   const legend = SC.list.length ? `<div class="school-legend">${SC.list.map((sc) => `<span class="chip ${SC.cls(sc)}"><i class="sc-dot"></i>${esc(sc)} ${e.players.filter((x) => x.school.trim() === sc).length}人</span>`).join("")}</div>` : "";
   const dayOpts = Array.from({ length: Math.max(maxDay + 1, day) }, (_, k) => k + 1).map((d) => `<option value="${d}" ${day === d ? "selected" : ""}>${d}日目</option>`).join("");
   const sorted = e.players.slice().sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "ja"));
-  const restChips = sorted.map((x) => `<button type="button" class="rchip ${SC.cls(x.school)} ${nextRest.includes(x.id) ? "on" : ""}" data-action="pnext-rest" data-id="${x.id}" aria-pressed="${nextRest.includes(x.id)}">${esc(x.name || "(名前なし)")}</button>`).join("");
+  const dayOffNext = new Set(pDayOff(e, day, p.rounds.length));
+  const restChips = sorted.map((x) => dayOffNext.has(x.id) ? `<span class="rchip ${SC.cls(x.school)} off" title="今日はもう休み(回転の「今日の休みをやめる」で戻せます)">${esc(x.name || "(名前なし)")}</span>` : `<button type="button" class="rchip ${SC.cls(x.school)} ${nextRest.includes(x.id) ? "on" : ""}" data-action="pnext-rest" data-id="${x.id}" aria-pressed="${nextRest.includes(x.id)}">${esc(x.name || "(名前なし)")}</button>`).join("");
   const radio = (v, t) => `<label class="choice"><input type="radio" name="p-kind" value="${v}" data-change="pnext-kind" ${kind === v ? "checked" : ""}><b>${t}</b></label>`;
   const cumAll = pCum(e);
   return `<section class="card">
@@ -2489,7 +2509,7 @@ function practiceHTML(e) {
     <div class="pnext">
       <div class="field"><span>次の回転の形式</span><div class="choice-grid two">${radio("singles", "シングルス")}${radio("doubles", p.pairMode === "fixed" ? "ダブルス(固定ペア)" : "ダブルス(ペアは毎回組み替え)")}</div></div>
       <div class="field"><span>何日目</span><select class="select" data-change="pnext-day" aria-label="何日目">${dayOpts}</select></div>
-      <div class="field" style="grid-column:1/-1"><span>この回転は休む人(体調不良・休憩など。なければ何も押さない)</span><div class="rchips">${restChips}</div></div>
+      <div class="field" style="grid-column:1/-1"><span>次の回転だけ休む人(体調不良・休憩など。なければ何も押さない)${dayOffNext.size ? `。「今日は休み」の${dayOffNext.size}人は自動で外します` : ""}</span><div class="rchips">${restChips}</div></div>
       <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
     </div>
   </section>
@@ -3392,22 +3412,15 @@ function makeDoublesSample() {
 }
 
 function makePracticeSample() {
+  // 名簿だけの見本(試合はまだ組まない)。3校で、どの学校も強い人から初心者までばらばら。選手も学校もすべて架空
   const data = [
-    // 見本の選手はすべて架空の人物
-    ["桐生 蓮", "桜ヶ丘高", 9], ["早瀬 葵", "港北高", 9], ["柏木 湊", "緑川高", 8], ["鳴海 陽菜", "桜ヶ丘高", 8],
-    ["朝倉 大翔", "青葉高", 7], ["白石 結衣", "港北高", 7], ["水城 悠真", "緑川高", 6], ["宮坂 凛", "青葉高", 6],
-    ["篠原 颯太", "桜ヶ丘高", 5], ["一ノ瀬 美咲", "港北高", 5], ["九条 樹", "緑川高", 4], ["真柴 芽依", "青葉高", 4],
-    ["瀬戸 律", "桜ヶ丘高", 3], ["日向 紬", "港北高", 3], ["高峰 蒼", "緑川高", 2], ["藤代 澪", "青葉高", 2],
+    ["桐生 蓮", "桜ヶ丘高", 10], ["鳴海 陽菜", "桜ヶ丘高", 8], ["朝倉 大翔", "桜ヶ丘高", 7], ["篠原 颯太", "桜ヶ丘高", 5], ["瀬戸 律", "桜ヶ丘高", 3], ["宮坂 凛", "桜ヶ丘高", 2],
+    ["早瀬 葵", "港北高", 9], ["日向 紬", "港北高", 8], ["白石 結衣", "港北高", 6], ["一ノ瀬 美咲", "港北高", 4], ["藤代 澪", "港北高", 1],
+    ["柏木 湊", "緑川高", 9], ["水城 悠真", "緑川高", 7], ["九条 樹", "緑川高", 5], ["真柴 芽依", "緑川高", 4], ["高峰 蒼", "緑川高", 3],
   ];
-  const e = normalize({ name: "見本:合同練習試合(練習用)", mode: "practice", games: 1 });
+  const e = normalize({ name: "見本:合同練習試合(名簿だけ)", mode: "practice", games: 1 });
   e.id = uid();
   e.players = data.map(([name, school, level]) => ({ id: uid(), name, name2: "", school, level }));
-  const plan = [["singles", 1], ["singles", 1], ["doubles", 2]];
-  plan.forEach(([kind, day], i) => {
-    const g = genRound(e, kind, [], e.practice.rounds.length);
-    e.practice.rounds.push({ id: uid(), day, kind, rest: [], matches: g.matches });
-    g.matches.forEach((m, k) => { m.win = (k + i) % 3 === 0 ? "b" : "a"; });
-  });
   return e;
 }
 
@@ -3429,6 +3442,7 @@ function openEvent(id) {
 /* ============ 操作 ============ */
 function pRoundById(e, id) { return e.practice.rounds.find((r) => r.id === id); }
 function pRegen(e, r) {
+  r.rest = [...new Set(r.rest.concat(pDayOff(e, r.day, e.practice.rounds.indexOf(r))))];
   const g = genRound(e, r.kind, r.rest, e.practice.rounds.indexOf(r));
   r.matches = g.matches;
   r.fixed = r.kind === "doubles" && e.practice.pairMode === "fixed";
@@ -3549,6 +3563,7 @@ app.addEventListener("click", (evt) => {
       const id = btn.dataset.id;
       e.players = e.players.filter((p) => p.id !== id);
       e.leagues.forEach((l) => (l.playerIds = l.playerIds.filter((x) => x !== id)));
+      e.practice.dayOff = e.practice.dayOff.filter((x) => x.id !== id);
       e.practice.rounds.forEach((r) => {
         r.rest = r.rest.filter((x) => x !== id);
         r.matches.forEach((m) => { m.a = m.a.map((x) => (x === id ? null : x)); m.b = m.b.map((x) => (x === id ? null : x)); });
@@ -3588,8 +3603,8 @@ app.addEventListener("click", (evt) => {
     }
     case "padd": {
       const p = e.practice, kind = ui.nextKind || p.kind;
-      const rest = (ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id));
       const day = ui.nextDay || (p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1);
+      const rest = [...new Set((ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id)).concat(pDayOff(e, day, p.rounds.length)))];
       const fixed = kind === "doubles" && p.pairMode === "fixed";
       if (fixed && pPairs(e).length < 2) { toast("ペア固定のときは、先にペアを2組以上決めてください(「自動でペアを作る」でも作れます)"); break; }
       const g = genRound(e, kind, rest, p.rounds.length);
@@ -3599,6 +3614,23 @@ app.addEventListener("click", (evt) => {
       commit(); render();
       toast(`第${p.rounds.length}回転を作りました${g.bench.length ? `(${g.bench.length}人は待機)` : ""}`);
       { const c = document.getElementById(`pr-${p.rounds[p.rounds.length - 1].id}`); if (c) c.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      break;
+    }
+    case "pdayoff": {
+      // その日はもう休み:この回転から、その日のこのあとの回転すべてで外す
+      const r = pRoundById(e, btn.dataset.r); if (!r) break;
+      const id = btn.dataset.id, ri = e.practice.rounds.indexOf(r);
+      e.practice.dayOff = e.practice.dayOff.filter((x) => !(x.id === id && x.day === r.day)).concat({ id, day: r.day, fromId: r.id });
+      e.practice.rounds.forEach((x, k) => { if (k >= ri && x.day === r.day && !pPlaced(x).includes(id) && !x.rest.includes(id)) x.rest.push(id); });
+      commit(); render(); toast(`${pName(playerMap(e), id)} は${r.day}日目、この回転から休みにしました。次の回転からも自動で外します`);
+      break;
+    }
+    case "pdayoff-cancel": {
+      const r = pRoundById(e, btn.dataset.r); if (!r) break;
+      const id = btn.dataset.id, ri = e.practice.rounds.indexOf(r);
+      e.practice.dayOff = e.practice.dayOff.filter((x) => !(x.id === id && x.day === r.day));
+      e.practice.rounds.forEach((x, k) => { if (k >= ri && x.day === r.day) x.rest = x.rest.filter((y) => y !== id); });
+      commit(); render(); toast(`${pName(playerMap(e), id)} の今日の休みをやめました`);
       break;
     }
     case "pnext-top": { const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
