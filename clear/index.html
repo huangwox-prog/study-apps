@@ -798,6 +798,8 @@ details.more[open] summary { margin-bottom: 12px; }
 .sheet .sh-g:last-child { border-bottom: none; }
 .sheet .sh-g i { font-style: normal; color: var(--text-tertiary); padding: 0 4px; }
 .sheet .sh-round td { text-align: left; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
+.preg-row { padding: 4px 2px 0; }
+.btn-lg { padding: 13px 28px; font-size: 1.02rem; }
 .pdelta { display: block; font-size: 0.76rem; font-weight: 800; }
 .pdelta.up { color: var(--success); }
 .pdelta.down { color: var(--error); }
@@ -953,8 +955,10 @@ function normalize(raw) {
     const tol = parseInt(pr.tol, 10);
     const side = (arr, n) => Array.from({ length: n }, (_, i) => { const id = Array.isArray(arr) ? arr[i] : null; return id && ids.has(String(id)) ? String(id) : null; });
     ev.practice = {
-      tol: Number.isNaN(tol) ? 2 : clamp(tol, 0, 9),
+      tol: Number.isNaN(tol) ? 1 : clamp(tol, 0, 9),
       avoidSchool: pr.avoidSchool !== false,
+      // ダブルスのペアは同じ学校どうし(練習試合で学校をまたいで組むことはほとんどない)
+      samePair: pr.samePair !== false,
       kind: pr.kind === "doubles" ? "doubles" : "singles",
       // ダブルスのペア:rotate=回転ごとに組み替え / fixed=決めたペアのまま
       pairMode: pr.pairMode === "fixed" ? "fixed" : "rotate",
@@ -1411,7 +1415,7 @@ function pHistory(e, upto) {
   return { faced, partner, games };
 }
 /* 1試合の「悪さ」。小さいほどよい組み合わせ(ランク差・同じ相手・同じ相方・同じ学校) */
-function pMatchCost(H, tol, avoid, A, B, fixed) {
+function pMatchCost(H, tol, avoid, A, B, fixed, samePair) {
   let c = 0;
   if (fixed) {
     // 固定ペアは、ペアの平均ランクどうしで比べる(ペアの中の差は変えられないので)
@@ -1433,6 +1437,7 @@ function pMatchCost(H, tol, avoid, A, B, fixed) {
       const f = H.partner[keyOf(p.id, q.id)];
       if (f) c += f.length * 100;
       c += Math.abs(p.level - q.level) * 0.3;
+      if (samePair && p.school.trim() !== q.school.trim()) c += 400; // 前と同じ相方よりも、別の学校との組を強く避ける
     });
   }
   return c;
@@ -1460,7 +1465,8 @@ function pAutoPairs(e) {
     }
   };
   take((p, q) => p.school.trim() && p.school.trim() === q.school.trim());
-  take(() => true);
+  // 同じ学校どうしにする設定のときは、余った人を学校をまたいで組まない(ペアがいない人として残す)
+  if (!e.practice.samePair) take(() => true);
   e.practice.pairs = pairs;
 }
 /* 1回転ぶんの組み合わせを作る。rest は休みの人。upto はこの回転の番号(これより前の回転を見て重ならないようにする)。
@@ -1495,7 +1501,7 @@ function genRound(e, kind, rest, upto) {
     const costAt = (k) => {
       if (k >= nSlot) return sitCost(arr[k]);
       const m = Math.floor(k / size) * size;
-      return pMatchCost(H, tol, avoid, arr.slice(m, m + half).flat(), arr.slice(m + half, m + size).flat(), fixed);
+      return pMatchCost(H, tol, avoid, arr.slice(m, m + half).flat(), arr.slice(m + half, m + size).flat(), fixed, e.practice.samePair);
     };
     let cur = 0;
     for (let m = 0; m < nSlot; m += size) cur += costAt(m);
@@ -1565,6 +1571,7 @@ function pIssues(e, ri) {
       }
       A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "warn", t: `${pName(pm, x)} と ${pName(pm, y)} は第${f[0]}回転でも対戦` }); }));
     }
+    if (e.practice.samePair) [A, B].forEach((S) => { if (S.length === 2 && pm[S[0]] && pm[S[1]] && pm[S[0]].school.trim() !== pm[S[1]].school.trim()) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は別の学校どうしのペア` }); });
     if (!r.fixed) [A, B].forEach((S) => { if (S.length === 2) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は第${f[0]}回転でもペア` }); } });
     both.filter((id, i) => both.indexOf(id) === i && dayCnt[id] > e.maxPerDay).forEach((id) => out.push({ lv: "warn", t: `${pName(pm, id)} は${r.day}日目に${dayCnt[id]}試合目(上限${e.maxPerDay})` }));
     return out;
@@ -2457,14 +2464,13 @@ function pRoundHTML(e, ri, cumAll) {
   const needMore = r.kind === "doubles" ? 4 : 2;
   const msgs = [];
   if (iss.dup.length) msgs.push(`<div class="confirm perr"><b>エラー:</b><span>${iss.dup.map((id) => esc(pName(pm, id))).join("、")} が同じ回転に2回入っています。ドラッグで直してください。</span></div>`);
-  if (iss.unplaced.length) msgs.push(`<div class="confirm"><b>確認:</b><span>${iss.unplaced.map((id) => esc(pName(pm, id))).join("、")} がこの回転の試合に入っていません。${r.kind === "doubles" ? "ダブルスは4人で1試合なので、4で割り切れないぶんは待機になります。" : ""}わざと抜かすなら、下の「休みにする」を押してください。</span></div>`);
+  if (iss.unplaced.length) msgs.push(`<div class="confirm"><b>待機:</b><span>${iss.unplaced.map((id) => esc(pName(pm, id))).join("、")} はこの回転で試合がありません(人数が${r.kind === "doubles" ? "4" : "2"}で割り切れず、余ったぶんの待機です)。このままでよければ何もしなくて大丈夫です。試合に入れるときは、名前を試合の枠へドラッグしてください。</span></div>`);
   if (!r.matches.length) msgs.push(`<div class="confirm"><span>休みを除いて ${needMore} 人以上いないと試合が組めません。</span></div>`);
   return `<section class="card pround" id="pr-${r.id}">
     <div class="card-head">
       <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div>
       <div class="row">
         <label class="faint">日 <select class="select" data-change="p-day" data-r="${r.id}" aria-label="何日目の回転か">${dayOpts}</select></label>
-        <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">${iss.resting.length ? `休みの${iss.resting.length}人を除いて組み直す` : "この回転を組み直す"}</button>
         <button class="btn btn-ghost btn-sm btn-danger" data-action="pdel" data-r="${r.id}">削除</button>
       </div>
     </div>
@@ -2474,6 +2480,10 @@ function pRoundHTML(e, ri, cumAll) {
     <div class="stack" style="margin-top:12px">
       ${r.matches.map((_, mi) => pMatchHTML(e, r, mi, iss, cum)).join("")}
       ${pBenchHTML(e, r, iss, cum)}
+      <div class="row preg-row">
+        <button class="btn ${iss.resting.length ? "btn-primary" : "btn-secondary"} btn-lg" data-action="preg" data-r="${r.id}">${iss.resting.length ? `休みの${iss.resting.length}人を除いて、第${ri + 1}回転を組み直す` : `第${ri + 1}回転を組み直す`}</button>
+        <span class="faint">${iss.resting.length ? "休みにした人を外して、残りの人で組み合わせを作り直します" : "今の組み合わせを、自動でもう一度作り直します"}</span>
+      </div>
     </div>
   </section>`;
 }
@@ -2498,7 +2508,8 @@ function practiceHTML(e) {
     <div class="card-head"><div><h2>回転ごとの対戦</h2><p class="faint">「第1回転」「第2回転」…と、回転ごとに実力の近い人どうしで組みます。前の回転と同じ相手・同じ相方はなるべく避けます。組んだあと、名前をドラッグして入れ替えられます。</p></div></div>
     <div class="settings">
       <div class="field"><span>組むときのランク差</span><select class="select" data-change="p-tol" aria-label="ランク差の許容">${tolOpts}</select></div>
-      <div class="field"><span>学校</span><label class="check"><input type="checkbox" data-change="p-avoid" ${p.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label></div>
+      <div class="field"><span>学校</span><label class="check"><input type="checkbox" data-change="p-avoid" ${p.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label>
+        <label class="check"><input type="checkbox" data-change="p-samepair" ${p.samePair ? "checked" : ""}>ダブルスのペアは同じ学校どうし</label></div>
       <div class="field"><span>ダブルスのペア</span><select class="select" data-change="p-pairmode" aria-label="ダブルスのペア">
         <option value="rotate" ${p.pairMode === "rotate" ? "selected" : ""}>回転ごとに組み替える</option>
         <option value="fixed" ${p.pairMode === "fixed" ? "selected" : ""}>ペアを固定する</option>
@@ -3545,7 +3556,7 @@ app.addEventListener("click", (evt) => {
     }
     case "toggle-settings": ui.showSettings = !ui.showSettings; ui.confirm = null; render(); break;
     case "dup-event": newEvent(e.players); toast(`${unit(e)}をコピーして新しく作りました`); break;
-    case "sample": { const s = makeSample(btn.dataset.type); events[s.id] = s; openEvent(s.id); ui.tab = s.mode === "practice" ? "rounds" : "matches"; Store.save(s); render(); break; }
+    case "sample": { const s = makeSample(btn.dataset.type); events[s.id] = s; openEvent(s.id); ui.tab = s.mode === "practice" ? "players" : "matches"; Store.save(s); render(); break; }
     case "ask-del-event": ui.confirm = "del-event"; render(); break;
     case "del-event": { const id = e.id; delete events[id]; currentId = null; Object.assign(ui, { view: "home", confirm: null, showSettings: false }); Store.remove(id); render(); toast("削除しました"); break; }
     case "cancel": ui.confirm = null; render(); break;
@@ -3761,6 +3772,7 @@ app.addEventListener("change", (evt) => {
     case "ev-mode": e.mode = MODES[t.value] ? t.value : "league"; if (e.mode === "practice") e.type = "singles"; commit(); render(); break;
     case "p-tol": e.practice.tol = clamp(Number(t.value), 0, 9); commit(); render(); break;
     case "p-avoid": e.practice.avoidSchool = t.checked; commit(); render(); break;
+    case "p-samepair": e.practice.samePair = t.checked; commit(); render(); break;
     case "p-pairmode": e.practice.pairMode = t.value === "fixed" ? "fixed" : "rotate"; if (e.practice.pairMode === "fixed" && !pPairs(e).length) pAutoPairs(e); commit(); render(); break;
     case "p-day": { const r = pRoundById(e, t.dataset.r); if (r) { r.day = clamp(Number(t.value), 1, 30); commit(); render(); } break; }
     case "pnext-day": ui.nextDay = Number(t.value); break;
