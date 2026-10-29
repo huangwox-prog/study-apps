@@ -1019,6 +1019,22 @@ function normalize(raw) {
       }),
     };
     if (ev.mode === "practice") ev.type = "singles"; // 練習試合の選手は1人ずつ。ダブルスはペアを回転ごとに組む
+    // 練習試合は 3ゲームマッチ(2ゲーム先取)で点数を入れる形にした。前の1ゲームの練習試合は一度だけ切り替える。
+    // 1ゲームの欄に「2-0」のようにゲーム数を入れていた結果は「勝ち」として残す。本当の点数(3点以上)が入っていたら切り替えない
+    ev.practice.fmt3 = !!pr.fmt3;
+    if (ev.mode === "practice" && !ev.practice.fmt3) {
+      const ms = ev.practice.rounds.flatMap((r) => r.matches);
+      const realPts = ms.some((m) => m.g.some((x) => (x[0] || 0) > 2 || (x[1] || 0) > 2));
+      if (ev.games !== 3 && !realPts) {
+        ms.forEach((m) => {
+          const x = m.g[0];
+          if (x && x[0] != null && x[1] != null && x[0] !== x[1]) m.win = x[0] > x[1] ? "a" : "b";
+          m.g = [];
+        });
+        ev.games = 3; ev.points = 15;
+      }
+      ev.practice.fmt3 = true;
+    }
   }
   ev.games = ev.games === 3 ? 3 : 1;
   ev.points = [11, 15, 21].includes(ev.points) ? ev.points : 21;
@@ -2443,7 +2459,7 @@ function pDeltaHTML(d) { return d == null ? "" : `<span class="pdelta ${d > 0 ? 
 function pStatusChip(e, m, o) {
   if (o.quick) return `<span class="chip chip-ok">終了</span>`;
   const games = (m.g || []).slice(0, e.games).map((x) => [x[0], x[1]]);
-  if (games.some(([x, y]) => gameWarn(e, x, y))) return `<span class="chip chip-warn" title="${e.points}点ゲームとして点数がおかしい可能性があります">点数を確認</span>`;
+  if (games.some(([x, y]) => gameWarn(e, x, y))) return `<span class="chip chip-warn" title="${e.points}点ゲームとして点数がおかしい可能性があります">点数を確認(${e.points}点のゲーム)</span>`;
   if (extraGame(e, games)) return `<span class="chip chip-warn">いらないゲームあり</span>`;
   if (o.winner) return `<span class="chip chip-ok">終了</span>`;
   if (o.started) return `<span class="chip chip-live">入力中</span>`;
@@ -3547,7 +3563,7 @@ function makePracticeSample() {
     ["早瀬 葵", "港北高", 9], ["日向 紬", "港北高", 8], ["白石 結衣", "港北高", 6], ["一ノ瀬 美咲", "港北高", 4], ["藤代 澪", "港北高", 1],
     ["柏木 湊", "緑川高", 9], ["水城 悠真", "緑川高", 7], ["九条 樹", "緑川高", 5], ["真柴 芽依", "緑川高", 4], ["高峰 蒼", "緑川高", 3],
   ];
-  const e = normalize({ name: "見本:合同練習試合(名簿だけ)", mode: "practice", games: 1 });
+  const e = normalize({ name: "見本:合同練習試合(名簿だけ)", mode: "practice", games: 3, points: 15 });
   e.id = uid();
   e.players = data.map(([name, school, level]) => ({ id: uid(), name, name2: "", school, level: to5(level) })); // 表は10段階で書いてあるので5段階に
   return e;
@@ -3697,7 +3713,7 @@ app.addEventListener("click", (evt) => {
       const type = (document.querySelector('input[name="c-type"]:checked') || {}).value;
       const d = new Date();
       const name = document.getElementById("c-name").value.trim() || `${MODES[mode][0]} ${d.getMonth() + 1}/${d.getDate()}`;
-      newEvent(null, { name, type: mode === "practice" ? "singles" : type, mode, splitMethod: mode === "both" ? "balanced" : "level", practice: mode === "practice" ? { kind: type === "doubles" ? "doubles" : "singles" } : null });
+      newEvent(null, { name, type: mode === "practice" ? "singles" : type, mode, ...(mode === "practice" ? { games: 3, points: 15 } : {}), splitMethod: mode === "both" ? "balanced" : "level", practice: mode === "practice" ? { kind: type === "doubles" ? "doubles" : "singles" } : null });
       toast(`「${name}」を作りました。まず${mode === "practice" ? "選手" : unit(ev())}を入れてください`);
       break;
     }
