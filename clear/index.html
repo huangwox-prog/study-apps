@@ -722,8 +722,15 @@ details.more[open] summary { margin-bottom: 12px; }
 .rchips { display: flex; flex-wrap: wrap; gap: 6px; }
 .rchip { padding: 5px 12px; border-radius: 999px; font-size: 0.84rem; font-weight: 650; background: var(--surface-strong); border: 1px solid var(--border-soft); color: var(--text-secondary); }
 .rchip:hover { border-color: var(--warn); }
+.rchip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 3px 2px 2px; }
+.rchip-name { padding: 3px 8px 3px 10px; border-radius: 999px; font-weight: 650; color: inherit; }
+.rchip-name:hover { background: var(--surface-soft); text-decoration: underline; }
+.rchip-tog { padding: 2px 9px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; background: var(--surface-soft); border: 1px solid var(--border-soft); color: var(--text-secondary); }
+.rchip-tog:hover { border-color: var(--warn); }
 .rchip.on { background: color-mix(in srgb, #f5c400 30%, var(--surface-strong)); border-color: #c99a00; color: var(--text); }
-.rchip.on::before { content: "今回 "; }
+.rchip.on .rchip-tog { background: #f5c400; border-color: #c99a00; color: #1a1400; }
+.rchip.keep .rchip-tog { background: var(--error); border-color: var(--error); color: var(--bg); }
+.pslot.flash, .bchip.flash { box-shadow: 0 0 0 4px var(--accent); transition: box-shadow 0.3s; }
 .pmatch {
   display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px 12px; align-items: center;
   padding: 10px 14px; border-radius: 16px 16px 16px 28px; background: var(--surface-strong); border: 1px solid var(--border-soft);
@@ -790,7 +797,6 @@ details.more[open] summary { margin-bottom: 12px; }
 .is-once .bkind { background: #f5c400; color: #1a1400; }
 .is-keep .bkind { background: var(--error); color: var(--bg); }
 .rchip.keep { background: var(--error-soft); border-color: var(--error); color: var(--error); }
-.rchip.keep::before { content: "次も "; }
 .view-switch { margin-bottom: -6px; }
 .sheet { font-size: 0.86rem; }
 .sheet th, .sheet td { border: 1px solid var(--border); text-align: center; padding: 4px 6px; vertical-align: middle; }
@@ -824,6 +830,10 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
 .q-l { color: var(--text-tertiary); font-weight: 700; }
 .pslot.is-sel { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); cursor: pointer; }
 .psel-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.pname-row { display: flex; align-items: center; gap: 8px; }
+.pm-side.b .pname-row { justify-content: flex-end; }
+.pout-mini { flex-shrink: 0; padding: 2px 10px; border-radius: 999px; font-size: 0.76rem; font-weight: 800; background: color-mix(in srgb, #f5c400 30%, var(--surface-strong)); border: 1.5px solid #c99a00; color: var(--text); }
+.pout-mini:hover { background: #f5c400; color: #1a1400; }
 .pm-side.b .psel-btns { justify-content: flex-end; }
 .pout-once { background: color-mix(in srgb, #f5c400 35%, var(--surface-strong)); border: 2px solid #c99a00; color: var(--text); }
 .pout-keep { background: var(--error-soft); border: 2px solid var(--error); color: var(--error); }
@@ -2544,10 +2554,10 @@ function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds) {
   // 名前を押すと選べる:選ぶと「抜く」ボタンが出る。選んだまま別の人を押すと入れ替え
   const sel = ui.pSel === ref;
   return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""} ${sel ? "is-sel" : ""}" data-action="pselect" data-ref="${ref}" role="button" tabindex="0" aria-pressed="${sel}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="押すと選べます(抜く・入れ替え)。ドラッグでも動かせます">
-    <span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
+    <span class="pname-row"><span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
+      <button type="button" class="pout-mini" data-action="pout" data-ref="${ref}" data-kind="once" title="${esc(p.name)} をこの回転だけ抜く(下の置き場で名前を押すと「次の回転も抜く」になる)">抜く</button></span>
     <span class="pschool">${esc(p.school)} · ランク${p.level} · ${cum[pid] || 0}試合目</span>
     ${sel ? `<span class="psel-btns">
-      <button type="button" class="btn btn-sm pout-once" data-action="pout" data-ref="${ref}" data-kind="once">今回だけ抜く</button>
       <button type="button" class="btn btn-sm pout-keep" data-action="pout" data-ref="${ref}" data-kind="keep">次の回転も抜く</button>
       <span class="faint">ほかの人や空き枠を押すと入れ替え</span></span>` : ""}</div>`;
 }
@@ -2648,7 +2658,8 @@ function practiceHTML(e) {
   // タップするたびに:なし → 今回だけ抜く(黄) → 次の回転も抜く(赤) → なし
   const keepNext = new Set(pKeep(e, p.rounds.length));
   const restChips = sorted.map((x) => { const k = keepNext.has(x.id) ? "keep" : nextRest.includes(x.id) ? "on" : "";
-    return `<button type="button" class="rchip ${SC.cls(x.school)} ${k}" data-action="pnext-rest" data-id="${x.id}" aria-label="${esc(x.name)}:${k === "keep" ? "次の回転も抜く" : k ? "今回だけ抜く" : "抜かない"}">${esc(x.name || "(名前なし)")}</button>`; }).join("");
+    // 名前を押すと、いちばん新しい回転のその人の試合へ飛ぶ。右の小さいボタンで次の回転に抜くかを切り替える
+    return `<span class="rchip ${SC.cls(x.school)} ${k}"><button type="button" class="rchip-name" data-action="pjump-p" data-id="${x.id}" title="${esc(x.name)} の試合へ">${esc(x.name || "(名前なし)")}</button><button type="button" class="rchip-tog" data-action="pnext-rest" data-id="${x.id}" aria-label="${esc(x.name)}を次の回転で抜くか(今:${k === "keep" ? "次の回転も抜く" : k ? "今回だけ抜く" : "抜かない"})">${k === "keep" ? "次も抜く" : k ? "今回抜く" : "抜く"}</button></span>`; }).join("");
   const radio = (v, t) => `<label class="choice"><input type="radio" name="p-kind" value="${v}" data-change="pnext-kind" ${sel === v ? "checked" : ""}><b>${t}</b></label>`;
   const cumAll = pCum(e);
   return `<section class="card">
@@ -2663,7 +2674,7 @@ function practiceHTML(e) {
       <div class="field" style="grid-column:1/-1"><span>次の回転の形式</span><div class="choice-grid three">${radio("singles", "シングルス")}${radio("doubles", "ダブルス(ペアは毎回組み替え)")}${radio("fixed", "ダブルス(ペア固定)")}</div>
         ${sel === "fixed" ? pPairsHTML(e, SC) : ""}</div>
       <div class="field"><span>何日目</span><select class="select" data-change="pnext-day" aria-label="何日目">${dayOpts}</select></div>
-      <div class="field" style="grid-column:1/-1"><span>次の回転で抜く人(体調不良・休憩など。なければ何も押さない)。タップするたびに 今回だけ抜く(黄)→ 次の回転も抜く(赤)→ 抜かない</span><div class="rchips">${restChips}</div></div>
+      <div class="field" style="grid-column:1/-1"><span>選手の名前を押すと、その人の試合へ飛びます。次の回転で抜く人(体調不良・休憩など)は、名前の右の「抜く」を押すたびに 今回だけ抜く(黄)→ 次の回転も抜く(赤)→ 抜かない</span><div class="rchips">${restChips}</div></div>
       <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
     </div>
   </section>
@@ -3903,6 +3914,19 @@ app.addEventListener("click", (evt) => {
     case "pjump": {
       const el = document.getElementById(`pm-${btn.dataset.m}`);
       if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
+      break;
+    }
+    case "pjump-p": {
+      // いちばん新しい回転で、その人の枠(なければ置き場の名前)へ飛び、選んだ状態にする
+      const id = btn.dataset.id, R = e.practice.rounds, r = R[R.length - 1];
+      if (!r) { toast("まだ回転がありません。先に回転を作ってください"); break; }
+      let ref = null;
+      r.matches.forEach((m, mi) => ["a", "b"].forEach((k) => m[k].forEach((x, pos) => { if (x === id) ref = `${r.id}|m|${mi}|${k}|${pos}`; })));
+      ui.pSel = ref;
+      render();
+      const el = ref ? document.querySelector(`.pslot[data-ref="${ref}"]`) : document.querySelector(`#pr-${r.id} .bchip[data-id="${id}"]`);
+      if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
+      toast(ref ? `第${R.length}回転の ${pName(playerMap(e), id)}。ここで抜く・入れ替えができます` : `${pName(playerMap(e), id)} は第${R.length}回転の試合に入っていません`);
       break;
     }
     case "pselect": {
