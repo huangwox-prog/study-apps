@@ -849,6 +849,18 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
 .q-l { color: var(--text-tertiary); font-weight: 700; }
 .pslot.is-sel { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); cursor: pointer; }
 .psel-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+/* 閉じた試合:名前と点数だけの小さいカード */
+.pmatch.compact { cursor: pointer; padding: 6px 12px; gap: 4px 10px; }
+.pmatch.compact:hover { border-color: var(--accent); }
+.pmatch.compact .pslot { padding: 3px 8px; }
+.pm-cscore { display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 5.5em; }
+.cg { display: grid; grid-template-columns: 2.2em auto 2.2em; align-items: center; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.cg b { font-weight: 700; color: var(--text-secondary); text-align: right; }
+.cg b:last-child { text-align: left; }
+.cg b.w { color: var(--error); font-weight: 800; }
+.cg i { font-style: normal; color: var(--text-tertiary); padding: 0 4px; }
+.cg-empty { font-size: 0.74rem; color: var(--text-tertiary); }
+.pmatch.is-open { border: 2px solid var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .pname-row { display: flex; align-items: center; gap: 8px; }
 .pm-side.b .pname-row { justify-content: flex-end; }
 .pout-mini { flex-shrink: 0; padding: 2px 10px; border-radius: 999px; font-size: 0.76rem; font-weight: 800; background: color-mix(in srgb, #f5c400 30%, var(--surface-strong)); border: 1.5px solid #c99a00; color: var(--text); }
@@ -907,7 +919,7 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
   .pnext { grid-template-columns: 1fr; }
   .pmatch { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "n n" "a b" "s s" "i i"; }
   .pm-num { grid-area: n; font-size: 0.9rem; }
-  .pm-side.a { grid-area: a; } .pm-side.b { grid-area: b; } .pmatch .m-scores { grid-area: s; } .pm-issues { grid-area: i; }
+  .pm-side.a { grid-area: a; } .pm-side.b { grid-area: b; } .pmatch .m-scores, .pmatch .pm-cscore { grid-area: s; } .pm-issues { grid-area: i; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -2566,17 +2578,19 @@ function pFindHTML(e) {
       : `<p class="muted" style="margin:8px 0 0">「${esc(ui.q)}」に当たる選手はいません</p>`}
   </section>`;
 }
-function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds) {
+function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds, compact) {
   const ref = `${r.id}|m|${mi}|${side}|${pos}`;
   const p = pid ? playerMap(e)[pid] : null;
   // 選んでいる人がいるときは、空き枠を押すとそこへ動かせる
   if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}" ${ui.pSel ? `data-action="pselect" data-ref="${ref}" role="button" tabindex="0"` : ""}><span class="pname">空き</span><span class="pschool">${ui.pSel ? "押すと、選んだ人をここへ" : "ここにドラッグ"}</span></div>`;
   // 名前を押すと選べる:選ぶと「抜く」ボタンが出る。選んだまま別の人を押すと入れ替え
   const sel = ui.pSel === ref;
-  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""} ${sel ? "is-sel" : ""}" data-action="pselect" data-ref="${ref}" role="button" tabindex="0" aria-pressed="${sel}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="押すと選べます(抜く・入れ替え)。ドラッグでも動かせます">
+  // 小さいカード(閉じた試合)では、名前を押すとカードが開く。だれかを選んでいるときだけ、押すと入れ替え
+  const act = !compact || ui.pSel ? `data-action="pselect" data-ref="${ref}" role="button" tabindex="0" aria-pressed="${sel}"` : "";
+  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""} ${sel ? "is-sel" : ""}" ${act} data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="押すと選べます(抜く・入れ替え)。ドラッグでも動かせます">
     <span class="pname-row"><span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
       <button type="button" class="pout-mini" data-action="pout" data-ref="${ref}" data-kind="once" title="${esc(p.name)} をこの回転だけ抜く(下の置き場で名前を押すと「次の回転も抜く」になる)">抜く</button></span>
-    <span class="pschool">${esc(p.school)} · ランク${p.level} · ${cum[pid] || 0}試合目</span>
+    <span class="pschool">${esc(p.school)}${compact ? "" : ` · ランク${p.level} · ${cum[pid] || 0}試合目`}</span>
     ${sel ? `<span class="psel-btns">
       <button type="button" class="btn btn-sm pout-keep" data-action="pout" data-ref="${ref}" data-kind="keep">次の回転も抜く</button>
       <span class="faint">ほかの人や空き枠を押すと入れ替え</span></span>` : ""}</div>`;
@@ -2598,10 +2612,26 @@ function pMatchHTML(e, r, mi, iss, cum) {
       ${quickWinHTML(o, key, `data-action="pqwin" ${attrs}`)}</div>`;
   const hasDup = iss.per[mi].some((x) => x.lv === "dup");
   const chips = iss.per[mi].map((x) => `<span class="chip ${x.lv === "err" ? "chip-err" : x.lv === "warn" ? "chip-warn" : x.lv === "dup" ? "chip-dup" : ""}">${x.lv === "err" ? "エラー:" : ""}${esc(x.t)}</span>`).join("");
-  return `<div class="pmatch ${o.winner ? "is-done" : ""} ${hasDup ? "has-dup" : ""}" id="pm-${m.id}">
+  if (ui.pOpen !== m.id) {
+    // ふだんは名前とゲームごとの点数だけの小さいカード。押すと開いて点数を入れられる
+    const lines = Array.from({ length: e.games }, (_, g) => (m.g || [])[g] || [null, null]).filter(([x, y]) => x != null || y != null);
+    const cell = (x, y) => `<div class="cg"><b class="${x != null && y != null && x > y ? "w" : ""}">${x ?? ""}</b><i>-</i><b class="${x != null && y != null && y > x ? "w" : ""}">${y ?? ""}</b></div>`;
+    const sc = lines.length ? lines.map(([x, y]) => cell(x, y)).join("")
+      : o.quick ? `<div class="cg"><b class="${o.winner === "a" ? "w" : ""}">${o.winner === "a" ? "勝" : "負"}</b><i>-</i><b class="${o.winner === "b" ? "w" : ""}">${o.winner === "b" ? "勝" : "負"}</b></div>`
+      : `<span class="cg-empty">押して点数を入れる</span>`;
+    const cside = (S, key) => `<div class="pm-side ${key} ${o.winner === key ? "win" : ""}"><div class="pm-slots">${S.map((pid, pos) => pSlotHTML(e, r, mi, key, pos, pid, cum, iss.dup, true)).join("")}</div></div>`;
+    return `<div class="pmatch compact ${o.winner ? "is-done" : ""} ${hasDup ? "has-dup" : ""}" id="pm-${m.id}" data-action="popen" data-m="${m.id}" role="button" tabindex="0" aria-expanded="false" title="押すと点数を入れる画面が開きます">
+      <div class="pm-num num">${mi + 1}</div>
+      ${cside(m.a, "a")}
+      <div class="pm-cscore">${sc}</div>
+      ${cside(m.b, "b")}
+      ${chips ? `<div class="pm-issues">${chips}</div>` : ""}
+    </div>`;
+  }
+  return `<div class="pmatch is-open ${o.winner ? "is-done" : ""} ${hasDup ? "has-dup" : ""}" id="pm-${m.id}">
     <div class="pm-num num">${mi + 1}</div>
     ${side(m.a, "a")}
-    <div class="m-scores">${inputs}<span class="pm-st">${pStHTML(e, m, o)}</span></div>
+    <div class="m-scores">${inputs}<span class="pm-st">${pStHTML(e, m, o)}</span><button type="button" class="btn btn-ghost btn-sm" data-action="popen" data-m="${m.id}">閉じる</button></div>
     ${side(m.b, "b")}
     ${chips ? `<div class="pm-issues">${chips}</div>` : ""}
   </div>`;
@@ -3932,6 +3962,7 @@ app.addEventListener("click", (evt) => {
     }
     case "qclear": ui.q = ""; render(); { const n = document.getElementById("q"); if (n) n.focus({ preventScroll: true }); } break;
     case "pjump": {
+      ui.pOpen = btn.dataset.m; render();
       const el = document.getElementById(`pm-${btn.dataset.m}`);
       if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
       break;
@@ -3947,6 +3978,17 @@ app.addEventListener("click", (evt) => {
       const el = ref ? document.querySelector(`.pslot[data-ref="${ref}"]`) : document.querySelector(`#pr-${r.id} .bchip[data-id="${id}"]`);
       if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
       toast(ref ? `第${R.length}回転の ${pName(playerMap(e), id)}。ここで抜く・入れ替えができます` : `${pName(playerMap(e), id)} は第${R.length}回転の試合に入っていません`);
+      break;
+    }
+    case "popen": {
+      // 試合のカードを開く/閉じる(開くのは1つずつ)
+      const id = btn.dataset.m;
+      ui.pOpen = ui.pOpen === id ? null : id;
+      render();
+      if (ui.pOpen) {
+        const el = document.getElementById(`pm-${id}`);
+        if (el) { el.scrollIntoView({ block: "nearest", behavior: "smooth" }); const f = el.querySelector(".score"); if (f) f.focus({ preventScroll: true }); }
+      }
       break;
     }
     case "pselect": {
@@ -4240,7 +4282,7 @@ let suppressClickUntil = 0;
 addEventListener("click", (c) => { if (Date.now() < suppressClickUntil) { c.stopPropagation(); c.preventDefault(); } }, true);
 addEventListener("pointerup", (evt) => endDrag(evt, false));
 addEventListener("pointercancel", (evt) => endDrag(evt, true));
-addEventListener("keydown", (evt) => { if (evt.key === "Escape") { endDrag(evt, true); if (ui.pSel) { ui.pSel = null; render(); } } });
+addEventListener("keydown", (evt) => { if (evt.key === "Escape") { endDrag(evt, true); if (ui.pSel || ui.pOpen) { ui.pSel = null; ui.pOpen = null; render(); } } });
 
 // 大会名は1行の名前なので、Enter で確定する
 app.addEventListener("keydown", (evt) => {
