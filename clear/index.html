@@ -786,7 +786,6 @@ details.more[open] summary { margin-bottom: 12px; }
   .pmatches .qwin { margin-top: 3px; min-width: 52px; padding: 3px 10px; font-size: 0.78rem; }
   .pmatches .pm-gc { font-size: 1rem; gap: 6px; }
   .pmatches .pm-st .chip { padding: 1px 8px; font-size: 0.7rem; }
-  .pmatches .pout-mini { padding: 1px 8px; font-size: 0.7rem; }
   .pmatches .pm-issues .chip { font-size: 0.7rem; }
 }
 .pmatches.drop-over { outline: 3px dashed var(--accent); outline-offset: 6px; border-radius: 18px; }
@@ -863,8 +862,9 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
 .pmatch.is-open { border: 2px solid var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .pname-row { display: flex; align-items: center; gap: 8px; }
 .pm-side.b .pname-row { justify-content: flex-end; }
-.pout-mini { flex-shrink: 0; padding: 2px 10px; border-radius: 999px; font-size: 0.76rem; font-weight: 800; background: color-mix(in srgb, #f5c400 30%, var(--surface-strong)); border: 1.5px solid #c99a00; color: var(--text); }
-.pout-mini:hover { background: #f5c400; color: #1a1400; }
+/* 抜くボタンは控えめに(灰色の小さい字)。マウスを乗せたときだけ黄色 */
+.pout-mini { flex-shrink: 0; padding: 0 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 600; line-height: 1.6; background: transparent; border: 1px solid var(--border-soft); color: var(--text-tertiary); }
+.pout-mini:hover, .pout-mini:focus-visible { background: color-mix(in srgb, #f5c400 30%, var(--surface-strong)); border-color: #c99a00; color: var(--text); }
 .pm-side.b .psel-btns { justify-content: flex-end; }
 .pout-once { background: color-mix(in srgb, #f5c400 35%, var(--surface-strong)); border: 2px solid #c99a00; color: var(--text); }
 .pout-keep { background: var(--error-soft); border: 2px solid var(--error); color: var(--error); }
@@ -1087,19 +1087,23 @@ function normalize(raw) {
     if (ev.mode === "practice") ev.type = "singles"; // 練習試合の選手は1人ずつ。ダブルスはペアを回転ごとに組む
     // 練習試合は 3ゲームマッチ(2ゲーム先取)で点数を入れる形にした。前の1ゲームの練習試合は一度だけ切り替える。
     // 1ゲームの欄に「2-0」のようにゲーム数を入れていた結果は「勝ち」として残す。本当の点数(3点以上)が入っていたら切り替えない
-    ev.practice.fmt3 = !!pr.fmt3;
-    if (ev.mode === "practice" && !ev.practice.fmt3) {
-      const ms = ev.practice.rounds.flatMap((r) => r.matches);
-      const realPts = ms.some((m) => m.g.some((x) => (x[0] || 0) > 2 || (x[1] || 0) > 2));
-      if (ev.games !== 3 && !realPts) {
+    // 1ゲームの練習試合は、開いたときに一度だけ3ゲームマッチにする(`fmt3b`。前の `fmt3` は点数入りを切り替えていなかった)。
+    // 「2-0」のようにゲーム数を入れていた試合は「勝ち」に、1ゲームの点数(21-15 など)は第1ゲームとして残し、勝ち負けも残す
+    ev.practice.fmt3b = !!pr.fmt3b;
+    if (ev.mode === "practice" && !ev.practice.fmt3b) {
+      if (ev.games !== 3) {
+        const ms = ev.practice.rounds.flatMap((r) => r.matches);
+        const realPts = ms.some((m) => m.g.some((x) => (x[0] || 0) > 2 || (x[1] || 0) > 2));
         ms.forEach((m) => {
           const x = m.g[0];
-          if (x && x[0] != null && x[1] != null && x[0] !== x[1]) m.win = x[0] > x[1] ? "a" : "b";
-          m.g = [];
+          const done = x && x[0] != null && x[1] != null && x[0] !== x[1];
+          if (done) m.win = x[0] > x[1] ? "a" : "b";
+          if (!done || Math.max(x[0], x[1]) <= 2) m.g = []; else m.g = [x]; // 本当の点数なら第1ゲームとして残す
         });
-        ev.games = 3; ev.points = 15;
+        ev.games = 3;
+        if (!realPts) ev.points = 15;
       }
-      ev.practice.fmt3 = true;
+      ev.practice.fmt3b = true;
     }
   }
   ev.games = ev.games === 3 ? 3 : 1;
@@ -1507,7 +1511,12 @@ function totals(e) {
    「実力が近い人どうし・前の回転と同じ相手や相方を避けて」自動で組み、あとはドラッグで直せる。
    e.practice = { tol: ランク差の許容, avoidSchool, kind, rounds: [ { id, day, kind, rest:[選手id], matches:[ { id, a:[id…], b:[id…], g, win } ] } ] } */
 const P_KIND = { singles: "シングルス", doubles: "ダブルス" };
-function pOutcome(e, m) { return outcomeOf(e, (m.g || []).slice(0, e.games), "a", "b", null, m.win); }
+function pOutcome(e, m) {
+  const o = outcomeOf(e, (m.g || []).slice(0, e.games), "a", "b", null, m.win);
+  // 1ゲームの時期に入れた結果:第1ゲームの点数だけで、勝ち負けは m.win に残っている
+  if (!o.winner && m.win && !isEmptyGames(m.g)) { const need = e.games === 1 ? 1 : 2; return Object.assign(o, { winner: m.win, ga: m.win === "a" ? need : Math.min(o.ga, need - 1), gb: m.win === "b" ? need : Math.min(o.gb, need - 1), started: true }); }
+  return o;
+}
 function pPlaced(r) { const out = []; r.matches.forEach((m) => m.a.concat(m.b).forEach((x) => x && out.push(x))); return out; }
 function tolLabel(k) { return k === 0 ? "同じランクだけ" : `前後${k}まで`; }
 /* 学校ごとの色。学校名の50音順に、リーグと同じ8色を順に割り当てる */
