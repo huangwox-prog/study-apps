@@ -852,7 +852,9 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
 .pmatch.compact { cursor: pointer; padding: 6px 12px; gap: 4px 10px; }
 .pmatch.compact:hover { border-color: var(--accent); }
 .pmatch.compact .pslot { padding: 3px 8px; }
-.pm-cscore { display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 5.5em; }
+.pm-cscore { display: flex; align-items: center; gap: 14px; min-width: 5.5em; }
+.cg-lines { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.cg-gc { padding: 2px 10px; border-left: 1px solid var(--hairline); font-size: 1.35rem; }
 .cg { display: grid; grid-template-columns: 2.2em auto 2.2em; align-items: center; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .cg b { font-weight: 700; color: var(--text-secondary); text-align: right; }
 .cg b:last-child { text-align: left; }
@@ -2632,7 +2634,7 @@ function pMatchHTML(e, r, mi, iss, cum) {
     return `<div class="pmatch compact ${o.winner ? "is-done" : ""} ${hasDup ? "has-dup" : ""}" id="pm-${m.id}" data-action="popen" data-m="${m.id}" role="button" tabindex="0" aria-expanded="false" title="押すと点数を入れる画面が開きます">
       <div class="pm-num num">${mi + 1}</div>
       ${cside(m.a, "a")}
-      <div class="pm-cscore">${sc}</div>
+      <div class="pm-cscore"><div class="cg-lines">${sc}</div>${e.games > 1 && o.started ? `<span class="pm-gc cg-gc num"><b class="${o.winner === "a" ? "w" : ""}">${o.ga}</b><i>−</i><b class="${o.winner === "b" ? "w" : ""}">${o.gb}</b></span>` : ""}</div>
       ${cside(m.b, "b")}
       ${chips ? `<div class="pm-issues">${chips}</div>` : ""}
     </div>`;
