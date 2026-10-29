@@ -807,6 +807,8 @@ details.more[open] summary { margin-bottom: 12px; }
 .preg-row { padding: 4px 2px 0; }
 .chip-dup { background: color-mix(in srgb, var(--lg-b) 14%, transparent); color: var(--lg-b); font-weight: 750; }
 .pmatch.has-dup { border: 2px solid color-mix(in srgb, var(--lg-b) 50%, transparent); }
+.sheet .sh-winname { background: color-mix(in srgb, var(--error) 14%, transparent); box-shadow: inset 4px 0 0 var(--error); }
+.sheet .sh-winmark { float: right; margin-left: 6px; padding: 1px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; background: var(--error); color: var(--bg); }
 .sheet .sh-dup { display: block; font-size: 0.66rem; font-weight: 800; color: var(--lg-b); }
 .btn-lg { padding: 13px 28px; font-size: 1.02rem; }
 .pdelta { display: block; font-size: 0.76rem; font-weight: 800; }
@@ -867,7 +869,7 @@ details.more[open] summary { margin-bottom: 12px; }
   #print-area svg { display: block; width: 100%; height: auto; max-height: 280mm; }
   /* 練習試合の成績:紙は白地に黒。画面がダークでもライトの色で刷る */
   #print-area {
-    --text: #000; --text-secondary: #222; --text-tertiary: #444; --border: #000; --hairline: #888; --border-soft: #888;
+    --bg: #fff; --text: #000; --text-secondary: #222; --text-tertiary: #444; --border: #000; --hairline: #888; --border-soft: #888;
     --surface: transparent; --surface-strong: transparent; --surface-soft: transparent;
     --accent: #2f4cf0; --accent-soft: rgba(47, 76, 240, 0.1); --success: #186a46; --warn: #8a5c12; --warn-soft: rgba(154, 106, 31, 0.13); --error: #b23b3b;
     --lg-a: #2f4cf0; --lg-b: #8134ea; --lg-c: #057562; --lg-d: #c2410c; --lg-e: #c2255c; --lg-f: #8f6400; --lg-g: #0b7285; --lg-h: #5f6470;
@@ -2708,22 +2710,24 @@ function pSheetHTML(e) {
   const SC = schoolColors(e), pm = playerMap(e);
   const rounds = e.practice.rounds;
   const opts = `<option value="all" ${sel === "all" ? "selected" : ""}>すべての回転</option>` + rounds.map((r, i) => `<option value="${i}" ${sel === i ? "selected" : ""}>第${i + 1}回転(${r.day}日目・${P_KIND[r.kind]})</option>`).join("");
-  const nameCell = (S) => `<td class="sh-name">${S.ids.length ? `<span class="sh-names">${S.ids.map((id) => `<b class="sc-name ${SC.cls(pm[id].school)}">${esc(pm[id].name || "(名前なし)")}</b>`).join("")}</span><span class="sh-school">${esc(S.school.join("・"))}</span>` : ""}</td>`;
+  // 対戦結果表(1回転ごと)はゲーム数の列を出さず、勝った側の名前の欄を赤でマークする。組み合わせごとの成績はゲーム数(勝ち数)を出す
+  const pair = ui.pView === "pair", cols = pair ? 11 : 9;
+  const nameCell = (S, win) => `<td class="sh-name ${win && !pair ? "sh-winname" : ""}">${win && !pair ? `<span class="sh-winmark">勝ち</span>` : ""}${S.ids.length ? `<span class="sh-names">${S.ids.map((id) => `<b class="sc-name ${SC.cls(pm[id].school)}">${esc(pm[id].name || "(名前なし)")}</b>`).join("")}</span><span class="sh-school">${esc(S.school.join("・"))}</span>` : ""}</td>`;
   const stack = (arr) => arr.filter((x) => x !== "").join("<br>");
   let lastR = null;
   const body = rows.map((x) => {
-    const head = ui.pView !== "pair" && sel === "all" && x.r !== lastR ? `<tr class="sh-round"><td colspan="11">第${x.ri + 1}回転 · ${x.r.day}日目 · ${P_KIND[x.r.kind]}</td></tr>` : "";
+    const head = ui.pView !== "pair" && sel === "all" && x.r !== lastR ? `<tr class="sh-round"><td colspan="${cols}">第${x.ri + 1}回転 · ${x.r.day}日目 · ${P_KIND[x.r.kind]}</td></tr>` : "";
     lastR = x.r;
     const sc = x.lines.map((l) => `<div class="sh-g"><span>${l.a ?? ""}</span><i>−</i><span>${l.b ?? ""}</span></div>`).join("");
     const winA = x.winA, winB = x.winB;
     return `${head}<tr>
       <td class="num">${x.num}${x.dup ? `<small class="sh-dup">かぶり</small>` : ""}${x.times > 1 ? `<small class="sh-dup">${x.times}回対戦</small>` : ""}</td><td class="num">${x.rounds.join("・")}</td>
       <td class="sh-id num">${stack(x.A.no)}</td><td class="num">${stack(x.A.rank)}</td>
-      ${nameCell(x.A)}
-      <td class="sh-gc num ${winA ? "sh-win" : ""}">${x.shown ? x.gA : ""}</td>
+      ${nameCell(x.A, winA)}
+      ${pair ? `<td class="sh-gc num ${winA ? "sh-win" : ""}">${x.shown ? x.gA : ""}</td>` : ""}
       <td class="sh-sc num">${sc}</td>
-      <td class="sh-gc num ${winB ? "sh-win" : ""}">${x.shown ? x.gB : ""}</td>
-      ${nameCell(x.B)}
+      ${pair ? `<td class="sh-gc num ${winB ? "sh-win" : ""}">${x.shown ? x.gB : ""}</td>` : ""}
+      ${nameCell(x.B, winB)}
       <td class="num">${stack(x.B.rank)}</td><td class="sh-id num">${stack(x.B.no)}</td>
     </tr>`;
   }).join("");
@@ -2736,8 +2740,8 @@ function pSheetHTML(e) {
       <button class="btn btn-secondary btn-sm" data-action="print-practice" title="印刷の画面で「PDFに保存」を選んでください">PDFで保存</button>
       <button class="btn btn-secondary btn-sm" data-action="x-psheet">Excel にコピー</button></div></div>
     <div class="table-wrap"><table class="sheet">
-      <thead><tr><th>試合<br>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>ゲーム<br>数</th><th>得点</th><th>ゲーム<br>数</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead>
-      <tbody>${body || `<tr><td colspan="11" class="faint">この回転には試合がありません</td></tr>`}</tbody>
+      <thead><tr><th>試合<br>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th>${pair ? "<th>ゲーム<br>数</th>" : ""}<th>得点</th>${pair ? "<th>ゲーム<br>数</th>" : ""}<th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead>
+      <tbody>${body || `<tr><td colspan="${cols}" class="faint">この回転には試合がありません</td></tr>`}</tbody>
     </table></div>
   </section>`;
 }
@@ -2745,11 +2749,15 @@ function pSheetBlock(e) {
   const { rows } = pSheetData(e);
   const nG = Math.max(e.games, ...rows.map((x) => x.lines.length));
   const heads = nG === 1 ? ["スコア"] : Array.from({ length: nG }, (_, i) => `第${i + 1}ゲーム`);
-  const out = [["試合番号", "回転", "選手番号", "ランク", "選手名", "学校名", "ゲーム数", ...heads, "ゲーム数", "選手名", "学校名", "ランク", "選手番号"]];
+  const pair = ui.pView === "pair";
+  const out = [pair ? ["試合番号", "回転", "選手番号", "ランク", "選手名", "学校名", "ゲーム数", ...heads, "ゲーム数", "選手名", "学校名", "ランク", "選手番号"]
+    : ["試合番号", "回転", "選手番号", "ランク", "選手名", "学校名", ...heads, "選手名", "学校名", "ランク", "選手番号", "勝者"]];
   const j = (a) => a.filter((x) => x !== "").join("・");
-  rows.forEach((x) => out.push([x.num, x.rounds.join("・"), j(x.A.no), j(x.A.rank), j(x.A.name), x.A.school.join("・"), x.shown ? x.gA : "",
-    ...Array.from({ length: nG }, (_, g) => { const l = x.lines[g]; return l && (l.a != null || l.b != null) ? `${l.a ?? ""}－${l.b ?? ""}` : ""; }),
-    x.shown ? x.gB : "", j(x.B.name), x.B.school.join("・"), j(x.B.rank), j(x.B.no)]));
+  rows.forEach((x) => {
+    const sc = Array.from({ length: nG }, (_, g) => { const l = x.lines[g]; return l && (l.a != null || l.b != null) ? `${l.a ?? ""}－${l.b ?? ""}` : ""; });
+    if (pair) out.push([x.num, x.rounds.join("・"), j(x.A.no), j(x.A.rank), j(x.A.name), x.A.school.join("・"), x.shown ? x.gA : "", ...sc, x.shown ? x.gB : "", j(x.B.name), x.B.school.join("・"), j(x.B.rank), j(x.B.no)]);
+    else out.push([x.num, x.rounds.join("・"), j(x.A.no), j(x.A.rank), j(x.A.name), x.A.school.join("・"), ...sc, j(x.B.name), x.B.school.join("・"), j(x.B.rank), j(x.B.no), x.winA ? j(x.A.name) : x.winB ? j(x.B.name) : ""]);
+  });
   return { title: ui.pView === "pair" ? "組み合わせごとの成績" : "対戦結果表", rows: out };
 }
 function pMatchesBlock(e) {
