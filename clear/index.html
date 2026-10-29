@@ -802,6 +802,7 @@ details.more[open] summary { margin-bottom: 12px; }
 .sheet .sh-sc { padding: 0; min-width: 7em; }
 .sheet .sh-g { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 1.7em; border-bottom: 1px solid var(--hairline); }
 .sheet .sh-g:last-child { border-bottom: none; }
+.sheet .sh-g .w { color: var(--error); font-weight: 800; background: color-mix(in srgb, var(--error) 14%, transparent); border-radius: 6px; }
 .sheet .sh-g i { font-style: normal; color: var(--text-tertiary); padding: 0 4px; }
 .sheet .sh-round td { text-align: left; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
 .preg-row { padding: 4px 2px 0; }
@@ -2718,7 +2719,12 @@ function pSheetHTML(e) {
   const body = rows.map((x) => {
     const head = ui.pView !== "pair" && sel === "all" && x.r !== lastR ? `<tr class="sh-round"><td colspan="${cols}">第${x.ri + 1}回転 · ${x.r.day}日目 · ${P_KIND[x.r.kind]}</td></tr>` : "";
     lastR = x.r;
-    const sc = x.lines.map((l) => `<div class="sh-g"><span>${l.a ?? ""}</span><i>−</i><span>${l.b ?? ""}</span></div>`).join("");
+    // 勝った側の点に色(ゲームごと。勝ち負けだけの試合は「勝」の側)
+    const sc = x.lines.map((l) => {
+      const num = typeof l.a === "number" && typeof l.b === "number";
+      const wa = num ? l.a > l.b : l.a === "勝", wb = num ? l.b > l.a : l.b === "勝";
+      return `<div class="sh-g"><span class="${wa ? "w" : ""}">${l.a ?? ""}</span><i>−</i><span class="${wb ? "w" : ""}">${l.b ?? ""}</span></div>`;
+    }).join("");
     const winA = x.winA, winB = x.winB;
     return `${head}<tr>
       <td class="num">${x.num}${x.dup ? `<small class="sh-dup">かぶり</small>` : ""}${x.times > 1 ? `<small class="sh-dup">${x.times}回対戦</small>` : ""}</td><td class="num">${x.rounds.join("・")}</td>
