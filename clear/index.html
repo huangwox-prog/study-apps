@@ -806,6 +806,22 @@ details.more[open] summary { margin-bottom: 12px; }
 .sheet .sh-g i { font-style: normal; color: var(--text-tertiary); padding: 0 4px; }
 .sheet .sh-round td { text-align: left; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
 .preg-row { padding: 4px 2px 0; }
+.qbox { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.qbox .input { flex: 1 1 240px; max-width: 420px; font-size: 1rem; padding: 10px 14px; border-radius: 999px; }
+.qbar .qbox { margin: 0; }
+.qcard .qbox { margin: 0; }
+.qres { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.qrow { display: grid; grid-template-columns: minmax(8em, 12em) minmax(0, 1fr); gap: 6px 12px; align-items: start; padding: 8px 0; border-top: 1px solid var(--hairline); }
+.qrow .pschool { display: block; }
+.qcells { display: flex; flex-wrap: wrap; gap: 6px; }
+.qcell { padding: 4px 10px; border-radius: 10px 10px 10px 16px; font-size: 0.84rem; background: var(--surface-strong); border: 1px solid var(--border-soft); text-align: left; }
+button.qcell:hover { border-color: var(--accent); color: var(--accent); }
+.qcell.off { color: var(--text-tertiary); background: var(--surface-soft); }
+.q-w { color: var(--error); font-weight: 800; }
+.q-l { color: var(--text-tertiary); font-weight: 700; }
+.pslot.is-hit { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); }
+.pmatch.flash { box-shadow: 0 0 0 4px var(--accent); transition: box-shadow 0.3s; }
+@media (max-width: 760px) { .qrow { grid-template-columns: 1fr; } }
 .chip-dup { background: color-mix(in srgb, var(--lg-b) 14%, transparent); color: var(--lg-b); font-weight: 750; }
 .pmatch.has-dup { border: 2px solid color-mix(in srgb, var(--lg-b) 50%, transparent); }
 .sheet .sh-winname { background: color-mix(in srgb, var(--error) 14%, transparent); box-shadow: inset 4px 0 0 var(--error); }
@@ -2155,7 +2171,8 @@ function playersHTML(e) {
   e.players.forEach((p) => (keyCount[dupKey(p)] = (keyCount[dupKey(p)] || 0) + 1));
   const list = e.players.slice().sort((a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja") || a.name.localeCompare(b.name, "ja"));
   const sc = schoolColors(e);
-  const rows = list.map((p) => {
+  const shown = list.filter(qMatch);
+  const rows = shown.map((p) => {
     const li = hasL ? leagueIndexOf(e, p.id) : -1;
     return `<tr>
       <td class="c-name ${sc.cls(p.school)}"><input class="cell-input sc-name" id="pn-${p.id}" data-change="p-name" data-id="${p.id}" value="${esc(p.name)}" placeholder="名前" aria-label="${dbl ? "1人目の名前" : "名前"}"></td>
@@ -2186,9 +2203,11 @@ function playersHTML(e) {
   <section class="card">
     <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・ランクを直すと、${prac ? "対戦表" : hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。${prac ? "同じ名前・同じ学校が2人いると「重複」と出ます。" : ""}</p></div>
       ${e.players.length ? `<button class="btn btn-aurora btn-sm" data-action="tab" data-tab="${next[0]}">${next[1]}</button>` : ""}</div>
-    ${e.players.length ? `<div class="table-wrap"><table class="ptable ${dbl ? "dbl" : ""}">
+    ${e.players.length > 1 ? searchBoxHTML(shown.length, e.players.length) : ""}
+    ${e.players.length && !shown.length ? `<p class="muted">「${esc(ui.q)}」に当たる${unit(e)}はいません</p>` : ""}
+    ${shown.length ? `<div class="table-wrap"><table class="ptable ${dbl ? "dbl" : ""}">
       <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>ランク</th>${hasL ? "<th>リーグ</th>" : prac ? "<th>試合数</th>" : ""}<th></th></tr></thead>
-      <tbody>${rows}</tbody></table></div>` : `<p class="muted">まだ${unit(e)}がいません。上のフォームか、Excel からの貼り付けで追加してください。</p>`}
+      <tbody>${rows}</tbody></table></div>` : e.players.length ? "" : `<p class="muted">まだ${unit(e)}がいません。上のフォームか、Excel からの貼り付けで追加してください。</p>`}
   </section>`;
 }
 
@@ -2465,12 +2484,50 @@ function pStatusChip(e, m, o) {
   if (o.started) return `<span class="chip chip-live">入力中</span>`;
   return `<span class="chip">未</span>`;
 }
+/* ---- 名前で探す(50人くらいいても目的の人がすぐ見つかるように) ----
+   ひらがな/カタカナ、空白のあるなし、大文字/小文字は区別しない。学校名でも当たる */
+const qNorm = (v) => String(v || "").replace(/[\s　]+/g, "").toLowerCase().replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+function qMatch(p) {
+  if (!ui.q) return true;
+  const q = qNorm(ui.q);
+  return !!p && [p.name, p.name2, p.school].some((v) => qNorm(v).includes(q));
+}
+function searchBoxHTML(n, total) {
+  return `<div class="qbox"><input class="input" id="q" type="search" data-input="q" value="${esc(ui.q || "")}" placeholder="名前・学校で探す" autocomplete="off" aria-label="名前・学校で探す">
+    ${ui.q ? `<span class="faint num">${n} / ${total}人</span><button type="button" class="btn btn-ghost btn-sm" data-action="qclear">消す</button>` : ""}</div>`;
+}
+/* 対戦タブ:探した人が、各回転のどの試合でだれと当たっているか */
+function pFindHTML(e) {
+  const box = searchBoxHTML(e.players.filter(qMatch).length, e.players.length);
+  if (!ui.q) return `<section class="card qcard">${box}</section>`;
+  const pm = playerMap(e), SC = schoolColors(e), R = e.practice.rounds;
+  const hits = e.players.filter(qMatch);
+  const rows = hits.slice(0, 8).map((p) => {
+    const cells = R.map((r, ri) => {
+      const mi = r.matches.findIndex((m) => m.a.includes(p.id) || m.b.includes(p.id));
+      if (mi >= 0) {
+        const m = r.matches[mi], side = m.a.includes(p.id) ? "a" : "b";
+        const opp = (side === "a" ? m.b : m.a).map((id) => pName(pm, id)).join("・");
+        const o = pOutcome(e, m), res = o.winner ? (o.winner === side ? "勝" : "負") : "";
+        return `<button type="button" class="qcell" data-action="pjump" data-m="${m.id}"><b>第${ri + 1}</b> 試合${mi + 1} 対 ${esc(opp)}${res ? ` <span class="${res === "勝" ? "q-w" : "q-l"}">${res}</span>` : ""}</button>`;
+      }
+      const st = pKeep(e, ri).includes(p.id) ? "次も抜く" : r.rest.includes(p.id) ? "今回だけ抜く" : "待機";
+      return `<span class="qcell off"><b>第${ri + 1}</b> ${st}</span>`;
+    }).join("");
+    return `<div class="qrow"><div><b class="sc-name ${SC.cls(p.school)}">${esc(p.name || "(名前なし)")}</b><span class="pschool">${esc(p.school)} · ランク${p.level}</span></div>
+      <div class="qcells">${cells || `<span class="faint">まだ回転がありません</span>`}</div></div>`;
+  }).join("");
+  return `<section class="card qcard">${box}
+    ${hits.length ? `<div class="qres">${rows}</div>${hits.length > 8 ? `<p class="faint" style="margin:6px 0 0">ほか ${hits.length - 8}人。もう少しくわしく入れてください</p>` : ""}<p class="faint" style="margin:6px 0 0">試合を押すと、その試合まで動きます。下の試合でも、この人の枠に色がつきます。</p>`
+      : `<p class="muted" style="margin:8px 0 0">「${esc(ui.q)}」に当たる選手はいません</p>`}
+  </section>`;
+}
 function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds) {
   const ref = `${r.id}|m|${mi}|${side}|${pos}`;
   if (!pid) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span><span class="pschool">ここにドラッグ</span></div>`;
   const p = playerMap(e)[pid];
   if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span></div>`;
-  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="ドラッグして入れ替え">
+  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="ドラッグして入れ替え">
     <span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
     <span class="pschool">${esc(p.school)} · ランク${p.level} · ${cum[pid] || 0}試合目</span></div>`;
 }
@@ -2590,6 +2647,7 @@ function practiceHTML(e) {
       <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
     </div>
   </section>
+  ${pFindHTML(e)}
   ${p.rounds.length ? p.rounds.map((_, ri) => pRoundHTML(e, ri, cumAll)).join("") : `<section class="card"><p class="muted">まだ回転がありません。上の「第1回転を作る」を押してください。</p></section>`}
   ${p.rounds.length ? `<section class="card pnext-bottom">
     <div class="row">
@@ -2621,14 +2679,15 @@ function pstatsHTML(e) {
   const p = e.practice;
   if (!p.rounds.length) return `<section class="card"><p class="muted">回転を作って結果を入れると、ここに試合数と勝率が並びます。</p><div class="row" style="margin-top:12px"><button class="btn btn-aurora btn-sm" data-action="tab" data-tab="rounds">対戦へ</button></div></section>`;
   const viewBar = pViewBarHTML();
-  if (ui.pView === "sheet" || ui.pView === "pair") return viewBar + pSheetHTML(e);
+  const qbar = `<div class="qbar">${searchBoxHTML(e.players.filter(qMatch).length, e.players.length)}</div>`;
+  if (ui.pView === "sheet" || ui.pView === "pair") return viewBar + qbar + pSheetHTML(e);
   const { rows, days } = pStats(e);
   const SC = schoolColors(e);
   const sort = ui.pSort || "level";
   const list = rows.slice().sort((a, b) =>
     sort === "rate" ? (b.rate ?? -1) - (a.rate ?? -1) || b.games - a.games
     : sort === "games" ? a.games - b.games || b.p.level - a.p.level
-    : b.p.level - a.p.level || a.p.name.localeCompare(b.p.name, "ja"));
+    : b.p.level - a.p.level || a.p.name.localeCompare(b.p.name, "ja")).filter((r) => qMatch(r.p));
   const maxG = Math.max(0, ...rows.map((r) => r.games));
   const low = rows.filter((r) => r.games <= maxG - 2);
   const dayHead = days.map((d) => `<th>${d}日目<br>勝率</th>`).join("");
@@ -2645,7 +2704,7 @@ function pstatsHTML(e) {
   const sym = { play: `<span class="cell-play">●</span>`, rest: `<span class="cell-rest">休</span>`, none: `<span class="cell-none">未</span>` };
   const grid = list.map((r) => `<tr><td class="name-cell ${SC.cls(r.p.school)}"><span class="pname sc-name">${esc(r.p.name || "(名前なし)")}</span></td>${r.byR.map((s) => `<td>${sym[s]}</td>`).join("")}<td class="stat"><b>${r.games}</b></td></tr>`).join("");
   const sortBtn = (k, t) => `<button class="btn btn-sm ${sort === k ? "btn-primary" : "btn-secondary"}" data-action="psort" data-sort="${k}">${t}</button>`;
-  return viewBar + `<section class="card">
+  return viewBar + qbar + `<section class="card">
     <div class="card-head"><div><h2>試合数と勝率</h2><p class="faint">勝率は、結果を入れた試合だけで数えます。日ごとの勝率の下の「+25%」は、前の日の勝率からの増減です。</p></div>
       <div class="row"><button class="btn btn-secondary btn-sm" data-action="print-practice" title="印刷の画面で「PDFに保存」を選んでください">PDFで保存</button>
       <button class="btn btn-secondary btn-sm" data-action="x-pstats">Excel にコピー</button></div></div>
@@ -2735,7 +2794,7 @@ function pSheetHTML(e) {
   const nameCell = (S, win) => `<td class="sh-name ${win && !pair ? "sh-winname" : ""}">${win && !pair ? `<span class="sh-winmark">勝ち</span>` : ""}${S.ids.length ? `<span class="sh-names">${S.ids.map((id) => `<b class="sc-name ${SC.cls(pm[id].school)}">${esc(pm[id].name || "(名前なし)")}</b>`).join("")}</span><span class="sh-school">${esc(S.school.join("・"))}</span>` : ""}</td>`;
   const stack = (arr) => arr.filter((x) => x !== "").join("<br>");
   let lastR = null;
-  const body = rows.map((x) => {
+  const body = rows.filter((x) => !ui.q || x.A.ids.concat(x.B.ids).some((id) => qMatch(pm[id]))).map((x) => {
     const head = ui.pView !== "pair" && sel === "all" && x.r !== lastR ? `<tr class="sh-round"><td colspan="${cols}">第${x.ri + 1}回転 · ${x.r.day}日目 · ${P_KIND[x.r.kind]}</td></tr>` : "";
     lastR = x.r;
     // 勝った側の点に色(ゲームごと。勝ち負けだけの試合は「勝」の側)
@@ -3580,7 +3639,7 @@ function newEvent(players, opts) {
 }
 function openEvent(id) {
   currentId = id;
-  Object.assign(ui, { nextKind: null, nextDay: null, nextRest: [], view: "event", createMode: null, showSettings: false, exportOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
+  Object.assign(ui, { q: "", nextKind: null, nextDay: null, nextRest: [], view: "event", createMode: null, showSettings: false, exportOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null });
   window.scrollTo({ top: 0 });
 }
 
@@ -3798,6 +3857,12 @@ app.addEventListener("click", (evt) => {
       else if (r.rest.includes(id)) { pKeepOn(e, id, ri); toast(`${nm}:次の回転も抜く(戻すまでずっと外します)`); }
       else { r.rest.push(id); toast(`${nm}:今回だけ抜く`); }
       commit(); render(); break;
+    }
+    case "qclear": ui.q = ""; render(); { const n = document.getElementById("q"); if (n) n.focus({ preventScroll: true }); } break;
+    case "pjump": {
+      const el = document.getElementById(`pm-${btn.dataset.m}`);
+      if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
+      break;
     }
     case "pnext-top": { const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
     case "pnext-rest": {
@@ -4077,9 +4142,19 @@ app.addEventListener("keydown", (evt) => {
   if (evt.target.id === "ev-name" && evt.key === "Enter" && !evt.isComposing) { evt.preventDefault(); evt.target.blur(); }
 });
 
+/* 検索欄:打つたびに絞り込む。日本語の変換中は待つ(変換が終わったら絞り込む)。描き直しても欄のカーソルは残す */
+function applySearch(t) {
+  ui.q = t.value.trim();
+  const pos = t.selectionStart;
+  render();
+  const n = document.getElementById("q");
+  if (n) { n.focus({ preventScroll: true }); try { n.setSelectionRange(pos, pos); } catch (err) {} }
+}
+app.addEventListener("compositionend", (evt) => { if (evt.target.dataset && evt.target.dataset.input === "q") applySearch(evt.target); });
 app.addEventListener("input", (evt) => {
   const t = evt.target;
   if (t.id === "ev-name") { fitName(); return; }
+  if (t.dataset.input === "q") { if (!evt.isComposing) applySearch(t); return; }
   if (t.dataset.input === "paste") {
     // 貼り付けたら、すぐに列を見分けて表で見せる(欄はそのまま、下の表だけ描き直す)
     ui.imp = analyzeImport(t.value, isDbl(ev()));
