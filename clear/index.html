@@ -770,6 +770,25 @@ details.more[open] summary { margin-bottom: 12px; }
 .pslot.empty .pname { color: var(--error); }
 .pslot.is-dup { border: 2px solid var(--error); background: var(--error-soft); }
 .pslot.drag-src, .bchip.drag-src { opacity: 0.35; }
+/* 人数が多いときに見渡せるよう、広い画面では試合を左右2列(左に前半、右に後半)にして、1試合を小さめに */
+@media (min-width: 1000px) {
+  .page.page-wide { max-width: 1360px; }
+  .pmatches.stack { display: block; columns: 2; column-gap: 14px; }
+  .pmatches .pmatch { break-inside: avoid; margin-bottom: 10px; padding: 8px 10px; gap: 6px 8px; grid-template-columns: 1.6em minmax(0, 1fr) auto minmax(0, 1fr); }
+  .pmatches .pm-num { font-size: 0.95rem; }
+  .pmatches .pslot { padding: 4px 8px; }
+  .pmatches .pname { font-size: 0.92rem; }
+  .pmatches .pschool { font-size: 0.7rem; }
+  .pmatches .score { width: 2.5em; padding: 3px 1px; font-size: 0.9rem; }
+  .pmatches .game { gap: 3px; }
+  .pmatches .game-label { width: auto; font-size: 0.62rem; white-space: nowrap; }
+  .pmatches .m-scores { gap: 2px; }
+  .pmatches .qwin { margin-top: 3px; min-width: 52px; padding: 3px 10px; font-size: 0.78rem; }
+  .pmatches .pm-gc { font-size: 1rem; gap: 6px; }
+  .pmatches .pm-st .chip { padding: 1px 8px; font-size: 0.7rem; }
+  .pmatches .pout-mini { padding: 1px 8px; font-size: 0.7rem; }
+  .pmatches .pm-issues .chip { font-size: 0.7rem; }
+}
 .pmatches.drop-over { outline: 3px dashed var(--accent); outline-offset: 6px; border-radius: 18px; }
 [data-drop="pslot"].drop-over { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); }
 .m-scores .pm-st { margin-top: 2px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -1960,7 +1979,8 @@ function render() {
   else if (ui.tab === "rounds") body = practiceHTML(e);
   else if (ui.tab === "pstats") body = pstatsHTML(e);
   else body = overviewHTML(e);
-  app.innerHTML = navHTML(e) + `<main class="page">${heroHTML(e)}${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${tabsHTML(e)}${body}</main>`;
+  // 対戦(回転ごと)の画面は試合が多いので、広い画面では横幅を広げて2列にする
+  app.innerHTML = navHTML(e) + `<main class="page ${ui.tab === "rounds" ? "page-wide" : ""}">${heroHTML(e)}${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${tabsHTML(e)}${body}</main>`;
   fitName();
 }
 /* 大会名の欄を中身の行数に合わせる(field-sizing が効かないブラウザ用) */
