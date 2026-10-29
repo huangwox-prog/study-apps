@@ -846,8 +846,6 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
 .qcell.off { color: var(--text-tertiary); background: var(--surface-soft); }
 .q-w { color: var(--error); font-weight: 800; }
 .q-l { color: var(--text-tertiary); font-weight: 700; }
-.pslot.is-sel { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); cursor: pointer; }
-.psel-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
 /* 閉じた試合:名前と点数だけの小さいカード */
 .pmatch.compact { cursor: pointer; padding: 6px 12px; gap: 4px 10px; }
 .pmatch.compact:hover { border-color: var(--accent); }
@@ -867,9 +865,6 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
 /* 抜くボタンは控えめに(灰色の小さい字)。マウスを乗せたときだけ黄色 */
 .pout-mini { flex-shrink: 0; padding: 0 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 600; line-height: 1.6; background: transparent; border: 1px solid var(--border-soft); color: var(--text-tertiary); }
 .pout-mini:hover, .pout-mini:focus-visible { background: color-mix(in srgb, #f5c400 30%, var(--surface-strong)); border-color: #c99a00; color: var(--text); }
-.pm-side.b .psel-btns { justify-content: flex-end; }
-.pout-once { background: color-mix(in srgb, #f5c400 35%, var(--surface-strong)); border: 2px solid #c99a00; color: var(--text); }
-.pout-keep { background: var(--error-soft); border: 2px solid var(--error); color: var(--error); }
 .pslot { cursor: pointer; }
 .pslot.is-hit { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); }
 .pmatch.flash { box-shadow: 0 0 0 4px var(--accent); transition: box-shadow 0.3s; }
@@ -2592,19 +2587,12 @@ function pFindHTML(e) {
 function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds, compact) {
   const ref = `${r.id}|m|${mi}|${side}|${pos}`;
   const p = pid ? playerMap(e)[pid] : null;
-  // 選んでいる人がいるときは、空き枠を押すとそこへ動かせる
-  if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}" ${ui.pSel ? `data-action="pselect" data-ref="${ref}" role="button" tabindex="0"` : ""}><span class="pname">空き</span><span class="pschool">${ui.pSel ? "押すと、選んだ人をここへ" : "ここにドラッグ"}</span></div>`;
-  // 名前を押すと選べる:選ぶと「抜く」ボタンが出る。選んだまま別の人を押すと入れ替え
-  const sel = ui.pSel === ref;
-  // 小さいカード(閉じた試合)では、名前を押すとカードが開く。だれかを選んでいるときだけ、押すと入れ替え
-  const act = !compact || ui.pSel ? `data-action="pselect" data-ref="${ref}" role="button" tabindex="0" aria-pressed="${sel}"` : "";
-  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""} ${sel ? "is-sel" : ""}" ${act} data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="押すと選べます(抜く・入れ替え)。ドラッグでも動かせます">
+  if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span><span class="pschool">ここにドラッグ</span></div>`;
+  // 入れ替えはドラッグで(押して選ぶ入れ替えは、先生の希望でなくした)。小さいカードでは名前を押すとカードが開く
+  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""}" data-ref="${ref}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="ドラッグで入れ替え">
     <span class="pname-row"><span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
       <button type="button" class="pout-mini" data-action="pout" data-ref="${ref}" data-kind="once" title="${esc(p.name)} をこの回転だけ抜く(下の置き場で名前を押すと「次の回転も抜く」になる)">抜く</button></span>
-    <span class="pschool">${esc(p.school)}${compact ? "" : ` · ランク${p.level} · ${cum[pid] || 0}試合目`}</span>
-    ${sel ? `<span class="psel-btns">
-      <button type="button" class="btn btn-sm pout-keep" data-action="pout" data-ref="${ref}" data-kind="keep">次の回転も抜く</button>
-      <span class="faint">ほかの人や空き枠を押すと入れ替え</span></span>` : ""}</div>`;
+    <span class="pschool">${esc(p.school)}${compact ? "" : ` · ランク${p.level} · ${cum[pid] || 0}試合目`}</span></div>`;
 }
 function pMatchHTML(e, r, mi, iss, cum) {
   const m = r.matches[mi], o = pOutcome(e, m);
@@ -3744,7 +3732,6 @@ function pNextSel(e) {
 }
 function pRoundById(e, id) { return e.practice.rounds.find((r) => r.id === id); }
 function pRegen(e, r, must, msg) {
-  ui.pSel = null;
   r.rest = [...new Set(r.rest.concat(pKeep(e, e.practice.rounds.indexOf(r))))];
   const g = genRound(e, r.kind, r.rest, e.practice.rounds.indexOf(r), must || []);
   r.matches = g.matches;
@@ -3779,7 +3766,6 @@ function pFresh(r) { return !r.matches.some((m) => m.win || !isEmptyGames(m.g));
    「回転id|bench」(その置き場)、「回転id|area」(試合の並んでいるところ全体)。
    結果をまだ入れていない回転では、置き場へ投げる・置き場から戻すたびに、その場で組み直す */
 function pDrop(fromRef, toRef) {
-  ui.pSel = null;
   const e = ev(), f = fromRef.split("|"), t = toRef.split("|");
   const r = pRoundById(e, f[0]);
   if (!r || f[0] !== t[0]) { toast("別の回転には動かせません"); return; }
@@ -3947,8 +3933,7 @@ app.addEventListener("click", (evt) => {
       break;
     }
     case "padd": {
-      ui.pSel = null;
-      const p = e.practice, kind = pNextSel(e) === "singles" ? "singles" : "doubles";
+          const p = e.practice, kind = pNextSel(e) === "singles" ? "singles" : "doubles";
       const day = ui.nextDay || (p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1);
       const rest = [...new Set((ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id)).concat(pKeep(e, p.rounds.length)))];
       const fixed = kind === "doubles" && p.pairMode === "fixed";
@@ -3979,16 +3964,15 @@ app.addEventListener("click", (evt) => {
       break;
     }
     case "pjump-p": {
-      // いちばん新しい回転で、その人の枠(なければ置き場の名前)へ飛び、選んだ状態にする
+      // いちばん新しい回転で、その人の試合を開いて枠を光らせる(試合に入っていなければ置き場の名前へ)
       const id = btn.dataset.id, R = e.practice.rounds, r = R[R.length - 1];
       if (!r) { toast("まだ回転がありません。先に回転を作ってください"); break; }
       let ref = null;
-      r.matches.forEach((m, mi) => ["a", "b"].forEach((k) => m[k].forEach((x, pos) => { if (x === id) ref = `${r.id}|m|${mi}|${k}|${pos}`; })));
-      ui.pSel = ref;
+      r.matches.forEach((m, mi) => ["a", "b"].forEach((k) => m[k].forEach((x, pos) => { if (x === id) { ref = `${r.id}|m|${mi}|${k}|${pos}`; ui.pOpen = m.id; } })));
       render();
       const el = ref ? document.querySelector(`.pslot[data-ref="${ref}"]`) : document.querySelector(`#pr-${r.id} .bchip[data-id="${id}"]`);
       if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
-      toast(ref ? `第${R.length}回転の ${pName(playerMap(e), id)}。ここで抜く・入れ替えができます` : `${pName(playerMap(e), id)} は第${R.length}回転の試合に入っていません`);
+      toast(ref ? `第${R.length}回転の ${pName(playerMap(e), id)} の試合です` : `${pName(playerMap(e), id)} は第${R.length}回転の試合に入っていません`);
       break;
     }
     case "popen": {
@@ -4002,17 +3986,10 @@ app.addEventListener("click", (evt) => {
       }
       break;
     }
-    case "pselect": {
-      const ref = btn.dataset.ref, prev = ui.pSel;
-      if (prev && prev !== ref && prev.split("|")[0] === ref.split("|")[0]) { ui.pSel = null; pDrop(prev, ref); break; }
-      if (!btn.classList.contains("empty")) ui.pSel = prev === ref ? null : ref;
-      render(); break;
-    }
     case "pout": {
       // 選んだ人を抜く:その枠は空き枠になる(相手はそのまま。空き枠の試合はいちばん下へ)
       const f = btn.dataset.ref.split("|"), r = pRoundById(e, f[0]);
-      ui.pSel = null;
-      const m = r && r.matches[Number(f[2])];
+          const m = r && r.matches[Number(f[2])];
       const id = m && m[f[3]][Number(f[4])];
       if (!id) { render(); break; }
       const ri = e.practice.rounds.indexOf(r);
@@ -4293,7 +4270,7 @@ let suppressClickUntil = 0;
 addEventListener("click", (c) => { if (Date.now() < suppressClickUntil) { c.stopPropagation(); c.preventDefault(); } }, true);
 addEventListener("pointerup", (evt) => endDrag(evt, false));
 addEventListener("pointercancel", (evt) => endDrag(evt, true));
-addEventListener("keydown", (evt) => { if (evt.key === "Escape") { endDrag(evt, true); if (ui.pSel || ui.pOpen) { ui.pSel = null; ui.pOpen = null; render(); } } });
+addEventListener("keydown", (evt) => { if (evt.key === "Escape") { endDrag(evt, true); if (ui.pOpen) { ui.pOpen = null; render(); } } });
 
 // 大会名は1行の名前なので、Enter で確定する
 app.addEventListener("keydown", (evt) => {
