@@ -1632,7 +1632,7 @@ function pIssues(e, ri) {
   const per = r.matches.map((m) => {
     const out = [];
     const A = m.a.filter(Boolean), B = m.b.filter(Boolean);
-    if (A.length < m.a.length || B.length < m.b.length) out.push({ lv: "err", t: "空きがあります" });
+    if (A.length < m.a.length || B.length < m.b.length) out.push({ lv: "warn", t: "空き枠:入れる人を、下の置き場からここへドラッグ" });
     const both = A.concat(B);
     both.filter((id, i) => both.indexOf(id) !== i || dup.includes(id)).forEach((id) => out.push({ lv: "err", t: `${pName(pm, id)} が同じ回転に2回入っています` }));
     if (A.length && B.length) {
@@ -2570,7 +2570,7 @@ function pBenchHTML(e, r, iss, cum) {
       <span class="bchip-btns">${resting ? `<button type="button" class="btn btn-ghost btn-sm" data-action="prest" data-r="${r.id}" data-id="${id}">戻す</button>` : ""}</span></span>`;
   };
   return `<div class="bench" data-drop="pslot" data-drop-id="${r.id}|bench">
-    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここへドラッグした人は「今回だけ抜く(黄)」になり、残りの人ですぐ組み直します。名前をタップすると「次の回転も抜く(赤)」に切り替わります(もう一度タップで黄に戻る)。試合に戻すときは「戻す」か、名前を上の試合のほうへドラッグ。灰色の「待機」は、人数が余ったぶんです</span></div>
+    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここへドラッグした人は「今回だけ抜く(黄)」になり、その枠は空き枠になります(相手はそのまま。空き枠の試合はいちばん下へ)。名前をタップすると「次の回転も抜く(赤)」に切り替わります(もう一度タップで黄に戻る)。試合に戻すときは「戻す」か、名前を上の試合のほうへドラッグ。灰色の「待機」は、人数が余ったぶんです</span></div>
     <div class="bench-list">
       ${iss.unplaced.map((id) => chip(id, false)).join("")}
       ${iss.resting.map((id) => chip(id, true)).join("")}
@@ -2604,9 +2604,9 @@ function pRoundHTML(e, ri, cumAll) {
     <div class="stack" style="margin-top:12px">
       <div class="pmatches stack" data-drop="pslot" data-drop-id="${r.id}|area">${r.matches.map((_, mi) => pMatchHTML(e, r, mi, iss, cum)).join("")}</div>
       ${pBenchHTML(e, r, iss, cum)}
-      ${iss.resting.length ? `<div class="row preg-row">
-        <button class="btn btn-primary btn-lg" data-action="preg" data-r="${r.id}">休みの${iss.resting.length}人を除いて、第${ri + 1}回転を組み直す</button>
-        <span class="faint">休みにした人を外して、残りの人で組み合わせを作り直します</span>
+      ${iss.resting.length || r.matches.some((m) => m.a.includes(null) || m.b.includes(null)) ? `<div class="row preg-row">
+        <button class="btn btn-primary btn-lg" data-action="preg" data-r="${r.id}">${iss.resting.length ? `休みの${iss.resting.length}人を除いて、` : ""}第${ri + 1}回転を組み直す</button>
+        <span class="faint">抜いた人を外して、空き枠がなくなるように残りの人で組み合わせを作り直します</span>
       </div>` : ""}
     </div>
   </section>`;
@@ -3663,12 +3663,22 @@ function pBringBack(e, r, id) {
   const name = pName(playerMap(e), id);
   r.rest = r.rest.filter((x) => x !== id);
   pKeepOff(e, id, e.practice.rounds.indexOf(r));
+  if (pFillEmpty(r, id)) { commit(); render(); toast(`${name} を空き枠に入れました`); return; }
   if (pFresh(r)) { pRegen(e, r, [id], `${name} を試合に戻して組み直しました`); return; }
+  commit(); render(); toast(`${name} の休みをやめました。空いている枠がないので、入れたい枠へドラッグしてください`);
+}
+/* 空き枠(いちばん上の空き)に入れる。入れたら true */
+function pFillEmpty(r, id) {
   for (const m of r.matches) for (const k of ["a", "b"]) {
     const i = m[k].indexOf(null);
-    if (i >= 0) { m[k][i] = id; commit(); render(); toast(`${name} を空いていた枠に戻しました`); return; }
+    if (i >= 0) { m[k][i] = id; pEmptyLast(r); return true; }
   }
-  commit(); render(); toast(`${name} の休みをやめました。空いている枠がないので、入れたい枠へドラッグしてください`);
+  return false;
+}
+/* 空き枠のある試合を、いちばん下へ(並びはそのまま) */
+function pEmptyLast(r) {
+  const full = (m) => !m.a.includes(null) && !m.b.includes(null);
+  r.matches = r.matches.filter(full).concat(r.matches.filter((m) => !full(m)));
 }
 /* まだ結果を入れていない回転か(それなら、ドラッグのたびに自動で組み直してよい) */
 function pFresh(r) { return !r.matches.some((m) => m.win || !isEmptyGames(m.g)); }
@@ -3696,9 +3706,10 @@ function pDrop(fromRef, toRef) {
       const x = A.get();
       if (!x) return;
       if (!r.rest.includes(x)) r.rest.push(x);
-      if (pFresh(r)) { pRegen(e, r, [], `${pName(pm, x)} を休みにして、残りの人で組み直しました`); return; }
+      // 組み直さずに、その枠を空き枠にする(相手はそのまま)。空き枠のある試合はいちばん下へ
       A.set(null);
-      msg = `${pName(pm, x)} を外して休みにしました(結果が入っているので、組み直しはしていません)`;
+      pEmptyLast(r);
+      msg = `${pName(pm, x)} を抜きました。空き枠の試合はいちばん下に移しました`;
     } else return;
   } else if (f[1] === "b") {
     const id = f[2];
@@ -3706,13 +3717,19 @@ function pDrop(fromRef, toRef) {
     // 置き場から試合のほうへ戻した人は、休みをやめて必ず試合に入れる
     r.rest = r.rest.filter((x) => x !== id);
     pKeepOff(e, id, e.practice.rounds.indexOf(r));
-    if (pFresh(r)) { pRegen(e, r, [id], `${pName(pm, id)} を入れて組み直しました`); return; }
-    if (t[1] !== "m") { commit(); render(); toast("結果が入っている回転なので、入れたい枠の上に落としてください"); return; }
-    const B = slotOf(t);
-    if (!B) return;
-    const old = B.get();
-    B.set(id);
-    msg = `${pName(pm, id)} を入れました${old ? `(${pName(pm, old)} は試合から外れました)` : ""}`;
+    if (t[1] === "m") {
+      const B = slotOf(t);
+      if (!B) return;
+      const old = B.get();
+      B.set(id);
+      pEmptyLast(r);
+      msg = `${pName(pm, id)} を入れました${old ? `(${pName(pm, old)} は試合から外れました)` : ""}`;
+    } else {
+      // 試合のところへ落としたとき:空き枠があればそこへ、なければ(結果がまだなら)その人を入れて組み直す
+      if (pFillEmpty(r, id)) msg = `${pName(pm, id)} を空き枠に入れました`;
+      else if (pFresh(r)) { pRegen(e, r, [id], `${pName(pm, id)} を入れて組み直しました`); return; }
+      else { commit(); render(); toast("空き枠がありません。入れたい枠の上に落としてください"); return; }
+    }
   }
   commit(); render(); toast(msg);
 }
