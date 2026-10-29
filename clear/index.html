@@ -1438,27 +1438,29 @@ function pHistory(e, upto) {
     if (B.length === 2) add(partner, B[0], B[1], ri + 1);
     A.concat(B).forEach((x) => (games[x] = (games[x] || 0) + 1));
   }));
-  return { faced, partner, games };
+  return { faced, partner, games, prev: upto }; // prev = 1つ前の回転の番号(第◯回転)
 }
 /* 1試合の「悪さ」。小さいほどよい組み合わせ(ランク差・同じ相手・同じ相方・同じ学校) */
-/* 優先の順:①ランク差の設定を守る ②なるべく他校と当てる ③前と同じ相手(かぶり)を避ける。
+/* 優先の順:①ランク差の設定を守る ②1つ前の回転と同じ相手にしない ③なるべく他校と当てる ④それより前の回転と同じ相手(かぶり)を避ける。
    先生の希望で、かぶりがあってもいいから他校と当てる(かぶった試合には表示が出る) */
 function pMatchCost(H, tol, avoid, A, B, fixed, samePair) {
   let c = 0;
-  if (fixed) {
-    // 固定ペアは、ペアの平均ランクどうしで比べる(ペアの中の差は変えられないので)
+  if (A.length === 2) {
+    // ダブルスは、ペアの平均ランクどうしで比べる(相手1人ずつで前後1までにすると、同じ学校のペアでは組める形がほとんどなくなる)
     const d = Math.abs(pAvg(A) - pAvg(B));
     c += d * 6 + (d > tol ? (d - tol) * 400 : 0);
   }
   for (const x of A) for (const y of B) {
     const d = Math.abs(x.level - y.level);
     const one = A.length === 1; // ダブルスは相手が2人いるので、1人ずつの重さは小さめ
-    if (!fixed) c += d * 1.5 + (d > tol ? (d - tol) * (one ? 300 : 150) : 0);
+    if (one) c += d * 1.5 + (d > tol ? (d - tol) * 300 : 0);
+    else c += d * 0.5; // ダブルスの1人ずつの差は、なるべく近いほうがよい程度
     // 同じ学校どうし(他校と当てたいので、かぶりより重い)
     if (avoid && x.school && x.school === y.school) c += one ? 150 : 50;
     // 前と同じ相手(かぶり)
     const f = H.faced[keyOf(x.id, y.id)];
-    if (f) c += f.length * (one ? 100 : 30);
+    // 1つ前の回転と同じ相手(続けてかぶる)だけは、他校と当てることよりも強く避ける
+    if (f) c += f.length * (one ? 100 : 30) + (f.includes(H.prev) ? (one ? 250 : 160) : 0);
   }
   if (A.length === 2) {
     c += Math.abs(A[0].level + A[1].level - B[0].level - B[1].level) * 3;
@@ -1586,7 +1588,7 @@ function pIssues(e, ri) {
     const both = A.concat(B);
     both.filter((id, i) => both.indexOf(id) !== i || dup.includes(id)).forEach((id) => out.push({ lv: "err", t: `${pName(pm, id)} が同じ回転に2回入っています` }));
     if (A.length && B.length) {
-      if (r.fixed && A.length === 2 && B.length === 2) {
+      if (A.length === 2 && B.length === 2) {
         const d = Math.abs(pAvg(A.map((x) => pm[x])) - pAvg(B.map((x) => pm[x])));
         if (d > tol) out.push({ lv: "warn", t: `ペアの平均ランクの差 ${Math.round(d * 10) / 10}(設定は${tolLabel(tol)})` });
       } else {
@@ -1599,7 +1601,7 @@ function pIssues(e, ri) {
         A.forEach((x) => B.forEach((y) => { if (pm[x] && pm[y] && pm[x].school.trim() && pm[x].school.trim() === pm[y].school.trim()) same.push(`${pName(pm, x)} と ${pName(pm, y)}`); }));
         if (same.length) out.push({ lv: "info", t: `同じ学校どうし:${same.join("、")}` });
       }
-      A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "dup", t: `かぶり:${pName(pm, x)} と ${pName(pm, y)} は第${f.join("・第")}回転でも対戦` }); }));
+      A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "dup", t: `${f.includes(H.prev) ? "続けてかぶり" : "かぶり"}:${pName(pm, x)} と ${pName(pm, y)} は第${f.join("・第")}回転でも対戦` }); }));
     }
     if (e.practice.samePair) [A, B].forEach((S) => { if (S.length === 2 && pm[S[0]] && pm[S[1]] && pm[S[0]].school.trim() !== pm[S[1]].school.trim()) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は別の学校どうしのペア` }); });
     if (!r.fixed) [A, B].forEach((S) => { if (S.length === 2) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${pName(pm, S[0])}・${pName(pm, S[1])} は第${f[0]}回転でもペア` }); } });
