@@ -822,6 +822,12 @@ button.qcell:hover { border-color: var(--accent); color: var(--accent); }
 .qcell.off { color: var(--text-tertiary); background: var(--surface-soft); }
 .q-w { color: var(--error); font-weight: 800; }
 .q-l { color: var(--text-tertiary); font-weight: 700; }
+.pslot.is-sel { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); cursor: pointer; }
+.psel-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.pm-side.b .psel-btns { justify-content: flex-end; }
+.pout-once { background: color-mix(in srgb, #f5c400 35%, var(--surface-strong)); border: 2px solid #c99a00; color: var(--text); }
+.pout-keep { background: var(--error-soft); border: 2px solid var(--error); color: var(--error); }
+.pslot { cursor: pointer; }
 .pslot.is-hit { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); }
 .pmatch.flash { box-shadow: 0 0 0 4px var(--accent); transition: box-shadow 0.3s; }
 @media (max-width: 760px) { .qrow { grid-template-columns: 1fr; } }
@@ -2532,12 +2538,18 @@ function pFindHTML(e) {
 }
 function pSlotHTML(e, r, mi, side, pos, pid, cum, dupIds) {
   const ref = `${r.id}|m|${mi}|${side}|${pos}`;
-  if (!pid) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span><span class="pschool">ここにドラッグ</span></div>`;
-  const p = playerMap(e)[pid];
-  if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}"><span class="pname">空き</span></div>`;
-  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="ドラッグして入れ替え">
+  const p = pid ? playerMap(e)[pid] : null;
+  // 選んでいる人がいるときは、空き枠を押すとそこへ動かせる
+  if (!p) return `<div class="pslot empty" data-drop="pslot" data-drop-id="${ref}" ${ui.pSel ? `data-action="pselect" data-ref="${ref}" role="button" tabindex="0"` : ""}><span class="pname">空き</span><span class="pschool">${ui.pSel ? "押すと、選んだ人をここへ" : "ここにドラッグ"}</span></div>`;
+  // 名前を押すと選べる:選ぶと「抜く」ボタンが出る。選んだまま別の人を押すと入れ替え
+  const sel = ui.pSel === ref;
+  return `<div class="pslot ${schoolColors(e).cls(p.school)} ${dupIds.includes(pid) ? "is-dup" : ""} ${ui.q && qMatch(p) ? "is-hit" : ""} ${sel ? "is-sel" : ""}" data-action="pselect" data-ref="${ref}" role="button" tabindex="0" aria-pressed="${sel}" data-drag="pslot" data-drag-id="${ref}" data-drag-label="${esc(p.name)}" data-drop="pslot" data-drop-id="${ref}" title="押すと選べます(抜く・入れ替え)。ドラッグでも動かせます">
     <span class="pname sc-name"><span class="grip" aria-hidden="true">⠿</span>${esc(p.name || "(名前なし)")}</span>
-    <span class="pschool">${esc(p.school)} · ランク${p.level} · ${cum[pid] || 0}試合目</span></div>`;
+    <span class="pschool">${esc(p.school)} · ランク${p.level} · ${cum[pid] || 0}試合目</span>
+    ${sel ? `<span class="psel-btns">
+      <button type="button" class="btn btn-sm pout-once" data-action="pout" data-ref="${ref}" data-kind="once">今回だけ抜く</button>
+      <button type="button" class="btn btn-sm pout-keep" data-action="pout" data-ref="${ref}" data-kind="keep">次の回転も抜く</button>
+      <span class="faint">ほかの人や空き枠を押すと入れ替え</span></span>` : ""}</div>`;
 }
 function pMatchHTML(e, r, mi, iss, cum) {
   const m = r.matches[mi], o = pOutcome(e, m);
@@ -3660,6 +3672,7 @@ function pNextSel(e) {
 }
 function pRoundById(e, id) { return e.practice.rounds.find((r) => r.id === id); }
 function pRegen(e, r, must, msg) {
+  ui.pSel = null;
   r.rest = [...new Set(r.rest.concat(pKeep(e, e.practice.rounds.indexOf(r))))];
   const g = genRound(e, r.kind, r.rest, e.practice.rounds.indexOf(r), must || []);
   r.matches = g.matches;
@@ -3694,6 +3707,7 @@ function pFresh(r) { return !r.matches.some((m) => m.win || !isEmptyGames(m.g));
    「回転id|bench」(その置き場)、「回転id|area」(試合の並んでいるところ全体)。
    結果をまだ入れていない回転では、置き場へ投げる・置き場から戻すたびに、その場で組み直す */
 function pDrop(fromRef, toRef) {
+  ui.pSel = null;
   const e = ev(), f = fromRef.split("|"), t = toRef.split("|");
   const r = pRoundById(e, f[0]);
   if (!r || f[0] !== t[0]) { toast("別の回転には動かせません"); return; }
@@ -3708,7 +3722,8 @@ function pDrop(fromRef, toRef) {
       if (!B || (f[2] === t[2] && f[3] === t[3] && f[4] === t[4])) return;
       const x = A.get(), y = B.get();
       A.set(y); B.set(x);
-      msg = `${pName(pm, x)} と ${y ? pName(pm, y) : "空き"} を入れ替えました`;
+      pEmptyLast(r);
+      msg = y ? `${pName(pm, x)} と ${pName(pm, y)} を入れ替えました` : `${pName(pm, x)} を空き枠へ動かしました`;
     } else if (t[1] === "bench") {
       // 置き場へ外した人は休みにする(組み直しても、また入らないように)
       const x = A.get();
@@ -3860,6 +3875,7 @@ app.addEventListener("click", (evt) => {
       break;
     }
     case "padd": {
+      ui.pSel = null;
       const p = e.practice, kind = pNextSel(e) === "singles" ? "singles" : "doubles";
       const day = ui.nextDay || (p.rounds.length ? p.rounds[p.rounds.length - 1].day : 1);
       const rest = [...new Set((ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id)).concat(pKeep(e, p.rounds.length)))];
@@ -3887,6 +3903,28 @@ app.addEventListener("click", (evt) => {
     case "pjump": {
       const el = document.getElementById(`pm-${btn.dataset.m}`);
       if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); }
+      break;
+    }
+    case "pselect": {
+      const ref = btn.dataset.ref, prev = ui.pSel;
+      if (prev && prev !== ref && prev.split("|")[0] === ref.split("|")[0]) { ui.pSel = null; pDrop(prev, ref); break; }
+      if (!btn.classList.contains("empty")) ui.pSel = prev === ref ? null : ref;
+      render(); break;
+    }
+    case "pout": {
+      // 選んだ人を抜く:その枠は空き枠になる(相手はそのまま。空き枠の試合はいちばん下へ)
+      const f = btn.dataset.ref.split("|"), r = pRoundById(e, f[0]);
+      ui.pSel = null;
+      const m = r && r.matches[Number(f[2])];
+      const id = m && m[f[3]][Number(f[4])];
+      if (!id) { render(); break; }
+      const ri = e.practice.rounds.indexOf(r);
+      m[f[3]][Number(f[4])] = null;
+      if (!r.rest.includes(id)) r.rest.push(id);
+      if (btn.dataset.kind === "keep") pKeepOn(e, id, ri);
+      pEmptyLast(r);
+      commit(); render();
+      toast(`${pName(playerMap(e), id)} を${btn.dataset.kind === "keep" ? "次の回転も" : "今回だけ"}抜きました。空き枠の試合はいちばん下に移しました`);
       break;
     }
     case "pnext-top": { const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
@@ -4158,7 +4196,7 @@ let suppressClickUntil = 0;
 addEventListener("click", (c) => { if (Date.now() < suppressClickUntil) { c.stopPropagation(); c.preventDefault(); } }, true);
 addEventListener("pointerup", (evt) => endDrag(evt, false));
 addEventListener("pointercancel", (evt) => endDrag(evt, true));
-addEventListener("keydown", (evt) => { if (evt.key === "Escape") endDrag(evt, true); });
+addEventListener("keydown", (evt) => { if (evt.key === "Escape") { endDrag(evt, true); if (ui.pSel) { ui.pSel = null; render(); } } });
 
 // 大会名は1行の名前なので、Enter で確定する
 app.addEventListener("keydown", (evt) => {
