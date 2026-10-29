@@ -765,7 +765,10 @@ details.more[open] summary { margin-bottom: 12px; }
 .pslot.drag-src, .bchip.drag-src { opacity: 0.35; }
 .pmatches.drop-over { outline: 3px dashed var(--accent); outline-offset: 6px; border-radius: 18px; }
 [data-drop="pslot"].drop-over { outline: 3px solid var(--accent); outline-offset: 1px; background: var(--accent-soft); }
-.m-scores .pm-st { margin-top: 2px; }
+.m-scores .pm-st { margin-top: 2px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pm-gc { display: inline-flex; align-items: center; gap: 8px; font-size: 1.25rem; font-weight: 800; }
+.pm-gc i { font-style: normal; color: var(--text-tertiary); font-weight: 600; }
+.pm-gc .w { color: var(--error); }
 .pm-issues { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
 .pm-issues .chip { white-space: normal; }
 .bench { padding: 12px 14px; border-radius: 16px 16px 16px 28px; border: 2px dashed var(--border); background: var(--surface-soft); }
@@ -2419,7 +2422,7 @@ function refreshPMatch(e, m) {
     row.querySelector(".pm-side.b").classList.toggle("win", o.winner === "b");
     const r = e.practice.rounds.find((x) => x.matches.includes(m));
     row.querySelectorAll(".qwin").forEach((bt) => { bt.outerHTML = quickWinHTML(o, bt.dataset.w, `data-action="pqwin" data-r="${r.id}" data-m="${m.id}"`); });
-    row.querySelector(".pm-st").innerHTML = pStatusChip(e, m, o);
+    row.querySelector(".pm-st").innerHTML = pStHTML(e, m, o);
     row.querySelectorAll(".game").forEach((gEl, gi) => {
       const [x, y] = (m.g || [])[gi] || [null, null];
       const bad = gameWarn(e, x, y);
@@ -2475,6 +2478,11 @@ function overviewHTML(e) {
 /* --- 練習試合:回転ごとの対戦 --- */
 function pRateText(x) { return x == null ? "—" : `${x}%`; }
 function pDeltaHTML(d) { return d == null ? "" : `<span class="pdelta ${d > 0 ? "up" : d < 0 ? "down" : ""}">${d > 0 ? "+" : d < 0 ? "−" : "±"}${Math.abs(d)}%</span>`; }
+/* 点数の下:3ゲームマッチなら取ったゲーム数(2 − 1 など)と、試合の状態 */
+function pStHTML(e, m, o) {
+  const gc = e.games > 1 && o.started ? `<span class="pm-gc num"><b class="${o.winner === "a" ? "w" : ""}">${o.ga}</b><i>−</i><b class="${o.winner === "b" ? "w" : ""}">${o.gb}</b></span>` : "";
+  return gc + pStatusChip(e, m, o);
+}
 function pStatusChip(e, m, o) {
   if (o.quick) return `<span class="chip chip-ok">終了</span>`;
   const games = (m.g || []).slice(0, e.games).map((x) => [x[0], x[1]]);
@@ -2551,7 +2559,7 @@ function pMatchHTML(e, r, mi, iss, cum) {
   return `<div class="pmatch ${o.winner ? "is-done" : ""} ${hasDup ? "has-dup" : ""}" id="pm-${m.id}">
     <div class="pm-num num">${mi + 1}</div>
     ${side(m.a, "a")}
-    <div class="m-scores">${inputs}<span class="pm-st">${pStatusChip(e, m, o)}</span></div>
+    <div class="m-scores">${inputs}<span class="pm-st">${pStHTML(e, m, o)}</span></div>
     ${side(m.b, "b")}
     ${chips ? `<div class="pm-issues">${chips}</div>` : ""}
   </div>`;
