@@ -819,7 +819,6 @@ details.more[open] summary { margin-bottom: 12px; }
 .cell-play { color: var(--accent); font-weight: 800; }
 .cell-rest { color: var(--text-tertiary); font-weight: 700; }
 .cell-none { color: var(--warn); font-weight: 800; }
-.lv-b { width: 32px; }
 
 @media (max-width: 760px) {
   .hero { grid-template-columns: 1fr; }
@@ -904,7 +903,9 @@ details.more[open] summary { margin-bottom: 12px; }
 
 /* ============ 小道具 ============ */
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const RANK_MAX = 10; // ランクは 1〜10(10 がいちばん強い)。5段階の時期もあったが、10段階に戻した
+const RANK_MAX = 5; // ランクは 1〜5(5 がいちばん強い)。10段階の時期もあったが、先生の希望で5段階にした
+/* 1〜10 の値を 1〜5 に(10・9→5、8・7→4、6・5→3、4・3→2、2・1→1) */
+const to5 = (v) => clamp(Math.ceil(v / 2), 1, RANK_MAX);
 // 保存キーは旧名(arca-)のまま。変えると、今までの端末に保存したデータが読めなくなる
 const LS_KEY = "arca-league-v1";
 const app = document.getElementById("app");
@@ -930,7 +931,7 @@ function toast(msg) {
 let events = {};
 let currentId = null;
 let ready = false;
-const ui = { newLevel: 5, nextKind: null, nextDay: null, nextRest: [], pSort: "level", view: "home", createMode: null, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
+const ui = { newLevel: 3, nextKind: null, nextDay: null, nextRest: [], pSort: "level", view: "home", createMode: null, showSettings: false, moreOpen: false, tab: "players", league: null, bmatch: null, confirm: null, copyText: null, saveState: "saved" };
 
 function today() {
   const d = new Date();
@@ -963,7 +964,9 @@ function normalize(raw) {
   ev.players = (Array.isArray(ev.players) ? ev.players : []).filter((p) => p && p.id).map((p) => ({
     id: String(p.id), name: String(p.name || ""), name2: String(p.name2 || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, 10),
   }));
-  // ランクは 1〜10 の数字をそのまま使う(換算はしない)
+  // ランクは 1〜5。10段階の時期に保存したもの(rankScale が 5 でなく、6 以上のランクがある)は 1〜5 に換算する。
+  // 全員 5 以下なら、その前の5段階の時期のデータなのでそのまま
+  if (ev.rankScale !== RANK_MAX && ev.players.some((p) => p.level > RANK_MAX)) ev.players.forEach((p) => (p.level = to5(p.level)));
   ev.rankScale = RANK_MAX;
   ev.players.forEach((p) => (p.level = clamp(p.level, 1, RANK_MAX)));
   const ids = new Set(ev.players.map((p) => p.id));
@@ -987,7 +990,7 @@ function normalize(raw) {
     const tol = parseInt(pr.tol, 10);
     const side = (arr, n) => Array.from({ length: n }, (_, i) => { const id = Array.isArray(arr) ? arr[i] : null; return id && ids.has(String(id)) ? String(id) : null; });
     ev.practice = {
-      tol: Number.isNaN(tol) ? 1 : clamp(tol, 0, 9),
+      tol: Number.isNaN(tol) ? 1 : clamp(tol, 0, RANK_MAX - 1),
       avoidSchool: pr.avoidSchool !== false,
       // ダブルスのペアは同じ学校どうし(練習試合で学校をまたいで組むことはほとんどない)
       samePair: pr.samePair !== false,
@@ -1869,13 +1872,13 @@ function levelMeter(lv) {
   for (let i = 1; i <= RANK_MAX; i++) bars += `<i class="${i <= lv ? "on" : ""}"></i>`;
   return `<span class="lv"><span class="lv-bar" aria-hidden="true">${bars}</span>${lv}</span>`;
 }
-/* ランクピッカー:1〜10 の数字ボタン。選んだ数字まで色で埋まる */
+/* ランクピッカー:1〜5 の数字ボタン。選んだ数字まで色で埋まる */
 function levelPicker(id, lv) {
   let s = "";
   for (let i = 1; i <= RANK_MAX; i++) {
     s += `<button type="button" class="lv-b ${i <= lv ? "on" : ""} ${i === lv ? "cur" : ""}" data-action="set-level" data-id="${id}" data-lv="${i}" aria-label="ランク ${i}" aria-pressed="${i === lv}">${i}</button>`;
   }
-  return `<div class="lvpick" role="group" aria-label="ランク(10がいちばん強い)">${s}</div>`;
+  return `<div class="lvpick" role="group" aria-label="ランク(5がいちばん強い)">${s}</div>`;
 }
 function paintPicker(el, lv) {
   el.querySelectorAll(".lv-b").forEach((b) => {
@@ -2149,12 +2152,12 @@ function playersHTML(e) {
   }).join("");
   return `${schoolsDatalist(e)}
   <section class="card">
-    <div class="card-head"><div><h2>${unit(e)}を追加</h2><p class="faint">${dbl ? "ペアごとに1行。ランクはペアとしての強さで、1〜10 の10段階(10がいちばん強い)。" : "ランクは 1〜10 の10段階で、10 がいちばん強い。同じ数字の選手は同じくらいの強さとして扱います。"}</p></div></div>
+    <div class="card-head"><div><h2>${unit(e)}を追加</h2><p class="faint">${dbl ? "ペアごとに1行。ランクはペアとしての強さで、1〜5 の5段階(5がいちばん強い)。" : "ランクは 1〜5 の5段階で、5 がいちばん強い。同じ数字の選手は同じくらいの強さとして扱います。"}</p></div></div>
     <form class="add-form ${dbl ? "dbl" : ""}" id="add-form">
       <label class="field field-name"><span>${dbl ? "1人目" : "名前"}</span><input class="input" id="new-name" required placeholder="例:山田 太郎" autocomplete="off"></label>
       ${dbl ? `<label class="field field-name"><span>2人目</span><input class="input" id="new-name2" placeholder="例:佐藤 次郎" autocomplete="off"></label>` : ""}
       <label class="field"><span>学校</span><input class="input" id="new-school" list="schools" placeholder="例:桜ヶ丘高" autocomplete="off"></label>
-      <div class="field field-level"><span>ランク(10がいちばん強い)</span>${levelPicker("new", ui.newLevel)}</div>
+      <div class="field field-level"><span>ランク(5がいちばん強い)</span>${levelPicker("new", ui.newLevel)}</div>
       <button class="btn btn-primary" type="submit">追加</button>
     </form>
     <details class="paste" ${ui.pasteOpen ? "open" : ""}>
@@ -2544,7 +2547,7 @@ function practiceHTML(e) {
   const maxDay = Math.max(1, ...p.rounds.map((x) => x.day));
   const day = ui.nextDay || lastDay;
   const nextRest = (ui.nextRest || []).filter((id) => e.players.some((x) => x.id === id));
-  const tolOpts = Array.from({ length: 10 }, (_, k) => k).map((k) => `<option value="${k}" ${p.tol === k ? "selected" : ""}>${tolLabel(k)}${k ? `(8なら ${Math.max(1, 8 - k)}〜${Math.min(10, 8 + k)})` : "(8なら 8 だけ)"}</option>`).join("");
+  const tolOpts = Array.from({ length: RANK_MAX }, (_, k) => k).map((k) => `<option value="${k}" ${p.tol === k ? "selected" : ""}>${tolLabel(k)}${k ? `(3なら ${Math.max(1, 3 - k)}〜${Math.min(RANK_MAX, 3 + k)})` : "(3なら 3 だけ)"}</option>`).join("");
   const SC = schoolColors(e);
   const legend = SC.list.length ? `<div class="school-legend">${SC.list.map((sc) => `<span class="chip ${SC.cls(sc)}"><i class="sc-dot"></i>${esc(sc)} ${e.players.filter((x) => x.school.trim() === sc).length}人</span>`).join("")}</div>` : "";
   const dayOpts = Array.from({ length: Math.max(maxDay + 1, day) }, (_, k) => k + 1).map((d) => `<option value="${d}" ${day === d ? "selected" : ""}>${d}日目</option>`).join("");
@@ -3325,7 +3328,7 @@ const PAIR_SEP = /[・\/／&＆]/;
 const toHalf = (s) => String(s || "").replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)).trim();
 
 /* ---- Excel 名簿の取り込み:列を見分けて、取り込む前に表で見せる ---- */
-const IMP_ROLES = [["name", "名前"], ["name2", "2人目(ダブルス)"], ["school", "学校"], ["level", "ランク(1〜10)"], ["rank", "部内順位(1が強い)"], ["skip", "使わない"]];
+const IMP_ROLES = [["name", "名前"], ["name2", "2人目(ダブルス)"], ["school", "学校"], ["level", "ランク(1〜5)"], ["rank", "部内順位(1が強い)"], ["skip", "使わない"]];
 const IMP_KW = [
   [/2人目|パートナー|相方/, "name2"],
   [/名前|氏名|選手|プレーヤー|プレイヤー|ペア|1人目|^name$/i, "name"],
@@ -3395,12 +3398,14 @@ function buildImport(e) {
     const ci = Object.fromEntries(["name", "name2", "school", "level", "rank"].map((r) => [r, imp.roles.indexOf(r)]));
     if (ci.name < 0) return { players: [], empty: 0, dup: 0, noName: true };
     const n = body.length;
+    // ランクの列に 6 以上があれば 1〜10 の表とみなして 1〜5 に換算する
+    const tenScale = ci.level >= 0 && body.some((r) => parseInt(toHalf(r[ci.level]), 10) > RANK_MAX);
     players = body.map((r) => {
       let name = (r[ci.name] || "").trim();
       let name2 = ci.name2 >= 0 ? (r[ci.name2] || "").trim() : "";
       if (dbl && !name2 && PAIR_SEP.test(name)) [name, name2 = ""] = name.split(PAIR_SEP).map((s) => s.trim());
       let level = 3;
-      if (ci.level >= 0) { const v = parseInt(toHalf(r[ci.level]), 10); if (v) level = clamp(v, 1, RANK_MAX); }
+      if (ci.level >= 0) { const v = parseInt(toHalf(r[ci.level]), 10); if (v) level = tenScale ? to5(v) : clamp(v, 1, RANK_MAX); }
       else if (ci.rank >= 0) { const v = parseInt(toHalf(r[ci.rank]), 10); if (v) level = clamp(RANK_MAX - Math.floor(((v - 1) * RANK_MAX) / Math.max(n, 1)), 1, RANK_MAX); }
       return { id: uid(), name, name2, school: ci.school >= 0 ? (r[ci.school] || "").trim() : "", level };
     });
@@ -3463,7 +3468,7 @@ function parsePaste(text, dbl) {
     let level = 3;
     const last = cols[cols.length - 1];
     const lvNum = parseInt(String(last).replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)), 10);
-    if (cols.length >= 2 && /^[0-9０-９]+$/.test(String(last))) { level = clamp(lvNum, 1, RANK_MAX); cols = cols.slice(0, -1); }
+    if (cols.length >= 2 && /^[0-9０-９]+$/.test(String(last))) { level = lvNum > RANK_MAX ? to5(lvNum) : clamp(lvNum, 1, RANK_MAX); cols = cols.slice(0, -1); }
     let name, school = "";
     if (cols.length >= 3 && !line.includes("\t") && !line.includes(",")) { school = cols[cols.length - 1]; name = cols.slice(0, -1).join(" "); }
     else { name = cols[0]; school = cols[1] || ""; }
@@ -3476,7 +3481,7 @@ function parsePairCols(cols, sep) {
   let level = 3;
   const last = String(cols[cols.length - 1]);
   if (cols.length >= 2 && /^[0-9０-９]+$/.test(last)) {
-    const v10 = parseInt(last.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)), 10); level = clamp(v10, 1, RANK_MAX);
+    const v10 = parseInt(last.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)), 10); level = v10 > RANK_MAX ? to5(v10) : clamp(v10, 1, RANK_MAX);
     cols = cols.slice(0, -1);
   }
   let name = "", name2 = "", school = "";
@@ -3507,7 +3512,7 @@ function makeSample(type) {
   ];
   const e = normalize({ name: "見本:部内リーグ戦(練習用)", mode: "league", groupSize: 4, splitMethod: "level" });
   e.id = uid();
-  e.players = data.map(([name, school, level], i) => ({ id: uid(), name, school, level: level * 2 - 1 + (i % 2) }));
+  e.players = data.map(([name, school, level]) => ({ id: uid(), name, school, level }));
   autoAssign(e);
   // 最初のリーグに少しだけ結果を入れておく
   const rr = roundRobin(e.leagues[0].playerIds);
@@ -3528,7 +3533,7 @@ function makeDoublesSample() {
   ];
   const e = normalize({ name: "見本:ダブルス リーグ戦→決勝トーナメント(練習用)", type: "doubles", mode: "both", games: 3, groupSize: 4, splitMethod: "balanced" });
   e.id = uid();
-  e.players = data.map(([name, name2, school, level], i) => ({ id: uid(), name, name2, school, level: level * 2 - 1 + (i % 2) }));
+  e.players = data.map(([name, name2, school, level]) => ({ id: uid(), name, name2, school, level }));
   autoAssign(e);
   const [a, b] = roundRobin(e.leagues[0].playerIds)[0].pairs[0];
   [[21, 17], [19, 21], [21, 14]].forEach(([x, y], g) => { setScore(e, a, b, g, 0, x); setScore(e, a, b, g, 1, y); });
@@ -3544,7 +3549,7 @@ function makePracticeSample() {
   ];
   const e = normalize({ name: "見本:合同練習試合(名簿だけ)", mode: "practice", games: 1 });
   e.id = uid();
-  e.players = data.map(([name, school, level]) => ({ id: uid(), name, name2: "", school, level }));
+  e.players = data.map(([name, school, level]) => ({ id: uid(), name, name2: "", school, level: to5(level) })); // 表は10段階で書いてあるので5段階に
   return e;
 }
 
@@ -3909,7 +3914,7 @@ app.addEventListener("change", (evt) => {
       ui.seedDirty = !!e.bracket; commit(); render(); break;
     }
     case "ev-mode": e.mode = MODES[t.value] ? t.value : "league"; if (e.mode === "practice") e.type = "singles"; commit(); render(); break;
-    case "p-tol": e.practice.tol = clamp(Number(t.value), 0, 9); commit(); render(); break;
+    case "p-tol": e.practice.tol = clamp(Number(t.value), 0, RANK_MAX - 1); commit(); render(); break;
     case "p-avoid": e.practice.avoidSchool = t.checked; commit(); render(); break;
     case "p-samepair": e.practice.samePair = t.checked; commit(); render(); break;
     case "p-day": { const r = pRoundById(e, t.dataset.r); if (r) { r.day = clamp(Number(t.value), 1, 30); commit(); render(); } break; }
