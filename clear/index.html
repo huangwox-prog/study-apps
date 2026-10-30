@@ -798,6 +798,16 @@ details.more[open] summary { margin-bottom: 12px; }
 .pm-issues .chip { white-space: normal; }
 .bench { padding: 12px 14px; border-radius: 16px 16px 16px 28px; border: 2px dashed var(--border); background: var(--surface-soft); }
 .bench-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin-bottom: 8px; }
+/* 練習試合:たたんだ回転と、開け閉めするボタン */
+.pround .league-letter { background: var(--accent); color: var(--accent-text); }
+.pround.is-folded { padding: 10px 14px; }
+.pfold-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; text-align: left; }
+.pfold-row .league-letter { width: 38px; height: 38px; font-size: 1.1rem; }
+.pfold-open { font-size: 0.86rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.pfold-row:hover .pfold-open { text-decoration: underline; }
+.pfold-btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.92rem; color: var(--text-secondary); padding: 4px 0; }
+.pfold-btn:hover { color: var(--accent); }
+.pfold-arrow { width: 1em; color: var(--accent); }
 .bench-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .bchip {
   display: inline-grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; align-items: center; padding: 6px 6px 6px 12px;
@@ -2628,8 +2638,8 @@ function pPlayerHTML(e, id) {
   </section>`;
 }
 /* 対戦タブ:探した人が、各回転のどの試合でだれと当たっているか */
-function pFindHTML(e) {
-  const box = searchBoxHTML(e.players.filter(qMatch).length, e.players.length);
+function pFindHTML(e, legend) {
+  const box = searchBoxHTML(e.players.filter(qMatch).length, e.players.length) + (legend || "");
   if (!ui.q) return `<section class="card qcard">${box}</section>`;
   const pm = playerMap(e), SC = schoolColors(e), R = e.practice.rounds;
   const hits = e.players.filter(qMatch);
@@ -2718,7 +2728,7 @@ function pBenchHTML(e, r, iss, cum) {
       <span class="bchip-btns">${resting ? `<button type="button" class="btn btn-ghost btn-sm" data-action="prest" data-r="${r.id}" data-id="${id}">戻す</button>` : ""}</span></span>`;
   };
   return `<div class="bench" data-drop="pslot" data-drop-id="${r.id}|bench">
-    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここへドラッグした人は「今回だけ抜く(黄)」になり、その枠は空き枠になります(相手はそのまま。空き枠の試合はいちばん下へ)。名前をタップすると「次の回転も抜く(赤)」に切り替わります(もう一度タップで黄に戻る)。試合に戻すときは「戻す」か、名前を上の試合のほうへドラッグ。灰色の「待機」は、人数が余ったぶんです</span></div>
+    <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここへドラッグで「今回だけ抜く(黄)」。名前を押すと「次の回転も(赤)」。戻すときは「戻す」か試合の枠へドラッグ。灰色は人数の余り</span></div>
     <div class="bench-list">
       ${iss.unplaced.map((id) => chip(id, false)).join("")}
       ${iss.resting.map((id) => chip(id, true)).join("")}
@@ -2733,17 +2743,30 @@ function pRoundHTML(e, ri, cumAll) {
   const done = r.matches.filter((m) => pOutcome(e, m).winner).length;
   const askRegen = ui.confirm === `preg:${r.id}`, askDel = ui.confirm === `pdel:${r.id}`;
   const needMore = r.kind === "doubles" ? 4 : 2;
+  const kindText = `${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""}`;
+  // 前の回転はたたんで1行に(いちばん新しい回転・開いている試合・エラーのある回転は開いたまま)
+  const isLast = ri === e.practice.rounds.length - 1;
+  const must = iss.dup.length > 0 || r.matches.some((m) => m.id === ui.pOpen);
+  const pref = (ui.pShow || {})[r.id];
+  const open = must || (pref != null ? pref : isLast);
+  if (!open) return `<section class="card pround is-folded" id="pr-${r.id}">
+    <button type="button" class="pfold-row" data-action="pround" data-r="${r.id}" aria-expanded="false">
+      <span class="league-letter">${ri + 1}</span>
+      <span><b>第${ri + 1}回転</b><span class="faint"> ${r.day}日目 · ${kindText} · ${done}/${r.matches.length} 終了</span></span>
+      <span class="pfold-open">開く ▸</span></button>
+  </section>`;
   const msgs = [];
   if (iss.dup.length) msgs.push(`<div class="confirm perr"><b>エラー:</b><span>${iss.dup.map((id) => esc(pName(pm, id))).join("、")} が同じ回転に2回入っています。ドラッグで直してください。</span></div>`);
-  if (iss.unplaced.length) msgs.push(`<div class="confirm"><b>待機:</b><span>${iss.unplaced.map((id) => esc(pName(pm, id))).join("、")} はこの回転で試合がありません(人数が${r.kind === "doubles" ? "4" : "2"}で割り切れず、余ったぶんの待機です)。このままでよければ何もしなくて大丈夫です。試合に入れるときは、名前を試合の枠へドラッグしてください。</span></div>`);
+  if (iss.unplaced.length) msgs.push(`<div class="confirm"><b>待機:</b><span>${iss.unplaced.map((id) => esc(pName(pm, id))).join("、")}(人数の余り)。入れるときは試合の枠へドラッグ。</span></div>`);
   if (!r.matches.length) msgs.push(`<div class="confirm"><span>休みを除いて ${needMore} 人以上いないと試合が組めません。</span></div>`);
   return `<section class="card pround" id="pr-${r.id}">
     <div class="card-head">
-      <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${P_KIND[r.kind]}${r.kind === "doubles" ? (r.fixed ? "(固定ペア)" : "(ペア組み替え)") : ""} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了${(() => { const n = iss.per.filter((x) => x.some((y) => y.lv === "dup")).length; return n ? ` <span class="chip chip-dup">かぶり ${n}試合</span>` : ""; })()}</p></div></div>
+      <div class="title-with-letter"><span class="league-letter" style="font-size:1.5rem">${ri + 1}</span><div><h3>第${ri + 1}回転</h3><p class="faint">${kindText} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了${(() => { const n = iss.per.filter((x) => x.some((y) => y.lv === "dup")).length; return n ? ` <span class="chip chip-dup">かぶり ${n}試合</span>` : ""; })()}</p></div></div>
       <div class="row">
         <label class="faint">日 <select class="select" data-change="p-day" data-r="${r.id}" aria-label="何日目の回転か">${dayOpts}</select></label>
-        <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">組み直す(シャッフル)</button>
+        <button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">組み直す</button>
         <button class="btn btn-ghost btn-sm btn-danger" data-action="pdel" data-r="${r.id}">削除</button>
+        ${must ? "" : `<button class="btn btn-ghost btn-sm" data-action="pround" data-r="${r.id}" aria-expanded="true">たたむ ▴</button>`}
       </div>
     </div>
     ${askRegen ? `<div class="confirm"><span>入れた結果を消して、組み直しますか？</span><button class="btn btn-sm btn-primary" data-action="preg-yes" data-r="${r.id}">組み直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
@@ -2780,23 +2803,27 @@ function practiceHTML(e) {
     return `<span class="rchip ${SC.cls(x.school)} ${k}"><button type="button" class="rchip-name" data-action="pplayer" data-id="${x.id}" title="${esc(x.name)} の試合と成績を見る">${esc(x.name || "(名前なし)")}</button><button type="button" class="rchip-tog" data-action="pnext-rest" data-id="${x.id}" aria-label="${esc(x.name)}を次の回転で抜くか(今:${k === "keep" ? "次の回転も抜く" : k ? "今回だけ抜く" : "抜かない"})">${k === "keep" ? "次も抜く" : k ? "今回抜く" : "抜く"}</button></span>`; }).join("");
   const radio = (v, t) => `<label class="choice"><input type="radio" name="p-kind" value="${v}" data-change="pnext-kind" ${sel === v ? "checked" : ""}><b>${t}</b></label>`;
   const cumAll = pCum(e);
+  // よく使う「形式・日・作る」だけを出し、抜く人と細かい設定はボタンで開く
+  const restN = nextRest.length + keepNext.size;
+  const fold = (k, label, open) => `<button type="button" class="pfold-btn" data-action="ptoggle" data-k="${k}" aria-expanded="${open}"><span class="pfold-arrow">${open ? "▾" : "▸"}</span>${label}</button>`;
   return `<section class="card">
-    <div class="card-head"><div><h2>回転ごとの対戦</h2><p class="faint">「第1回転」「第2回転」…と、回転ごとに実力の近い人どうしで組みます。前の回転と同じ相手・同じ相方はなるべく避けます。組んだあと、名前をドラッグして入れ替えられます。</p></div></div>
-    <div class="settings">
-      <div class="field"><span>組むときのランク差</span><select class="select" data-change="p-tol" aria-label="ランク差の許容">${tolOpts}</select></div>
-      <div class="field"><span>学校</span><label class="check"><input type="checkbox" data-change="p-avoid" ${p.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label>
-        <label class="check"><input type="checkbox" data-change="p-samepair" ${p.samePair ? "checked" : ""}>ダブルスのペアは同じ学校どうし</label></div>
-    </div>
-    ${legend}
+    <div class="card-head"><div><h2>第${p.rounds.length + 1}回転を作る</h2><p class="faint">ランクの近い人どうしで組みます。前と同じ相手・同じ相方はなるべく避けます。</p></div></div>
     <div class="pnext">
-      <div class="field" style="grid-column:1/-1"><span>次の回転の形式</span><div class="choice-grid three">${radio("singles", "シングルス")}${radio("doubles", "ダブルス(ペアは毎回組み替え)")}${radio("fixed", "ダブルス(ペア固定)")}</div>
+      <div class="field" style="grid-column:1/-1"><span>形式</span><div class="choice-grid three">${radio("singles", "シングルス")}${radio("doubles", "ダブルス(ペアは毎回組み替え)")}${radio("fixed", "ダブルス(ペア固定)")}</div>
         ${sel === "fixed" ? pPairsHTML(e, SC) : ""}</div>
       <div class="field"><span>何日目</span><select class="select" data-change="pnext-day" aria-label="何日目">${dayOpts}</select></div>
-      <div class="field" style="grid-column:1/-1"><span>選手の名前を押すと、その人の試合へ飛びます。次の回転で抜く人(体調不良・休憩など)は、名前の右の「抜く」を押すたびに 今回だけ抜く(黄)→ 次の回転も抜く(赤)→ 抜かない</span><div class="rchips">${restChips}</div></div>
-      <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${nextRest.length ? `<span class="faint">${nextRest.length}人を休みにして組みます</span>` : ""}</div>
+      <div style="grid-column:1/-1">${fold("pRest", `次の回転で抜く人${restN ? ` <span class="chip chip-warn">${restN}人</span>` : ""}`, !!ui.pRest)}
+        ${ui.pRest ? `<p class="faint" style="margin:6px 0">「抜く」を押すたびに 今回だけ(黄)→ 次の回転も(赤)→ 抜かない。名前を押すとその人の試合と成績。</p><div class="rchips">${restChips}</div>` : ""}</div>
+      <div style="grid-column:1/-1">${fold("pSet", "組み方の設定(ランク差・学校)", !!ui.pSet)}
+        ${ui.pSet ? `<div class="settings" style="margin-top:10px">
+          <div class="field"><span>組むときのランク差</span><select class="select" data-change="p-tol" aria-label="ランク差の許容">${tolOpts}</select></div>
+          <div class="field"><span>学校</span><label class="check"><input type="checkbox" data-change="p-avoid" ${p.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label>
+            <label class="check"><input type="checkbox" data-change="p-samepair" ${p.samePair ? "checked" : ""}>ダブルスのペアは同じ学校どうし</label></div>
+        </div>` : ""}</div>
+      <div class="row" style="grid-column:1/-1"><button class="btn btn-aurora btn-lg" data-action="padd">第${p.rounds.length + 1}回転を作る</button>${restN ? `<span class="faint">${restN}人を抜いて組みます</span>` : ""}</div>
     </div>
   </section>
-  ${pFindHTML(e)}
+  ${pFindHTML(e, legend)}
   ${p.rounds.length ? p.rounds.map((_, ri) => pRoundHTML(e, ri, cumAll)).join("") : `<section class="card"><p class="muted">まだ回転がありません。上の「第1回転を作る」を押してください。</p></section>`}
   ${p.rounds.length ? `<section class="card pnext-bottom">
     <div class="row">
@@ -4074,7 +4101,18 @@ app.addEventListener("click", (evt) => {
       toast(`${pName(playerMap(e), id)} を${btn.dataset.kind === "keep" ? "次の回転も" : "今回だけ"}抜きました。空き枠の試合はいちばん下に移しました`);
       break;
     }
-    case "pnext-top": { const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
+    case "pnext-top": { ui.pRest = true; render(); const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
+    case "ptoggle": { const k = btn.dataset.k; if (k === "pRest" || k === "pSet") { ui[k] = !ui[k]; render(); } break; }
+    case "pround": {
+      // 回転を開く/たたむ。たたむ回転の中で開いていた試合は閉じる
+      const r = pRoundById(e, btn.dataset.r); if (!r) break;
+      const opening = btn.getAttribute("aria-expanded") !== "true";
+      ui.pShow = Object.assign({}, ui.pShow, { [r.id]: opening });
+      if (!opening && r.matches.some((m) => m.id === ui.pOpen)) ui.pOpen = null;
+      render();
+      if (opening) { const el = document.getElementById(`pr-${r.id}`); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" }); }
+      break;
+    }
     case "pnext-rest": {
       // なし → 今回だけ抜く(黄) → 次の回転も抜く(赤) → なし
       const id = btn.dataset.id, n = e.practice.rounds.length;
