@@ -843,6 +843,8 @@ details.more[open] summary { margin-bottom: 12px; }
 .sheet .sh-g i { font-style: normal; color: var(--text-tertiary); padding: 0 4px; }
 .sheet .sh-round td { text-align: left; font-weight: 800; background: var(--accent-soft); color: var(--accent); }
 .preg-row { padding: 4px 2px 0; }
+.pl-tools { margin-bottom: 10px; }
+.pl-tools .qbox { margin: 0; flex: 1 1 260px; }
 .qbox { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
 .qbox .input { flex: 1 1 240px; max-width: 420px; font-size: 1rem; padding: 10px 14px; border-radius: 999px; }
 .qbar .qbox { margin: 0; }
@@ -2265,7 +2267,11 @@ function playersHTML(e) {
   const dupKey = (p) => `${p.name}|${p.name2}|${p.school}`.replace(/[\s　]+/g, "");
   const keyCount = {};
   e.players.forEach((p) => (keyCount[dupKey(p)] = (keyCount[dupKey(p)] || 0) + 1));
-  const list = e.players.slice().sort((a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja") || a.name.localeCompare(b.name, "ja"));
+  // 並び順:実力順(強い順 → 学校) / 学校順(学校 → 強い順)
+  const bySchool = ui.plSort === "school";
+  const list = e.players.slice().sort((a, b) => bySchool
+    ? a.school.localeCompare(b.school, "ja") || b.level - a.level || a.name.localeCompare(b.name, "ja")
+    : b.level - a.level || a.school.localeCompare(b.school, "ja") || a.name.localeCompare(b.name, "ja"));
   const sc = schoolColors(e);
   const shown = list.filter(qMatch);
   const rows = shown.map((p) => {
@@ -2299,7 +2305,8 @@ function playersHTML(e) {
   <section class="card">
     <div class="card-head"><div><h2>登録${unit(e)} <span class="faint num">${count(e, e.players.length)}</span></h2><p class="faint">ここで名前・学校・ランクを直すと、${prac ? "対戦表" : hasL ? "リーグ表" : "トーナメント表"}や結果にもそのまま反映されます。${prac ? "同じ名前・同じ学校が2人いると「重複」と出ます。" : ""}</p></div>
       ${e.players.length ? `<button class="btn btn-aurora btn-sm" data-action="tab" data-tab="${next[0]}">${next[1]}</button>` : ""}</div>
-    ${e.players.length > 1 ? searchBoxHTML(shown.length, e.players.length) : ""}
+    ${e.players.length > 1 ? `<div class="row pl-tools">${searchBoxHTML(shown.length, e.players.length)}
+      <span class="faint">並び順</span>${[["level", "実力順"], ["school", "学校順"]].map(([k, t]) => `<button type="button" class="btn btn-sm ${(ui.plSort || "level") === k ? "btn-primary" : "btn-secondary"}" data-action="plsort" data-k="${k}" aria-pressed="${(ui.plSort || "level") === k}">${t}</button>`).join("")}</div>` : ""}
     ${e.players.length && !shown.length ? `<p class="muted">「${esc(ui.q)}」に当たる${unit(e)}はいません</p>` : ""}
     ${shown.length ? `<div class="table-wrap"><table class="ptable ${dbl ? "dbl" : ""}">
       <thead><tr>${dbl ? "<th>1人目</th><th>2人目</th>" : "<th>名前</th>"}<th>学校</th><th>ランク</th>${hasL ? "<th>リーグ</th>" : prac ? "<th>試合数</th>" : ""}<th></th></tr></thead>
@@ -3792,7 +3799,7 @@ function makeDoublesSample() {
 }
 
 function makePracticeSample() {
-  // 名簿だけの見本(試合はまだ組まない)。3校×8人=24人で、どの学校も強い人から初心者までばらばら。選手も学校もすべて架空
+  // 名簿だけの見本(試合はまだ組まない)。3校で32人(11人・11人・10人)、どの学校も強い人から初心者までばらばら。選手も学校もすべて架空
   const data = [
     ["桐生 蓮", "桜ヶ丘高", 10], ["鳴海 陽菜", "桜ヶ丘高", 8], ["朝倉 大翔", "桜ヶ丘高", 7], ["篠原 颯太", "桜ヶ丘高", 5],
     ["相馬 陸", "桜ヶ丘高", 4], ["瀬戸 律", "桜ヶ丘高", 3], ["宮坂 凛", "桜ヶ丘高", 2], ["天野 灯", "桜ヶ丘高", 1],
@@ -3800,6 +3807,8 @@ function makePracticeSample() {
     ["一ノ瀬 美咲", "港北高", 4], ["七瀬 柚", "港北高", 3], ["雪村 詩", "港北高", 2], ["藤代 澪", "港北高", 1],
     ["柏木 湊", "緑川高", 9], ["水城 悠真", "緑川高", 7], ["鷹野 晴", "緑川高", 7], ["九条 樹", "緑川高", 5],
     ["真柴 芽依", "緑川高", 4], ["望月 隼", "緑川高", 3], ["高峰 蒼", "緑川高", 3], ["久遠 奏", "緑川高", 1],
+    ["若葉 颯", "桜ヶ丘高", 9], ["佐倉 千尋", "港北高", 10], ["神崎 遥", "緑川高", 6], ["橘 翔太", "桜ヶ丘高", 6],
+    ["小鳥遊 楓", "港北高", 5], ["春日 陽向", "緑川高", 2], ["榊 美月", "桜ヶ丘高", 3], ["東雲 朔", "港北高", 2],
   ];
   const e = normalize({ name: "見本:合同練習試合(名簿だけ)", mode: "practice", games: 3, points: 15 });
   e.id = uid();
@@ -4057,6 +4066,7 @@ app.addEventListener("click", (evt) => {
     }
     case "qclear": ui.q = ""; render(); { const n = document.getElementById("q"); if (n) n.focus({ preventScroll: true }); } break;
     case "pplayer": ui.pPlayer = btn.dataset.id; render(); { const c = document.querySelector(".pp-panel [data-action=pplayer-close]"); if (c) c.focus({ preventScroll: true }); } break;
+    case "plsort": ui.plSort = btn.dataset.k === "school" ? "school" : "level"; render(); break;
     case "pplayer-close": ui.pPlayer = null; render(); break;
     case "pjump": {
       // 試合へ:対戦タブでその試合を開く(選手のページからでも)
