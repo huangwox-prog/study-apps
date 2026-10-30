@@ -4341,6 +4341,14 @@ function endDrag(evt, cancel) {
 }
 let suppressClickUntil = 0;
 addEventListener("click", (c) => { if (Date.now() < suppressClickUntil) { c.stopPropagation(); c.preventDefault(); } }, true);
+// 開いている試合のカードは、カードの外の何もないところを押しても閉じる(ボタンや入力欄を押したときは閉じない)
+document.addEventListener("click", (evt) => {
+  if (!ui.pOpen) return;
+  const t = evt.target;
+  if (!t.isConnected || t.closest(`#pm-${ui.pOpen}`) || t.closest("[data-action],[data-drag],a,button,input,select,textarea,label,summary")) return;
+  ui.pOpen = null;
+  render();
+});
 addEventListener("pointerup", (evt) => endDrag(evt, false));
 addEventListener("pointercancel", (evt) => endDrag(evt, true));
 addEventListener("keydown", (evt) => { if (evt.key === "Escape") { endDrag(evt, true); if (ui.pPlayer) { ui.pPlayer = null; render(); } else if (ui.pOpen) { ui.pOpen = null; render(); } } });
@@ -4438,6 +4446,5 @@ addEventListener("scroll", () => {
 })();
 })();
 </script>
-
 </body>
 </html>
