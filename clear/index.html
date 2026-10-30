@@ -741,6 +741,13 @@ details.more[open] summary { margin-bottom: 12px; }
 .pm-side.b { align-items: flex-end; text-align: right; }
 .pm-side.win .pslot { background: var(--success-soft); }
 .sc-name { color: var(--lg, inherit); }
+/* 学校の色をひと目で:試合の枠・置き場の名前・名簿の名前の左端に、学校の色の太い線 */
+.pslot[class*="lg-"] { background: color-mix(in srgb, var(--lg) 9%, transparent); box-shadow: inset 5px 0 0 var(--lg); }
+.pm-side.b .pslot[class*="lg-"] { box-shadow: inset -5px 0 0 var(--lg); }
+.pm-side.win .pslot[class*="lg-"] { background: color-mix(in srgb, var(--success) 14%, transparent); }
+.bchip[class*="lg-"] { box-shadow: inset 5px 0 0 var(--lg); }
+.ptable td.c-name[class*="lg-"] { box-shadow: inset 4px 0 0 var(--lg); }
+.school-legend .chip { border-left: 5px solid var(--lg); }
 .cell-input.sc-name { font-weight: 650; }
 .school-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
 .school-legend .chip { color: var(--lg); background: var(--lg-soft); font-weight: 750; }
@@ -1557,11 +1564,12 @@ function pOutcome(e, m) {
 }
 function pPlaced(r) { const out = []; r.matches.forEach((m) => m.a.concat(m.b).forEach((x) => x && out.push(x))); return out; }
 function tolLabel(k) { return k === 0 ? "同じランクだけ" : `前後${k}まで`; }
-/* 学校ごとの色。学校名の50音順に、リーグと同じ8色を順に割り当てる */
+/* 学校ごとの色。学校名の順に、見分けやすい色から割り当てる(青 → オレンジ → 緑 → 紫 → ピンク → 黄土 → 青緑 → 灰) */
+const SCHOOL_PALETTE = [0, 3, 2, 1, 4, 5, 6, 7];
 function schoolColors(e) {
   const list = [...new Set(e.players.map((p) => p.school.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ja"));
   const m = {};
-  list.forEach((s, i) => (m[s] = `lg-${i % 8}`));
+  list.forEach((s, i) => (m[s] = `lg-${SCHOOL_PALETTE[i % 8]}`));
   return { cls: (school) => m[String(school || "").trim()] || "", list };
 }
 function pName(pm, id) { return id && pm[id] ? pm[id].name || "(名前なし)" : "—"; }
@@ -3801,14 +3809,14 @@ function makeDoublesSample() {
 function makePracticeSample() {
   // 名簿だけの見本(試合はまだ組まない)。3校で32人(11人・11人・10人)、どの学校も強い人から初心者までばらばら。選手も学校もすべて架空
   const data = [
-    ["桐生 蓮", "桜ヶ丘高", 10], ["鳴海 陽菜", "桜ヶ丘高", 8], ["朝倉 大翔", "桜ヶ丘高", 7], ["篠原 颯太", "桜ヶ丘高", 5],
-    ["相馬 陸", "桜ヶ丘高", 4], ["瀬戸 律", "桜ヶ丘高", 3], ["宮坂 凛", "桜ヶ丘高", 2], ["天野 灯", "桜ヶ丘高", 1],
-    ["早瀬 葵", "港北高", 9], ["日向 紬", "港北高", 8], ["結城 心春", "港北高", 6], ["白石 結衣", "港北高", 6],
-    ["一ノ瀬 美咲", "港北高", 4], ["七瀬 柚", "港北高", 3], ["雪村 詩", "港北高", 2], ["藤代 澪", "港北高", 1],
-    ["柏木 湊", "緑川高", 9], ["水城 悠真", "緑川高", 7], ["鷹野 晴", "緑川高", 7], ["九条 樹", "緑川高", 5],
-    ["真柴 芽依", "緑川高", 4], ["望月 隼", "緑川高", 3], ["高峰 蒼", "緑川高", 3], ["久遠 奏", "緑川高", 1],
-    ["若葉 颯", "桜ヶ丘高", 9], ["佐倉 千尋", "港北高", 10], ["神崎 遥", "緑川高", 6], ["橘 翔太", "桜ヶ丘高", 6],
-    ["小鳥遊 楓", "港北高", 5], ["春日 陽向", "緑川高", 2], ["榊 美月", "桜ヶ丘高", 3], ["東雲 朔", "港北高", 2],
+    ["桐生 蓮", "東高", 10], ["鳴海 陽菜", "東高", 8], ["朝倉 大翔", "東高", 7], ["篠原 颯太", "東高", 5],
+    ["相馬 陸", "東高", 4], ["瀬戸 律", "東高", 3], ["宮坂 凛", "東高", 2], ["天野 灯", "東高", 1],
+    ["早瀬 葵", "西高", 9], ["日向 紬", "西高", 8], ["結城 心春", "西高", 6], ["白石 結衣", "西高", 6],
+    ["一ノ瀬 美咲", "西高", 4], ["七瀬 柚", "西高", 3], ["雪村 詩", "西高", 2], ["藤代 澪", "西高", 1],
+    ["柏木 湊", "南高", 9], ["水城 悠真", "南高", 7], ["鷹野 晴", "南高", 7], ["九条 樹", "南高", 5],
+    ["真柴 芽依", "南高", 4], ["望月 隼", "南高", 3], ["高峰 蒼", "南高", 3], ["久遠 奏", "南高", 1],
+    ["若葉 颯", "東高", 9], ["佐倉 千尋", "西高", 10], ["神崎 遥", "南高", 6], ["橘 翔太", "東高", 6],
+    ["小鳥遊 楓", "西高", 5], ["春日 陽向", "南高", 2], ["榊 美月", "東高", 3], ["東雲 朔", "西高", 2],
   ];
   const e = normalize({ name: "見本:合同練習試合(名簿だけ)", mode: "practice", games: 3, points: 15 });
   e.id = uid();
