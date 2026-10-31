@@ -486,6 +486,7 @@ tr:last-child td { border-bottom: none; }
 }
 .score:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); background: var(--surface-strong); }
 .score.bad { border-color: var(--warn); }
+.score.over { border-color: var(--error); background: var(--error-soft); }
 .score:disabled { opacity: 0.35; }
 .wo-select { margin-top: 4px; padding: 3px 8px; font-size: 0.76rem; border-radius: 999px; color: var(--text-tertiary); max-width: 100%; }
 .wo-select.is-on { color: var(--warn); border-color: var(--warn); font-weight: 700; }
@@ -4440,10 +4441,39 @@ app.addEventListener("input", (evt) => {
     return;
   }
   if (t.dataset.input !== "score" && t.dataset.input !== "bscore" && t.dataset.input !== "pscore") return;
-  const clean = t.value.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)).replace(/[^0-9]/g, "").slice(0, 2);
-  if (clean !== t.value) t.value = clean;
+  if (evt.isComposing) return; // 日本語入力の変換中は待つ(変換が終わったら compositionend で処理)
+  onScoreInput(t);
+});
+app.addEventListener("compositionend", (evt) => {
+  const t = evt.target;
+  if (t.dataset && ["score", "bscore", "pscore"].includes(t.dataset.input)) onScoreInput(t);
+});
+/* 点数の入力。バドミントンでは上限を超える点数はありえないので入れさせない(21点なら30点まで、15点なら21点まで、11点なら15点まで)。
+   点数が決まったら(2けた、またはそれ以上大きくならない1けた)、隣の欄へ自動で移る */
+function onScoreInput(t) {
+  let clean = t.value.replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0)).replace(/[^0-9]/g, "").slice(0, 2);
   const e = ev();
-  const val = clean === "" ? null : clamp(parseInt(clean, 10), 0, 99);
+  const cap = e.points === 21 ? 30 : e.points === 15 ? 21 : 15;
+  if (clean !== "" && parseInt(clean, 10) > cap) {
+    clean = "";
+    toast(`${e.points}点のゲームでは${cap}点までです。入れ直してください`);
+    t.classList.add("over");
+    setTimeout(() => t.classList.remove("over"), 900);
+  }
+  if (clean !== t.value) t.value = clean;
+  const val = clean === "" ? null : parseInt(clean, 10);
+  const done = val != null && (clean.length >= 2 || val === 0 || val * 10 > cap);
+  // 勝ちが決まったか(決まったら、ゲームの2つめの欄を入れたところで止まる)
+  const next = (decided) => {
+    if (!done) return;
+    const box = t.closest(".pmatch, .match");
+    const list = box ? [...box.querySelectorAll("input.score:not([disabled])")] : [];
+    const i = list.indexOf(t);
+    if (i < 0) return;
+    if (decided && i % 2 === 1) { t.blur(); return; }
+    const nx = list[i + 1];
+    if (nx) { nx.focus(); nx.select(); } else t.blur();
+  };
   if (t.dataset.input === "pscore") {
     const r = pRoundById(e, t.dataset.r), m = r && r.matches.find((x) => x.id === t.dataset.m);
     if (!m) return;
@@ -4454,6 +4484,7 @@ app.addEventListener("input", (evt) => {
     if (isEmptyGames(m.g)) m.g = [];
     commit();
     refreshPMatch(e, m);
+    next(!!pOutcome(e, m).winner);
     return;
   }
   if (t.dataset.input === "bscore") {
@@ -4462,12 +4493,15 @@ app.addEventListener("input", (evt) => {
     setBScore(e, n, Number(t.dataset.g), Number(t.dataset.s), val);
     commit();
     refreshBracket(e, t.dataset.mid);
+    const n2 = findNode(bracketState(e), t.dataset.mid);
+    next(!!(n2 && n2.o && n2.o.winner));
     return;
   }
   setScore(e, t.dataset.a, t.dataset.b, Number(t.dataset.g), Number(t.dataset.s), val);
   commit();
   refreshMatch(e, t.dataset.a, t.dataset.b);
-});
+  next(!!outcome(e, t.dataset.a, t.dataset.b).winner);
+}
 
 /* ============ テーマ・背景 ============ */
 const root = document.documentElement;
