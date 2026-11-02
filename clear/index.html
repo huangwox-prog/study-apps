@@ -855,23 +855,27 @@ details.more[open] summary { margin-bottom: 12px; }
 .add-form.pairreg { grid-template-columns: minmax(0, 1fr) auto; }
 .add-form.pairreg .btn-primary { justify-self: start; }
 .pairchip.is-locked { border-color: var(--accent); }
-.bpair { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 14px 14px 14px 22px; outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); background: var(--accent-soft); }
-/* 登録ペア:名簿では2人を上下に並べて1つの枠で囲む */
-.pair-tag { display: inline-flex; align-items: center; padding: 1px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; background: var(--accent); color: var(--accent-text); }
-.pair-tag.sm { padding: 0 8px; font-size: 0.66rem; align-self: flex-start; }
+.bpair { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 5px 7px; border-radius: 14px 14px 14px 22px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+/* 登録ペア:名簿では2人を上下に並べ、名前の左の細い「かっこ」でつなぐ(控えめに) */
+.pair-tag { display: inline-flex; align-items: center; padding: 0 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); color: var(--accent); background: transparent; }
+.pair-tag.sm { font-size: 0.64rem; padding: 0 7px; align-self: flex-start; }
 .pm-side.b .pair-tag.sm { align-self: flex-end; }
-.pm-slots.is-pair { outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; border-radius: 12px; }
-.ptable tr.pair-row td { background: var(--accent-soft); }
-.ptable tr.pair-first td { border-top: 2px solid var(--accent); border-bottom: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent); }
-.ptable tr.pair-second td { border-bottom: 2px solid var(--accent); }
-.ptable tr.pair-row td:first-child { border-left: 4px solid var(--accent); }
-.ptable tr.pair-row td:last-child { border-right: 2px solid var(--accent); }
+.pm-slots.is-pair { outline: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 3px; border-radius: 12px; }
+.pair-tag-m { display: none !important; }
+.pair-unlock { font-size: 0.74rem; font-weight: 600; color: var(--text-tertiary); text-decoration: underline; text-underline-offset: 3px; padding: 0 4px; }
+.pair-unlock:hover { color: var(--error); }
+.ptable tr.pair-row td.c-name { position: relative; padding-left: 26px; }
+.ptable tr.pair-row td.c-name::before { content: ""; position: absolute; left: 12px; width: 9px; border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); border-right: none; }
+.ptable tr.pair-first td.c-name::before { top: 50%; bottom: -1px; border-bottom: none; border-top-left-radius: 9px; }
+.ptable tr.pair-second td.c-name::before { top: -1px; height: 50%; border-top: none; border-bottom-left-radius: 9px; }
+.ptable tr.pair-first td { border-bottom-color: transparent; }
 @media (max-width: 760px) {
-  .ptable tr.pair-row { background: var(--accent-soft); box-shadow: inset 4px 0 0 var(--accent); padding-left: 10px; padding-right: 6px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; grid-template-areas: "name school del" "league league league" "level level level"; }
-  .ptable tr.pair-row td, .ptable tr.pair-row td:first-child, .ptable tr.pair-row td:last-child { background: none; border: none; }
-  .ptable tr.pair-first { border-top: 2px solid var(--accent); border-radius: 12px 12px 0 0; }
-  .ptable tr.pair-second { border-bottom: 2px solid var(--accent); border-radius: 0 0 0 16px; }
+  .ptable tr.pair-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; grid-template-areas: "name school del" "league league league" "level level level"; }
+  .ptable tr.pair-row td.c-name { padding-left: 0; }
+  .ptable tr.pair-row td.c-name::before { display: none; }
+  .ptable tr.pair-first { border-bottom: 1px dashed color-mix(in srgb, var(--accent) 35%, transparent); }
+  .pair-tag-m { display: inline-flex !important; }
+}
 }
 .pl-tools .qbox { margin: 0; flex: 1 1 260px; }
 .qbox { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -2365,7 +2369,7 @@ function playersHTML(e) {
       ${dbl ? `<td class="c-name2"><input class="cell-input" id="pn2-${p.id}" data-change="p-name2" data-id="${p.id}" value="${esc(p.name2)}" placeholder="相方を入力" aria-label="2人目の名前"></td>` : ""}
       <td class="c-school"><input class="cell-input" id="ps-${p.id}" data-change="p-school" data-id="${p.id}" value="${esc(p.school)}" list="schools" placeholder="学校" aria-label="学校"></td>
       <td class="c-level">${levelPicker(p.id, p.level)}</td>
-      ${hasL ? `<td class="c-league">${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>` : prac ? `<td class="c-league"><button type="button" class="chip num chip-link" data-action="pplayer" data-id="${p.id}" title="試合と成績を見る">${gcount[p.id] || 0}試合 ›</button>${pairPos[p.id] === "first" ? ` <span class="pair-tag">ペア</span><button type="button" class="btn btn-ghost btn-sm" data-action="punlock" data-id="${p.id}" title="この2人のペアをやめる">解除</button>` : pairPos[p.id] === "second" ? ` <span class="pair-tag">ペア</span>` : ""}${keyCount[dupKey(p)] > 1 ? ` <span class="chip chip-err">重複</span>` : ""}</td>` : ""}
+      ${hasL ? `<td class="c-league">${li >= 0 ? `<span class="badge ${lgClass(li)}">${letter(li)}</span>` : `<span class="faint">—</span>`}</td>` : prac ? `<td class="c-league"><button type="button" class="chip num chip-link" data-action="pplayer" data-id="${p.id}" title="試合と成績を見る">${gcount[p.id] || 0}試合 ›</button>${pairPos[p.id] === "first" ? ` <span class="pair-tag">ペア</span><button type="button" class="pair-unlock" data-action="punlock" data-id="${p.id}" title="この2人のペアをやめる">解除</button>` : pairPos[p.id] === "second" ? ` <span class="pair-tag pair-tag-m">ペア</span>` : ""}${keyCount[dupKey(p)] > 1 ? ` <span class="chip chip-err">重複</span>` : ""}</td>` : ""}
       <td class="c-del" style="text-align:right"><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(pname(e, p))}を削除" title="削除">${TRASH}</button></td>
     </tr>`;
   }).join("");
