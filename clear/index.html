@@ -855,6 +855,7 @@ details.more[open] summary { margin-bottom: 12px; }
 .add-form.pairreg { grid-template-columns: minmax(0, 1fr) auto; }
 .add-form.pairreg .btn-primary { justify-self: start; }
 .pairchip.is-locked { border-color: var(--accent); }
+.bpair { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 14px 14px 14px 22px; outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent); background: var(--accent-soft); }
 /* 登録ペア:名簿では2人を上下に並べて1つの枠で囲む */
 .pair-tag { display: inline-flex; align-items: center; padding: 1px 10px; border-radius: 999px; font-size: 0.74rem; font-weight: 800; background: var(--accent); color: var(--accent-text); }
 .pair-tag.sm { padding: 0 8px; font-size: 0.66rem; align-self: flex-start; }
@@ -2829,8 +2830,19 @@ function pBenchHTML(e, r, iss, cum) {
   return `<div class="bench" data-drop="pslot" data-drop-id="${r.id}|bench">
     <div class="bench-head"><b>試合に入っていない人</b><span class="faint">ここへドラッグで「今回だけ抜く(黄)」。名前を押すと「次の回転も(赤)」。戻すときは「戻す」か試合の枠へドラッグ。灰色は人数の余り</span></div>
     <div class="bench-list">
-      ${iss.unplaced.map((id) => chip(id, false)).join("")}
-      ${iss.resting.map((id) => chip(id, true)).join("")}
+      ${(() => {
+        // 登録ペアが2人とも置き場にいるときは、1つの枠で囲んで並べる
+        const all = iss.unplaced.map((id) => [id, false]).concat(iss.resting.map((id) => [id, true]));
+        const done = new Set();
+        return all.map(([id, rs]) => {
+          if (done.has(id)) return "";
+          done.add(id);
+          const mate = pMate(e, r, id), other = mate && all.find(([x]) => x === mate);
+          if (!other) return chip(id, rs);
+          done.add(mate);
+          return `<span class="bpair"><span class="pair-tag sm">ペア</span>${chip(id, rs)}${chip(mate, other[1])}</span>`;
+        }).join("");
+      })()}
       ${iss.unplaced.length + iss.resting.length ? "" : `<span class="faint">全員が試合に入っています</span>`}
     </div></div>`;
 }
@@ -3939,13 +3951,33 @@ function pRegen(e, r, must, msg) {
   commit(); render(); toast(msg || "組み直しました");
 }
 /* 休みをやめた人を試合に戻す。結果がまだなければその人を入れて組み直し、結果があれば空いている枠に入れる */
+/* ダブルスの回転での登録ペアの相方(シングルスや登録ペアでなければ null) */
+function pMate(e, r, id) {
+  if (r.kind !== "doubles") return null;
+  const lk = pLocked(e).find((x) => x.includes(id));
+  return lk ? (lk[0] === id ? lk[1] : lk[0]) : null;
+}
+/* 試合から外す(登録ペアなら相方もいっしょに)。外した人の一覧を返す */
+function pTakeOut(e, r, id, keep) {
+  const ri = e.practice.rounds.indexOf(r), mate = pMate(e, r, id);
+  const ids = [id].concat(mate && pPlaced(r).includes(mate) ? [mate] : []);
+  ids.forEach((x) => {
+    r.matches.forEach((m) => ["a", "b"].forEach((k) => { m[k] = m[k].map((y) => (y === x ? null : y)); }));
+    if (!r.rest.includes(x)) r.rest.push(x);
+    if (keep) pKeepOn(e, x, ri);
+  });
+  pEmptyLast(r);
+  return ids;
+}
 function pBringBack(e, r, id) {
-  const name = pName(playerMap(e), id);
-  r.rest = r.rest.filter((x) => x !== id);
-  pKeepOff(e, id, e.practice.rounds.indexOf(r));
-  if (pFillEmpty(r, id)) { commit(); render(); toast(`${name} を空き枠に入れました`); return; }
-  if (pFresh(r)) { pRegen(e, r, [id], `${name} を試合に戻して組み直しました`); return; }
-  commit(); render(); toast(`${name} の休みをやめました。空いている枠がないので、入れたい枠へドラッグしてください`);
+  const pm = playerMap(e), mate = pMate(e, r, id);
+  const ids = [id].concat(mate && !pPlaced(r).includes(mate) ? [mate] : []); // 登録ペアは2人いっしょに戻す
+  const name = ids.map((x) => pName(pm, x)).join("・");
+  ids.forEach((x) => { r.rest = r.rest.filter((y) => y !== x); pKeepOff(e, x, e.practice.rounds.indexOf(r)); });
+  const placed = ids.filter((x) => pFillEmpty(r, x));
+  if (placed.length === ids.length) { commit(); render(); toast(`${name} を空き枠に入れました`); return; }
+  if (pFresh(r)) { pRegen(e, r, ids, `${name} を試合に戻して組み直しました`); return; }
+  commit(); render(); toast(`${name} の休みをやめました。空いている枠が足りないので、入れたい枠へドラッグしてください`);
 }
 /* 空き枠(いちばん上の空き)に入れる。入れたら true */
 function pFillEmpty(r, id) {
@@ -3986,16 +4018,16 @@ function pDrop(fromRef, toRef) {
       // 置き場へ外した人は休みにする(組み直しても、また入らないように)
       const x = A.get();
       if (!x) return;
-      if (!r.rest.includes(x)) r.rest.push(x);
-      // 組み直さずに、その枠を空き枠にする(相手はそのまま)。空き枠のある試合はいちばん下へ
-      A.set(null);
-      pEmptyLast(r);
-      msg = `${pName(pm, x)} を抜きました。空き枠の試合はいちばん下に移しました`;
+      // 組み直さずに、その枠を空き枠にする(相手はそのまま。登録ペアなら相方もいっしょに)。空き枠のある試合はいちばん下へ
+      const out = pTakeOut(e, r, x, false);
+      msg = `${out.map((y) => pName(pm, y)).join("・")} を抜きました。空き枠の試合はいちばん下に移しました`;
     } else return;
   } else if (f[1] === "b") {
     const id = f[2];
     if (t[1] !== "m" && t[1] !== "area") return;
-    // 置き場から試合のほうへ戻した人は、休みをやめて必ず試合に入れる
+    // 置き場から試合のほうへ戻した人は、休みをやめて必ず試合に入れる(登録ペアは相方も)
+    const mate = pMate(e, r, id);
+    if (t[1] !== "m" || (mate && !pPlaced(r).includes(mate))) { pBringBack(e, r, id); return; }
     r.rest = r.rest.filter((x) => x !== id);
     pKeepOff(e, id, e.practice.rounds.indexOf(r));
     if (t[1] === "m") {
@@ -4151,10 +4183,14 @@ app.addEventListener("click", (evt) => {
     case "pchip": {
       // 置き場の名前をタップ:待機 → 今回だけ抜く(黄) ⇄ 次の回転も抜く(赤)
       const r = pRoundById(e, btn.dataset.r); if (!r) break;
-      const id = btn.dataset.id, ri = e.practice.rounds.indexOf(r), nm = pName(playerMap(e), id);
-      if (pKeep(e, ri).includes(id)) { pKeepOff(e, id, ri); if (!r.rest.includes(id)) r.rest.push(id); toast(`${nm}:今回だけ抜く(次の回転では戻します)`); }
-      else if (r.rest.includes(id)) { pKeepOn(e, id, ri); toast(`${nm}:次の回転も抜く(戻すまでずっと外します)`); }
-      else { r.rest.push(id); toast(`${nm}:今回だけ抜く`); }
+      const id = btn.dataset.id, ri = e.practice.rounds.indexOf(r);
+      // 登録ペアが2人とも置き場にいれば、2人とも同じ種類にする
+      const mate = pMate(e, r, id);
+      const ids = [id].concat(mate && !pPlaced(r).includes(mate) ? [mate] : []);
+      const nm = ids.map((x) => pName(playerMap(e), x)).join("・");
+      if (pKeep(e, ri).includes(id)) { ids.forEach((x) => { pKeepOff(e, x, ri); if (!r.rest.includes(x)) r.rest.push(x); }); toast(`${nm}:今回だけ抜く(次の回転では戻します)`); }
+      else if (r.rest.includes(id)) { ids.forEach((x) => { if (!r.rest.includes(x)) r.rest.push(x); pKeepOn(e, x, ri); }); toast(`${nm}:次の回転も抜く(戻すまでずっと外します)`); }
+      else { ids.forEach((x) => { if (!r.rest.includes(x)) r.rest.push(x); }); toast(`${nm}:今回だけ抜く`); }
       commit(); render(); break;
     }
     case "qclear": ui.q = ""; render(); { const n = document.getElementById("q"); if (n) n.focus({ preventScroll: true }); } break;
@@ -4200,13 +4236,9 @@ app.addEventListener("click", (evt) => {
           const m = r && r.matches[Number(f[2])];
       const id = m && m[f[3]][Number(f[4])];
       if (!id) { render(); break; }
-      const ri = e.practice.rounds.indexOf(r);
-      m[f[3]][Number(f[4])] = null;
-      if (!r.rest.includes(id)) r.rest.push(id);
-      if (btn.dataset.kind === "keep") pKeepOn(e, id, ri);
-      pEmptyLast(r);
+      const out = pTakeOut(e, r, id, btn.dataset.kind === "keep");
       commit(); render();
-      toast(`${pName(playerMap(e), id)} を${btn.dataset.kind === "keep" ? "次の回転も" : "今回だけ"}抜きました。空き枠の試合はいちばん下に移しました`);
+      toast(`${out.map((x) => pName(playerMap(e), x)).join("・")} を${btn.dataset.kind === "keep" ? "次の回転も" : "今回だけ"}抜きました。空き枠の試合はいちばん下に移しました`);
       break;
     }
     case "pnext-top": { ui.pRest = true; render(); const c = document.querySelector(".pnext"); if (c) c.scrollIntoView({ block: "center", behavior: "smooth" }); break; }
