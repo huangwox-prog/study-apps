@@ -747,7 +747,13 @@ function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
 /* 毎回組み替えのダブルスで、登録ペア以外の人をその回転だけ「同じ学校の中で」ペアにする。
    学校をまたぐ組は作らない。相方が見つからない人は待機に回る */
 function tempPairs(e, players, H, rand) {
-  const left = players.slice().sort((a, b) => b.level - a.level || (a.school || "").localeCompare(b.school || "", "ja"));
+  let left = players.slice().sort((a, b) => b.level - a.level || (a.school || "").localeCompare(b.school || "", "ja"));
+  // 学校の人数が奇数のときは1人あまる。毎回同じ人があまらないよう、そこまでの試合数がいちばん多い人を先に外す(同じなら乱数)
+  const bySchool = {};
+  left.forEach((p) => { const k = (p.school || "").trim(); (bySchool[k] = bySchool[k] || []).push(p); });
+  const dropped = new Set();
+  Object.values(bySchool).forEach((g) => { if (g.length % 2 === 1) { const worst = g.slice().sort((a, b) => ((H.games[b.id] || 0) - (H.games[a.id] || 0)) || (rand() - 0.5))[0]; dropped.add(worst.id); } });
+  left = left.filter((p) => !dropped.has(p.id));
   const out = [];
   for (let i = 0; i < left.length; i++) {
     const p = left[i];
@@ -1224,9 +1230,12 @@ function render() {
   if (!ready) { app.innerHTML = `<div class="loading">読み込み中…</div>`; return; }
   const e = ui.view === "event" ? ev() : null;
   const keepY = scrollY;
-  const focus = document.activeElement && document.activeElement.id;
+  const ae = document.activeElement, focus = ae && ae.id;
+  // 描き直すと入力欄のカーソルが先頭に戻ってしまう(「21」が「12」になる)ので、位置を覚えておいて戻す
+  let selS = null, selE = null;
+  try { if (ae && typeof ae.selectionStart === "number") { selS = ae.selectionStart; selE = ae.selectionEnd; } } catch (x) {}
   app.innerHTML = `<nav class="nav">${navHTML(e)}</nav><main class="page ${e && e.mode === "practice" && ui.tab === "rounds" ? "wide" : ""}">${e ? eventHTML(e) : homeHTML()}</main>`;
-  if (focus) { const n = document.getElementById(focus); if (n && n.tagName !== "BUTTON") n.focus({ preventScroll: true }); }
+  if (focus) { const n = document.getElementById(focus); if (n && n.tagName !== "BUTTON") { n.focus({ preventScroll: true }); if (selS != null) { try { n.setSelectionRange(selS, selE); } catch (x) {} } } }
   scrollTo(0, keepY);
 }
 App.render = render;
