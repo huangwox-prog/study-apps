@@ -1,0 +1,78 @@
+<!doctype html><meta charset="utf-8"><title>CLEAR core tests</title>
+<body style="font:14px sans-serif;padding:16px"><h3>CLEAR 計算部テスト</h3><pre id="out"></pre>
+<script src="core.js"></script>
+<script>
+const C = Core, out = [];
+let pass = 0, fail = 0;
+const t = (name, fn) => { try { const r = fn(); if (r === false) throw new Error("false"); pass++; out.push("✓ " + name); } catch (x) { fail++; out.push("✗ " + name + " — " + x.message); } };
+const eq = (a, b) => { if (JSON.stringify(a) !== JSON.stringify(b)) throw new Error(JSON.stringify(a) + " != " + JSON.stringify(b)); };
+const mk = (n, f) => { const e = C.blankEvent({ id: "E", players: Array.from({ length: n }, (_, i) => ({ id: "p" + i, name: "選手" + i, school: f ? f(i) : "", level: 3 })) }); return e; };
+
+/* 順位 */
+t("順位: 勝ち数が多い順", () => { const e = mk(3); e.leagues = [{ id: "L", ids: ["p0", "p1", "p2"] }]; C.setWin(e, "p0", "p1", "p0"); C.setWin(e, "p0", "p2", "p0"); C.setWin(e, "p1", "p2", "p1"); const s = C.standings(e, e.leagues[0]); eq(s.sorted.map((r) => r.id), ["p0", "p1", "p2"]); });
+t("順位: 2人並びは直接対決", () => { const e = mk(4); e.leagues = [{ id: "L", ids: ["p0", "p1", "p2", "p3"] }];
+  // p0,p1 とも2勝1敗。p1 が p0 に勝っている
+  C.setWin(e, "p1", "p0", "p1"); C.setWin(e, "p0", "p2", "p0"); C.setWin(e, "p0", "p3", "p0"); C.setWin(e, "p1", "p2", "p1"); C.setWin(e, "p1", "p3", "p3"); C.setWin(e, "p2", "p3", "p2");
+  // p0: 2勝(p2,p3) 1敗(p1) / p1: 2勝(p0,p2) 1敗(p3) / p3: 2勝(p1,... )
+  // p0=2勝(p2,p3) p1=2勝(p0,p2) p2=1勝(p3) p3=1勝(p1)。p0・p1 が2勝で並び、直接対決は p1 の勝ち
+  const s = C.standings(e, e.leagues[0]); eq(s.sorted.map((r) => r.id).slice(0, 2), ["p1", "p0"]); eq(s.sorted[0].rank, 1); eq(s.sorted[1].rank, 2); });
+t("順位: 3人並びはゲーム差→得失点差", () => { const e = mk(3); e.games = 3; e.leagues = [{ id: "L", ids: ["p0", "p1", "p2"] }];
+  const sc = (a, b, g) => g.forEach((x, i) => { C.setScore(e, a, b, i, 0, x[0]); C.setScore(e, a, b, i, 1, x[1]); });
+  sc("p0", "p1", [[21, 10], [21, 10]]); sc("p1", "p2", [[21, 19], [21, 19]]); sc("p2", "p0", [[21, 5], [21, 5]]);
+  const s = C.standings(e, e.leagues[0]);
+  // 全員1勝1敗・ゲーム差 0。得失点差: p0 = 42-20 + 10-42 = 10, p1 = 20-42 + 42-38 =-18, p2 = 38-42 + 42-10 = 28
+  eq(s.sorted.map((r) => r.id), ["p2", "p0", "p1"]); });
+t("順位: 同率は抽選(lots)", () => { const e = mk(3); e.leagues = [{ id: "L", ids: ["p0", "p1", "p2"] }]; C.setWin(e, "p0", "p1", "p0"); C.setWin(e, "p1", "p2", "p1"); C.setWin(e, "p2", "p0", "p2"); const s = C.standings(e, e.leagues[0]); return s.lots && s.sorted.every((r) => r.rank === 1); });
+t("棄権は 必要ゲーム×点数 対 0", () => { const e = mk(2); C.setWo(e, "p0", "p1", "p0"); const o = C.outcome(e, "p0", "p1"); eq([o.winner, o.pb, o.gb], ["p1", 21, 1]); });
+t("点数チェック(21点)", () => { const e = mk(2); return !C.gameWarn(e, 21, 19) && C.gameWarn(e, 21, 20) && !C.gameWarn(e, 22, 20) && !C.gameWarn(e, 30, 29) && !C.gameWarn(e, 30, 28) && C.gameWarn(e, 29, 27) === false && C.gameWarn(e, 30, 27); });
+
+/* リーグ分け・日分け・円卓 */
+t("1リーグの人数→リーグ数", () => { eq(C.planSizes(15, 7), [8, 7]); eq(C.planSizes(16, 4), [4, 4, 4, 4]); eq(C.planSizes(2, 4), [2]); eq(C.planSizes(10, 8), [10]); });
+t("リーグ分け(ランク別): 強い順に区切る", () => { const e = mk(8); e.players.forEach((p, i) => (p.level = 5 - Math.floor(i / 2) % 5)); e.groupSize = 4; e.spreadSchools = false; C.autoAssign(e, 1); const em = C.entryMap(e); const m = e.leagues.map((l) => Math.min(...l.ids.map((id) => em[id].level))); return e.leagues.length === 2 && m[0] >= m[1]; });
+t("リーグ分け: 同じ学校はなるべく別のリーグ", () => { const e = mk(8, (i) => (i % 2 ? "東" : "西")); e.groupSize = 4; e.splitMethod = "balanced"; C.autoAssign(e, 3); const em = C.entryMap(e); return e.leagues.every((l) => { const s = l.ids.map((id) => em[id].school); return s.filter((x) => x === "東").length === 2; }); });
+t("スネーク方式: 強い人が各リーグに1人", () => { const e = mk(8); e.players.forEach((p, i) => (p.level = 5 - Math.floor(i / 2) % 5)); e.players[0].level = 5; e.players[1].level = 5; e.players[2].level = 4; e.players[3].level = 4; e.groupSize = 4; e.splitMethod = "balanced"; e.spreadSchools = false; C.autoAssign(e, 2); const em = C.entryMap(e); return e.leagues.every((l) => l.ids.filter((id) => em[id].level === 5).length === 1); });
+const ids = (n) => Array.from({ length: n }, (_, i) => "i" + i);
+t("円卓: n人で全員と1回ずつ", () => { for (const n of [3, 4, 5, 6, 7, 8]) { const rr = C.roundRobin(ids(n)); const seen = new Set(); rr.forEach((r) => r.pairs.forEach(([a, b]) => seen.add(C.keyOf(a, b)))); if (seen.size !== n * (n - 1) / 2) throw new Error("n=" + n); } });
+t("日分け: 8人リーグ(1人7試合)は6上限で2日", () => { const rr = C.roundRobin(ids(8)); eq(C.splitDays(rr, 6).length, 2); });
+t("日分け: 7人リーグは6上限で1日", () => { const rr = C.roundRobin(ids(7)); eq(C.splitDays(rr, 6).length, 1); });
+
+/* トーナメント */
+t("シード位置(8枠) A=[1,8,5,4] B=[2,7,6,3]", () => eq(C.seedPositions(8), [1, 8, 5, 4, 2, 7, 6, 3]));
+t("シード位置(4枠・16枠の端)", () => { eq(C.seedPositions(4), [1, 4, 2, 3]); const p = C.seedPositions(16); eq([p[0], p[15], p[8], p[7]], [1, 3, 2, 4]); });
+t("トーナメント: 5人→8枠、不戦勝は上位シード", () => { const e = mk(5); e.players.forEach((p, i) => (p.level = 5 - i)); e.spreadSchools = false; C.buildBracket(e, 1); const s = e.bracket.slots; eq(s.length, 8); const st = C.bracketState(e); eq(st.slots.filter(Boolean).length, 5); eq(s[1], null); eq(s[0] !== null, true); });
+t("トーナメント: 手動シードは動かさない", () => { const e = mk(8); e.seeds = { p5: 1 }; C.buildBracket(e, 4); eq(e.bracket.slots[0], "p5"); });
+t("トーナメント: 勝ち上がりと3位決定戦", () => { const e = mk(4); e.players.forEach((p, i) => (p.level = 5 - i)); e.spreadSchools = false; C.buildBracket(e, 1); let st = C.bracketState(e); const [n0, n1] = st.rounds[0]; C.setBWin(e, n0, n0.a); C.setBWin(e, n1, n1.a); st = C.bracketState(e); eq(!!st.third, true); eq(st.final.a, n0.a); });
+
+/* ペア */
+const dbl = () => { const e = mk(8, (i) => (i < 4 ? "東" : "西")); e.type = "doubles"; e.players.forEach((p, i) => (p.level = 1 + (i % 4))); return e; };
+t("ペア: 2人を選ぶ。学校が違えば cross", () => { const e = dbl(); const r = C.makePair(e, "p0", "p5"); eq(r.cross, true); eq(C.entries(e)[0].school, "東・西"); const r2 = C.makePair(e, "p1", "p2"); eq(r2.cross, false); eq(C.entries(e)[1].school, "東"); });
+t("ペア: ランクは平均が初期値、手で変えられる", () => { const e = dbl(); C.makePair(e, "p0", "p3"); eq(C.entries(e)[0].level, 2.5); e.pairs[0].level = 4; eq(C.entries(e)[0].level, 4); });
+t("ペア: 組み直すと古い組が解ける", () => { const e = dbl(); C.makePair(e, "p0", "p1"); const r = C.makePair(e, "p1", "p2"); eq(r.broke.length, 1); eq(e.pairs.length, 1); });
+t("ペア: 自動作成は同じ学校だけ・登録済みは残す", () => { const e = dbl(); C.makePair(e, "p0", "p1"); C.autoPairs(e); eq(e.pairs.length, 4); return e.pairs.every((p) => !C.isCrossSchool(e, p)); });
+t("ペア: リーグ・トーナメントはペアが出場単位", () => { const e = dbl(); C.autoPairs(e); eq(C.entries(e).length, 4); C.autoAssign(e, 1); eq(e.leagues.flatMap((l) => l.ids).sort(), e.pairs.map((p) => p.id).sort()); });
+
+/* 練習試合の組み合わせ */
+t("練習(毎回組み替え): 登録ペアは崩さず、学校をまたがない", () => { const e = dbl(); C.makePair(e, "p0", "p1"); e.practice.pairMode = "rotate"; for (let k = 0; k < 6; k++) { const r = C.genRound(e, "doubles", [], 0, [], k + 1); const sides = r.matches.flatMap((m) => [m.a, m.b]); if (!sides.some((s) => s.includes("p0") && s.includes("p1")) && !r.bench.includes("p0")) throw new Error("崩れた"); sides.forEach((s) => { if (s.length === 2 && C.isCrossSchool(e, { a: s[0], b: s[1] })) throw new Error("学校またぎ"); }); } });
+t("練習(固定): 登録ペアだけで組む", () => { const e = dbl(); C.autoPairs(e); e.practice.pairMode = "fixed"; const r = C.genRound(e, "doubles", [], 0, [], 5); eq(r.matches.length, 2); r.matches.forEach((m) => [m.a, m.b].forEach((s) => eq(!!e.pairs.find((p) => p.a === s[0] && p.b === s[1] || p.a === s[1] && p.b === s[0]), true))); });
+t("練習(固定): 片方が休むと相方は待機", () => { const e = dbl(); C.autoPairs(e); e.practice.pairMode = "fixed"; const r = C.genRound(e, "doubles", ["p0"], 0, [], 5); const mate = C.partnerOf(e, "p0"); eq(r.bench.includes(mate), true); });
+t("練習(シングルス): 前と同じ相手を避ける", () => { const e = mk(8); e.practice.tol = 4; const r1 = C.genRound(e, "singles", [], 0, [], 1); e.practice.rounds.push({ id: "r1", day: 1, kind: "singles", rest: [], matches: r1.matches }); const r2 = C.genRound(e, "singles", [], 1, [], 2); const prev = new Set(r1.matches.map((m) => C.keyOf(m.a[0], m.b[0]))); return r2.matches.every((m) => !prev.has(C.keyOf(m.a[0], m.b[0]))); });
+t("練習: 人数が奇数なら待機が出る", () => { const e = mk(7); const r = C.genRound(e, "singles", [], 0, [], 1); eq(r.matches.length, 3); eq(r.bench.length, 1); });
+t("成績: ペアごとの勝敗", () => { const e = dbl(); C.makePair(e, "p0", "p1"); C.makePair(e, "p2", "p3"); e.games = 3; e.practice.rounds = [{ id: "r", day: 1, kind: "doubles", rest: [], matches: [{ id: "m", a: ["p0", "p1"], b: ["p2", "p3"], g: [[15, 10], [15, 9]], win: null }] }]; const ps = C.pairStats(e); const x = ps.find((r) => r.ids.includes("p0")); eq([x.w, x.l], [1, 0]); });
+
+/* 移行 */
+const v1s = () => ({ id: "abc", name: "春の会", date: "2026-03-01", mode: "league", type: "doubles", games: 1, points: 21, groupSize: 4, rankScale: 5,
+  players: [{ id: "a1", name: "山田", name2: "佐藤", school: "東高", level: 4 }, { id: "a2", name: "鈴木", name2: "高橋", school: "東高・西高", level: 3 }, { id: "a3", name: "中村", name2: "木村", school: "西高", level: 2 }],
+  leagues: [{ id: "L1", playerIds: ["a1", "a2", "a3"] }], results: { "a1__a2": { g: [[21, 15]] } } });
+t("移行: ダブルス1件→選手2人+ペア1つ、idと結果は変わらない", () => { const e = C.migrate(v1s()); eq(e.players.length, 6); eq(e.pairs.length, 3); eq(e.leagues[0].ids, ["a1", "a2", "a3"]); eq(e.results["a1__a2"].g[0], [21, 15]); const en = C.entryMap(e); eq(en.a2.school, "東高・西高"); eq(en.a1.name, "山田・佐藤"); eq(C.outcome(e, "a1", "a2").winner, "a1"); });
+t("移行: 順位が変わらない(v1と同じ計算)", () => { const e = C.migrate(v1s()); const s = C.standings(e, e.leagues[0]); eq(s.sorted[0].id, "a1"); });
+t("移行: 元データは変えない・何度かけても同じ", () => { const raw = v1s(), s0 = JSON.stringify(raw); const e1 = C.migrate(raw); eq(JSON.stringify(raw), s0); const e2 = C.migrate(e1); eq(JSON.stringify(e2), JSON.stringify(e1)); });
+t("移行: 10段階の時期のランクは5段階に", () => { const raw = v1s(); delete raw.rankScale; raw.type = "singles"; raw.players.forEach((p, i) => (p.level = [10, 7, 3][i])); const e = C.migrate(raw); eq(e.players.map((p) => p.level), [5, 4, 2]); });
+t("移行: both(リーグ→決勝)はリーグ戦として開く", () => { const raw = v1s(); raw.type = "singles"; raw.mode = "both"; raw.bracket = { slots: ["a1", "a2", null, null], results: {}, seeds: {} }; const e = C.migrate(raw); eq(e.mode, "league"); eq(e.leagues.length, 1); eq(!!e.legacyBracket, true); });
+t("移行: 練習試合の登録ペア・固定ペア→ペア、休み(dayOff)・結果が残る", () => { const raw = { id: "pr", mode: "practice", games: 3, points: 15, players: [1, 2, 3, 4, 5, 6].map((i) => ({ id: "q" + i, name: "n" + i, school: "東", level: 3 })),
+  practice: { fmt3b: true, kind: "doubles", pairMode: "fixed", locked: [["q1", "q2"]], pairs: [["q3", "q4"]], dayOff: [{ id: "q5", from: 0 }], rounds: [{ id: "r1", day: 1, kind: "doubles", rest: ["q5"], matches: [{ id: "m1", a: ["q1", "q2"], b: ["q3", "q4"], g: [[15, 10], [15, 12]] }] }] } };
+  const e = C.migrate(raw); eq(e.pairs.length, 2); eq(e.practice.dayOff[0].id, "q5"); eq(C.pOutcome(e, e.practice.rounds[0].matches[0]).winner, "a"); eq(e.practice.pairMode, "fixed"); });
+t("移行: 1ゲーム時代の練習試合の結果(m.win)が残る", () => { const raw = { id: "pr", mode: "practice", games: 1, points: 21, players: [{ id: "x", name: "x", school: "", level: 3 }, { id: "y", name: "y", school: "", level: 3 }], practice: { rounds: [{ id: "r", day: 1, kind: "singles", rest: [], matches: [{ id: "m", a: ["x"], b: ["y"], g: [[21, 15]], win: "a" }] }] } }; const e = C.migrate(raw); eq(e.games, 3); eq(C.pOutcome(e, e.practice.rounds[0].matches[0]).winner, "a"); });
+
+document.getElementById("out").textContent = out.join("\n") + `\n\n${pass} 通過 / ${fail} 失敗`;
+document.title = fail ? "FAIL " + fail : "PASS " + pass;
+</script>
