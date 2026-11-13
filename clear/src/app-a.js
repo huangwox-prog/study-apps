@@ -125,9 +125,12 @@ function render() {
   if (!ready) { app.innerHTML = `<div class="loading">読み込み中…</div>`; return; }
   const e = ui.view === "event" ? ev() : null;
   const keepY = scrollY;
-  const focus = document.activeElement && document.activeElement.id;
+  const ae = document.activeElement, focus = ae && ae.id;
+  // 描き直すと入力欄のカーソルが先頭に戻ってしまう(「21」が「12」になる)ので、位置を覚えておいて戻す
+  let selS = null, selE = null;
+  try { if (ae && typeof ae.selectionStart === "number") { selS = ae.selectionStart; selE = ae.selectionEnd; } } catch (x) {}
   app.innerHTML = `<nav class="nav">${navHTML(e)}</nav><main class="page ${e && e.mode === "practice" && ui.tab === "rounds" ? "wide" : ""}">${e ? eventHTML(e) : homeHTML()}</main>`;
-  if (focus) { const n = document.getElementById(focus); if (n && n.tagName !== "BUTTON") n.focus({ preventScroll: true }); }
+  if (focus) { const n = document.getElementById(focus); if (n && n.tagName !== "BUTTON") { n.focus({ preventScroll: true }); if (selS != null) { try { n.setSelectionRange(selS, selE); } catch (x) {} } } }
   scrollTo(0, keepY);
 }
 App.render = render;

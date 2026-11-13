@@ -475,7 +475,13 @@ function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
 /* 毎回組み替えのダブルスで、登録ペア以外の人をその回転だけ「同じ学校の中で」ペアにする。
    学校をまたぐ組は作らない。相方が見つからない人は待機に回る */
 function tempPairs(e, players, H, rand) {
-  const left = players.slice().sort((a, b) => b.level - a.level || (a.school || "").localeCompare(b.school || "", "ja"));
+  let left = players.slice().sort((a, b) => b.level - a.level || (a.school || "").localeCompare(b.school || "", "ja"));
+  // 学校の人数が奇数のときは1人あまる。毎回同じ人があまらないよう、そこまでの試合数がいちばん多い人を先に外す(同じなら乱数)
+  const bySchool = {};
+  left.forEach((p) => { const k = (p.school || "").trim(); (bySchool[k] = bySchool[k] || []).push(p); });
+  const dropped = new Set();
+  Object.values(bySchool).forEach((g) => { if (g.length % 2 === 1) { const worst = g.slice().sort((a, b) => ((H.games[b.id] || 0) - (H.games[a.id] || 0)) || (rand() - 0.5))[0]; dropped.add(worst.id); } });
+  left = left.filter((p) => !dropped.has(p.id));
   const out = [];
   for (let i = 0; i < left.length; i++) {
     const p = left[i];
