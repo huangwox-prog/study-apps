@@ -160,7 +160,7 @@ function benchHTML(e, SC, r, ri, iss) {
     ${cls === "spare" ? `<button data-action="pbench-rest" data-r="${ri}" data-id="${id}">今回だけ抜く</button>` : `<button data-action="pkeep" data-r="${ri}" data-id="${id}" title="次の回転も抜くか切り替え">${keptNow.has(id) ? "次も抜く ✓" : "次も抜く"}</button>`}<button data-action="pback" data-r="${ri}" data-id="${id}">戻す</button></span>`;
   return `<div class="bench" data-drop="pteam pmember" data-drop-id="${ri}"><b>試合に入っていない人</b><span class="faint">名前をここへドラッグすると「今回だけ抜く」(黄)。「次も抜く」で次の回転以降も外します(赤)。灰色は人数の余りです。</span>
     ${(() => { if (r.kind !== "doubles") return ""; const solo = (r.left || []).filter((id) => spare.includes(id) && pm[id]); if (!solo.length) return ""; const sch = (id) => (pm[id].school || "").trim(); const sameSchoolLeft = solo.some((a) => solo.some((b) => a !== b && sch(a) === sch(b)));
-      return `<p class="note warn" style="white-space:normal">相方がいない人: ${solo.map((id) => esc(pm[id].name) + "(" + esc(pm[id].school) + ")").join("、")}。同じ学校どうしで組むため、学校の人数が奇数だと1人あまります。${sameSchoolLeft ? "" : "全員を試合に入れたいときは、選手の画面で、この人たちを選んで手でペアにしてください(学校がちがうペアになります)。"}</p><button class="btn btn-secondary btn-sm" style="align-self:flex-start" data-action="tab" data-tab="players">選手の画面でペアを作る</button>`; })()}
+      return `<p class="note warn" style="white-space:normal">相方がいない人: ${solo.map((id) => esc(pm[id].name) + "(" + esc(pm[id].school) + ")").join("、")}。同じ学校どうしで組むため、学校の人数が奇数だと1人あまります。${sameSchoolLeft ? "" : "全員を試合に入れたいときは、選手の画面で、この人たちを選んで手でペアにしてください(学校がちがうペアになります)。"}</p>${solo.length >= 2 ? `<button class="btn btn-primary btn-sm" style="align-self:flex-start" data-action="pair-solos" data-r="${ri}">${esc(pm[solo[0]].name)} と ${esc(pm[solo[1]].name)} をペアにして、全員で組み直す</button><span class="faint">学校がちがうペアになります。このペアは、あとの回転でも崩しません(選手の画面で解除できます)。</span>` : ""}<button class="btn btn-secondary btn-sm" style="align-self:flex-start" data-action="tab" data-tab="players">選手の画面でペアを作る</button>`; })()}
     <div class="bench-list">${rest.length || spare.length ? rest.map((id) => chip(id, keptNow.has(id) ? "rest keep" : "rest")).join("") + spare.map((id) => chip(id, "spare")).join("") : `<span class="muted">全員が試合に入っています</span>`}</div></div>`;
 }
 function pRoundHTML(e, SC, ri, cumAll) {
@@ -326,6 +326,17 @@ Object.assign(A, {
   "pout-team": (b) => { App.drops.pteam(`${b.dataset.r}:${b.dataset.m}:${b.dataset.s}`, b.dataset.r); },
   "pbench-rest": (b) => { const e = ev(), r = e.practice.rounds[Number(b.dataset.r)]; if (!r.rest.includes(b.dataset.id)) r.rest.push(b.dataset.id); commit(); render(); },
   pkeep: (b) => { const e = ev(), ri = Number(b.dataset.r), id = b.dataset.id; if (isKept(e, id, ri)) { e.practice.dayOff = e.practice.dayOff.filter((x) => x.id !== id); e.practice.rounds.forEach((x, k) => { if (k > ri) x.rest = x.rest.filter((y) => y !== id); }); } else { const r = e.practice.rounds[ri]; e.practice.dayOff = e.practice.dayOff.filter((x) => x.id !== id).concat({ id, from: ri }); if (!r.rest.includes(id)) r.rest.push(id); e.practice.rounds.forEach((x, k) => { if (k > ri && !Core.pPlaced(x).includes(id) && !x.rest.includes(id)) x.rest.push(id); }); } commit(); render(); },
+  "pair-solos": (b) => {
+    const e = ev(), r = e.practice.rounds[Number(b.dataset.r)]; if (!r) return;
+    const placed = Core.pPlaced(r), solo = (r.left || []).filter((id) => !placed.includes(id) && playerMap(e)[id]);
+    if (solo.length < 2) return;
+    // 相方がいない人のうち、ランクがいちばん近い2人を組ませる
+    let best = [solo[0], solo[1]], bd = Infinity;
+    for (let i = 0; i < solo.length; i++) for (let j = i + 1; j < solo.length; j++) { const d = Math.abs(playerMap(e)[solo[i]].level - playerMap(e)[solo[j]].level); if (d < bd) { bd = d; best = [solo[i], solo[j]]; } }
+    Core.makePair(e, best[0], best[1]);
+    const benched = e.players.map((p) => p.id).filter((id) => !placed.includes(id) && !r.rest.includes(id)); // 人数の余りで待機の人(手で抜いた人は含めない)
+    regen(e, r, benched, `${pn(e, best[0])}・${pn(e, best[1])} をペアにして、組み直しました`);
+  },
   pback: (b) => { const e = ev(); bringBack(e, e.practice.rounds[Number(b.dataset.r)], b.dataset.id); },
   preg: (b) => { ui.confirm = `preg:${b.dataset.r}`; render(); },
   "preg-yes": (b) => { const e = ev(), r = rById(e, b.dataset.r); ui.confirm = null; regen(e, r, [], "組み直しました"); },
