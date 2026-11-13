@@ -12,7 +12,7 @@
 | claude.ai 版(持ち主だけ) | https://claude.ai/artifact/6oAYFc7wQDsfhPSrSaPSWK |
 | 作り直しの部品 | `src/`(core.js 計算 / app-a.js 土台・選手・ペア / app-b.js リーグ・トーナメント / app-c.js 練習試合・成績・ドラッグ / style.css)と `build.ps1` |
 
-- 反映の状況(2026-11-13): claude.ai 版は作り直し版に更新済み。GitHub 版(`clear/index.html` と `MEMO.md`、`src/`、`build.ps1`)は、このPCに git が無く未反映。`index.html` と `MEMO.md` を置き換えて、`src/` と `build.ps1` を足す。
+- 反映の状況(2026-11-13): claude.ai 版も GitHub 版も、作り直し版に更新済み。GitHub へは、git が無いPCだったので、ブラウザの「Upload files」で `index.html`・`MEMO.md`・`build.ps1`・`確認表.md`(`clear/`)と `src/`(`clear/src/`)を上げた。
 - `build.ps1 -root <フォルダ>` が `src/*` を `clear-new/index.html`(と claude.ai 用の `artifact.html`)に1ファイルにまとめる。PowerShell 5.1 は BOM なしの UTF-8 を ANSI で読むので、`build.ps1` の中は ASCII だけにする。
 - `src/test.html` をブラウザで開くと、計算部のテスト(36件)が走る。タイトルが `PASS n` になれば通っている。
 - GitHub 版の保存先はブラウザ(localStorage、キー `arca-league-v1`)。claude.ai 版は claude.ai の db(`events` コレクション、1件=1つ)。中身は同じ。直したら両方に反映する。
