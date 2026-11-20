@@ -637,7 +637,8 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf) {
 /* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out, courtWait } */
 function genMixed(e, upto, manualRest, seed) {
   manualRest = manualRest || [];
-  const H = pHistory(e, upto || 0), tol = e.practice.tol, avoid = e.practice.avoidSchool;
+  const H0 = pHistory(e, upto || 0), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
+  const H = e.practice.avoidRepeat === false ? { ...H0, faced: {}, partner: {} } : H0; // 「前に当たった組み合わせを避ける」をはずすと、過去の対戦を見ない
   const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
   const free = (id) => pm[id] && !manualRest.includes(id);
   const inPair = new Set(e.pairs.flatMap((p) => [p.a, p.b]));
@@ -755,7 +756,7 @@ function blankEvent(over) {
     v: SCHEMA, name: "名前なし", date: today(), mode: "league", type: "singles", games: 1, points: 21, maxPerDay: 6,
     groupSize: 4, splitMethod: "level", spreadSchools: true, tolerance: 0, tTop: 2, tThird: true,
     players: [], pairs: [], leagues: [], results: {}, bracket: null, seeds: {},
-    practice: { tol: 1, avoidSchool: true, pairMode: "rotate", kind: "singles", courts: 6, dayOff: [], rounds: [] }, updatedAt: 0,
+    practice: { tol: 1, avoidSchool: true, pairMode: "rotate", kind: "singles", courts: 6, avoidRepeat: true, dayOff: [], rounds: [] }, updatedAt: 0,
   }, over || {});
 }
 /* 古い形(v1)や、v2 の読み込み。どちらも v2 を返す。元のオブジェクトは変えない */

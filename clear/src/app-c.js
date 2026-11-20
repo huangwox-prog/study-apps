@@ -239,7 +239,7 @@ function firstRoundHTML(e, SC) {
     <div class="table-wrap"><table class="ptable roster"><thead><tr><th>選ぶ</th><th>名前</th><th>学校</th><th>ランク</th><th>出場形式</th></tr></thead><tbody>${body}</tbody></table></div>
     ${e.pairs.length ? `<div class="row">${e.pairs.map((pr, i) => `<span class="pairchip lg-${i % 8}"><span class="pairlabel">ペア${Core.LETTERS[i % 26]}</span> ${esc(pn(e, pr.a))}・${esc(pn(e, pr.b))}<button class="btn btn-ghost btn-sm" data-action="pair-del" data-id="${pr.id}">解除</button></span>`).join("")}</div>` : ""}
     <details class="more" open><summary>組み方の設定</summary><div class="settings">
-      <label class="check"><input type="checkbox" data-change="p-avoid" ${e.practice.avoidSchool ? "checked" : ""}>同じ学校どうしを、なるべく当てない</label>
+      <label class="check"><input type="checkbox" data-change="p-repeat" ${e.practice.avoidRepeat !== false ? "checked" : ""}>前に当たった組み合わせを避ける</label>
       <label class="field"><span>ランクの近い相手と当てる(差の許容)</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
       <label class="field"><span>使用コート数</span><select class="select" data-change="p-courts">${Array.from({ length: 12 }, (_, i) => i + 1).map((k) => `<option value="${k}" ${(e.practice.courts || 6) === k ? "selected" : ""}>${k}面</option>`).join("")}</select></label>
       <label class="field"><span>点数</span><select class="select" data-change="ev-points">${[21, 15, 11].map((p) => `<option value="${p}" ${e.points === p ? "selected" : ""}>${p}点</option>`).join("")}</select></label>
@@ -441,6 +441,7 @@ Object.assign(Ch, {
     commit(); render();
   },
   "pair-lv-sel": (t) => { const e = ev(), pr = e.pairs.find((x) => x.id === t.dataset.pair); if (!pr) return; pr.level = t.value === "" ? null : Core.clamp(Number(t.value), 1, Core.RANK_MAX); commit(); render(); },
+  "p-repeat": (t) => { ev().practice.avoidRepeat = t.checked; commit(); render(); },
   "p-courts": (t) => { ev().practice.courts = clamp(Number(t.value), 1, 12); commit(); render(); },
   "pnext-kind": (t) => { ui.nextKind = t.value; render(); },
   "pnext-day": (t) => { ui.nextDay = Number(t.value); },
