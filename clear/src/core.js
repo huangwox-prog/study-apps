@@ -598,8 +598,8 @@ function genRound(e, kind, rest, upto, must = [], seed, reunite = false, fixedOv
 }
 /* ---- 1回転目(シングルスとダブルスを混ぜて作る) ----
    名簿の「出場形式」で決める: ペアに入っている=ダブルス / single の印=シングルス / どちらでもない=出場しない。
-   シングルスどうし・ペアどうしで当てる。人数(組数)が奇数なら1つ「休み」にする(枠外に出す)。試合の番号は ダブルス → シングルス の順で ①から振る */
-function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds) {
+   シングルスどうし・ペアどうしで当てる。ペアの数が奇数なら、余った1組の2人はシングルスに回す。シングルスの人数が奇数なら1人「休み」にする(枠外に出す)。試合の番号は ダブルス → シングルス の順で ①から振る */
+function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds, ban) {
   const byPair = units.length && units[0].length === 2;
   const isMust = (u) => !!mustIds && u.some((p) => mustIds.has(p.id)); // 「戻す」で指定した人は、休みにしない
   const nm = Math.floor(units.length / 2), nSlot = nm * 2;
@@ -613,7 +613,7 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds) {
     const bench = ordered.slice(0, units.length - nSlot);
     const slots = shuffle(units.filter((u) => !bench.includes(u)), rand).sort((a, b) => lvl(b) - lvl(a));
     const arr = slots.concat(bench);
-    const costAt = (k) => (k >= nSlot ? (isMust(arr[k]) ? 5000 : 0) : pMatchCost(H, tol, avoid, arr[Math.floor(k / 2) * 2], arr[Math.floor(k / 2) * 2 + 1], byPair, levelOf));
+    const costAt = (k) => { if (k >= nSlot) return isMust(arr[k]) ? 5000 : 0; const x = arr[Math.floor(k / 2) * 2], y = arr[Math.floor(k / 2) * 2 + 1]; return pMatchCost(H, tol, avoid, x, y, byPair, levelOf) + (ban && ban(x, y) ? 3000 : 0); };
     let cur = 0;
     for (let m = 0; m < nSlot; m += 2) cur += costAt(m);
     for (let k = nSlot; k < arr.length; k++) cur += costAt(k);
@@ -637,7 +637,7 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds) {
   for (let m = 0; m < nSlot; m += 2) pairs.push([best[m], best[m + 1]]);
   return { pairs, bench: best.slice(nSlot) };
 }
-/* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out } */
+/* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out, toSingles } */
 function genMixed(e, upto, manualRest, seed, must) {
   manualRest = manualRest || [];
   const mustIds = new Set(must || []);
@@ -650,16 +650,21 @@ function genMixed(e, upto, manualRest, seed, must) {
   const pairUnits = e.pairs.filter((p) => pm[p.a] && pm[p.b] && !pm[p.a].single && !pm[p.b].single && free(p.a) && free(p.b)).map((p) => [pm[p.a], pm[p.b]]);
   const out = e.players.filter((p) => !p.single && !inPair.has(p.id)).map((p) => p.id);
   const levelOf = (S) => { if (S.length === 2) { const pr = e.pairs.find((x) => (x.a === S[0].id && x.b === S[1].id) || (x.a === S[1].id && x.b === S[0].id)); if (pr) return pairLevel(e, pr); } return avgLv(S); };
-  const dbl = solveUnits(e, pairUnits, H, rand, avoid, tol, levelOf, mustIds), sgl = solveUnits(e, singles, H, rand, avoid, tol, levelOf, mustIds);
+  const dbl = solveUnits(e, pairUnits, H, rand, avoid, tol, levelOf, mustIds);
+  // ペアの数が奇数で余った1組は、休ませずにシングルスへ回す(2人ともシングルスで出る)
+  // 相方が休み(抜いた)のペアの、残った1人もシングルスへ
+  const lone = e.pairs.filter((p) => pm[p.a] && pm[p.b] && !pm[p.a].single && !pm[p.b].single && free(p.a) !== free(p.b)).map((p) => pm[free(p.a) ? p.a : p.b]);
+  const extra = dbl.bench.flatMap((u) => u).concat(lone), toSingles = extra.map((p) => p.id);
+  const partnerOf = {}; e.pairs.forEach((p) => { partnerOf[p.a] = p.b; partnerOf[p.b] = p.a; });
+  const sgl = solveUnits(e, singles.concat(extra.map((p) => [p])), H, rand, avoid, tol, levelOf, mustIds, (x, y) => partnerOf[x[0].id] === y[0].id); // 元のペアどうしは、なるべく当てない
   const mk = (kind, [A, B]) => ({ id: uid(), a: A.map((p) => p.id), b: B.map((p) => p.id), g: [], win: null, kind });
   const byLevel = (x, y) => (sideLevel(e, y.a) + sideLevel(e, y.b)) - (sideLevel(e, x.a) + sideLevel(e, x.b));
   const dm = dbl.pairs.map((u) => mk("doubles", u)).sort(byLevel), sm = sgl.pairs.map((u) => mk("singles", u)).sort(byLevel);
   const matches = dm.concat(sm).map((m, i) => { delete m.kind; m.court = i + 1; return m; });
   const restInfo = [];
-  dbl.bench.forEach((u) => restInfo.push({ kind: "pair", ids: u.map((p) => p.id) }));
   sgl.bench.forEach((u) => restInfo.push({ kind: "single", ids: u.map((p) => p.id) }));
   const autoRest = restInfo.flatMap((x) => x.ids);
-  return { matches, rest: [...new Set(manualRest.filter((id) => pm[id]).concat(autoRest))], autoRest, restInfo, out };
+  return { matches, rest: [...new Set(manualRest.filter((id) => pm[id]).concat(autoRest))], autoRest, restInfo, out, toSingles };
 }
 /* 固定ペアの片方が休むときの相方の候補(待機中の人から、ランクと学校が近い順) */
 function partnerCandidates(e, forId, pool) {

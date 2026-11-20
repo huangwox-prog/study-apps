@@ -21,7 +21,7 @@ function emptyLast(r) { r.matches.sort((x, y) => (x.a.some((v) => !v) || x.b.som
 function regen(e, r, must, msg, reunite) {
   if (r.kind === "mixed") { // 1回転目(シングルス+ダブルス): 手で休みにした人は残して、奇数の休みは作り直す
     const ri0 = e.practice.rounds.indexOf(r), manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && !(must || []).includes(id)), g = Core.genMixed(e, ri0, manual, undefined, must || []);
-    r.matches = g.matches; r.rest = g.rest; r.autoRest = g.autoRest; r.restInfo = g.restInfo; r.out = g.out; commit(); render(); if (msg) toast(msg); return;
+    r.matches = g.matches; r.rest = g.rest; r.autoRest = g.autoRest; r.restInfo = g.restInfo; r.toSingles = g.toSingles; r.out = g.out; commit(); render(); if (msg) toast(msg); return;
   }
   const ri = e.practice.rounds.indexOf(r), g = genFor(e, r, ri, must || [], reunite);
   r.matches = g.matches; r.left = g.leftover || []; commit(); render(); if (msg) toast(msg);
@@ -262,10 +262,12 @@ function mixedTableHTML(e, r, ri) {
   const info = r.restInfo && r.restInfo.length ? r.restInfo : [];
   const manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && playerMap(e)[id]);
   const back = (ids) => `<button class="btn btn-primary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${ids.join(",")}">戻す</button>`;
-  const restBlock = `<div class="rest-out" data-drop="pteam pmember" data-drop-id="${ri}"><b>休みになっています</b>(表には入りません)${info.length || manual.length ? "" : `<div class="faint" style="margin-top:6px">休みの人はいません。試合カードの「抜く」を押すか、名前をここへドラッグすると、休みにできます。</div>`}${info.map((x) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${nm(x.ids)}</b><span class="pschool" style="display:inline">${esc(sideSch(e, x.ids))}</span> <span class="faint">${x.kind === "pair" ? "ペアの数が奇数のため、この組は休みです" : "シングルスの人数が奇数のため、休みです"}</span> ${back(x.ids)}</div>`).join("")}${manual.map((id) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${esc(pn(e, id))}</b> <span class="pschool" style="display:inline">${esc(playerMap(e)[id].school)}</span> <span class="faint">抜いた人</span> ${back([id])}</div>`).join("")}</div>`;
+  const restBlock = `<div class="rest-out" data-drop="pteam pmember" data-drop-id="${ri}"><b>休みになっています</b>(表には入りません)${info.length || manual.length ? "" : `<div class="faint" style="margin-top:6px">休みの人はいません。試合カードの「抜く」を押すか、名前をここへドラッグすると、休みにできます。</div>`}${info.map((x) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${nm(x.ids)}</b><span class="pschool" style="display:inline">${esc(sideSch(e, x.ids))}</span> <span class="faint">${x.kind === "pair" ? "ペアの数が奇数のため、この組は休みです" : "シングルスに出る人が奇数なので、1人だけ休みになります"}</span> ${x.kind === "pair" ? back(x.ids) : `<button class="btn btn-secondary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${x.ids.join(",")}">別の人と替える</button>`}</div>`).join("")}${manual.map((id) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${esc(pn(e, id))}</b> <span class="pschool" style="display:inline">${esc(playerMap(e)[id].school)}</span> <span class="faint">抜いた人</span> ${back([id])}</div>`).join("")}</div>`;
+  const ts = (r.toSingles || []).filter((id) => playerMap(e)[id]);
+  const tsNote = ts.length ? `<p class="faint" style="margin:8px 0 0">${ts.map((id) => esc(pn(e, id))).join("・")} は、ペアの数が奇数か相方が休みなので、この回転だけシングルスで出ます。</p>` : "";
   const out = (r.out || []).filter((id) => playerMap(e)[id]);
   const outBlock = out.length ? `<p class="faint" style="margin:8px 0 0">出場しない: ${out.map((id) => esc(pn(e, id))).join("、")}</p>` : "";
-  return `<div class="table-wrap" style="margin-top:6px"><table class="mtable"><thead><tr><th>番号</th><th>種目</th><th>対戦カード</th><th>学校名</th></tr></thead><tbody>${rows || `<tr><td colspan="4" class="faint">試合がありません</td></tr>`}</tbody></table></div>${restBlock}${outBlock}`;
+  return `<div class="table-wrap" style="margin-top:6px"><table class="mtable"><thead><tr><th>番号</th><th>種目</th><th>対戦カード</th><th>学校名</th></tr></thead><tbody>${rows || `<tr><td colspan="4" class="faint">試合がありません</td></tr>`}</tbody></table></div>${tsNote}${restBlock}${outBlock}`;
 }
 function practiceHTML(e) {
   const SC = App.schoolColors(e), rs = e.practice.rounds, cumAll = Core.pCum(e);
@@ -386,14 +388,14 @@ Object.assign(A, {
     createRound(e, false);
   },
   "pair-level-set": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.pair); if (!pr) return; pr.level = Core.clamp(Number(b.dataset.lv), 1, Core.RANK_MAX); commit(); render(); },
-  "mixed-back": (b) => { const e = ev(), r = e.practice.rounds[Number(b.dataset.r)]; if (!r) return; const ids = b.dataset.ids.split(",").filter(Boolean); regen(e, r, ids, `${ids.map((x) => pn(e, x)).join("・")} を試合に戻しました(人数が合わないときは、別の人が休みになります)`); },
+  "mixed-back": (b) => { const e = ev(), r = e.practice.rounds[Number(b.dataset.r)]; if (!r) return; const ids = b.dataset.ids.split(",").filter(Boolean); const auto = ids.every((x) => (r.autoRest || []).includes(x)); regen(e, r, ids, auto ? `${ids.map((x) => pn(e, x)).join("・")} を試合に入れて、別の人を休みにしました` : `${ids.map((x) => pn(e, x)).join("・")} を試合に戻しました`); },
   "all-single": () => { const e = ev(); e.players.forEach((p) => { if (!Core.pairOfPlayer(e, p.id)) p.single = true; }); commit(); render(); },
   "all-out": () => { const e = ev(); if (!App.askOk("ペアも解除して、全員を「出場しない」に戻しますか？")) return; e.pairs = []; e.players.forEach((p) => (p.single = false)); commit(); render(); },
   "first-round": () => {
     const e = ev(), rs = e.practice.rounds, n = rs.length, g = Core.genMixed(e, n, []);
     if (!g.matches.length) { toast("試合を作れません。ダブルスは2組以上、シングルスは2人以上いると、試合になります。"); return; }
     const day = ui.nextDay || (n ? rs[n - 1].day : 1);
-    const r = { id: uid(), day, kind: "mixed", fixed: false, rest: g.rest, autoRest: g.autoRest, restInfo: g.restInfo, out: g.out, matches: g.matches };
+    const r = { id: uid(), day, kind: "mixed", fixed: false, rest: g.rest, autoRest: g.autoRest, restInfo: g.restInfo, toSingles: g.toSingles, out: g.out, matches: g.matches };
     rs.push(r); ui.sel = []; commit(); render();
     toast(`${n + 1}回転目を作りました(${g.matches.length}試合${g.restInfo.length ? "・休みの人がいます" : ""})`);
     setTimeout(() => { const n = document.getElementById(`round-${r.id}`); if (n) n.scrollIntoView({ block: "start", behavior: "smooth" }); }, 50);
