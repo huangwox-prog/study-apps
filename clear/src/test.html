@@ -59,6 +59,16 @@ t("練習(固定): 登録ペアだけで組む", () => { const e = dbl(); C.auto
 t("練習(固定): 片方が休むと相方は待機", () => { const e = dbl(); C.autoPairs(e); e.practice.pairMode = "fixed"; const r = C.genRound(e, "doubles", ["p0"], 0, [], 5); const mate = C.partnerOf(e, "p0"); eq(r.bench.includes(mate), true); });
 t("練習(シングルス): 前と同じ相手を避ける", () => { const e = mk(8); e.practice.tol = 4; const r1 = C.genRound(e, "singles", [], 0, [], 1); e.practice.rounds.push({ id: "r1", day: 1, kind: "singles", rest: [], matches: r1.matches }); const r2 = C.genRound(e, "singles", [], 1, [], 2); const prev = new Set(r1.matches.map((m) => C.keyOf(m.a[0], m.b[0]))); return r2.matches.every((m) => !prev.has(C.keyOf(m.a[0], m.b[0]))); });
 t("練習: 人数が奇数なら待機が出る", () => { const e = mk(7); const r = C.genRound(e, "singles", [], 0, [], 1); eq(r.matches.length, 3); eq(r.bench.length, 1); });
+/* 1回転目(シングルス+ダブルスの混在) */
+const mixed = () => { const e = mk(14, (i) => ["東", "西", "南"][i % 3]); e.practice.courts = 4; e.practice.tol = 4; e.players.forEach((p, i) => (p.level = 1 + (i % 5))); return e; };
+t("1回転目: ペア・シングルス・出場しないを分けて組む", () => { const e = mixed(); C.makePair(e, "p0", "p1"); C.makePair(e, "p2", "p3"); C.makePair(e, "p4", "p5"); ["p6", "p7", "p8", "p9"].forEach((id) => C.setSingle(e, [id], true)); const r = C.genMixed(e, 0, [], 3);
+  eq(r.out.sort(), ["p10", "p11", "p12", "p13"]); const dm = r.matches.filter((m) => m.a.length === 2), sm = r.matches.filter((m) => m.a.length === 1); eq(dm.length, 1); eq(sm.length, 2);
+  r.matches.forEach((m) => { eq(m.a.length, m.b.length); }); const used = r.matches.flatMap((m) => m.a.concat(m.b)); if (used.some((id) => r.out.includes(id))) throw new Error("出場しない人が入った"); });
+t("1回転目: ペアが奇数なら1組が休み(2人とも)、シングルスが奇数なら1人が休み", () => { const e = mixed(); C.makePair(e, "p0", "p1"); C.makePair(e, "p2", "p3"); C.makePair(e, "p4", "p5"); ["p6", "p7", "p8"].forEach((id) => C.setSingle(e, [id], true)); const r = C.genMixed(e, 0, [], 5);
+  eq(r.restInfo.filter((x) => x.kind === "pair").length, 1); eq(r.restInfo.filter((x) => x.kind === "single").length, 1); eq(r.rest.length, 3); eq(r.matches.length, 2); });
+t("1回転目: コート番号はダブルス→シングルスの順。コート数を超えた試合は0(コート待ち)", () => { const e = mixed(); e.practice.courts = 2; for (let i = 0; i < 6; i += 2) C.makePair(e, "p" + i, "p" + (i + 1)); ["p6", "p7", "p8", "p9"].forEach((id) => C.setSingle(e, [id], true)); const r = C.genMixed(e, 0, [], 9);
+  eq(r.matches.length, 3); eq(r.matches.map((m) => m.court), [1, 2, 0]); eq(r.matches[0].a.length, 2); });
+t("1回転目: 手で休みにした人は入らない", () => { const e = mixed(); ["p0", "p1", "p2", "p3"].forEach((id) => C.setSingle(e, [id], true)); const r = C.genMixed(e, 0, ["p0"], 2); eq(r.matches.flatMap((m) => m.a.concat(m.b)).includes("p0"), false); eq(r.rest.includes("p0"), true); });
 t("成績: ペアごとの勝敗", () => { const e = dbl(); C.makePair(e, "p0", "p1"); C.makePair(e, "p2", "p3"); e.games = 3; e.practice.rounds = [{ id: "r", day: 1, kind: "doubles", rest: [], matches: [{ id: "m", a: ["p0", "p1"], b: ["p2", "p3"], g: [[15, 10], [15, 9]], win: null }] }]; const ps = C.pairStats(e); const x = ps.find((r) => r.ids.includes("p0")); eq([x.w, x.l], [1, 0]); });
 
 /* 移行 */

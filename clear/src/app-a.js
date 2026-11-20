@@ -388,6 +388,7 @@ function importGo(e) {
   toast(`${res.rows.length}行を取り込みました${res.dup ? `(${res.dup}行はとばしました)` : ""}`);
 }
 Object.assign(App, { pairCapable, importGo, importPreviewHTML, analyzeImport });
+App.pairBarFor = (e) => (ui.sel.length ? pairBarHTML(e, ui.sel.map((id) => esc(pn(e, id)))) : "");
 
 /* ============ Excelへのコピー ============ */
 const xlGames = (e, games) => { const out = []; for (let g = 0; g < e.games; g++) { const [x, y] = games[g] || [null, null]; out.push(x == null || y == null ? "" : `${x}－${y}`); } return out; };

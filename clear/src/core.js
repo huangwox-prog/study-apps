@@ -596,6 +596,67 @@ function genRound(e, kind, rest, upto, must = [], seed, reunite = false, fixedOv
   matches.sort((x, y) => avg(y) - avg(x));
   return { matches, bench: best.slice(nSlot).flat().map((p) => p.id).concat(leftover), leftover };
 }
+/* ---- 1回転目(シングルスとダブルスを混ぜて作る) ----
+   名簿の「出場形式」で決める: ペアに入っている=ダブルス / single の印=シングルス / どちらでもない=出場しない。
+   シングルスどうし・ペアどうしで当てる。人数(組数)が奇数なら1つ「休み」にする(枠外に出す)。コート番号は ダブルス → シングルス の順で ①から振る */
+function solveUnits(e, units, H, rand, avoid, tol, levelOf) {
+  const byPair = units.length && units[0].length === 2;
+  const nm = Math.floor(units.length / 2), nSlot = nm * 2;
+  if (nm < 1) return { pairs: [], bench: units.slice() };
+  const gOf = (p) => H.games[p.id] || 0;
+  const lvl = (u) => levelOf(u);
+  let best = null, bestCost = Infinity;
+  for (let t = 0; t < 10; t++) {
+    const byGames = shuffle(units.slice(), rand).sort((a, b) => b.reduce((s, p) => s + gOf(p), 0) - a.reduce((s, p) => s + gOf(p), 0));
+    const bench = byGames.slice(0, units.length - nSlot);
+    const slots = shuffle(units.filter((u) => !bench.includes(u)), rand).sort((a, b) => lvl(b) - lvl(a));
+    const arr = slots.concat(bench);
+    const costAt = (k) => (k >= nSlot ? 0 : pMatchCost(H, tol, avoid, arr[Math.floor(k / 2) * 2], arr[Math.floor(k / 2) * 2 + 1], byPair, levelOf));
+    let cur = 0;
+    for (let m = 0; m < nSlot; m += 2) cur += costAt(m);
+    let local = arr.slice(), localCost = cur;
+    const N = 3500;
+    for (let it = 0; it < N; it++) {
+      const i = Math.floor(rand() * arr.length), j = Math.floor(rand() * arr.length);
+      if (i === j || (i >= nSlot && j >= nSlot)) continue;
+      const touch = (k) => (k < nSlot ? Math.floor(k / 2) * 2 : k);
+      if (touch(i) === touch(j)) continue;
+      const keys = [...new Set([touch(i), touch(j)])];
+      const before = keys.reduce((s, k) => s + costAt(k), 0);
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      const after = keys.reduce((s, k) => s + costAt(k), 0);
+      const T = 6 * (1 - it / N);
+      if (after <= before || rand() < Math.exp(-(after - before) / Math.max(T, 0.01))) { cur += after - before; if (cur < localCost - 1e-9) { localCost = cur; local = arr.slice(); } } else [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    if (localCost < bestCost) { bestCost = localCost; best = local; }
+  }
+  const pairs = [];
+  for (let m = 0; m < nSlot; m += 2) pairs.push([best[m], best[m + 1]]);
+  return { pairs, bench: best.slice(nSlot) };
+}
+/* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out, courtWait } */
+function genMixed(e, upto, manualRest, seed) {
+  manualRest = manualRest || [];
+  const H = pHistory(e, upto || 0), tol = e.practice.tol, avoid = e.practice.avoidSchool;
+  const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
+  const free = (id) => pm[id] && !manualRest.includes(id);
+  const inPair = new Set(e.pairs.flatMap((p) => [p.a, p.b]));
+  const singles = e.players.filter((p) => p.single && !inPair.has(p.id) && free(p.id)).map((p) => [p]);
+  const pairUnits = e.pairs.filter((p) => pm[p.a] && pm[p.b] && !pm[p.a].single && !pm[p.b].single && free(p.a) && free(p.b)).map((p) => [pm[p.a], pm[p.b]]);
+  const out = e.players.filter((p) => !p.single && !inPair.has(p.id)).map((p) => p.id);
+  const levelOf = (S) => { if (S.length === 2) { const pr = e.pairs.find((x) => (x.a === S[0].id && x.b === S[1].id) || (x.a === S[1].id && x.b === S[0].id)); if (pr) return pairLevel(e, pr); } return avgLv(S); };
+  const dbl = solveUnits(e, pairUnits, H, rand, avoid, tol, levelOf), sgl = solveUnits(e, singles, H, rand, avoid, tol, levelOf);
+  const mk = (kind, [A, B]) => ({ id: uid(), a: A.map((p) => p.id), b: B.map((p) => p.id), g: [], win: null, kind });
+  const byLevel = (x, y) => (sideLevel(e, y.a) + sideLevel(e, y.b)) - (sideLevel(e, x.a) + sideLevel(e, x.b));
+  const dm = dbl.pairs.map((u) => mk("doubles", u)).sort(byLevel), sm = sgl.pairs.map((u) => mk("singles", u)).sort(byLevel);
+  const courts = clamp(parseInt(e.practice.courts, 10) || 6, 1, 12);
+  const matches = dm.concat(sm).map((m, i) => { delete m.kind; m.court = i < courts ? i + 1 : 0; return m; });
+  const restInfo = [];
+  dbl.bench.forEach((u) => restInfo.push({ kind: "pair", ids: u.map((p) => p.id) }));
+  sgl.bench.forEach((u) => restInfo.push({ kind: "single", ids: u.map((p) => p.id) }));
+  const autoRest = restInfo.flatMap((x) => x.ids);
+  return { matches, rest: [...new Set(manualRest.filter((id) => pm[id]).concat(autoRest))], autoRest, restInfo, out };
+}
 /* 固定ペアの片方が休むときの相方の候補(待機中の人から、ランクと学校が近い順) */
 function partnerCandidates(e, forId, pool) {
   const pm = playerMap(e), me = pm[forId];
@@ -694,7 +755,7 @@ function blankEvent(over) {
     v: SCHEMA, name: "名前なし", date: today(), mode: "league", type: "singles", games: 1, points: 21, maxPerDay: 6,
     groupSize: 4, splitMethod: "level", spreadSchools: true, tolerance: 0, tTop: 2, tThird: true,
     players: [], pairs: [], leagues: [], results: {}, bracket: null, seeds: {},
-    practice: { tol: 1, avoidSchool: true, pairMode: "rotate", kind: "singles", dayOff: [], rounds: [] }, updatedAt: 0,
+    practice: { tol: 1, avoidSchool: true, pairMode: "rotate", kind: "singles", courts: 6, dayOff: [], rounds: [] }, updatedAt: 0,
   }, over || {});
 }
 /* 古い形(v1)や、v2 の読み込み。どちらも v2 を返す。元のオブジェクトは変えない */
@@ -833,7 +894,7 @@ return {
   gamesOf, setScore, setWo, setWin, woOf, winOf, outcomeOf, outcome, extraGame, gameWarn, scoreCap, cleanResult,
   standings, rankTiers,
   seedPositions, roundName, bracketEntries, buildBracket, bracketState, bracketMatches, findNode, setBScore, setBWo, setBWin, swapSlots,
-  sideIds, sideLevel, pOutcome, pPlaced, pHistory, pMatchCost, tempPairs, autoPairs, keptAt, genRound, partnerCandidates, pCum, pIssues, pStats, pairStats, totals,
+  genMixed, sideIds, sideLevel, pOutcome, pPlaced, pHistory, pMatchCost, tempPairs, autoPairs, keptAt, genRound, partnerCandidates, pCum, pIssues, pStats, pairStats, totals,
   SCHEMA, blankEvent, migrate, normalize2,
 };
 })();
