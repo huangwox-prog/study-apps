@@ -211,7 +211,7 @@ function settingsHTML(e) {
 const pairCapable = (e) => isDbl(e) || e.mode === "practice";
 const canonSchool = (s) => String(s || "").trim();
 function playersHTML(e) {
-  const dbl = pairCapable(e), SC = schoolColors(e);
+  const dbl = isDbl(e), SC = schoolColors(e); // ペア・シングルスの操作は、ダブルスのリーグ戦・トーナメントの登録だけ。練習試合は、回転ごとの名簿(対戦タブ)で決める
   const pmap = playerMap(e), cnt = Core.pCum(e), last = cnt.length ? cnt[cnt.length - 1] : {};
   let list = e.players.slice();
   list.sort(ui.plSort === "school" ? (a, b) => a.school.localeCompare(b.school, "ja") || b.level - a.level : (a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja"));
