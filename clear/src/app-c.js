@@ -204,10 +204,12 @@ function playMode(e, p) { return Core.pairOfPlayer(e, p.id) ? "pair" : p.single 
 function firstRoundHTML(e, SC) {
   const pmap = playerMap(e), pairIdx = {}, pairOf = {};
   e.pairs.forEach((pr, i) => { pairIdx[pr.a] = i; pairIdx[pr.b] = i; pairOf[pr.a] = pr; pairOf[pr.b] = pr; });
-  // 名簿: ランク順(強い順 → 学校)。ペアの2人は、かならず上下に並べる
-  const base = e.players.slice().sort((a, b) => b.level - a.level || (a.school || "").localeCompare(b.school || "", "ja"));
-  const rows = [], seen = new Set();
-  base.forEach((p) => { if (seen.has(p.id)) return; rows.push(p); seen.add(p.id); const m = pairOf[p.id] && pmap[Core.partnerOf(e, p.id)]; if (m && !seen.has(m.id)) { rows.push(m); seen.add(m.id); } });
+  // 名簿: 学校ごとにまとめる(学校の中は、ランクの強い順)。ペアの2人は、かならず上下に並べる(学校がちがうペアは、1人目の学校の下に並ぶ)
+  const base = e.players.slice().sort((a, b) => (a.school || "").localeCompare(b.school || "", "ja") || b.level - a.level || (a.name || "").localeCompare(b.name || "", "ja"));
+  const rows = [], seen = new Set(), partnerRow = new Set();
+  base.forEach((p) => { if (seen.has(p.id)) return; rows.push(p); seen.add(p.id); const m = pairOf[p.id] && pmap[Core.partnerOf(e, p.id)]; if (m && !seen.has(m.id)) { rows.push(m); seen.add(m.id); partnerRow.add(m.id); } });
+  const schoolCount = {}; e.players.forEach((p) => { const k = (p.school || "").trim(); schoolCount[k] = (schoolCount[k] || 0) + 1; });
+  let lastSchool = null;
   const nPair = e.pairs.filter((pr) => pmap[pr.a] && pmap[pr.b]).length, nSingle = e.players.filter((p) => p.single && !pairOf[p.id]).length, nOut = e.players.filter((p) => playMode(e, p) === "out").length;
   const firstOfPair = new Set();
   const body = rows.map((p) => {
@@ -215,7 +217,9 @@ function firstRoundHTML(e, SC) {
     const first = pr && !firstOfPair.has(pr.id) ? (firstOfPair.add(pr.id), true) : false;
     const rd = (v, t) => `<label class="rd ${mode === v ? "on" : ""}"><input type="radio" name="pm-${p.id}" value="${v}" data-change="play-mode" data-id="${p.id}" ${mode === v ? "checked" : ""}>${t}</label>`;
     const lvSel = first ? `<select class="select" data-change="pair-lv-sel" data-pair="${pr.id}" aria-label="ペアの強さ"><option value="">ペアのランク:平均(${lvTxt(Core.pairLevel(e, pr))})</option>${[1, 2, 3, 4, 5].map((v) => `<option value="${v}" ${pr.level === v ? "selected" : ""}>ペアのランク ${v}</option>`).join("")}</select>` : "";
-    return `<tr class="${mode === "out" ? "row-out" : ""} ${pr ? `row-pair lg-${idx % 8}` : ""}">
+    const sk = (p.school || "").trim();
+    const head = !partnerRow.has(p.id) && sk !== lastSchool ? (lastSchool = sk, `<tr class="school-head ${SC.cls(p.school)}"><td colspan="5"><b>${esc(sk || "学校なし")}</b> <span class="faint">${schoolCount[sk]}人</span></td></tr>`) : "";
+    return `${head}<tr class="${mode === "out" ? "row-out" : ""} ${pr ? `row-pair lg-${idx % 8}` : ""}">
       <td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>
       <td class="c-name ${SC.cls(p.school)}"><b>${esc(p.name)}</b>${pr ? ` <span class="pairlabel">ペア${Core.LETTERS[idx % 26]}</span>` : ""}${mode === "out" ? ` <span class="outlabel">出場しない</span>` : ""}</td>
       <td>${esc(p.school)}</td>
