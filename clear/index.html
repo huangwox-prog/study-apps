@@ -918,7 +918,8 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf) {
 /* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out, courtWait } */
 function genMixed(e, upto, manualRest, seed) {
   manualRest = manualRest || [];
-  const H = pHistory(e, upto || 0), tol = e.practice.tol, avoid = e.practice.avoidSchool;
+  const H0 = pHistory(e, upto || 0), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
+  const H = e.practice.avoidRepeat === false ? { ...H0, faced: {}, partner: {} } : H0; // 「前に当たった組み合わせを避ける」をはずすと、過去の対戦を見ない
   const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
   const free = (id) => pm[id] && !manualRest.includes(id);
   const inPair = new Set(e.pairs.flatMap((p) => [p.a, p.b]));
@@ -1036,7 +1037,7 @@ function blankEvent(over) {
     v: SCHEMA, name: "名前なし", date: today(), mode: "league", type: "singles", games: 1, points: 21, maxPerDay: 6,
     groupSize: 4, splitMethod: "level", spreadSchools: true, tolerance: 0, tTop: 2, tThird: true,
     players: [], pairs: [], leagues: [], results: {}, bracket: null, seeds: {},
-    practice: { tol: 1, avoidSchool: true, pairMode: "rotate", kind: "singles", courts: 6, dayOff: [], rounds: [] }, updatedAt: 0,
+    practice: { tol: 1, avoidSchool: true, pairMode: "rotate", kind: "singles", courts: 6, avoidRepeat: true, dayOff: [], rounds: [] }, updatedAt: 0,
   }, over || {});
 }
 /* 古い形(v1)や、v2 の読み込み。どちらも v2 を返す。元のオブジェクトは変えない */
@@ -2243,7 +2244,7 @@ function firstRoundHTML(e, SC) {
     <div class="table-wrap"><table class="ptable roster"><thead><tr><th>選ぶ</th><th>名前</th><th>学校</th><th>ランク</th><th>出場形式</th></tr></thead><tbody>${body}</tbody></table></div>
     ${e.pairs.length ? `<div class="row">${e.pairs.map((pr, i) => `<span class="pairchip lg-${i % 8}"><span class="pairlabel">ペア${Core.LETTERS[i % 26]}</span> ${esc(pn(e, pr.a))}・${esc(pn(e, pr.b))}<button class="btn btn-ghost btn-sm" data-action="pair-del" data-id="${pr.id}">解除</button></span>`).join("")}</div>` : ""}
     <details class="more" open><summary>組み方の設定</summary><div class="settings">
-      <label class="check"><input type="checkbox" data-change="p-avoid" ${e.practice.avoidSchool ? "checked" : ""}>同じ学校どうしを、なるべく当てない</label>
+      <label class="check"><input type="checkbox" data-change="p-repeat" ${e.practice.avoidRepeat !== false ? "checked" : ""}>前に当たった組み合わせを避ける</label>
       <label class="field"><span>ランクの近い相手と当てる(差の許容)</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
       <label class="field"><span>使用コート数</span><select class="select" data-change="p-courts">${Array.from({ length: 12 }, (_, i) => i + 1).map((k) => `<option value="${k}" ${(e.practice.courts || 6) === k ? "selected" : ""}>${k}面</option>`).join("")}</select></label>
       <label class="field"><span>点数</span><select class="select" data-change="ev-points">${[21, 15, 11].map((p) => `<option value="${p}" ${e.points === p ? "selected" : ""}>${p}点</option>`).join("")}</select></label>
@@ -2445,6 +2446,7 @@ Object.assign(Ch, {
     commit(); render();
   },
   "pair-lv-sel": (t) => { const e = ev(), pr = e.pairs.find((x) => x.id === t.dataset.pair); if (!pr) return; pr.level = t.value === "" ? null : Core.clamp(Number(t.value), 1, Core.RANK_MAX); commit(); render(); },
+  "p-repeat": (t) => { ev().practice.avoidRepeat = t.checked; commit(); render(); },
   "p-courts": (t) => { ev().practice.courts = clamp(Number(t.value), 1, 12); commit(); render(); },
   "pnext-kind": (t) => { ui.nextKind = t.value; render(); },
   "pnext-day": (t) => { ui.nextDay = Number(t.value); },
