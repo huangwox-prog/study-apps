@@ -204,27 +204,34 @@ function playMode(e, p) { return Core.pairOfPlayer(e, p.id) ? "pair" : p.single 
 function firstRoundHTML(e, SC) {
   const pmap = playerMap(e), pairIdx = {}, pairOf = {};
   e.pairs.forEach((pr, i) => { pairIdx[pr.a] = i; pairIdx[pr.b] = i; pairOf[pr.a] = pr; pairOf[pr.b] = pr; });
-  // 名簿: 学校ごとにまとめる(学校の中は、ランクの強い順)。ペアの2人は、かならず上下に並べる(学校がちがうペアは、1人目の学校の下に並ぶ)
-  const base = e.players.slice().sort((a, b) => (a.school || "").localeCompare(b.school || "", "ja") || b.level - a.level || (a.name || "").localeCompare(b.name || "", "ja"));
+  // 名簿: 学校ごとにまとめる(学校の中は、ランクの強い順)。同じ学校のペアは、その学校の中に。学校がちがう「混合ペア」は、いちばん下に別にまとめる。ペアの2人は、かならず上下に並べる
+  const isMixed = (pr) => pr && pmap[pr.a] && pmap[pr.b] && (pmap[pr.a].school || "").trim() !== (pmap[pr.b].school || "").trim();
+  const mixedPairs = e.pairs.filter(isMixed), mixedIds = new Set(mixedPairs.flatMap((pr) => [pr.a, pr.b]));
+  const base = e.players.filter((p) => !mixedIds.has(p.id)).sort((a, b) => (a.school || "").localeCompare(b.school || "", "ja") || b.level - a.level || (a.name || "").localeCompare(b.name || "", "ja"));
   const rows = [], seen = new Set(), partnerRow = new Set();
   base.forEach((p) => { if (seen.has(p.id)) return; rows.push(p); seen.add(p.id); const m = pairOf[p.id] && pmap[Core.partnerOf(e, p.id)]; if (m && !seen.has(m.id)) { rows.push(m); seen.add(m.id); partnerRow.add(m.id); } });
-  const schoolCount = {}; e.players.forEach((p) => { const k = (p.school || "").trim(); schoolCount[k] = (schoolCount[k] || 0) + 1; });
+  const mixedStart = rows.length;
+  mixedPairs.forEach((pr) => { rows.push(pmap[pr.a], pmap[pr.b]); partnerRow.add(pr.b); });
+  const schoolCount = {}; base.forEach((p) => { const k = (p.school || "").trim(); schoolCount[k] = (schoolCount[k] || 0) + 1; });
   let lastSchool = null;
   const nPair = e.pairs.filter((pr) => pmap[pr.a] && pmap[pr.b]).length, nSingle = e.players.filter((p) => p.single && !pairOf[p.id]).length, nOut = e.players.filter((p) => playMode(e, p) === "out").length;
   const firstOfPair = new Set();
-  const body = rows.map((p) => {
+  const body = rows.map((p, ri) => {
     const mode = playMode(e, p), pr = pairOf[p.id], idx = pr ? pairIdx[p.id] : null;
     const first = pr && !firstOfPair.has(pr.id) ? (firstOfPair.add(pr.id), true) : false;
     const rd = (v, t) => `<label class="rd ${mode === v ? "on" : ""}"><input type="radio" name="pm-${p.id}" value="${v}" data-change="play-mode" data-id="${p.id}" ${mode === v ? "checked" : ""}>${t}</label>`;
     const lvSel = first ? `<select class="select" data-change="pair-lv-sel" data-pair="${pr.id}" aria-label="ペアの強さ"><option value="">ペアのランク:平均(${lvTxt(Core.pairLevel(e, pr))})</option>${[1, 2, 3, 4, 5].map((v) => `<option value="${v}" ${pr.level === v ? "selected" : ""}>ペアのランク ${v}</option>`).join("")}</select>` : "";
     const sk = (p.school || "").trim();
-    const head = !partnerRow.has(p.id) && sk !== lastSchool ? (lastSchool = sk, `<tr class="school-head ${SC.cls(p.school)}"><td colspan="5"><b>${esc(sk || "学校なし")}</b> <span class="faint">${schoolCount[sk]}人</span></td></tr>`) : "";
-    return `${head}<tr class="${mode === "out" ? "row-out" : ""} ${pr ? `row-pair lg-${idx % 8}` : ""}">
+    let head = "";
+    if (ri === mixedStart && mixedPairs.length) head = `<tr class="school-head mixed-head"><td colspan="5"><b>混合ペア</b> <span class="faint">学校がちがうペア ${mixedPairs.length}組</span></td></tr>`;
+    else if (ri < mixedStart && !partnerRow.has(p.id) && sk !== lastSchool) { lastSchool = sk; head = `<tr class="school-head ${SC.cls(p.school)}"><td colspan="5"><b>${esc(sk || "学校なし")}</b> <span class="faint">${schoolCount[sk]}人</span></td></tr>`; }
+    const gap = `<tr class="pair-gap"><td colspan="5"></td></tr>`;
+    return `${head}${first ? gap : ""}<tr class="${mode === "out" ? "row-out" : ""} ${pr ? `row-pair ${first ? "pair-first" : "pair-second"}` : ""}" ${pr ? `style="--pc:var(--lg-${"abcdefgh"[idx % 8]})"` : ""}>
       <td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>
       <td class="c-name ${SC.cls(p.school)}"><b>${esc(p.name)}</b>${pr ? ` <span class="pairlabel">ペア${Core.LETTERS[idx % 26]}</span>` : ""}${mode === "out" ? ` <span class="outlabel">出場しない</span>` : ""}</td>
       <td>${esc(p.school)}</td>
       ${pr ? (first ? `<td rowspan="2" class="pair-rank-cell"><div class="faint" style="margin-bottom:4px">ペアのランク</div>${App.levelPicker(`data-action="pair-level-set" data-pair="${pr.id}"`, Math.round(Core.pairLevel(e, pr)))}</td>` : "") : `<td>${App.levelPicker(`data-action="set-level" data-id="${p.id}"`, p.level)}</td>`}
-      <td><div class="rds">${rd("pair", "ダブルス")}${rd("single", "シングルス")}${rd("out", "出場しない")}</div></td></tr>`;
+      <td><div class="rds">${rd("pair", "ダブルス")}${rd("single", "シングルス")}${rd("out", "出場しない")}</div></td></tr>${pr && !first ? gap : ""}`;
   }).join("");
   const tolOpts = [0, 1, 2, 3].map((k) => `<option value="${k}" ${e.practice.tol === k ? "selected" : ""}>${k === 0 ? "同じランクだけ" : `前後${k}まで`}</option>`).join("");
   const warn = [];
@@ -237,7 +244,7 @@ function firstRoundHTML(e, SC) {
     ${warn.length ? `<div class="confirm"><b>確認:</b><span>${warn.join(" ")}休みの人は、表の枠の外に出ます。</span></div>` : ""}
     <div class="row"><button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校でペアを自動作成</button><button class="btn btn-secondary btn-sm" data-action="all-single">ペアになっていない人を、全員シングルスに</button><button class="btn btn-ghost btn-sm" data-action="all-out">全員を「出場しない」に戻す</button></div>
     <div class="table-wrap"><table class="ptable roster"><thead><tr><th>選ぶ</th><th>名前</th><th>学校</th><th>ランク</th><th>出場形式</th></tr></thead><tbody>${body}</tbody></table></div>
-    ${e.pairs.length ? `<div class="row">${e.pairs.map((pr, i) => `<span class="pairchip lg-${i % 8}"><span class="pairlabel">ペア${Core.LETTERS[i % 26]}</span> ${esc(pn(e, pr.a))}・${esc(pn(e, pr.b))}<button class="btn btn-ghost btn-sm" data-action="pair-del" data-id="${pr.id}">解除</button></span>`).join("")}</div>` : ""}
+    ${e.pairs.length ? `<div class="row">${e.pairs.map((pr, i) => `<span class="pairchip" style="--pc:var(--lg-${"abcdefgh"[i % 8]})"><span class="pairlabel">ペア${Core.LETTERS[i % 26]}</span> ${esc(pn(e, pr.a))}・${esc(pn(e, pr.b))}<button class="btn btn-ghost btn-sm" data-action="pair-del" data-id="${pr.id}">解除</button></span>`).join("")}</div>` : ""}
     <details class="more" open><summary>組み方の設定</summary><div class="settings">
       <label class="check"><input type="checkbox" data-change="p-repeat" ${e.practice.avoidRepeat !== false ? "checked" : ""}>前に当たった組み合わせを避ける</label>
       <label class="field"><span>ランクの近い相手と当てる(差の許容)</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
