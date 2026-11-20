@@ -221,7 +221,7 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 .sheet .sh-g .w{color:var(--error);font-weight:800;background:color-mix(in srgb,var(--error) 14%,transparent);border-radius:6px}.sheet .sh-g i{font-style:normal;color:var(--text-tertiary);padding:0 4px}
 .sheet .sh-round td{text-align:left;font-weight:800;background:var(--accent-soft);color:var(--accent)}.sheet .sh-dup{display:block;font-size:.66rem;font-weight:800;color:var(--arc-2)}
 .sheet .sh-gc{min-width:3em;font-size:1rem}.sheet .sh-win{background:color-mix(in srgb,var(--error) 24%,transparent);font-weight:800}
-.roster td{vertical-align:middle}.roster tr.school-head td{padding:14px 8px 6px;font-size:1.05rem;border-bottom:2px solid var(--lg,var(--border));color:var(--lg,var(--text))}.rds{display:flex;gap:6px;flex-wrap:wrap}.rd{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1.5px solid var(--border-soft);font-size:.84rem;font-weight:650;cursor:pointer;background:var(--surface-strong)}.rd input{accent-color:var(--accent)}.rd.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.roster td{vertical-align:middle}.ptable tr.school-head td{padding:14px 8px 6px;font-size:1.05rem;border-bottom:2px solid var(--lg,var(--border));color:var(--lg,var(--text))}.rds{display:flex;gap:6px;flex-wrap:wrap}.rd{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1.5px solid var(--border-soft);font-size:.84rem;font-weight:650;cursor:pointer;background:var(--surface-strong)}.rd input{accent-color:var(--accent)}.rd.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .roster tr.row-out td{background:var(--error-soft)}.roster tr.row-out td:first-child{box-shadow:inset 3px 0 0 var(--error)}.roster tr.row-out{outline:2px solid var(--error);outline-offset:-2px}
 .roster tr.row-pair td{background:color-mix(in srgb,var(--pc) 14%,var(--surface-strong))}.roster tr.row-pair td:first-child{box-shadow:inset 7px 0 0 var(--pc)}
 .roster tr.pair-first td{border-top:2px solid var(--pc);border-bottom:1px dashed color-mix(in srgb,var(--pc) 50%,transparent)}.roster tr.pair-second td{border-bottom:2px solid var(--pc)}
@@ -264,6 +264,7 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 #print-area{display:none}
 @media(max-width:640px){
   .add-form{grid-template-columns:1fr 1fr}.match{grid-template-columns:1fr auto 1fr}.match .m-status{grid-column:1/-1;text-align:left}
+  .ptable tr.school-head{display:block;grid-template-columns:none}.ptable tr.school-head td{display:block}
   .pmatch{grid-template-columns:minmax(0,1fr)}.pmatch>*{grid-column:1!important}.pm-mid{justify-self:center}.team.b{align-items:stretch;text-align:left}.team.b .member .plink{text-align:left}
   .hero{padding:20px}.bm-row{grid-template-columns:2em 1fr}.bm-round{display:none}
 }
@@ -1207,7 +1208,7 @@ const TRASH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-
 const askOk = (m) => (window.claude && typeof window.claude.use === "function" ? true : confirm(m));
 const App = (window.App = { askOk, A: {}, Ch: {}, F: {}, ui: null, ev: null, render: null, commit: null, toast: null, esc, lvTxt, $, views: {} });
 let events = {}, currentId = null, toastTimer;
-const ui = (App.ui = { view: "home", tab: "players", createMode: null, createType: "singles", confirm: null, confirmDel: null, sel: [], newLevel: 3, plSort: "level", addMode: "one", imp: null, copyText: null, exportOpen: false, showSettings: false, q: "" });
+const ui = (App.ui = { view: "home", tab: "players", createMode: null, createType: "singles", confirm: null, confirmDel: null, sel: [], newLevel: 3, plSort: "school", addMode: "one", imp: null, copyText: null, exportOpen: false, showSettings: false, q: "" });
 const ev = (App.ev = () => events[currentId]);
 App.events = () => events;
 App.setCurrent = (id) => { currentId = id; };
@@ -1405,9 +1406,15 @@ function playersHTML(e) {
   let list = e.players.slice();
   list.sort(ui.plSort === "school" ? (a, b) => a.school.localeCompare(b.school, "ja") || b.level - a.level : (a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja"));
   const dupNames = {}; e.players.forEach((p) => { const k = `${p.name}|${p.school}`; dupNames[k] = (dupNames[k] || 0) + 1; });
+  // 学校別(初期)のときは、学校ごとの見出しを入れる
+  const cols = (dbl ? 1 : 0) + 3 + (dbl ? 1 : 0) + (e.mode === "practice" ? 1 : 0) + 1, schoolN = {};
+  e.players.forEach((p) => { const k = (p.school || "").trim(); schoolN[k] = (schoolN[k] || 0) + 1; });
+  let lastSk = null;
   const rows = list.map((p) => {
+    const sk0 = (p.school || "").trim();
+    const shead = ui.plSort === "school" && sk0 !== lastSk ? (lastSk = sk0, `<tr class="school-head ${SC.cls(p.school)}"><td colspan="${cols}"><b>${esc(sk0 || "学校なし")}</b> <span class="faint">${schoolN[sk0]}人</span></td></tr>`) : "";
     const partner = Core.partnerOf(e, p.id);
-    return `<tr>${dbl ? `<td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>` : ""}
+    return `${shead}<tr>${dbl ? `<td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>` : ""}
       <td class="c-name ${SC.cls(p.school)}"><input class="cell-input" value="${esc(p.name)}" data-change="p-name" data-id="${p.id}" aria-label="名前">${dupNames[`${p.name}|${p.school}`] > 1 ? `<span class="chip chip-warn">重複</span>` : ""}</td>
       <td><input class="cell-input" list="schools" value="${esc(p.school)}" data-change="p-school" data-id="${p.id}" aria-label="学校"></td>
       <td>${levelPicker(`data-action="set-level" data-id="${p.id}"`, p.level)}</td>
