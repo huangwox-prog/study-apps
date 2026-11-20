@@ -6,7 +6,7 @@
 const { clamp, uid, playerMap, keyOf } = Core;
 const App = window.App, { A, Ch, F, ui, esc, $, lvTxt } = App;
 const ev = App.ev, commit = App.commit, render = App.render, toast = App.toast, pn = App.pn;
-Object.assign(ui, { pCardsOpen: false, pOpen: null, pView: "list", pSort: "level", nextKind: null, nextDay: null, nextRest: [], pSheetRound: "all", pPlayer: null, ask: null, showRest: false, showSet: false });
+Object.assign(ui, { pCardsOpen: true, pOpen: null, pView: "list", pSort: "level", nextKind: null, nextDay: null, nextRest: [], pSheetRound: "all", pPlayer: null, ask: null, showRest: false, showSet: false });
 
 const rById = (e, id) => e.practice.rounds.find((r) => r.id === id);
 const kindLabel = (r) => (r.kind === "mixed" ? "シングルス+ダブルス" : r.kind === "doubles" ? (r.fixed ? "ダブルス(ペア固定)" : "ダブルス(毎回組み替え)") : "シングルス");
