@@ -18,7 +18,7 @@ const TRASH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-
 const askOk = (m) => (window.claude && typeof window.claude.use === "function" ? true : confirm(m));
 const App = (window.App = { askOk, A: {}, Ch: {}, F: {}, ui: null, ev: null, render: null, commit: null, toast: null, esc, lvTxt, $, views: {} });
 let events = {}, currentId = null, toastTimer;
-const ui = (App.ui = { view: "home", tab: "players", createMode: null, createType: "singles", confirm: null, confirmDel: null, sel: [], newLevel: 3, plSort: "level", addMode: "one", imp: null, copyText: null, exportOpen: false, showSettings: false, q: "" });
+const ui = (App.ui = { view: "home", tab: "players", createMode: null, createType: "singles", confirm: null, confirmDel: null, sel: [], newLevel: 3, plSort: "school", addMode: "one", imp: null, copyText: null, exportOpen: false, showSettings: false, q: "" });
 const ev = (App.ev = () => events[currentId]);
 App.events = () => events;
 App.setCurrent = (id) => { currentId = id; };
@@ -216,9 +216,15 @@ function playersHTML(e) {
   let list = e.players.slice();
   list.sort(ui.plSort === "school" ? (a, b) => a.school.localeCompare(b.school, "ja") || b.level - a.level : (a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja"));
   const dupNames = {}; e.players.forEach((p) => { const k = `${p.name}|${p.school}`; dupNames[k] = (dupNames[k] || 0) + 1; });
+  // 学校別(初期)のときは、学校ごとの見出しを入れる
+  const cols = (dbl ? 1 : 0) + 3 + (dbl ? 1 : 0) + (e.mode === "practice" ? 1 : 0) + 1, schoolN = {};
+  e.players.forEach((p) => { const k = (p.school || "").trim(); schoolN[k] = (schoolN[k] || 0) + 1; });
+  let lastSk = null;
   const rows = list.map((p) => {
+    const sk0 = (p.school || "").trim();
+    const shead = ui.plSort === "school" && sk0 !== lastSk ? (lastSk = sk0, `<tr class="school-head ${SC.cls(p.school)}"><td colspan="${cols}"><b>${esc(sk0 || "学校なし")}</b> <span class="faint">${schoolN[sk0]}人</span></td></tr>`) : "";
     const partner = Core.partnerOf(e, p.id);
-    return `<tr>${dbl ? `<td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>` : ""}
+    return `${shead}<tr>${dbl ? `<td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>` : ""}
       <td class="c-name ${SC.cls(p.school)}"><input class="cell-input" value="${esc(p.name)}" data-change="p-name" data-id="${p.id}" aria-label="名前">${dupNames[`${p.name}|${p.school}`] > 1 ? `<span class="chip chip-warn">重複</span>` : ""}</td>
       <td><input class="cell-input" list="schools" value="${esc(p.school)}" data-change="p-school" data-id="${p.id}" aria-label="学校"></td>
       <td>${levelPicker(`data-action="set-level" data-id="${p.id}"`, p.level)}</td>

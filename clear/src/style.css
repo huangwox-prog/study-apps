@@ -216,7 +216,7 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 .sheet .sh-g .w{color:var(--error);font-weight:800;background:color-mix(in srgb,var(--error) 14%,transparent);border-radius:6px}.sheet .sh-g i{font-style:normal;color:var(--text-tertiary);padding:0 4px}
 .sheet .sh-round td{text-align:left;font-weight:800;background:var(--accent-soft);color:var(--accent)}.sheet .sh-dup{display:block;font-size:.66rem;font-weight:800;color:var(--arc-2)}
 .sheet .sh-gc{min-width:3em;font-size:1rem}.sheet .sh-win{background:color-mix(in srgb,var(--error) 24%,transparent);font-weight:800}
-.roster td{vertical-align:middle}.roster tr.school-head td{padding:14px 8px 6px;font-size:1.05rem;border-bottom:2px solid var(--lg,var(--border));color:var(--lg,var(--text))}.rds{display:flex;gap:6px;flex-wrap:wrap}.rd{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1.5px solid var(--border-soft);font-size:.84rem;font-weight:650;cursor:pointer;background:var(--surface-strong)}.rd input{accent-color:var(--accent)}.rd.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.roster td{vertical-align:middle}.ptable tr.school-head td{padding:14px 8px 6px;font-size:1.05rem;border-bottom:2px solid var(--lg,var(--border));color:var(--lg,var(--text))}.rds{display:flex;gap:6px;flex-wrap:wrap}.rd{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1.5px solid var(--border-soft);font-size:.84rem;font-weight:650;cursor:pointer;background:var(--surface-strong)}.rd input{accent-color:var(--accent)}.rd.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
 .roster tr.row-out td{background:var(--error-soft)}.roster tr.row-out td:first-child{box-shadow:inset 3px 0 0 var(--error)}.roster tr.row-out{outline:2px solid var(--error);outline-offset:-2px}
 .roster tr.row-pair td{background:color-mix(in srgb,var(--pc) 14%,var(--surface-strong))}.roster tr.row-pair td:first-child{box-shadow:inset 7px 0 0 var(--pc)}
 .roster tr.pair-first td{border-top:2px solid var(--pc);border-bottom:1px dashed color-mix(in srgb,var(--pc) 50%,transparent)}.roster tr.pair-second td{border-bottom:2px solid var(--pc)}
@@ -259,6 +259,7 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 #print-area{display:none}
 @media(max-width:640px){
   .add-form{grid-template-columns:1fr 1fr}.match{grid-template-columns:1fr auto 1fr}.match .m-status{grid-column:1/-1;text-align:left}
+  .ptable tr.school-head{display:block;grid-template-columns:none}.ptable tr.school-head td{display:block}
   .pmatch{grid-template-columns:minmax(0,1fr)}.pmatch>*{grid-column:1!important}.pm-mid{justify-self:center}.team.b{align-items:stretch;text-align:left}.team.b .member .plink{text-align:left}
   .hero{padding:20px}.bm-row{grid-template-columns:2em 1fr}.bm-round{display:none}
 }
