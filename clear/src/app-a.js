@@ -417,7 +417,11 @@ function copyTables(blocks, what) {
   const e = ev(), width = Math.max(2, ...blocks.flatMap((b) => b.rows.map((r) => r.length)));
   const text = [`${e.name}\t${e.date}`, ...blocks.map((b) => [b.title, ...b.rows.map((r) => r.join("\t"))].join("\n"))].join("\n\n");
   const td = (v, head) => { const st = (head ? "font-weight:bold;background:#eef0f7;" : "") + "border:1px solid #c8cad3;"; return typeof v === "number" ? `<td style="${st}">${v}</td>` : `<td style="${st}mso-number-format:'\\@'">${esc(v)}</td>`; };
-  const html = `<meta charset="utf-8"><table><tr><td colspan="${width}" style="font-weight:bold;font-size:14pt">${esc(e.name)} ${esc(e.date)}</td></tr>${blocks.map((b) => `<tr><td colspan="${width}"></td></tr><tr><td colspan="${width}" style="font-weight:bold">${esc(b.title)}</td></tr>${b.rows.map((r, i) => `<tr>${r.map((v) => td(v, i === 0)).join("")}</tr>`).join("")}`).join("")}</table>`;
+  // 列の幅: 中身のいちばん長いものに合わせる(全角は2、半角は1と数える)。Excel は <col width> を列の幅として使う
+  const wOf = (v) => [...String(v ?? "")].reduce((n, c) => n + (c.charCodeAt(0) > 0xff ? 2 : 1), 0);
+  const colW = Array.from({ length: width }, (_, j) => Math.min(40, Math.max(6, ...blocks.flatMap((b) => b.rows.map((r) => wOf(r[j]))))));
+  const cols = colW.map((w) => `<col width="${w * 8 + 16}" style="width:${w * 6 + 12}pt">`).join("");
+  const html = `<meta charset="utf-8"><table>${cols}<tr><td colspan="${width}" style="font-weight:bold;font-size:14pt">${esc(e.name)} ${esc(e.date)}</td></tr>${blocks.map((b) => `<tr><td colspan="${width}"></td></tr><tr><td colspan="${width}" style="font-weight:bold">${esc(b.title)}</td></tr>${b.rows.map((r, i) => `<tr>${r.map((v) => td(v, i === 0)).join("")}</tr>`).join("")}`).join("")}</table>`;
   const done = () => { ui.copyText = null; render(); toast(`${what}をコピーしました。Excel で貼りたいセルを選んで Ctrl+V`); };
   const fail = () => { ui.copyText = text; render(); const ta = $("#copy-area"); if (ta) { ta.scrollIntoView({ block: "center" }); ta.focus(); ta.select(); } };
   const plain = () => { try { navigator.clipboard.writeText(text).then(done, fail); } catch (err) { fail(); } };
