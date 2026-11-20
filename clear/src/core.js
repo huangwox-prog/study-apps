@@ -53,6 +53,7 @@ function makePair(e, a, b) {
   const broke = e.pairs.filter((p) => [a, b].some((x) => p.a === x || p.b === x));
   e.pairs = e.pairs.filter((p) => !broke.includes(p));
   const pair = { id: uid(), a, b, level: null };
+  pm[a].single = false; pm[b].single = false; // ペアに入る人は、シングルスで出る印をはずす
   e.pairs.push(pair);
   return { pair, cross: isCrossSchool(e, pair), broke };
 }
@@ -70,7 +71,16 @@ function entries(e) {
 }
 function entryMap(e) { const m = {}; entries(e).forEach((x) => (m[x.id] = x)); return m; }
 /* ダブルスで、どのペアにも入っていない選手(リーグ・トーナメントには出られない) */
-function unpairedPlayers(e) { const inP = new Set(e.pairs.flatMap((p) => [p.a, p.b])); return e.players.filter((p) => !inP.has(p.id)); }
+function unpairedPlayers(e) { const inP = new Set(e.pairs.flatMap((p) => [p.a, p.b])); return e.players.filter((p) => !inP.has(p.id) && !p.single); }
+/* 練習試合で「シングルスで出る」人。ペアには入れない(ペアに入っていた人は、ペアを解く) */
+function setSingle(e, ids, on) {
+  const pm = playerMap(e), broke = [];
+  ids.forEach((id) => {
+    if (!pm[id]) return;
+    if (on) { const pr = pairOfPlayer(e, id); if (pr) { broke.push(pr); e.pairs = e.pairs.filter((x) => x.id !== pr.id); } pm[id].single = true; } else pm[id].single = false;
+  });
+  return broke;
+}
 function unitWord(e) { return isDbl(e) ? "ペア" : "選手"; }
 function letter(i) { return LETTERS[i] || String(i + 1); }
 
@@ -802,7 +812,7 @@ function normalize2(ev) {
   e.type = e.mode !== "practice" && e.type === "doubles" ? "doubles" : "singles";
   e.games = e.games === 3 ? 3 : 1;
   e.points = [11, 15, 21].includes(e.points) ? e.points : 21;
-  e.players = (Array.isArray(e.players) ? e.players : []).filter((p) => p && p.id).map((p) => ({ id: String(p.id), name: String(p.name || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, RANK_MAX) }));
+  e.players = (Array.isArray(e.players) ? e.players : []).filter((p) => p && p.id).map((p) => ({ id: String(p.id), name: String(p.name || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, RANK_MAX), single: !!p.single }));
   const pids = new Set(e.players.map((p) => p.id)), used = new Set();
   e.pairs = (Array.isArray(e.pairs) ? e.pairs : []).filter((x) => x && x.id && pids.has(x.a) && pids.has(x.b) && x.a !== x.b && !used.has(x.a) && !used.has(x.b) && used.add(x.a) && used.add(x.b))
     .map((x) => ({ id: String(x.id), a: x.a, b: x.b, level: x.level == null ? null : clamp(Number(x.level) || 3, 1, RANK_MAX) }));
@@ -816,7 +826,7 @@ function normalize2(ev) {
 
 return {
   RANK_MAX, LETTERS, clamp, clone, uid, to5, today, rng, shuffle, keyOf, isEmptyGames,
-  playerMap, pairMap, pairOfPlayer, partnerOf, schoolsOf, pairLevel, roundHalf, isCrossSchool, makePair, removePair,
+  setSingle, playerMap, pairMap, pairOfPlayer, partnerOf, schoolsOf, pairLevel, roundHalf, isCrossSchool, makePair, removePair,
   isDbl, entries, entryMap, unpairedPlayers, unitWord, letter,
   dupCost, planSizes, groupSizesFor, autoAssign, leagueIndexOf, unassigned, moveToLeague,
   roundRobin, matchCount, dayCount, splitDays,

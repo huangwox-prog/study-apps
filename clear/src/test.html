@@ -47,6 +47,7 @@ t("トーナメント: 勝ち上がりと3位決定戦", () => { const e = mk(4)
 const dbl = () => { const e = mk(8, (i) => (i < 4 ? "東" : "西")); e.type = "doubles"; e.players.forEach((p, i) => (p.level = 1 + (i % 4))); return e; };
 t("ペア: 2人を選ぶ。学校が違えば cross", () => { const e = dbl(); const r = C.makePair(e, "p0", "p5"); eq(r.cross, true); eq(C.entries(e)[0].school, "東・西"); const r2 = C.makePair(e, "p1", "p2"); eq(r2.cross, false); eq(C.entries(e)[1].school, "東"); });
 t("ペア: ランクは平均が初期値、手で変えられる", () => { const e = dbl(); C.makePair(e, "p0", "p3"); eq(C.entries(e)[0].level, 2.5); e.pairs[0].level = 4; eq(C.entries(e)[0].level, 4); });
+t("シングルスで出る人: ペアに入っていた人は組が解け、ペアにされると印が外れる・保存しても残る", () => { const e = dbl(); C.makePair(e, "p0", "p1"); const br = C.setSingle(e, ["p0"], true); eq(br.length, 1); eq(e.pairs.length, 0); eq(C.unpairedPlayers(e).some((p) => p.id === "p0"), false); const e2 = C.normalize2(C.clone(e)); eq(e2.players.find((p) => p.id === "p0").single, true); C.makePair(e, "p0", "p2"); eq(e.players.find((p) => p.id === "p0").single, false); });
 t("ペア: 組み直すと古い組が解ける", () => { const e = dbl(); C.makePair(e, "p0", "p1"); const r = C.makePair(e, "p1", "p2"); eq(r.broke.length, 1); eq(e.pairs.length, 1); });
 t("ペア: 自動作成は同じ学校だけ・登録済みは残す", () => { const e = dbl(); C.makePair(e, "p0", "p1"); C.autoPairs(e); eq(e.pairs.length, 4); return e.pairs.every((p) => !C.isCrossSchool(e, p)); });
 t("ペア: リーグ・トーナメントはペアが出場単位", () => { const e = dbl(); C.autoPairs(e); eq(C.entries(e).length, 4); C.autoAssign(e, 1); eq(e.leagues.flatMap((l) => l.ids).sort(), e.pairs.map((p) => p.id).sort()); });

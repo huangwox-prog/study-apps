@@ -129,7 +129,11 @@ function render() {
   // 描き直すと入力欄のカーソルが先頭に戻ってしまう(「21」が「12」になる)ので、位置を覚えておいて戻す
   let selS = null, selE = null;
   try { if (ae && typeof ae.selectionStart === "number") { selS = ae.selectionStart; selE = ae.selectionEnd; } } catch (x) {}
+  // 入力途中の「名前・学校」は、ほかの操作で描き直しても消さない
+  const af = $('form[data-form="add-player"]'), draft = af ? { name: af.elements.name && af.elements.name.value, school: af.elements.school && af.elements.school.value } : null;
   app.innerHTML = `<nav class="nav">${navHTML(e)}</nav><main class="page ${e && e.mode === "practice" && ui.tab === "rounds" ? "wide" : ""}">${e ? eventHTML(e) : homeHTML()}</main>`;
+  const af2 = $('form[data-form="add-player"]');
+  if (draft && af2 && (draft.name || draft.school)) { if (af2.elements.name) af2.elements.name.value = draft.name || ""; if (af2.elements.school) af2.elements.school.value = draft.school || ""; }
   if (focus) { const n = document.getElementById(focus); if (n && n.tagName !== "BUTTON") { n.focus({ preventScroll: true }); if (selS != null) { try { n.setSelectionRange(selS, selE); } catch (x) {} } } }
   scrollTo(0, keepY);
 }
@@ -218,7 +222,7 @@ function playersHTML(e) {
       <td class="c-name ${SC.cls(p.school)}"><input class="cell-input" value="${esc(p.name)}" data-change="p-name" data-id="${p.id}" aria-label="名前">${dupNames[`${p.name}|${p.school}`] > 1 ? `<span class="chip chip-warn">重複</span>` : ""}</td>
       <td><input class="cell-input" list="schools" value="${esc(p.school)}" data-change="p-school" data-id="${p.id}" aria-label="学校"></td>
       <td>${levelPicker(`data-action="set-level" data-id="${p.id}"`, p.level)}</td>
-      ${dbl ? `<td>${partner ? `<span class="pairtag">${esc(pn(e, partner))}</span>` : `<span class="faint">—</span>`}</td>` : ""}
+      ${dbl ? `<td>${partner ? `<span class="pairtag">${esc(pn(e, partner))}</span>` : e.mode === "practice" ? (p.single ? `<button type="button" class="chip chip-live" data-action="single-toggle" data-id="${p.id}" title="シングルスで出るのをやめる">シングルスで出る ×</button>` : `<button type="button" class="btn btn-secondary btn-sm" data-action="single-toggle" data-id="${p.id}">シングルスで出る</button>`) : `<span class="faint">—</span>`}</td>` : ""}
       ${e.mode === "practice" ? `<td><button class="link-btn" data-action="pplayer" data-id="${p.id}">${last[p.id] || 0}試合 ›</button></td>` : ""}
       <td><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(p.name)} を削除">${TRASH}</button></td></tr>`;
   }).join("");
@@ -231,8 +235,8 @@ function playersHTML(e) {
     <datalist id="schools">${SC.list.map((s) => `<option value="${esc(s)}">`).join("")}</datalist></section>
   <section class="card"><div class="card-head"><div><h2>登録 ${e.players.length}人</h2><p class="faint">名前・学校・ランクはここで直せます。同じ名前・同じ学校が2人いると「重複」と出ます。</p></div>
       <div class="seg"><button class="${ui.plSort === "level" ? "on" : ""}" data-action="plsort" data-k="level">ランク順</button><button class="${ui.plSort === "school" ? "on" : ""}" data-action="plsort" data-k="school">学校順</button></div></div>
-    ${dbl && e.players.length > 1 ? (() => { const unp = Core.unpairedPlayers(e).length; if (e.pairs.length && !unp) return ""; return `<div class="confirm" style="background:var(--accent-soft);margin-bottom:12px;flex-direction:column;align-items:flex-start"><b style="color:var(--accent)">ペアの作り方${unp && e.pairs.length ? `(まだペアになっていない人が ${unp}人います)` : ""}</b><span>① 下の一覧で、組ませたい2人の左の □ にチェックを入れる。<br>② 画面の下に出る「この2人をペアにする」を押す。</span><span class="faint">間違えたときは、下の「ペア」の欄で「解除」できます。${e.mode === "practice" ? "同じ学校どうしを一度に作るなら「同じ学校で自動作成」。" : ""}</span>${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>`; })() : ""}
-    ${e.players.length ? `<div class="table-wrap"><table class="ptable"><thead><tr>${dbl ? "<th>ペアに<br>する</th>" : ""}<th>名前</th><th>学校</th><th>ランク</th>${dbl ? "<th>ペア</th>" : ""}${e.mode === "practice" ? "<th>試合</th>" : ""}<th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="muted" style="margin:0">まだ選手がいません。上の欄から入れてください。</p>`}
+    ${dbl && e.players.length > 1 ? (() => { const unp = Core.unpairedPlayers(e).length; if (e.pairs.length && !unp) return ""; return `<div class="confirm" style="background:var(--accent-soft);margin-bottom:12px;flex-direction:column;align-items:flex-start"><b style="color:var(--accent)">ペアの作り方${unp && e.pairs.length ? `(まだペアになっていない人が ${unp}人います)` : ""}</b><span>① 下の一覧で、組ませたい2人の左の □ にチェックを入れる。<br>② 画面の下に出る「この2人をペアにする」を押す。</span>${e.mode === "practice" ? `<span>③ ダブルスに出ない人は、その人の行の右の「シングルスで出る」を押す(何人かまとめるときは、チェックを入れて下のボタン)。</span>` : ""}<span class="faint">間違えたときは、下の「ペア」の欄で「解除」できます。${e.mode === "practice" ? "同じ学校どうしを一度に作るなら「同じ学校で自動作成」。" : ""}</span>${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>`; })() : ""}
+    ${e.players.length ? `<div class="table-wrap"><table class="ptable"><thead><tr>${dbl ? "<th>ペアに<br>する</th>" : ""}<th>名前</th><th>学校</th><th>ランク</th>${dbl ? (e.mode === "practice" ? "<th>ペア / シングルス</th>" : "<th>ペア</th>") : ""}${e.mode === "practice" ? "<th>試合</th>" : ""}<th></th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="muted" style="margin:0">まだ選手がいません。上の欄から入れてください。</p>`}
     ${SC.list.length > 1 ? `<div class="school-legend" style="margin-top:14px">${SC.list.map((s) => `<span class="chip ${SC.cls(s)}">${esc(s)} ${e.players.filter((p) => canonSchool(p.school) === s).length}人</span>`).join("")}</div>` : ""}</section>
   ${dbl ? pairsCardHTML(e) : ""}${dbl && ui.sel.length ? pairBarHTML(e, selNames) : ""}`;
 }
@@ -241,7 +245,7 @@ function pairBarHTML(e, names) {
     const [a, b] = ui.sel, A = playerMap(e)[a], B = playerMap(e)[b];
     return `<div class="pairbar"><span><b>学校がちがうペアです。</b> ${esc(pn(e, a))}(${esc(A.school || "学校なし")}) と ${esc(pn(e, b))}(${esc(B.school || "学校なし")}) で、よいですか？</span><span class="row"><button class="btn btn-primary btn-sm" data-action="pair-go">この組でよい</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></span></div>`;
   }
-  return `<div class="pairbar"><span>${ui.sel.length === 1 ? `${names[0]} と組む人をもう1人選んでください` : `${names[0]} と ${names[1]}`}</span><span class="row"><button class="btn btn-primary btn-sm" data-action="pair-go" ${ui.sel.length === 2 ? "" : "disabled"}>この2人をペアにする</button><button class="btn btn-ghost btn-sm" data-action="sel-clear">選び直す</button></span></div>`;
+  return `<div class="pairbar"><span>${ui.sel.length === 1 ? `${names[0]} と組む人をもう1人選んでください` : `${names[0]} と ${names[1]}`}</span><span class="row"><button class="btn btn-primary btn-sm" data-action="pair-go" ${ui.sel.length === 2 ? "" : "disabled"}>この2人をペアにする</button>${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="sel-single">選んだ${ui.sel.length}人をシングルスで出す</button>` : ""}<button class="btn btn-ghost btn-sm" data-action="sel-clear">選び直す</button></span></div>`;
 }
 function pairsCardHTML(e) {
   const unp = Core.unpairedPlayers(e);
@@ -254,6 +258,7 @@ function pairsCardHTML(e) {
   return `<section class="card"><div class="card-head"><div><h2>ペア ${e.pairs.length}組</h2><p class="faint">${isDbl(e) ? "リーグ戦・トーナメントには、ペアが出ます。" : "毎回組み替えでも、ここに作ったペアは崩しません。固定のときは、このペアで組みます。"}</p></div>
       ${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>
     ${rows || `<p class="muted" style="margin:0">まだペアがありません。上の一覧で2人にチェックを入れてください。</p>`}
+    ${e.mode === "practice" && e.players.some((p) => p.single) ? `<p style="margin:12px 0 0"><span class="chip chip-live">シングルスで出る ${e.players.filter((p) => p.single).length}人</span> ${e.players.filter((p) => p.single).map((p) => esc(p.name)).join("、")}</p>` : ""}
     ${isDbl(e) && unp.length ? `<p class="faint" style="margin:12px 0 0"><span class="chip chip-warn">ペアなし ${unp.length}人</span> ${unp.map((p) => esc(p.name)).join("、")}</p>` : ""}</section>`;
 }
 
@@ -440,7 +445,7 @@ Object.assign(A, {
   "x-copy": () => { const e = ev(); copyTables(exportBlocks(e), "表"); },
   sample: (b) => { const s = App.makeSample(b.dataset.type); events[s.id] = s; currentId = s.id; ui.view = "event"; ui.tab = s.mode === "practice" ? "players" : "matches"; Store.save(s); render(); scrollTo(0, 0); },
   "add-mode": (b) => { ui.addMode = b.dataset.k; render(); },
-  "new-level": (b) => { ui.newLevel = Number(b.dataset.lv); render(); const n = $("#new-name"); if (n) n.focus(); },
+  "new-level": (b) => { ui.newLevel = Number(b.dataset.lv); b.closest(".lvpick").querySelectorAll(".lv-b").forEach((x) => { const on = Number(x.dataset.lv) === ui.newLevel; x.classList.toggle("cur", on); x.setAttribute("aria-pressed", String(on)); }); },
   "set-level": (b) => { const p = playerMap(ev())[b.dataset.id]; if (p) { p.level = Number(b.dataset.lv); commit(); render(); } },
   plsort: (b) => { ui.plSort = b.dataset.k === "school" ? "school" : "level"; render(); },
   "del-player": (b) => { const e = ev(), id = b.dataset.id, p = playerMap(e)[id]; if (!p) return; const used = e.practice.rounds.some((r) => Core.pPlaced(r).includes(id)) || Object.keys(e.results).some((k) => k.includes(id));
@@ -459,6 +464,19 @@ Object.assign(A, {
     if (!ui.confirm && Core.isCrossSchool(e, { a, b })) { ui.confirm = "cross:" + a; render(); return; }
     const r = Core.makePair(e, a, b); ui.sel = []; ui.confirm = null; commit(); render();
     toast(`${pn(e, a)}・${pn(e, b)} をペアにしました${r && r.broke.length ? "(前の組は解きました)" : ""}`);
+  },
+  "single-toggle": (b) => {
+    const e = ev(), id = b.dataset.id, p = playerMap(e)[id]; if (!p) return;
+    if (p.single) { Core.setSingle(e, [id], false); commit(); render(); toast(`${p.name} は、シングルスで出ないようにしました`); return; }
+    const pr = Core.pairOfPlayer(e, id);
+    if (pr && !askOk(`${p.name} は、${pn(e, pr.a === id ? pr.b : pr.a)} とペアになっています。ペアを解除して、シングルスで出ますか？`)) return;
+    Core.setSingle(e, [id], true); commit(); render(); toast(`${p.name} を、シングルスで出る人にしました${pr ? "(ペアは解除しました)" : ""}`);
+  },
+  "sel-single": () => {
+    const e = ev(), ids = ui.sel.slice(); if (!ids.length) return;
+    const paired = ids.filter((id) => Core.pairOfPlayer(e, id));
+    if (paired.length && !askOk(`ペアになっている人が ${paired.length}人います。ペアを解除して、シングルスで出ますか？`)) return;
+    Core.setSingle(e, ids, true); ui.sel = []; ui.confirm = null; commit(); render(); toast(`${ids.length}人を、シングルスで出る人にしました`);
   },
   "pair-del": (b) => { Core.removePair(ev(), b.dataset.id); const e = ev(); e.leagues.forEach((l) => (l.ids = l.ids.filter((x) => x !== b.dataset.id))); commit(); render(); },
   "pair-lv": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.id); if (!pr) return; pr.level = Core.clamp(Core.roundHalf(Core.pairLevel(e, pr) + Number(b.dataset.d)), 1, RANK_MAX); commit(); render(); },
@@ -485,7 +503,7 @@ Object.assign(F, {
     const e = ev(), d = new FormData(f), name = String(d.get("name") || "").trim(), school = String(d.get("school") || "").trim();
     if (!name) return;
     if (e.players.some((p) => p.name === name && p.school === school)) { toast("同じ名前・同じ学校の人がもういます"); return; }
-    e.players.push({ id: uid(), name, school, level: ui.newLevel }); commit(); render(); const n = $("#new-name"); if (n) n.focus();
+    e.players.push({ id: uid(), name, school, level: ui.newLevel }); f.elements.name.value = ""; commit(); render(); // 名前だけ空にする(学校は、続けて入れやすいよう残す) const n = $("#new-name"); if (n) n.focus();
   },
 });
 App.input = (t) => {
