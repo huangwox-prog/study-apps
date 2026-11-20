@@ -598,7 +598,7 @@ function genRound(e, kind, rest, upto, must = [], seed, reunite = false, fixedOv
 }
 /* ---- 1回転目(シングルスとダブルスを混ぜて作る) ----
    名簿の「出場形式」で決める: ペアに入っている=ダブルス / single の印=シングルス / どちらでもない=出場しない。
-   シングルスどうし・ペアどうしで当てる。人数(組数)が奇数なら1つ「休み」にする(枠外に出す)。コート番号は ダブルス → シングルス の順で ①から振る */
+   シングルスどうし・ペアどうしで当てる。人数(組数)が奇数なら1つ「休み」にする(枠外に出す)。試合の番号は ダブルス → シングルス の順で ①から振る */
 function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds) {
   const byPair = units.length && units[0].length === 2;
   const isMust = (u) => !!mustIds && u.some((p) => mustIds.has(p.id)); // 「戻す」で指定した人は、休みにしない
@@ -637,7 +637,7 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds) {
   for (let m = 0; m < nSlot; m += 2) pairs.push([best[m], best[m + 1]]);
   return { pairs, bench: best.slice(nSlot) };
 }
-/* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out, courtWait } */
+/* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out } */
 function genMixed(e, upto, manualRest, seed, must) {
   manualRest = manualRest || [];
   const mustIds = new Set(must || []);
@@ -654,8 +654,7 @@ function genMixed(e, upto, manualRest, seed, must) {
   const mk = (kind, [A, B]) => ({ id: uid(), a: A.map((p) => p.id), b: B.map((p) => p.id), g: [], win: null, kind });
   const byLevel = (x, y) => (sideLevel(e, y.a) + sideLevel(e, y.b)) - (sideLevel(e, x.a) + sideLevel(e, x.b));
   const dm = dbl.pairs.map((u) => mk("doubles", u)).sort(byLevel), sm = sgl.pairs.map((u) => mk("singles", u)).sort(byLevel);
-  const courts = clamp(parseInt(e.practice.courts, 10) || 6, 1, 12);
-  const matches = dm.concat(sm).map((m, i) => { delete m.kind; m.court = i < courts ? i + 1 : 0; return m; });
+  const matches = dm.concat(sm).map((m, i) => { delete m.kind; m.court = i + 1; return m; });
   const restInfo = [];
   dbl.bench.forEach((u) => restInfo.push({ kind: "pair", ids: u.map((p) => p.id) }));
   sgl.bench.forEach((u) => restInfo.push({ kind: "single", ids: u.map((p) => p.id) }));
