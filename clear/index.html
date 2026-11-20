@@ -1396,7 +1396,7 @@ function settingsHTML(e) {
 const pairCapable = (e) => isDbl(e) || e.mode === "practice";
 const canonSchool = (s) => String(s || "").trim();
 function playersHTML(e) {
-  const dbl = pairCapable(e), SC = schoolColors(e);
+  const dbl = isDbl(e), SC = schoolColors(e); // ペア・シングルスの操作は、ダブルスのリーグ戦・トーナメントの登録だけ。練習試合は、回転ごとの名簿(対戦タブ)で決める
   const pmap = playerMap(e), cnt = Core.pCum(e), last = cnt.length ? cnt[cnt.length - 1] : {};
   let list = e.players.slice();
   list.sort(ui.plSort === "school" ? (a, b) => a.school.localeCompare(b.school, "ja") || b.level - a.level : (a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja"));
@@ -2223,8 +2223,8 @@ function firstRoundHTML(e, SC) {
       <td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>
       <td class="c-name ${SC.cls(p.school)}"><b>${esc(p.name)}</b>${pr ? ` <span class="pairlabel">ペア${Core.LETTERS[idx % 26]}</span>` : ""}${mode === "out" ? ` <span class="outlabel">出場しない</span>` : ""}</td>
       <td>${esc(p.school)}</td>
-      <td>${App.levelPicker(`data-action="set-level" data-id="${p.id}"`, p.level)}</td>
-      <td><div class="rds">${rd("pair", "ダブルス")}${rd("single", "シングルス")}${rd("out", "出場しない")}</div>${lvSel}</td></tr>`;
+      ${pr ? (first ? `<td rowspan="2" class="pair-rank-cell"><div class="faint" style="margin-bottom:4px">ペアのランク</div>${App.levelPicker(`data-action="pair-level-set" data-pair="${pr.id}"`, Math.round(Core.pairLevel(e, pr)))}</td>` : "") : `<td>${App.levelPicker(`data-action="set-level" data-id="${p.id}"`, p.level)}</td>`}
+      <td><div class="rds">${rd("pair", "ダブルス")}${rd("single", "シングルス")}${rd("out", "出場しない")}</div></td></tr>`;
   }).join("");
   const tolOpts = [0, 1, 2, 3].map((k) => `<option value="${k}" ${e.practice.tol === k ? "selected" : ""}>${k === 0 ? "同じランクだけ" : `前後${k}まで`}</option>`).join("");
   const warn = [];
@@ -2375,6 +2375,7 @@ Object.assign(A, {
     if (kind === "fixed") { const rest = [...new Set([...ui.nextRest, ...Core.keptAt(e, ri)])], list = brokenFixed(e, rest); if (list.length) { ui.ask = { type: "create", list }; render(); return; } }
     createRound(e, false);
   },
+  "pair-level-set": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.pair); if (!pr) return; pr.level = Core.clamp(Number(b.dataset.lv), 1, Core.RANK_MAX); commit(); render(); },
   "all-single": () => { const e = ev(); e.players.forEach((p) => { if (!Core.pairOfPlayer(e, p.id)) p.single = true; }); commit(); render(); },
   "all-out": () => { const e = ev(); if (!App.askOk("ペアも解除して、全員を「出場しない」に戻しますか？")) return; e.pairs = []; e.players.forEach((p) => (p.single = false)); commit(); render(); },
   "first-round": () => {
