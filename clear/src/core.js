@@ -2,7 +2,8 @@
    CLEAR 計算部 (core)  — 画面(DOM)には一切触らない。
    データ v2:
      players[]  { id, name, school, level(1〜5) }       … 選手は1人ずつ
-     pairs[]    { id, a, b, level|null }                 … 2人をつなぐ記録。level が null なら平均
+     pairs[]    { id, a, b, level(1〜5) }                … 2人をつなぐ記録。level はペアのランク(自分で決める。初めは3)
+     pairMemo   { "idA|idB の鍵": level }                … 解いたペアのランクの控え(組み直しても、過去の回転でも同じランクを使う)
      リーグ戦・トーナメントの「出場単位(entry)」 = シングルスは選手、ダブルスはペア(id で呼ぶ)
      練習試合の試合の側 = 選手idの配列(1人 or 2人)。2人のときは登録ペアがあればそれを使う
    ============================================================ */
@@ -34,12 +35,16 @@ function pairMap(e) { const m = {}; e.pairs.forEach((p) => (m[p.id] = p)); retur
 function pairOfPlayer(e, id) { return e.pairs.find((p) => p.a === id || p.b === id) || null; }
 function partnerOf(e, id) { const pr = pairOfPlayer(e, id); return pr ? (pr.a === id ? pr.b : pr.a) : null; }
 function schoolsOf(a, b) { const x = (a.school || "").trim(), y = (b.school || "").trim(); return x === y ? x : [x, y].filter(Boolean).join("・"); }
-function pairLevel(e, pr) {
-  if (pr.level != null) return pr.level;
-  const pm = playerMap(e), A = pm[pr.a], B = pm[pr.b];
-  return A && B ? (A.level + B.level) / 2 : 3;
+function pairLevel(e, pr) { return pr.level != null ? pr.level : 3; }
+/* 2人(a, b)の「ペアのランク」。今ペアなら登録の値、前にペアだった2人は控えの値、ペアにしたことがなければ null */
+function pairRank(e, a, b) {
+  const pr = e.pairs.find((p) => (p.a === a && p.b === b) || (p.a === b && p.b === a));
+  if (pr) return pairLevel(e, pr);
+  const v = e.pairMemo && e.pairMemo[keyOf(a, b)];
+  return v == null ? null : v;
 }
-/* 平均を 0.5 刻みにそろえる(表示・手入力用) */
+/* ペアを解く前に、ランクを控えておく */
+function rememberPairs(e, list) { if (!list.length) return; e.pairMemo = e.pairMemo || {}; list.forEach((p) => (e.pairMemo[keyOf(p.a, p.b)] = pairLevel(e, p))); }
 const roundHalf = (v) => clamp(Math.round(v * 2) / 2, 1, RANK_MAX);
 function isCrossSchool(e, pr) {
   const pm = playerMap(e), A = pm[pr.a], B = pm[pr.b];
@@ -51,13 +56,15 @@ function makePair(e, a, b) {
   const pm = playerMap(e);
   if (!pm[a] || !pm[b]) return null;
   const broke = e.pairs.filter((p) => [a, b].some((x) => p.a === x || p.b === x));
+  rememberPairs(e, broke);
   e.pairs = e.pairs.filter((p) => !broke.includes(p));
-  const pair = { id: uid(), a, b, level: null };
+  const memo = pairRank(e, a, b);
+  const pair = { id: uid(), a, b, level: memo == null ? 3 : memo };
   pm[a].single = false; pm[b].single = false; // ペアに入る人は、シングルスで出る印をはずす
   e.pairs.push(pair);
   return { pair, cross: isCrossSchool(e, pair), broke };
 }
-function removePair(e, pairId) { e.pairs = e.pairs.filter((p) => p.id !== pairId); }
+function removePair(e, pairId) { rememberPairs(e, e.pairs.filter((p) => p.id === pairId)); e.pairs = e.pairs.filter((p) => p.id !== pairId); }
 
 /* 出場単位(entry)。シングルス=選手、ダブルス=ペア */
 function isDbl(e) { return e.type === "doubles"; }
@@ -77,7 +84,7 @@ function setSingle(e, ids, on) {
   const pm = playerMap(e), broke = [];
   ids.forEach((id) => {
     if (!pm[id]) return;
-    if (on) { const pr = pairOfPlayer(e, id); if (pr) { broke.push(pr); e.pairs = e.pairs.filter((x) => x.id !== pr.id); } pm[id].single = true; } else pm[id].single = false;
+    if (on) { const pr = pairOfPlayer(e, id); if (pr) { broke.push(pr); rememberPairs(e, [pr]); e.pairs = e.pairs.filter((x) => x.id !== pr.id); } pm[id].single = true; } else pm[id].single = false;
   });
   return broke;
 }
@@ -435,7 +442,7 @@ function swapSlots(e, i, j) { const s = e.bracket.slots; if (i === j || !s[i] ||
 const sideIds = (side) => (Array.isArray(side) ? side.filter(Boolean) : side ? [side] : []);
 function sideLevel(e, side) {
   const ids = sideIds(side), pm = playerMap(e);
-  if (ids.length === 2) { const pr = e.pairs.find((p) => (p.a === ids[0] && p.b === ids[1]) || (p.a === ids[1] && p.b === ids[0])); if (pr) return pairLevel(e, pr); }
+  if (ids.length === 2) { const v = pairRank(e, ids[0], ids[1]); if (v != null) return v; } // ペアのランク。ペアにしたことがない2人(その回転だけの組)だけ、2人の平均
   return ids.length ? ids.reduce((s, id) => s + (pm[id] ? pm[id].level : 3), 0) / ids.length : 0;
 }
 function pOutcome(e, m) {
@@ -444,19 +451,23 @@ function pOutcome(e, m) {
   return o;
 }
 function pPlaced(r) { const out = []; r.matches.forEach((m) => m.a.concat(m.b).forEach((x) => x && out.push(x))); return out; }
+/* 組み合わせの鍵。両側の顔ぶれがまったく同じときだけ同じ鍵(4人のうち1人でも違えば、別の組み合わせ)。左右は区別しない */
+const matchKey = (A, B) => [sideIds(A).slice().sort().join("+"), sideIds(B).slice().sort().join("+")].sort().join(" vs ");
 function pHistory(e, upto) {
-  const faced = {}, partner = {}, games = {};
-  const add = (o, a, b, n) => { const k = keyOf(a, b); (o[k] || (o[k] = [])).push(n); };
+  const met = {}, partner = {}, games = {};
+  const add = (o, k, n) => { (o[k] || (o[k] = [])).push(n); };
   e.practice.rounds.slice(0, upto).forEach((r, ri) => r.matches.forEach((m) => {
     const A = m.a.filter(Boolean), B = m.b.filter(Boolean);
-    A.forEach((x) => B.forEach((y) => add(faced, x, y, ri + 1)));
-    if (A.length === 2) add(partner, A[0], A[1], ri + 1);
-    if (B.length === 2) add(partner, B[0], B[1], ri + 1);
+    if (A.length && A.length === m.a.length && B.length && B.length === m.b.length) add(met, matchKey(A, B), ri + 1);
+    if (A.length === 2) add(partner, keyOf(A[0], A[1]), ri + 1);
+    if (B.length === 2) add(partner, keyOf(B[0], B[1]), ri + 1);
     A.concat(B).forEach((x) => (games[x] = (games[x] || 0) + 1));
   }));
-  return { faced, partner, games, prev: upto };
+  return { met, partner, games, prev: upto };
 }
 const avgLv = (S) => S.reduce((s, p) => s + p.level, 0) / S.length;
+/* 組むときに使う強さ。ダブルスはペアのランク(選手のシングルスのランクは使わない) */
+const unitLevel = (e) => (S) => { if (S.length === 2) { const v = pairRank(e, S[0].id, S[1].id); if (v != null) return v; } return avgLv(S); };
 /* 1試合の「悪さ」。小さいほどよい。優先: ①ランク差 ②続けてかぶり ③他校 ④かぶり */
 function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
   let c = 0;
@@ -464,16 +475,15 @@ function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
     const d = Math.abs(levelOf(A) - levelOf(B));
     c += d * 6 + (d > tol ? (d - tol) * 400 : 0);
   }
+  const one = A.length === 1;
   for (const x of A) for (const y of B) {
-    const d = Math.abs(x.level - y.level);
-    const one = A.length === 1;
-    if (one) c += d * 1.5 + (d > tol ? (d - tol) * 300 : 0); else c += d * 0.5;
+    if (one) { const d = Math.abs(x.level - y.level); c += d * 1.5 + (d > tol ? (d - tol) * 300 : 0); }
     if (avoid && x.school && x.school === y.school) c += one ? 150 : 50;
-    const f = H.faced[keyOf(x.id, y.id)];
-    if (f) c += f.length * (one ? 100 : 30) + (f.includes(H.prev) ? (one ? 250 : 160) : 0);
   }
+  // 前と同じ組み合わせ(ダブルスは4人とも同じで、組も同じとき)
+  const f = H.met[matchKey(A.map((p) => p.id), B.map((p) => p.id))];
+  if (f) c += f.length * 100 + (f.includes(H.prev) ? 250 : 0);
   if (A.length === 2) {
-    c += Math.abs(A[0].level + A[1].level - B[0].level - B[1].level) * 3;
     if (!byPair) [A, B].forEach(([p, q]) => {
       const f = H.partner[keyOf(p.id, q.id)];
       if (f) c += f.length * 100;
@@ -513,7 +523,7 @@ function autoPairs(e) {
   const made = [];
   for (let i = 0; i < left.length; i++) {
     const j = left.findIndex((q, k) => k > i && q.school.trim() === left[i].school.trim());
-    if (j > 0) { made.push({ id: uid(), a: left[i].id, b: left[j].id, level: null }); left.splice(j, 1); left.splice(i, 1); i--; }
+    if (j > 0) { const memo = pairRank(e, left[i].id, left[j].id); made.push({ id: uid(), a: left[i].id, b: left[j].id, level: memo == null ? 3 : memo }); left.splice(j, 1); left.splice(i, 1); i--; }
   }
   e.pairs = e.pairs.concat(made);
   return made.length;
@@ -554,7 +564,7 @@ function genRound(e, kind, rest, upto, must = [], seed, reunite = false, fixedOv
   const gOf = (p) => H.games[p.id] || 0;
   const maxG = Math.max(0, ...pool.map(gOf));
   const sitCost = (u) => u.reduce((s, p) => s + 25 * (maxG - gOf(p)) + (must.includes(p.id) ? 5000 : 0), 0);
-  const levelOf = (S) => { if (S.length === 2) { const pr = e.pairs.find((x) => (x.a === S[0].id && x.b === S[1].id) || (x.a === S[1].id && x.b === S[0].id)); if (pr) return pairLevel(e, pr); } return avgLv(S); };
+  const levelOf = unitLevel(e);
   const lvl = (u) => levelOf(u);
   const rand = rng((baseSeed ^ (upto * 7919)) >>> 0);
   let best = null, bestCost = Infinity;
@@ -642,14 +652,14 @@ function genMixed(e, upto, manualRest, seed, must) {
   manualRest = manualRest || [];
   const mustIds = new Set(must || []);
   const H0 = pHistory(e, upto || 0), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
-  const H = e.practice.avoidRepeat === false ? { ...H0, faced: {}, partner: {} } : H0; // 「前に当たった組み合わせを避ける」をはずすと、過去の対戦を見ない
+  const H = e.practice.avoidRepeat === false ? { ...H0, met: {}, partner: {} } : H0; // 「前に当たった組み合わせを避ける」をはずすと、過去の対戦を見ない
   const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
   const free = (id) => pm[id] && !manualRest.includes(id);
   const inPair = new Set(e.pairs.flatMap((p) => [p.a, p.b]));
   const singles = e.players.filter((p) => p.single && !inPair.has(p.id) && free(p.id)).map((p) => [p]);
   const pairUnits = e.pairs.filter((p) => pm[p.a] && pm[p.b] && !pm[p.a].single && !pm[p.b].single && free(p.a) && free(p.b)).map((p) => [pm[p.a], pm[p.b]]);
   const out = e.players.filter((p) => !p.single && !inPair.has(p.id)).map((p) => p.id);
-  const levelOf = (S) => { if (S.length === 2) { const pr = e.pairs.find((x) => (x.a === S[0].id && x.b === S[1].id) || (x.a === S[1].id && x.b === S[0].id)); if (pr) return pairLevel(e, pr); } return avgLv(S); };
+  const levelOf = unitLevel(e);
   const dbl = solveUnits(e, pairUnits, H, rand, avoid, tol, levelOf, mustIds);
   // ペアの数が奇数で余った1組は、休ませずにシングルスへ回す(2人ともシングルスで出る)
   // 相方が休み(抜いた)のペアの、残った1人もシングルスへ
@@ -692,14 +702,15 @@ function pIssues(e, ri) {
     if (A.length < m.a.length || B.length < m.b.length) out.push({ lv: "warn", t: "空き枠:入れる人を、下の置き場からここへドラッグ" });
     both.filter((id, i) => both.indexOf(id) !== i || dup.includes(id)).forEach((id) => out.push({ lv: "err", t: `${nm(id)} が同じ回転に2回入っています` }));
     if (A.length && B.length) {
-      const d = Math.abs(sideLevel(e, A) - sideLevel(e, B));
+      const d = A.length === m.a.length && B.length === m.b.length ? Math.abs(sideLevel(e, A) - sideLevel(e, B)) : 0; // ランク差は、両チームがそろった試合だけ
       if (d > tol) out.push({ lv: "warn", t: `ランク差 ${Math.round(d * 10) / 10}(設定は${tol === 0 ? "同じランクだけ" : `前後${tol}まで`})` });
       if (e.practice.avoidSchool) {
         const same = [];
         A.forEach((x) => B.forEach((y) => { if (pm[x] && pm[y] && (pm[x].school || "").trim() && pm[x].school.trim() === (pm[y].school || "").trim()) same.push(`${nm(x)} と ${nm(y)}`); }));
         if (same.length) out.push({ lv: "info", t: `同じ学校どうし:${same.join("、")}` });
       }
-      A.forEach((x) => B.forEach((y) => { const f = H.faced[keyOf(x, y)]; if (f) out.push({ lv: "dup", t: `${f.includes(H.prev) ? "続けてかぶり" : "かぶり"}:${nm(x)} と ${nm(y)} は第${f.join("・第")}回転でも対戦` }); }));
+      const f = A.length === m.a.length && B.length === m.b.length ? H.met[matchKey(A, B)] : null;
+      if (f) out.push({ lv: "dup", t: `${f.includes(H.prev) ? "続けてかぶり" : "かぶり"}:${A.map(nm).join("・")} 対 ${B.map(nm).join("・")} は第${f.join("・第")}回転と同じ組み合わせ` });
     }
     [A, B].forEach((S) => { if (S.length === 2) {
       const reg = e.pairs.some((p) => (p.a === S[0] && p.b === S[1]) || (p.a === S[1] && p.b === S[0]));
@@ -801,7 +812,7 @@ function migrate(raw) {
     const [s1, s2] = school.includes("・") ? school.split("・").map((x) => x.trim()) : [school, school];
     const a = { id: sid + "-1", name, school: s1, level: L(p) }, b = { id: sid + "-2", name: String(p.name2 || ""), school: s2 || s1, level: L(p) };
     ev.players.push(a, b);
-    ev.pairs.push({ id: sid, a: a.id, b: b.id, level: null });
+    ev.pairs.push({ id: sid, a: a.id, b: b.id, level: L(p) });
     idMap[sid] = sid;
   });
   const entryIds = new Set(dbl ? ev.pairs.map((x) => x.id) : ev.players.map((x) => x.id));
@@ -885,7 +896,12 @@ function normalize2(ev) {
   e.players = (Array.isArray(e.players) ? e.players : []).filter((p) => p && p.id).map((p) => ({ id: String(p.id), name: String(p.name || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, RANK_MAX), single: !!p.single }));
   const pids = new Set(e.players.map((p) => p.id)), used = new Set();
   e.pairs = (Array.isArray(e.pairs) ? e.pairs : []).filter((x) => x && x.id && pids.has(x.a) && pids.has(x.b) && x.a !== x.b && !used.has(x.a) && !used.has(x.b) && used.add(x.a) && used.add(x.b))
-    .map((x) => ({ id: String(x.id), a: x.a, b: x.b, level: x.level == null ? null : clamp(Number(x.level) || 3, 1, RANK_MAX) }));
+    .map((x) => {
+      // 前の版で「2人の平均」にしていたペアは、そのときの値(四捨五入)をペアのランクとして固定する
+      let lv = x.level;
+      if (lv == null) { const A = e.players.find((p) => p.id === x.a), B = e.players.find((p) => p.id === x.b); lv = A && B ? (A.level + B.level) / 2 : 3; }
+      return { id: String(x.id), a: x.a, b: x.b, level: clamp(Math.round(Number(lv)) || 3, 1, RANK_MAX) };
+    });
   const eids = new Set(entries(e).map((x) => x.id));
   e.leagues = (Array.isArray(e.leagues) ? e.leagues : []).map((l) => ({ id: String(l.id || uid()), ids: (l.ids || []).filter((id) => eids.has(id)) }));
   const pr = e.practice || {};
@@ -896,7 +912,7 @@ function normalize2(ev) {
 
 return {
   RANK_MAX, LETTERS, clamp, clone, uid, to5, today, rng, shuffle, keyOf, isEmptyGames,
-  setSingle, playerMap, pairMap, pairOfPlayer, partnerOf, schoolsOf, pairLevel, roundHalf, isCrossSchool, makePair, removePair,
+  setSingle, playerMap, pairMap, pairOfPlayer, partnerOf, schoolsOf, pairLevel, pairRank, matchKey, roundHalf, isCrossSchool, makePair, removePair,
   isDbl, entries, entryMap, unpairedPlayers, unitWord, letter,
   dupCost, planSizes, groupSizesFor, autoAssign, leagueIndexOf, unassigned, moveToLeague,
   roundRobin, matchCount, dayCount, splitDays,

@@ -17,7 +17,7 @@ const matchById = (e, mid) => { for (const r of e.practice.rounds) { const m = r
 
 /* ---------- 回転の作成・組み直し ---------- */
 function genFor(e, r, ri, must, reunite) { return Core.genRound(e, r.kind, restAll(e, r, ri), ri, must, undefined, !!reunite, r.kind === "doubles" ? !!r.fixed : false); }
-function emptyLast(r) { r.matches.sort((x, y) => (x.a.some((v) => !v) || x.b.some((v) => !v) ? 1 : 0) - (y.a.some((v) => !v) || y.b.some((v) => !v) ? 1 : 0)); }
+function emptyLast(r) { if (r.kind === "mixed") return; /* 番号のある回転は、並びを変えない(番号が崩れるため) */ r.matches.sort((x, y) => (x.a.some((v) => !v) || x.b.some((v) => !v) ? 1 : 0) - (y.a.some((v) => !v) || y.b.some((v) => !v) ? 1 : 0)); }
 function regen(e, r, must, msg, reunite) {
   if (r.kind === "mixed") { // 1回転目(シングルス+ダブルス): 手で休みにした人は残して、奇数の休みは作り直す
     const ri0 = e.practice.rounds.indexOf(r), manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && !(must || []).includes(id)), g = Core.genMixed(e, ri0, manual, undefined, must || []);
@@ -124,13 +124,16 @@ App.drops.pbenchp = (from, to) => {
 
 /* ---------- 画面 ---------- */
 const lvl = (e, id) => (playerMap(e)[id] ? playerMap(e)[id].level : 3);
+const m2 = (r, mi) => r.matches[mi].a.length === 2; // ダブルスの試合は、1人ずつのランクは出さずに、ペアのランクを出す
+/* 結果表のランクの欄。ダブルスはペアのランク(ペアにしたことがない組は —) */
+const rankCell = (e, ids) => { const l = ids.filter(Boolean), pm = playerMap(e); if (ids.length !== 2) return idStack(l.map((id) => pm[id].level)); const v = l.length === 2 ? Core.pairRank(e, l[0], l[1]) : null; return v == null ? "—" : lvTxt(v); };
 function memberHTML(e, SC, r, ri, mi, side, pos, id, cum) {
   const p = playerMap(e)[id], key = `${ri}:${mi}:${side}:${pos}`;
   if (!id || !p) return `<div class="empty-slot" data-drop="pmember pbenchp" data-drop-id="${key}">空き枠 — 下の置き場から名前をドラッグ</div>`;
   const q = ui.q && App.qMatch(p);
   return `<div class="member ${SC.cls(p.school)}" data-drag="pmember" data-drag-id="${key}" data-drag-label="${esc(p.name)}" data-drop="pmember pbenchp" data-drop-id="${key}" ${q ? `style="outline:2px solid var(--accent)"` : ""}>
     <button class="plink" data-action="pplayer" data-id="${id}">${esc(p.name)}</button><button class="mem-x" data-action="pout" data-r="${ri}" data-m="${mi}" data-s="${side}" data-p="${pos}" title="${esc(p.name)} だけ抜く">抜く</button>
-    <span class="pschool">${esc(p.school)} · ランク${lvTxt(p.level)} · ${cum[id] || 0}試合目</span></div>`;
+    <span class="pschool">${esc(p.school)}${m2(r, mi) ? "" : ` · ランク${lvTxt(p.level)}`} · ${cum[id] || 0}試合目</span></div>`;
 }
 function teamHTML(e, SC, r, ri, mi, side, cum, win) {
   const m = r.matches[mi], ids = m[side], pair = ids.length === 2, key = `${ri}:${mi}:${side}`;
@@ -138,7 +141,7 @@ function teamHTML(e, SC, r, ri, mi, side, cum, win) {
   return `<div class="team ${side} ${pair ? "pair" : ""} ${win ? "win" : ""}" data-drop="pteam pbenchp" data-drop-id="${key}">
     ${pair ? `<span class="team-grip" data-drag="pteam" data-drag-id="${key}" data-drag-label="ペア ${esc(ids.filter(Boolean).map((x) => pn(e, x)).join("・"))}" title="ペアごと動かす">⠿</span>` : ""}
     ${ids.map((id, pos) => memberHTML(e, SC, r, ri, mi, side, pos, id, cum)).join("")}
-    ${pair ? `<span class="faint" style="font-size:.7rem">${reg ? "登録ペア · " : ""}平均ランク ${lvTxt(Core.sideLevel(e, ids.filter(Boolean)))}</span>` : ""}
+    ${pair ? `<span class="faint" style="font-size:.7rem">${(() => { const v = ids[0] && ids[1] ? Core.pairRank(e, ids[0], ids[1]) : null; return v != null ? `${reg ? "登録ペア · " : ""}ペアのランク ${lvTxt(v)}` : ids[0] && ids[1] ? "この回転だけのペア" : ""; })()}</span>` : ""}
     ${pair ? `<button class="mem-x" data-action="pout-team" data-r="${ri}" data-m="${mi}" data-s="${side}">ペアで抜く</button>` : ""}</div>`;
 }
 function pStHTML(e, o) {
@@ -220,7 +223,6 @@ function firstRoundHTML(e, SC) {
     const mode = playMode(e, p), pr = pairOf[p.id], idx = pr ? pairIdx[p.id] : null;
     const first = pr && !firstOfPair.has(pr.id) ? (firstOfPair.add(pr.id), true) : false;
     const rd = (v, t) => `<label class="rd ${mode === v ? "on" : ""}"><input type="radio" name="pm-${p.id}" value="${v}" data-change="play-mode" data-id="${p.id}" ${mode === v ? "checked" : ""}>${t}</label>`;
-    const lvSel = first ? `<select class="select" data-change="pair-lv-sel" data-pair="${pr.id}" aria-label="ペアの強さ"><option value="">ペアのランク:平均(${lvTxt(Core.pairLevel(e, pr))})</option>${[1, 2, 3, 4, 5].map((v) => `<option value="${v}" ${pr.level === v ? "selected" : ""}>ペアのランク ${v}</option>`).join("")}</select>` : "";
     const sk = (p.school || "").trim();
     let head = "";
     if (ri === mixedStart && mixedPairs.length) head = `<tr class="school-head mixed-head"><td colspan="5"><b>混合ペア</b> <span class="faint">学校がちがうペア ${mixedPairs.length}組</span></td></tr>`;
@@ -307,7 +309,7 @@ const playerNo = (e) => { const m = {}; e.players.forEach((p, i) => (m[p.id] = i
 /* 対戦結果表(紙の形): 試合番号・回転・選手番号・ランク・選手名/学校・得点・相手側の同じ列。勝った側の名前の欄と得点は赤く「勝ち」 */
 function sheetRows(e) {
   const out = [], hist = {};
-  e.practice.rounds.forEach((r, ri) => { if (ui.pSheetRound !== "all" && ui.pSheetRound !== r.id) return; const H = hist[ri] || (hist[ri] = Core.pHistory(e, ri)); r.matches.forEach((m, mi) => { const o = Core.pOutcome(e, m); const dup = m.a.some((x) => x && m.b.some((y) => y && H.faced[keyOf(x, y)])); out.push({ r, ri, m, mi, o, dup }); }); });
+  e.practice.rounds.forEach((r, ri) => { if (ui.pSheetRound !== "all" && ui.pSheetRound !== r.id) return; const H = hist[ri] || (hist[ri] = Core.pHistory(e, ri)); r.matches.forEach((m, mi) => { const o = Core.pOutcome(e, m); const dup = m.a.every(Boolean) && m.b.every(Boolean) && !!H.met[Core.matchKey(m.a, m.b)]; out.push({ r, ri, m, mi, o, dup }); }); });
   return out;
 }
 const idStack = (arr) => arr.filter((x) => x !== "" && x != null).join("<br>");
@@ -322,7 +324,7 @@ function sheetHTML(e) {
     const head = ri !== last ? (last = ri, `<tr class="sh-round"><td colspan="9">第${ri + 1}回転 · ${r.day}日目 · ${kindLabel(r)}</td></tr>`) : "";
     const gs = m.g.slice(0, e.games).filter((x) => x[0] != null || x[1] != null);
     const sc = gs.length ? gs.map(([x, y]) => `<div class="sh-g"><span class="${x > y ? "w" : ""}">${x ?? ""}</span><i>−</i><span class="${y > x ? "w" : ""}">${y ?? ""}</span></div>`).join("") : o.winner ? `<div class="sh-g"><span class="${o.winner === "a" ? "w" : ""}">${o.winner === "a" ? "勝" : "負"}</span><i>−</i><span class="${o.winner === "b" ? "w" : ""}">${o.winner === "b" ? "勝" : "負"}</span></div>` : "";
-    const lv = (ids) => idStack(ids.filter(Boolean).map((id) => pm[id].level));
+    const lv = (ids) => rankCell(e, ids);
     return `${head}<tr><td class="num">${mi + 1}${dup ? `<small class="sh-dup">かぶり</small>` : ""}</td><td class="num">${ri + 1}</td><td class="sh-id num">${idStack(m.a.map((id) => id && no[id]))}</td><td class="num">${lv(m.a)}</td>${nameCellHTML(e, m.a, o.winner === "a", SC)}<td class="sh-sc num">${sc}</td>${nameCellHTML(e, m.b, o.winner === "b", SC)}<td class="num">${lv(m.b)}</td><td class="sh-id num">${idStack(m.b.map((id) => id && no[id]))}</td></tr>`;
   }).join("");
   return `<div class="row"><label class="faint">回転 <select class="select" data-change="p-sheet-round"><option value="all">すべて</option>${e.practice.rounds.map((r, i) => `<option value="${r.id}" ${ui.pSheetRound === r.id ? "selected" : ""}>第${i + 1}回転(${r.day}日目・${kindLabel(r)})</option>`).join("")}</select></label></div>
@@ -351,7 +353,7 @@ function mergeHTML(e) {
   const body = rows.filter((x) => !ui.q || x.a.concat(x.b).some((id) => App.qMatch(pm[id]))).map((x, i) => {
     const wa = x.shown && x.gA > x.gB, wb = x.shown && x.gB > x.gA;
     const sc = x.lines.map(([a, b]) => { const num = typeof a === "number" && typeof b === "number"; const la = num ? a > b : a === "勝", lb = num ? b > a : b === "勝"; return `<div class="sh-g"><span class="${la ? "w" : ""}">${a ?? ""}</span><i>−</i><span class="${lb ? "w" : ""}">${b ?? ""}</span></div>`; }).join("");
-    return `<tr><td class="num">${i + 1}${x.times > 1 ? `<small class="sh-dup">${x.times}回対戦</small>` : ""}</td><td class="num">${x.rounds.join("・")}</td><td class="sh-id num">${idStack(x.a.map((id) => no[id]))}</td><td class="num">${idStack(x.a.map((id) => pm[id].level))}</td>${nameCellHTML(e, x.a, false, SC)}<td class="sh-gc num ${wa ? "sh-win" : ""}">${x.shown ? x.gA : ""}</td><td class="sh-sc num">${sc}</td><td class="sh-gc num ${wb ? "sh-win" : ""}">${x.shown ? x.gB : ""}</td>${nameCellHTML(e, x.b, false, SC)}<td class="num">${idStack(x.b.map((id) => pm[id].level))}</td><td class="sh-id num">${idStack(x.b.map((id) => no[id]))}</td></tr>`;
+    return `<tr><td class="num">${i + 1}${x.times > 1 ? `<small class="sh-dup">${x.times}回対戦</small>` : ""}</td><td class="num">${x.rounds.join("・")}</td><td class="sh-id num">${idStack(x.a.map((id) => no[id]))}</td><td class="num">${rankCell(e, x.a)}</td>${nameCellHTML(e, x.a, false, SC)}<td class="sh-gc num ${wa ? "sh-win" : ""}">${x.shown ? x.gA : ""}</td><td class="sh-sc num">${sc}</td><td class="sh-gc num ${wb ? "sh-win" : ""}">${x.shown ? x.gB : ""}</td>${nameCellHTML(e, x.b, false, SC)}<td class="num">${rankCell(e, x.b)}</td><td class="sh-id num">${idStack(x.b.map((id) => no[id]))}</td></tr>`;
   }).join("");
   return `<p class="faint" style="margin:0">同じ相手(ダブルスは同じペアどうし)と当たった試合を1行にまとめます。各回の得点をゲームとして並べ、ゲーム数は勝った数です。回転の欄は当たった回転です。</p>
     <div class="table-wrap"><table class="sheet"><thead><tr><th>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>ゲーム<br>数</th><th>得点</th><th>ゲーム<br>数</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead><tbody>${body || `<tr><td colspan="11" class="faint">まだ試合がありません</td></tr>`}</tbody></table></div>`;
@@ -390,7 +392,7 @@ Object.assign(A, {
   "pair-level-set": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.pair); if (!pr) return; pr.level = Core.clamp(Number(b.dataset.lv), 1, Core.RANK_MAX); commit(); render(); },
   "mixed-back": (b) => { const e = ev(), r = e.practice.rounds[Number(b.dataset.r)]; if (!r) return; const ids = b.dataset.ids.split(",").filter(Boolean); const auto = ids.every((x) => (r.autoRest || []).includes(x)); regen(e, r, ids, auto ? `${ids.map((x) => pn(e, x)).join("・")} を試合に入れて、別の人を休みにしました` : `${ids.map((x) => pn(e, x)).join("・")} を試合に戻しました`); },
   "all-single": () => { const e = ev(); e.players.forEach((p) => { if (!Core.pairOfPlayer(e, p.id)) p.single = true; }); commit(); render(); },
-  "all-out": () => { const e = ev(); if (!App.askOk("ペアも解除して、全員を「出場しない」に戻しますか？")) return; e.pairs = []; e.players.forEach((p) => (p.single = false)); commit(); render(); },
+  "all-out": () => { const e = ev(); if (!App.askOk("ペアも解除して、全員を「出場しない」に戻しますか？")) return; e.pairs.slice().forEach((p) => Core.removePair(e, p.id)); e.players.forEach((p) => (p.single = false)); commit(); render(); },
   "first-round": () => {
     const e = ev(), rs = e.practice.rounds, n = rs.length, g = Core.genMixed(e, n, []);
     if (!g.matches.length) { toast("試合を作れません。ダブルスは2組以上、シングルスは2人以上いると、試合になります。"); return; }
@@ -453,7 +455,6 @@ Object.assign(Ch, {
     p.single = v === "single";
     commit(); render();
   },
-  "pair-lv-sel": (t) => { const e = ev(), pr = e.pairs.find((x) => x.id === t.dataset.pair); if (!pr) return; pr.level = t.value === "" ? null : Core.clamp(Number(t.value), 1, Core.RANK_MAX); commit(); render(); },
   "p-repeat": (t) => { ev().practice.avoidRepeat = t.checked; commit(); render(); },
   "pnext-kind": (t) => { ui.nextKind = t.value; render(); },
   "pnext-day": (t) => { ui.nextDay = Number(t.value); },

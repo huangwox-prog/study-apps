@@ -257,8 +257,8 @@ function pairsCardHTML(e) {
   const unp = Core.unpairedPlayers(e);
   const rows = e.pairs.map((pr) => {
     const A = playerMap(e)[pr.a], B = playerMap(e)[pr.b], lv = Core.pairLevel(e, pr), cross = Core.isCrossSchool(e, pr);
-    return `<div class="pair-row"><div class="pname">${esc(A.name)}・${esc(B.name)}<span class="pschool">${esc(Core.schoolsOf(A, B))}${cross ? " (学校がちがう)" : ""}${pr.level != null ? " · ランクを手で変更中" : " · ランクは2人の平均"}</span></div>
-      <span class="pair-lv"><button data-action="pair-lv" data-id="${pr.id}" data-d="-0.5" aria-label="ランクを下げる">−</button><output>${lvTxt(lv)}</output><button data-action="pair-lv" data-id="${pr.id}" data-d="0.5" aria-label="ランクを上げる">＋</button></span>
+    return `<div class="pair-row"><div class="pname">${esc(A.name)}・${esc(B.name)}<span class="pschool">${esc(Core.schoolsOf(A, B))}${cross ? " (学校がちがう)" : ""} · ペアのランク</span></div>
+      <span class="pair-lv"><button data-action="pair-lv" data-id="${pr.id}" data-d="-1" aria-label="ペアのランクを下げる">−</button><output>${lvTxt(lv)}</output><button data-action="pair-lv" data-id="${pr.id}" data-d="1" aria-label="ペアのランクを上げる">＋</button></span>
       <button class="btn btn-ghost btn-sm" data-action="pair-del" data-id="${pr.id}">解除</button></div>`;
   }).join("");
   return `<section class="card"><div class="card-head"><div><h2>ペア ${e.pairs.length}組</h2><p class="faint">${isDbl(e) ? "リーグ戦・トーナメントには、ペアが出ます。" : "毎回組み替えでも、ここに作ったペアは崩しません。固定のときは、このペアで組みます。"}</p></div>
@@ -388,7 +388,7 @@ function importGo(e) {
     // 「東高・西高」のように2校書いてあれば、それぞれの学校にする
     const [s1, s2] = (r.school || "").includes("・") ? r.school.split("・").map((x) => x.trim()) : [r.school, r.school];
     const a = mk(r.names[0], s1);
-    if (r.names.length === 2 && r.names[1]) { const b = mk(r.names[1], s2 || s1); e.pairs.push({ id: uid(), a: a.id, b: b.id, level: null }); }
+    if (r.names.length === 2 && r.names[1]) { const b = mk(r.names[1], s2 || s1); e.pairs.push({ id: uid(), a: a.id, b: b.id, level: r.level }); }
   });
   ui.imp = null; commit(); render();
   toast(`${res.rows.length}行を取り込みました${res.dup ? `(${res.dup}行はとばしました)` : ""}`);
