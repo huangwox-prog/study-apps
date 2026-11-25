@@ -12,6 +12,7 @@ Object.assign(ui, { pCardsOpen: true, pOpen: null, pView: "list", pSort: "level"
 const PRIO_INFO = {
   fresh: ["前に当たった組み合わせを避ける", "同じ相手・同じ組が続くのを、なるべく避けます"],
   school: ["別の学校の人と当てる", "同じ学校どうしが当たるのを、なるべく避けます"],
+  mix: ["いろいろな学校と当てる", "まだ当たっていない学校の人を、先に選びます"],
   level: ["ランクが近い人と当てる", "ランクの差が小さい相手に当てます"],
   grade: ["近い学年どうしで組む", "学年が入っている人だけ、学年の近い相手に当てます"],
   pref: ["同じ県どうしを避ける", "県が入っている人だけ、同じ県どうしを避けます"],
@@ -22,13 +23,13 @@ function prioHTML(e) {
   const o = e.practice, list = Core.prioList(o), cur = o.tol;
   let no = 0;
   const cards = list.map((k, i) => { const on = prioOn(e, k), [t, d] = PRIO_INFO[k];
-    return `<li class="prio-card ${on ? "" : "is-off"}" data-drag="prio" data-drag-id="${k}" data-drag-label="${esc(t)}" data-drop="prio" data-drop-id="${k}">
-      <span class="grip" aria-hidden="true">⠿</span><span class="prio-no">${on ? ++no : "−"}</span>
+    return `<li class="prio-card ${on ? `step-${Math.min(no + 1, 4)}` : "is-off"}" data-drag="prio" data-drag-id="${k}" data-drag-label="${esc(t)}" data-drop="prio" data-drop-id="${k}">
+      <span class="grip" aria-hidden="true">⠿</span><span class="prio-no">${on ? `<b>${++no}</b><small>${no === 1 ? "最優先" : "番目"}</small>` : "<small>使わない</small>"}</span>
       <label class="check prio-main"><input type="checkbox" data-change="p-prio-on" data-key="${k}" ${on ? "checked" : ""}><span><b>${t}</b><br><span class="faint">${d}</span></span></label>
       <span class="prio-mv"><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t)} を上へ">▲</button><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="1" ${i === list.length - 1 ? "disabled" : ""} aria-label="${esc(t)} を下へ">▼</button></span></li>`; }).join("");
   const tols = [...new Set([1, 2, cur])].filter((k) => k >= 0 && k <= Core.RANK_MAX - 1).sort((a, b) => a - b);
   const tolOpts = tols.map((k) => `<option value="${k}" ${cur === k ? "selected" : ""}>${k === 0 ? "同じランクだけ" : `前後${k}まで`}</option>`).join("");
-  return `<div class="field prio"><span>組むときの優先(上にあるものほど優先。つかんで並べかえます)</span><ol class="prio-list">${cards}</ol></div>
+  return `<div class="field prio"><div class="prio-title"><strong>組むときの優先順位</strong><small>上ほど優先。つかむか ▲▼ で並べかえます</small></div><div class="prio-wrap"><div class="prio-axis" aria-hidden="true"><b>優先<br>高</b><i></i><b>低</b></div><ol class="prio-list">${cards}</ol></div></div>
     <div class="settings"><label class="field"><span>ランク差の上限</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
     <div class="field"><span>かぶりをなくす範囲</span><div class="rds" role="radiogroup" aria-label="かぶりをなくす範囲">${[["day", "その日の回転だけ"], ["all", "全部の日"]].map(([v, t]) => { const on = (o.repeatScope === "day" ? "day" : "all") === v; return `<label class="rd ${on ? "on" : ""}"><input type="radio" name="repeat-scope" value="${v}" data-change="p-scope" ${on ? "checked" : ""}>${t}</label>`; }).join("")}</div></div></div>
     <label class="check" title="ランク5が少人数のときなどに、同じ相手ばかりになるのを防ぎます"><input type="checkbox" data-change="p-opt" data-key="widenTol" ${o.widenTol ? "checked" : ""} ${prioOn(e, "fresh") ? "" : "disabled"}>同じ相手が続きそうなときは、ランク差の上限を超えて、違う相手に当てる</label>`;

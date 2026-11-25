@@ -477,7 +477,11 @@ function pHistory(e, upto, day) {
   }));
   const rests = {}, justRested = {}; // これまでに休んだ回数と、直前の回転で休んだ人(手で抜いた回も数える。全部の日で数える)
   e.practice.rounds.slice(0, upto).forEach((r, ri, list) => (r.rest || []).forEach((id) => { rests[id] = (rests[id] || 0) + 1; if (ri === list.length - 1) justRested[id] = true; }));
-  return { met, partner, games, rests, justRested, prev: upto, opt: e.practice, w: prioWeights(e.practice) };
+  // 「いろいろな学校と当てる」用:選手ごとに、どの学校と何回当たったか(かぶりをなくす範囲に合わせる)
+  const schoolOf = {}; e.players.forEach((p) => (schoolOf[p.id] = (p.school || "").trim()));
+  const schools = [...new Set(Object.values(schoolOf).filter(Boolean))], seenSchool = {};
+  e.practice.rounds.slice(0, upto).forEach((r) => { if (onlyDay && r.day !== here) return; r.matches.forEach((m) => [[m.a, m.b], [m.b, m.a]].forEach(([mine, other]) => mine.filter(Boolean).forEach((id) => other.filter(Boolean).forEach((o) => { const s = schoolOf[o]; if (!s || s === schoolOf[id]) return; const row = seenSchool[id] || (seenSchool[id] = {}); row[s] = (row[s] || 0) + 1; })))); });
+  return { met, partner, games, rests, justRested, schools, seenSchool, prev: upto, opt: e.practice, w: prioWeights(e.practice) };
 }
 const avgLv = (S) => S.reduce((s, p) => s + p.level, 0) / S.length;
 /* 組むときに使う強さ。ダブルスはペアのランク(選手のシングルスのランクは使わない) */
@@ -486,12 +490,19 @@ const unitLevel = (e) => (S) => { if (S.length === 2) { const v = pairRank(e, S[
 const prefKey = (p) => String(p.pref || "").trim().replace(/^東京都$/, "東京").replace(/(県|府)$/, "");
 const blockKey = (p) => String(p.block || "").trim().replace(/ブロック$/, "");
 const gradeOf = (S) => { const g = S.map((p) => p.grade || 0).filter(Boolean); return g.length ? g.reduce((s, v) => s + v, 0) / g.length : 0; };
-/* 組み方の優先順位。practice.prio に、6つの項目を優先する順に並べて持つ(上ほど優先)。
+/* 相手の学校 s と、ほかの学校より何回多く当たっているか(0〜2)。0 なら、いちばん当たっていない学校 */
+function schoolExtra(H, me, s) {
+  const row = (H.seenSchool && H.seenSchool[me.id]) || {}, mine = String(me.school || "").trim();
+  const others = (H.schools || []).filter((x) => x !== mine);
+  if (!others.length) return 0;
+  return Math.min(2, (row[s] || 0) - Math.min(...others.map((x) => row[x] || 0)));
+}
+/* 組み方の優先順位。practice.prio に、7つの項目を優先する順に並べて持つ(上ほど優先)。
    項目ごとのオン・オフは、前からある印(avoidRepeat など)をそのまま使う。古いデータ(prio がない)は標準の並びになる */
-const PRIO_KEYS = ["fresh", "school", "level", "grade", "pref", "block"];
-const PRIO_ON = { fresh: (o) => o.avoidRepeat !== false, school: (o) => o.avoidSchool !== false, level: (o) => o.levelNear !== false, grade: (o) => !!o.nearGrade, pref: (o) => !!o.avoidPref, block: (o) => !!o.avoidBlock };
-const PRIO_FLAG = { fresh: "avoidRepeat", school: "avoidSchool", level: "levelNear", grade: "nearGrade", pref: "avoidPref", block: "avoidBlock" };
-function prioList(o) { const a = (Array.isArray(o && o.prio) ? o.prio : []).filter((k, i, l) => PRIO_KEYS.includes(k) && l.indexOf(k) === i); PRIO_KEYS.forEach((k) => { if (!a.includes(k)) a.push(k); }); return a; }
+const PRIO_KEYS = ["fresh", "school", "mix", "level", "grade", "pref", "block"];
+const PRIO_ON = { fresh: (o) => o.avoidRepeat !== false, school: (o) => o.avoidSchool !== false, level: (o) => o.levelNear !== false, mix: (o) => !!o.mixSchool, grade: (o) => !!o.nearGrade, pref: (o) => !!o.avoidPref, block: (o) => !!o.avoidBlock };
+const PRIO_FLAG = { fresh: "avoidRepeat", school: "avoidSchool", mix: "mixSchool", level: "levelNear", grade: "nearGrade", pref: "avoidPref", block: "avoidBlock" };
+function prioList(o) { const a = (Array.isArray(o && o.prio) ? o.prio : []).filter((k, i, l) => PRIO_KEYS.includes(k) && l.indexOf(k) === i); PRIO_KEYS.forEach((k) => { if (a.includes(k)) return; const at = k === "mix" ? a.indexOf("school") : -1; if (at >= 0) a.splice(at + 1, 0, k); /* 後から増えた項目は「別の学校」のすぐ下に(いちばん下だと、ほとんど効かない) */ else a.push(k); }); return a; }
 /* 使う項目だけを上から数えて、重さを 250 → 50 → 10 … と上ほど5倍にする(上の項目ほど強い)。
    休み(2500〜5000)・ランク差の上限超え(2000/段)より、いつも軽くしておく */
 function prioWeights(o) { o = o || {}; const on = prioList(o).filter((k) => PRIO_ON[k](o)), w = {}; on.forEach((k, i) => (w[k] = 250 / Math.pow(5, i))); return w; }
@@ -513,6 +524,11 @@ function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
     if (wantBlock && blockKey(x) && blockKey(x) === blockKey(y)) sBlock++;
   }
   if (wantSchool) c += (same / pairs) * W.school;
+  if (W.mix) { // いろいろな学校:その学校とすでに多く当たっている人ほど悪い
+    let m = 0;
+    for (const x of A) for (const y of B) { const sx = String(x.school || "").trim(), sy = String(y.school || "").trim(); if (sx && sy && sx !== sy) m += schoolExtra(H, x, sy) + schoolExtra(H, y, sx); }
+    c += (m / (pairs * 2)) * W.mix;
+  }
   if (wantPref) c += (sPref / pairs) * W.pref;
   if (wantBlock) c += (sBlock / pairs) * W.block;
   if (W.grade) { const ga = gradeOf(A), gb = gradeOf(B); if (ga && gb) c += Math.abs(ga - gb) * W.grade; }

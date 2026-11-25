@@ -320,6 +320,36 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 .rds-col{flex-direction:column;align-items:stretch}.rds-col .rd{border-radius:14px 14px 14px 22px;padding:8px 14px;align-items:flex-start;font-weight:500}.rds-col .rd b{font-weight:700}
 .prio-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}.prio-card{display:grid;grid-template-columns:auto 1.6em minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border-radius:14px 14px 14px 22px;background:var(--surface-strong);border:1.5px solid var(--border-soft);cursor:grab;touch-action:none}.prio-card.is-off{opacity:.55}.prio-card.drop-over{border-color:var(--accent);background:var(--accent-soft)}.prio-card.drag-src{opacity:.35}.prio-no{font-weight:800;color:var(--accent);text-align:center}.prio-main{align-items:flex-start;cursor:pointer}.prio-mv{display:inline-flex;gap:2px}.prio-mv .icon-btn{width:28px;height:28px;font-size:.8rem}.prio-mv .icon-btn:disabled{opacity:.3}
 
+/* 組む優先順位の見た目:順位の大きい丸と、上ほど濃い色。使わない項目は小さくたたんで薄く。操作の仕組みは変えない */
+.prio{flex-basis:100%;max-width:640px}
+.prio~.settings{flex-basis:100%;max-width:640px;margin-top:6px;padding-top:12px;border-top:1px solid var(--hairline)}
+.prio~label.check{flex-basis:100%}
+.prio-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}.prio-title strong{font-size:1rem}.prio-title small{font-size:.78rem;color:var(--text-tertiary)}
+.prio-wrap{display:grid;grid-template-columns:2.6rem minmax(0,1fr);gap:10px;margin-top:10px}
+.prio-axis{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--accent);letter-spacing:0;text-align:center}
+.prio-axis b{font-size:.74rem;font-weight:800;line-height:1.25}.prio-axis b:last-child{color:var(--text-tertiary)}
+/* 上が太くて濃く、下ほど細くて薄い矢印 */
+.prio-axis i{flex:1;width:100%;min-height:80px;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 12%,transparent));clip-path:polygon(0 0,100% 0,64% calc(100% - 14px),82% calc(100% - 14px),50% 100%,18% calc(100% - 14px),36% calc(100% - 14px));border-radius:4px}
+.prio-list{gap:8px;margin:0}
+.prio-card{grid-template-columns:auto 3.4rem minmax(0,1fr) auto;gap:10px;padding:10px 12px 10px 8px;border-radius:14px 14px 14px 22px}
+.prio-card .grip{color:var(--text-tertiary);font-size:1.1rem}
+.prio-no{display:flex;flex-direction:column;align-items:center;justify-content:center;width:3.4rem;height:3.4rem;border-radius:50% 50% 50% 14px;line-height:1.05}
+.prio-no b{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}.prio-no small{font-size:.62rem;font-weight:700}
+.prio-card[class*="step-"] .prio-no{background:var(--step);color:var(--accent-text)}
+.prio-card[class*="step-"]{border:2px solid color-mix(in srgb,var(--step) 55%,transparent)}
+.prio-card.step-1{--step:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface-strong))}
+.prio-card.step-2{--step:color-mix(in srgb,var(--accent) 82%,var(--surface-strong))}
+.prio-card.step-3{--step:color-mix(in srgb,var(--accent) 66%,var(--surface-strong))}
+.prio-card.step-4{--step:color-mix(in srgb,var(--accent) 54%,var(--surface-strong))}
+.prio-card .prio-main b{font-size:.98rem}.prio-card .prio-main .faint{font-size:.78rem;line-height:1.4;display:inline-block}
+.prio-card.is-off{opacity:1;background:transparent;border:1.5px dashed var(--border);padding-top:6px;padding-bottom:6px}
+.prio-card.is-off .prio-no{height:2rem;border-radius:999px;background:var(--surface-soft);color:var(--text-tertiary)}.prio-card.is-off .prio-no small{font-size:.66rem}
+.prio-card.is-off .prio-main b{font-weight:600;color:var(--text-secondary);font-size:.92rem}.prio-card.is-off .prio-main br,.prio-card.is-off .prio-main .faint{display:none}
+.prio-card.is-off .grip{opacity:.5}
+.prio-mv{gap:4px}.prio-mv .icon-btn{width:30px;height:30px;border:1.5px solid var(--border-soft);background:var(--surface-strong);color:var(--text-secondary)}
+.prio-card.drop-over{border:2px solid var(--accent);background:var(--accent-soft)}
+@media(max-width:640px){.prio-wrap{grid-template-columns:1.8rem minmax(0,1fr);gap:6px}.prio-card{grid-template-columns:auto 2.8rem minmax(0,1fr) auto;gap:6px;padding-right:8px}.prio-no{width:2.8rem;height:2.8rem}.prio-no b{font-size:1.2rem}.prio-mv{flex-direction:column}.prio-card.is-off .prio-mv{flex-direction:row}.prio-card .grip{font-size:.95rem}}
+
 </style></head>
 <body>
 <div class="bg-glow"></div><div class="bg-ring"></div>
@@ -804,7 +834,11 @@ function pHistory(e, upto, day) {
   }));
   const rests = {}, justRested = {}; // これまでに休んだ回数と、直前の回転で休んだ人(手で抜いた回も数える。全部の日で数える)
   e.practice.rounds.slice(0, upto).forEach((r, ri, list) => (r.rest || []).forEach((id) => { rests[id] = (rests[id] || 0) + 1; if (ri === list.length - 1) justRested[id] = true; }));
-  return { met, partner, games, rests, justRested, prev: upto, opt: e.practice, w: prioWeights(e.practice) };
+  // 「いろいろな学校と当てる」用:選手ごとに、どの学校と何回当たったか(かぶりをなくす範囲に合わせる)
+  const schoolOf = {}; e.players.forEach((p) => (schoolOf[p.id] = (p.school || "").trim()));
+  const schools = [...new Set(Object.values(schoolOf).filter(Boolean))], seenSchool = {};
+  e.practice.rounds.slice(0, upto).forEach((r) => { if (onlyDay && r.day !== here) return; r.matches.forEach((m) => [[m.a, m.b], [m.b, m.a]].forEach(([mine, other]) => mine.filter(Boolean).forEach((id) => other.filter(Boolean).forEach((o) => { const s = schoolOf[o]; if (!s || s === schoolOf[id]) return; const row = seenSchool[id] || (seenSchool[id] = {}); row[s] = (row[s] || 0) + 1; })))); });
+  return { met, partner, games, rests, justRested, schools, seenSchool, prev: upto, opt: e.practice, w: prioWeights(e.practice) };
 }
 const avgLv = (S) => S.reduce((s, p) => s + p.level, 0) / S.length;
 /* 組むときに使う強さ。ダブルスはペアのランク(選手のシングルスのランクは使わない) */
@@ -813,12 +847,19 @@ const unitLevel = (e) => (S) => { if (S.length === 2) { const v = pairRank(e, S[
 const prefKey = (p) => String(p.pref || "").trim().replace(/^東京都$/, "東京").replace(/(県|府)$/, "");
 const blockKey = (p) => String(p.block || "").trim().replace(/ブロック$/, "");
 const gradeOf = (S) => { const g = S.map((p) => p.grade || 0).filter(Boolean); return g.length ? g.reduce((s, v) => s + v, 0) / g.length : 0; };
-/* 組み方の優先順位。practice.prio に、6つの項目を優先する順に並べて持つ(上ほど優先)。
+/* 相手の学校 s と、ほかの学校より何回多く当たっているか(0〜2)。0 なら、いちばん当たっていない学校 */
+function schoolExtra(H, me, s) {
+  const row = (H.seenSchool && H.seenSchool[me.id]) || {}, mine = String(me.school || "").trim();
+  const others = (H.schools || []).filter((x) => x !== mine);
+  if (!others.length) return 0;
+  return Math.min(2, (row[s] || 0) - Math.min(...others.map((x) => row[x] || 0)));
+}
+/* 組み方の優先順位。practice.prio に、7つの項目を優先する順に並べて持つ(上ほど優先)。
    項目ごとのオン・オフは、前からある印(avoidRepeat など)をそのまま使う。古いデータ(prio がない)は標準の並びになる */
-const PRIO_KEYS = ["fresh", "school", "level", "grade", "pref", "block"];
-const PRIO_ON = { fresh: (o) => o.avoidRepeat !== false, school: (o) => o.avoidSchool !== false, level: (o) => o.levelNear !== false, grade: (o) => !!o.nearGrade, pref: (o) => !!o.avoidPref, block: (o) => !!o.avoidBlock };
-const PRIO_FLAG = { fresh: "avoidRepeat", school: "avoidSchool", level: "levelNear", grade: "nearGrade", pref: "avoidPref", block: "avoidBlock" };
-function prioList(o) { const a = (Array.isArray(o && o.prio) ? o.prio : []).filter((k, i, l) => PRIO_KEYS.includes(k) && l.indexOf(k) === i); PRIO_KEYS.forEach((k) => { if (!a.includes(k)) a.push(k); }); return a; }
+const PRIO_KEYS = ["fresh", "school", "mix", "level", "grade", "pref", "block"];
+const PRIO_ON = { fresh: (o) => o.avoidRepeat !== false, school: (o) => o.avoidSchool !== false, level: (o) => o.levelNear !== false, mix: (o) => !!o.mixSchool, grade: (o) => !!o.nearGrade, pref: (o) => !!o.avoidPref, block: (o) => !!o.avoidBlock };
+const PRIO_FLAG = { fresh: "avoidRepeat", school: "avoidSchool", mix: "mixSchool", level: "levelNear", grade: "nearGrade", pref: "avoidPref", block: "avoidBlock" };
+function prioList(o) { const a = (Array.isArray(o && o.prio) ? o.prio : []).filter((k, i, l) => PRIO_KEYS.includes(k) && l.indexOf(k) === i); PRIO_KEYS.forEach((k) => { if (a.includes(k)) return; const at = k === "mix" ? a.indexOf("school") : -1; if (at >= 0) a.splice(at + 1, 0, k); /* 後から増えた項目は「別の学校」のすぐ下に(いちばん下だと、ほとんど効かない) */ else a.push(k); }); return a; }
 /* 使う項目だけを上から数えて、重さを 250 → 50 → 10 … と上ほど5倍にする(上の項目ほど強い)。
    休み(2500〜5000)・ランク差の上限超え(2000/段)より、いつも軽くしておく */
 function prioWeights(o) { o = o || {}; const on = prioList(o).filter((k) => PRIO_ON[k](o)), w = {}; on.forEach((k, i) => (w[k] = 250 / Math.pow(5, i))); return w; }
@@ -840,6 +881,11 @@ function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
     if (wantBlock && blockKey(x) && blockKey(x) === blockKey(y)) sBlock++;
   }
   if (wantSchool) c += (same / pairs) * W.school;
+  if (W.mix) { // いろいろな学校:その学校とすでに多く当たっている人ほど悪い
+    let m = 0;
+    for (const x of A) for (const y of B) { const sx = String(x.school || "").trim(), sy = String(y.school || "").trim(); if (sx && sy && sx !== sy) m += schoolExtra(H, x, sy) + schoolExtra(H, y, sx); }
+    c += (m / (pairs * 2)) * W.mix;
+  }
   if (wantPref) c += (sPref / pairs) * W.pref;
   if (wantBlock) c += (sBlock / pairs) * W.block;
   if (W.grade) { const ga = gradeOf(A), gb = gradeOf(B); if (ga && gb) c += Math.abs(ga - gb) * W.grade; }
@@ -2199,6 +2245,7 @@ Object.assign(ui, { pCardsOpen: true, pOpen: null, pView: "list", pSort: "level"
 const PRIO_INFO = {
   fresh: ["前に当たった組み合わせを避ける", "同じ相手・同じ組が続くのを、なるべく避けます"],
   school: ["別の学校の人と当てる", "同じ学校どうしが当たるのを、なるべく避けます"],
+  mix: ["いろいろな学校と当てる", "まだ当たっていない学校の人を、先に選びます"],
   level: ["ランクが近い人と当てる", "ランクの差が小さい相手に当てます"],
   grade: ["近い学年どうしで組む", "学年が入っている人だけ、学年の近い相手に当てます"],
   pref: ["同じ県どうしを避ける", "県が入っている人だけ、同じ県どうしを避けます"],
@@ -2209,13 +2256,13 @@ function prioHTML(e) {
   const o = e.practice, list = Core.prioList(o), cur = o.tol;
   let no = 0;
   const cards = list.map((k, i) => { const on = prioOn(e, k), [t, d] = PRIO_INFO[k];
-    return `<li class="prio-card ${on ? "" : "is-off"}" data-drag="prio" data-drag-id="${k}" data-drag-label="${esc(t)}" data-drop="prio" data-drop-id="${k}">
-      <span class="grip" aria-hidden="true">⠿</span><span class="prio-no">${on ? ++no : "−"}</span>
+    return `<li class="prio-card ${on ? `step-${Math.min(no + 1, 4)}` : "is-off"}" data-drag="prio" data-drag-id="${k}" data-drag-label="${esc(t)}" data-drop="prio" data-drop-id="${k}">
+      <span class="grip" aria-hidden="true">⠿</span><span class="prio-no">${on ? `<b>${++no}</b><small>${no === 1 ? "最優先" : "番目"}</small>` : "<small>使わない</small>"}</span>
       <label class="check prio-main"><input type="checkbox" data-change="p-prio-on" data-key="${k}" ${on ? "checked" : ""}><span><b>${t}</b><br><span class="faint">${d}</span></span></label>
       <span class="prio-mv"><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t)} を上へ">▲</button><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="1" ${i === list.length - 1 ? "disabled" : ""} aria-label="${esc(t)} を下へ">▼</button></span></li>`; }).join("");
   const tols = [...new Set([1, 2, cur])].filter((k) => k >= 0 && k <= Core.RANK_MAX - 1).sort((a, b) => a - b);
   const tolOpts = tols.map((k) => `<option value="${k}" ${cur === k ? "selected" : ""}>${k === 0 ? "同じランクだけ" : `前後${k}まで`}</option>`).join("");
-  return `<div class="field prio"><span>組むときの優先(上にあるものほど優先。つかんで並べかえます)</span><ol class="prio-list">${cards}</ol></div>
+  return `<div class="field prio"><div class="prio-title"><strong>組むときの優先順位</strong><small>上ほど優先。つかむか ▲▼ で並べかえます</small></div><div class="prio-wrap"><div class="prio-axis" aria-hidden="true"><b>優先<br>高</b><i></i><b>低</b></div><ol class="prio-list">${cards}</ol></div></div>
     <div class="settings"><label class="field"><span>ランク差の上限</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
     <div class="field"><span>かぶりをなくす範囲</span><div class="rds" role="radiogroup" aria-label="かぶりをなくす範囲">${[["day", "その日の回転だけ"], ["all", "全部の日"]].map(([v, t]) => { const on = (o.repeatScope === "day" ? "day" : "all") === v; return `<label class="rd ${on ? "on" : ""}"><input type="radio" name="repeat-scope" value="${v}" data-change="p-scope" ${on ? "checked" : ""}>${t}</label>`; }).join("")}</div></div></div>
     <label class="check" title="ランク5が少人数のときなどに、同じ相手ばかりになるのを防ぎます"><input type="checkbox" data-change="p-opt" data-key="widenTol" ${o.widenTol ? "checked" : ""} ${prioOn(e, "fresh") ? "" : "disabled"}>同じ相手が続きそうなときは、ランク差の上限を超えて、違う相手に当てる</label>`;

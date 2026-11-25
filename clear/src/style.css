@@ -314,3 +314,33 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 
 .rds-col{flex-direction:column;align-items:stretch}.rds-col .rd{border-radius:14px 14px 14px 22px;padding:8px 14px;align-items:flex-start;font-weight:500}.rds-col .rd b{font-weight:700}
 .prio-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}.prio-card{display:grid;grid-template-columns:auto 1.6em minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border-radius:14px 14px 14px 22px;background:var(--surface-strong);border:1.5px solid var(--border-soft);cursor:grab;touch-action:none}.prio-card.is-off{opacity:.55}.prio-card.drop-over{border-color:var(--accent);background:var(--accent-soft)}.prio-card.drag-src{opacity:.35}.prio-no{font-weight:800;color:var(--accent);text-align:center}.prio-main{align-items:flex-start;cursor:pointer}.prio-mv{display:inline-flex;gap:2px}.prio-mv .icon-btn{width:28px;height:28px;font-size:.8rem}.prio-mv .icon-btn:disabled{opacity:.3}
+
+/* 組む優先順位の見た目:順位の大きい丸と、上ほど濃い色。使わない項目は小さくたたんで薄く。操作の仕組みは変えない */
+.prio{flex-basis:100%;max-width:640px}
+.prio~.settings{flex-basis:100%;max-width:640px;margin-top:6px;padding-top:12px;border-top:1px solid var(--hairline)}
+.prio~label.check{flex-basis:100%}
+.prio-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}.prio-title strong{font-size:1rem}.prio-title small{font-size:.78rem;color:var(--text-tertiary)}
+.prio-wrap{display:grid;grid-template-columns:2.6rem minmax(0,1fr);gap:10px;margin-top:10px}
+.prio-axis{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--accent);letter-spacing:0;text-align:center}
+.prio-axis b{font-size:.74rem;font-weight:800;line-height:1.25}.prio-axis b:last-child{color:var(--text-tertiary)}
+/* 上が太くて濃く、下ほど細くて薄い矢印 */
+.prio-axis i{flex:1;width:100%;min-height:80px;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 12%,transparent));clip-path:polygon(0 0,100% 0,64% calc(100% - 14px),82% calc(100% - 14px),50% 100%,18% calc(100% - 14px),36% calc(100% - 14px));border-radius:4px}
+.prio-list{gap:8px;margin:0}
+.prio-card{grid-template-columns:auto 3.4rem minmax(0,1fr) auto;gap:10px;padding:10px 12px 10px 8px;border-radius:14px 14px 14px 22px}
+.prio-card .grip{color:var(--text-tertiary);font-size:1.1rem}
+.prio-no{display:flex;flex-direction:column;align-items:center;justify-content:center;width:3.4rem;height:3.4rem;border-radius:50% 50% 50% 14px;line-height:1.05}
+.prio-no b{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}.prio-no small{font-size:.62rem;font-weight:700}
+.prio-card[class*="step-"] .prio-no{background:var(--step);color:var(--accent-text)}
+.prio-card[class*="step-"]{border:2px solid color-mix(in srgb,var(--step) 55%,transparent)}
+.prio-card.step-1{--step:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface-strong))}
+.prio-card.step-2{--step:color-mix(in srgb,var(--accent) 82%,var(--surface-strong))}
+.prio-card.step-3{--step:color-mix(in srgb,var(--accent) 66%,var(--surface-strong))}
+.prio-card.step-4{--step:color-mix(in srgb,var(--accent) 54%,var(--surface-strong))}
+.prio-card .prio-main b{font-size:.98rem}.prio-card .prio-main .faint{font-size:.78rem;line-height:1.4;display:inline-block}
+.prio-card.is-off{opacity:1;background:transparent;border:1.5px dashed var(--border);padding-top:6px;padding-bottom:6px}
+.prio-card.is-off .prio-no{height:2rem;border-radius:999px;background:var(--surface-soft);color:var(--text-tertiary)}.prio-card.is-off .prio-no small{font-size:.66rem}
+.prio-card.is-off .prio-main b{font-weight:600;color:var(--text-secondary);font-size:.92rem}.prio-card.is-off .prio-main br,.prio-card.is-off .prio-main .faint{display:none}
+.prio-card.is-off .grip{opacity:.5}
+.prio-mv{gap:4px}.prio-mv .icon-btn{width:30px;height:30px;border:1.5px solid var(--border-soft);background:var(--surface-strong);color:var(--text-secondary)}
+.prio-card.drop-over{border:2px solid var(--accent);background:var(--accent-soft)}
+@media(max-width:640px){.prio-wrap{grid-template-columns:1.8rem minmax(0,1fr);gap:6px}.prio-card{grid-template-columns:auto 2.8rem minmax(0,1fr) auto;gap:6px;padding-right:8px}.prio-no{width:2.8rem;height:2.8rem}.prio-no b{font-size:1.2rem}.prio-mv{flex-direction:column}.prio-card.is-off .prio-mv{flex-direction:row}.prio-card .grip{font-size:.95rem}}

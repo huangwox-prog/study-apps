@@ -126,3 +126,4 @@
 - Rest fairness (Core.solveUnits restCost): rested last round 5000, each past rest 2500, each missing game 2500 (higher than one rank-limit overrun 2000).
 
 (2026-11-26 公開ページを作り直すために、この行を追加。アプリの中身は変えていない)
+- priority item mix (practice.mixSchool, off by default): prefer opponents from schools faced least (Core.schoolExtra). prioList inserts a missing mix right after school. Priority list look: rank badges + vertical axis (style.css .prio-*).
