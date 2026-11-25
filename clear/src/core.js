@@ -725,6 +725,13 @@ function pCum(e) {
 /* 回転の番号は日ごとに数える。ri は全体での順番(0から) */
 function roundNo(e, ri) { const rs = e.practice.rounds, d = rs[ri].day; return rs.slice(0, ri + 1).filter((x) => x.day === d).length; }
 function roundTitle(e, ri) { const rs = e.practice.rounds, multi = rs.some((x) => x.day !== rs[0].day) || rs[ri].day > 1; return `${multi ? `${rs[ri].day}日目 ` : ""}${roundNo(e, ri)}回転目`; }
+/* 回転の並びを短く書く。「1・6回転目」。ほかの日が混じるときは「1日目の2回転目、2日目の1・6回転目」 */
+function roundsText(e, list, today) {
+  const by = new Map();
+  list.forEach((i) => { const d = e.practice.rounds[i].day; (by.get(d) || by.set(d, []).get(d)).push(roundNo(e, i)); });
+  const needDay = by.size > 1 || !by.has(today);
+  return [...by].map(([d, nos]) => `${needDay ? `${d}日目の` : ""}${nos.join("・")}回転目`).join("、");
+}
 function pIssues(e, ri) {
   const r = e.practice.rounds[ri], pm = playerMap(e), tol = e.practice.tol, H = pHistory(e, ri);
   const nm = (id) => (pm[id] ? pm[id].name || "(名前なし)" : "—");
@@ -748,7 +755,7 @@ function pIssues(e, ri) {
         if (same.length) out.push({ lv: "info", t: `同じ学校どうし:${same.join("、")}` });
       }
       const f = A.length === m.a.length && B.length === m.b.length ? H.met[matchKey(A, B)] : null;
-      if (f) out.push({ lv: "dup", t: `${f.includes(H.prev) ? "続けてかぶり" : "かぶり"}:${A.map(nm).join("・")} 対 ${B.map(nm).join("・")} は${f.map((n) => roundTitle(e, n - 1)).join("・")}と同じ組み合わせ` });
+      if (f) { const label = f.includes(H.prev) ? "続けてかぶり" : "かぶり", where = roundsText(e, f.map((n) => n - 1), r.day); out.push({ lv: "dup", label, where, t: `${label}:${where}と同じ組み合わせ` }); } // 名前は試合カードに出ているので、書かない
     }
     [A, B].forEach((S) => { if (S.length === 2) {
       const reg = e.pairs.some((p) => (p.a === S[0] && p.b === S[1]) || (p.a === S[1] && p.b === S[0]));

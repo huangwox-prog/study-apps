@@ -195,7 +195,7 @@ function pMatchHTML(e, SC, r, ri, mi, iss, cum) {
   const games = Array.from({ length: e.games }, (_, g) => m.g[g] || [null, null]).filter((x, g) => x[0] != null || x[1] != null || g === 0);
   const many = e.games > 1; // 1ゲームずつ縦に並べる。何の数字か分かるように、行の頭に「第1ゲーム」を付ける
   const gtxt = games.map(([x, y], g) => (x != null || y != null ? `<span class="gl ${many ? "" : "one"}">${many ? `<small>第${g + 1}ゲーム</small>` : ""}<b>${x ?? ""}</b><i>-</i><b>${y ?? ""}</b></span>` : "")).join("");
-  const notes = (iss.per[mi] || []).map((n) => `<span class="note ${n.lv === "err" ? "err" : n.lv === "dup" ? "dup" : n.lv === "warn" ? "warn" : ""}">${esc(n.t)}</span>`).join("");
+  const notes = (iss.per[mi] || []).map((n) => n.lv === "dup" ? `<span class="dupnote"><b>${esc(n.label)}</b>${esc(n.where)}と同じ</span>` : `<span class="note ${n.lv === "err" ? "err" : n.lv === "dup" ? "dup" : n.lv === "warn" ? "warn" : ""}">${esc(n.t)}</span>`).join("");
   const cur = `data-m="${m.id}"`;
   const inputs = open ? `<div class="pm-extra" style="grid-column:1/-1">${Array.from({ length: e.games }, (_, g) => { const [x, y] = m.g[g] || [null, null], bad = Core.gameWarn(e, x, y); return `<div class="game">${e.games > 1 ? `<span class="game-label">第${g + 1}</span>` : ""}<input class="score ${bad ? "bad" : ""}" id="ps-${m.id}-${g}-0" inputmode="numeric" maxlength="2" autocomplete="off" data-input="pscore" ${cur} data-g="${g}" data-s="0" value="${x ?? ""}"><span>-</span><input class="score ${bad ? "bad" : ""}" id="ps-${m.id}-${g}-1" inputmode="numeric" maxlength="2" autocomplete="off" data-input="pscore" ${cur} data-g="${g}" data-s="1" value="${y ?? ""}"></div>`; }).join("")}
       <div class="row"><button class="qwin ${o.winner === "a" ? "on" : ""}" data-action="pqwin" ${cur} data-w="a">${o.winner === "a" ? "○ " : ""}左が勝ち</button><button class="qwin ${o.winner === "b" ? "on" : ""}" data-action="pqwin" ${cur} data-w="b">${o.winner === "b" ? "○ " : ""}右が勝ち</button><button class="btn btn-ghost btn-sm" data-action="popen" ${cur}>閉じる</button></div></div>` : "";
@@ -292,8 +292,9 @@ function firstRoundHTML(e, SC) {
     ${(() => { const sg = rows.filter((p) => playMode(e, p) === "single"), ot = rows.filter((p) => playMode(e, p) === "out"), nm = (p) => `${esc(p.name || "(名前なし)")}<span class="pschool" style="display:inline;margin-left:4px">${esc(p.school || "")}</span>`;
       return `${sg.length ? `<div class="namerow"><span class="pairlabel sgl-label">シングルス ${sg.length}人</span>${sg.map((p) => `<span class="namechip">${nm(p)}</span>`).join("")}</div>` : ""}${ot.length ? `<div class="namerow"><span class="outlabel">出場しない ${ot.length}人</span>${ot.map((p) => `<span class="namechip is-out">${nm(p)}</span>`).join("")}</div>` : ""}`; })()}
     <details class="more" open><summary>組み方の設定</summary><div class="settings">
-      <div class="checks"><p class="faint" style="margin:0">いつも、ランクの近い相手と当てます(下の「実力差の上限」まで)。</p>
-      ${[["avoidRepeat", "前に当たった組み合わせを避ける", e.practice.avoidRepeat !== false], ["allDays", "前の日の対戦も、かぶりに数える", e.practice.repeatScope !== "day"], ["nearGrade", "近い学年どうしで組む", !!e.practice.nearGrade], ["avoidPref", "同じ県どうしを避ける", !!e.practice.avoidPref], ["avoidBlock", "同じブロックどうしを避ける", !!e.practice.avoidBlock]].map(([k, t, on]) => `<label class="check"><input type="checkbox" data-change="p-opt" data-key="${k}" ${on ? "checked" : ""}>${t}</label>`).join("")}</div>
+      <div class="checks"><label class="check"><input type="checkbox" data-change="p-opt" data-key="avoidRepeat" ${e.practice.avoidRepeat !== false ? "checked" : ""}>前に当たった組み合わせを避ける</label>
+      <div class="field"><span>かぶりをなくす範囲</span><div class="rds" role="radiogroup" aria-label="かぶりをなくす範囲">${[["day", "その日の回転だけ"], ["all", "全部の日"]].map(([v, t]) => { const on = (e.practice.repeatScope === "day" ? "day" : "all") === v; return `<label class="rd ${on ? "on" : ""}"><input type="radio" name="repeat-scope" value="${v}" data-change="p-scope" ${on ? "checked" : ""}>${t}</label>`; }).join("")}</div></div>
+      ${[["nearGrade", "近い学年どうしで組む", !!e.practice.nearGrade], ["avoidPref", "同じ県どうしを避ける", !!e.practice.avoidPref], ["avoidBlock", "同じブロックどうしを避ける", !!e.practice.avoidBlock]].map(([k, t, on]) => `<label class="check"><input type="checkbox" data-change="p-opt" data-key="${k}" ${on ? "checked" : ""}>${t}</label>`).join("")}</div>
       <label class="field"><span>実力差の上限(ランクの差)</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
       <label class="field"><span>点数</span><select class="select" data-change="ev-points">${[21, 15, 11].map((p) => `<option value="${p}" ${e.points === p ? "selected" : ""}>${p}点</option>`).join("")}</select></label>
       <label class="field"><span>ゲーム</span><select class="select" data-change="ev-games"><option value="1" ${e.games === 1 ? "selected" : ""}>1ゲーム</option><option value="3" ${e.games === 3 ? "selected" : ""}>3ゲーム(2ゲーム先取)</option></select></label></div></details>
@@ -503,7 +504,8 @@ Object.assign(Ch, {
     p.single = v === "single";
     commit(); render();
   },
-  "p-opt": (t) => { const k = t.dataset.key; if (k === "allDays") ev().practice.repeatScope = t.checked ? "all" : "day"; else ev().practice[k] = t.checked; commit(); render(); },
+  "p-opt": (t) => { ev().practice[t.dataset.key] = t.checked; commit(); render(); },
+  "p-scope": (t) => { ev().practice.repeatScope = t.value === "day" ? "day" : "all"; commit(); render(); },
   "pnext-kind": (t) => { ui.nextKind = t.value; render(); },
   "p-tol": (t) => { ev().practice.tol = clamp(Number(t.value), 0, Core.RANK_MAX - 1); commit(); render(); },
   "p-avoid": (t) => { ev().practice.avoidSchool = t.checked; commit(); render(); },
