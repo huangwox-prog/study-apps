@@ -445,8 +445,17 @@ function sideLevel(e, side) {
   if (ids.length === 2) { const v = pairRank(e, ids[0], ids[1]); if (v != null) return v; } // ペアのランク。ペアにしたことがない2人(その回転だけの組)だけ、2人の平均
   return ids.length ? ids.reduce((s, id) => s + (pm[id] ? pm[id].level : 3), 0) / ids.length : 0;
 }
+/* 練習試合の1ゲームが終わっているか。設定の点数に届いて2点差、または上限の点(21点なら30) */
+function gameOver(e, x, y) {
+  if (x == null || y == null || x === y) return false;
+  const hi = Math.max(x, y);
+  return hi >= scoreCap(e) || (hi >= e.points && hi - Math.min(x, y) >= 2);
+}
+/* 練習試合の勝敗。途中の点数は勝ちに数えない(試合中)。途中で打ち切った試合は「左が勝ち/右が勝ち」で決める */
 function pOutcome(e, m) {
-  const o = outcomeOf(e, (m.g || []).slice(0, e.games), "a", "b", null, m.win);
+  const raw = (m.g || []).slice(0, e.games), empty = isEmptyGames(raw);
+  const o = outcomeOf(e, raw.map((g) => (gameOver(e, g[0], g[1]) ? g : [null, null])), "a", "b", null, empty ? m.win : null);
+  if (!empty) o.started = true;
   if (!o.winner && m.win && !isEmptyGames(m.g)) { const need = e.games === 1 ? 1 : 2; return Object.assign(o, { winner: m.win, ga: m.win === "a" ? need : Math.min(o.ga, need - 1), gb: m.win === "b" ? need : Math.min(o.gb, need - 1), started: true }); }
   return o;
 }
@@ -687,6 +696,9 @@ function pCum(e) {
   e.practice.rounds.forEach((r) => { pPlaced(r).forEach((id) => (cnt[id] = (cnt[id] || 0) + 1)); out.push({ ...cnt }); });
   return out;
 }
+/* 回転の番号は日ごとに数える。ri は全体での順番(0から) */
+function roundNo(e, ri) { const rs = e.practice.rounds, d = rs[ri].day; return rs.slice(0, ri + 1).filter((x) => x.day === d).length; }
+function roundTitle(e, ri) { const rs = e.practice.rounds, multi = rs.some((x) => x.day !== rs[0].day) || rs[ri].day > 1; return `${multi ? `${rs[ri].day}日目 ` : ""}${roundNo(e, ri)}回転目`; }
 function pIssues(e, ri) {
   const r = e.practice.rounds[ri], pm = playerMap(e), tol = e.practice.tol, H = pHistory(e, ri);
   const nm = (id) => (pm[id] ? pm[id].name || "(名前なし)" : "—");
@@ -710,11 +722,11 @@ function pIssues(e, ri) {
         if (same.length) out.push({ lv: "info", t: `同じ学校どうし:${same.join("、")}` });
       }
       const f = A.length === m.a.length && B.length === m.b.length ? H.met[matchKey(A, B)] : null;
-      if (f) out.push({ lv: "dup", t: `${f.includes(H.prev) ? "続けてかぶり" : "かぶり"}:${A.map(nm).join("・")} 対 ${B.map(nm).join("・")} は第${f.join("・第")}回転と同じ組み合わせ` });
+      if (f) out.push({ lv: "dup", t: `${f.includes(H.prev) ? "続けてかぶり" : "かぶり"}:${A.map(nm).join("・")} 対 ${B.map(nm).join("・")} は${f.map((n) => roundTitle(e, n - 1)).join("・")}と同じ組み合わせ` });
     }
     [A, B].forEach((S) => { if (S.length === 2) {
       const reg = e.pairs.some((p) => (p.a === S[0] && p.b === S[1]) || (p.a === S[1] && p.b === S[0]));
-      if (!reg) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${nm(S[0])}・${nm(S[1])} は第${f[0]}回転でもペア` }); }
+      if (!reg) { const f = H.partner[keyOf(S[0], S[1])]; if (f) out.push({ lv: "warn", t: `${nm(S[0])}・${nm(S[1])} は${roundTitle(e, f[0] - 1)}でもペア` }); }
       if (pm[S[0]] && pm[S[1]] && (pm[S[0]].school || "").trim() !== (pm[S[1]].school || "").trim()) out.push({ lv: "info", t: `別の学校どうしのペア:${schoolsOf(pm[S[0]], pm[S[1]])}` });
     } });
     both.filter((id, i) => both.indexOf(id) === i && dayCnt[id] > e.maxPerDay).forEach((id) => out.push({ lv: "warn", t: `${nm(id)} は${r.day}日目に${dayCnt[id]}試合目(上限${e.maxPerDay})` }));
@@ -906,13 +918,13 @@ function normalize2(ev) {
   e.leagues = (Array.isArray(e.leagues) ? e.leagues : []).map((l) => ({ id: String(l.id || uid()), ids: (l.ids || []).filter((id) => eids.has(id)) }));
   const pr = e.practice || {};
   e.practice = Object.assign(blankEvent().practice, pr);
-  e.practice.rounds = (e.practice.rounds || []).map((r) => ({ ...r, rest: (r.rest || []).filter((id) => pids.has(id)) }));
+  e.practice.rounds = (e.practice.rounds || []).map((r) => ({ ...r, day: clamp(parseInt(r.day, 10) || 1, 1, 30), rest: (r.rest || []).filter((id) => pids.has(id)) })).sort((a, b) => a.day - b.day); // 日の順にそろえる(同じ日の中の順番は変えない)
   return e;
 }
 
 return {
   RANK_MAX, LETTERS, clamp, clone, uid, to5, today, rng, shuffle, keyOf, isEmptyGames,
-  setSingle, playerMap, pairMap, pairOfPlayer, partnerOf, schoolsOf, pairLevel, pairRank, matchKey, roundHalf, isCrossSchool, makePair, removePair,
+  setSingle, playerMap, pairMap, pairOfPlayer, partnerOf, schoolsOf, pairLevel, pairRank, matchKey, gameOver, roundNo, roundTitle, roundHalf, isCrossSchool, makePair, removePair,
   isDbl, entries, entryMap, unpairedPlayers, unitWord, letter,
   dupCost, planSizes, groupSizesFor, autoAssign, leagueIndexOf, unassigned, moveToLeague,
   roundRobin, matchCount, dayCount, splitDays,

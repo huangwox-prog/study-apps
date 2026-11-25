@@ -205,7 +205,7 @@ function scoreCommit(e, t, set, getGames, key) {
   if (!done) return;
   const games = getGames();
   const x = games[g] || [null, null];
-  const win = Core.outcomeOf(e, games, "a", "b", null, null).winner;
+  const win = key.startsWith("ps-") ? Core.pOutcome(e, { g: games, win: null }).winner : Core.outcomeOf(e, games, "a", "b", null, null).winner;
   let next = s === 0 ? `${key}-${g}-1` : win ? null : g + 1 < e.games ? `${key}-${g + 1}-0` : null;
   if (s === 1 && x[0] == null) next = `${key}-${g}-0`;
   if (next) { const el = document.getElementById(next); if (el && !el.disabled) { el.focus({ preventScroll: true }); el.select(); } }
