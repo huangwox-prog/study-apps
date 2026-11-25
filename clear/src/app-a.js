@@ -169,7 +169,7 @@ function homeHTML() {
   if (ui.createMode) return createHTML(ui.createMode);
   return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
     <div class="make-grid">${Object.entries(MODES).filter(([k]) => k !== "league") /* リーグ戦は、新しく作る表示を出さない(前に作ったデータは「続きから」で開ける) */.map(([k, [n, d]]) => `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b><span class="faint">${d}</span></button>`).join("")}</div>
-    <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合</button></p>
+    <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
     ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}`;
 }
 function eventCardHTML(x) {

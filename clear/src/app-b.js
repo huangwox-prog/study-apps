@@ -273,15 +273,16 @@ App.blocks.push((e) => {
 });
 
 /* ============ 見本(架空の名前・架空の学校) ============ */
-const NAMES = ["桐生 蓮", "鳴海 陽菜", "日向 紬", "佐倉 千尋", "柏木 湊", "神崎 遥", "早瀬 葵", "小鳥遊 楓", "水城 悠真", "鷹野 晴", "橘 翔太", "若葉 颯", "朝倉 大翔", "榊 美月", "結城 心春", "白石 結衣", "瀬戸 律", "篠原 颯太", "高峰 蒼", "九条 樹", "雪村 詩", "七瀬 柚", "真柴 芽依", "望月 隼", "藤代 澪", "一ノ瀬 美咲", "宮坂 凛", "相馬 陸", "東雲 朔", "天野 灯", "春日 陽向", "久遠 奏"];
-const SCH = ["東高", "西高", "南高"];
+const NAMES = ["桐生 蓮", "鳴海 陽菜", "日向 紬", "佐倉 千尋", "柏木 湊", "神崎 遥", "早瀬 葵", "小鳥遊 楓", "水城 悠真", "鷹野 晴", "橘 翔太", "若葉 颯", "朝倉 大翔", "榊 美月", "結城 心春", "白石 結衣", "瀬戸 律", "篠原 颯太", "高峰 蒼", "九条 樹", "雪村 詩", "七瀬 柚", "真柴 芽依", "望月 隼", "藤代 澪", "一ノ瀬 美咲", "宮坂 凛", "相馬 陸", "東雲 朔", "天野 灯", "春日 陽向", "久遠 奏", "楠木 岳", "志賀 凪", "黒川 瑞希", "三枝 悠", "梶原 朔太郎", "小野寺 栞", "有馬 隼人", "冬木 彩音", "宇佐美 湊斗", "月島 玲奈", "堂本 拓真", "霧島 沙耶", "綾瀬 蒼汰", "園田 咲良", "錦織 唯", "石動 悠斗", "氷室 茜", "鹿島 光", "八神 美羽", "水無瀬 駿", "国枝 莉子", "槙野 大和", "霜月 ひかり", "諏訪 倫太郎", "長谷部 紗英", "伊吹 晴人", "宗像 結菜", "御園 陽", "碧海 琥珀", "城戸 遼", "朝比奈 渚", "榎本 光希"];
+const SCH = ["東高", "西高", "南高"], SCH4 = [...SCH, "北高"];
 App.makeSample = (type) => {
   const rand = Core.rng(20260501);
   const mk = (n, schools) => NAMES.slice(0, n).map((nm, i) => ({ id: uid(), name: nm, school: schools[i % schools.length], level: 1 + Math.floor(rand() * 5) }));
   if (type === "practice") {
-    const e = Core.blankEvent({ id: uid(), name: "見本:合同練習試合(名簿だけ)", mode: "practice", games: 3, points: 15, players: mk(32, SCH) });
+    const e = Core.blankEvent({ id: uid(), name: "見本:合同練習試合・32人(名簿だけ)", mode: "practice", games: 3, points: 15, players: mk(32, SCH) });
     return e;
   }
+  if (type === "practice64") return Core.blankEvent({ id: uid(), name: "見本:合同練習試合・64人(名簿だけ)", mode: "practice", games: 3, points: 15, players: mk(64, SCH4) });
   const e = Core.blankEvent({ id: uid(), name: "見本:部内リーグ戦", mode: "league", players: mk(12, SCH.slice(0, 2)), groupSize: 4 });
   Core.autoAssign(e, 7);
   return e;
