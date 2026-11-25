@@ -124,3 +124,5 @@
 - players[]: grade(0-6), pref, block. practice: nearGrade, avoidPref, avoidBlock (off by default; weights in Core.pMatchCost, weaker than rank tolerance).
 - (古い書き方・2026-11-26 に置き換えた)組み方の選びかたは、下の「組み方の優先順位」を見る。
 - Rest fairness (Core.solveUnits restCost): rested last round 5000, each past rest 2500, each missing game 2500 (higher than one rank-limit overrun 2000).
+
+(2026-11-26 公開ページを作り直すために、この行を追加。アプリの中身は変えていない)
