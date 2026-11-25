@@ -220,8 +220,8 @@ function pRoundHTML(e, SC, ri, cumAll) {
   return `<section class="card" id="round-${r.id}"><div class="card-head"><div><h2>${Core.roundNo(e, ri)}回転目</h2><p class="faint">${kindLabel(r)} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了${hasDup ? ` · <span class="chip" style="background:var(--arc-2-soft);color:var(--arc-2)">かぶり ${hasDup}</span>` : ""}</p></div>
       <div class="row"><button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">組み直す</button><button class="btn btn-ghost btn-sm btn-danger" data-action="pdel" data-r="${r.id}">削除</button></div></div>
     ${askMsg}${dup ? `<div class="confirm perr"><b>同じ人が同じ回転に2回入っています。</b>直してください。</div>` : ""}
-    ${r.kind === "mixed" ? mixedTableHTML(e, r, ri) +`<details class="more" ${ui.pCardsOpen ? "open" : ""} data-toggle="pCardsOpen"><summary>点数の入力・入れ替え(試合カード)</summary>` : ""}
-    <div class="pgrid">${r.matches.map((_, mi) => pMatchHTML(e, SC, r, ri, mi, iss, cum)).join("")}</div>${r.kind === "mixed" ? "" : benchHTML(e, SC, r, ri, iss)}${r.kind === "mixed" ? "</details>" : ""}</section>`;
+    ${r.kind === "mixed" ? mixedTableHTML(e, r, ri) +`<div class="cards-box"><h3 class="cards-head">点数の入力・入れ替え(試合カード)</h3>` : ""}
+    <div class="pgrid">${r.matches.map((_, mi) => pMatchHTML(e, SC, r, ri, mi, iss, cum)).join("")}</div>${r.kind === "mixed" ? "" : benchHTML(e, SC, r, ri, iss)}${r.kind === "mixed" ? "</div>" : ""}</section>`;
 }
 function nextCardHTML(e, SC) {
   const rs = e.practice.rounds, n = rs.length + 1, ri = rs.length, kind = nextKindOf(e);

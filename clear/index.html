@@ -215,6 +215,9 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 .onoff-track i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:var(--shadow-sm);transition:left var(--dur-fast) var(--ease)}
 .onoff b{min-width:2.4em;text-align:left;font-size:.82rem}.onoff.is-on{border-color:var(--accent);color:var(--accent)}.onoff.is-on .onoff-track{background:var(--accent)}.onoff.is-on .onoff-track i{left:19px}
 .checks{flex-basis:100%;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+/* 点数を入れる試合カードは、たためない(うっかり閉じると、消えたように見えるため) */
+.cards-box{margin-top:14px;padding:12px 16px;border-radius:16px 16px 16px 30px;background:var(--surface-soft);border:1px solid var(--border-soft)}.cards-head{font-size:.95rem;color:var(--text-secondary);margin:0 0 12px}
+@media(max-width:640px){.cards-box{padding:10px 8px}}
 .pm-num{display:flex;flex-direction:column;align-items:center;gap:4px}
 .court-in{width:3.2em;height:2.2em;padding:0;text-align:center;font-size:.95rem;font-weight:800;text-transform:uppercase;border-radius:10px;background:var(--surface-strong);color:var(--text);border:1.5px solid var(--border)}
 .court-lb{font-size:.72rem;font-weight:700;line-height:1;color:var(--text-secondary);white-space:nowrap;margin-bottom:-1px}
@@ -2374,8 +2377,8 @@ function pRoundHTML(e, SC, ri, cumAll) {
   return `<section class="card" id="round-${r.id}"><div class="card-head"><div><h2>${Core.roundNo(e, ri)}回転目</h2><p class="faint">${kindLabel(r)} · ${r.matches.length}試合 · ${done}/${r.matches.length} 終了${hasDup ? ` · <span class="chip" style="background:var(--arc-2-soft);color:var(--arc-2)">かぶり ${hasDup}</span>` : ""}</p></div>
       <div class="row"><button class="btn btn-secondary btn-sm" data-action="preg" data-r="${r.id}">組み直す</button><button class="btn btn-ghost btn-sm btn-danger" data-action="pdel" data-r="${r.id}">削除</button></div></div>
     ${askMsg}${dup ? `<div class="confirm perr"><b>同じ人が同じ回転に2回入っています。</b>直してください。</div>` : ""}
-    ${r.kind === "mixed" ? mixedTableHTML(e, r, ri) +`<details class="more" ${ui.pCardsOpen ? "open" : ""} data-toggle="pCardsOpen"><summary>点数の入力・入れ替え(試合カード)</summary>` : ""}
-    <div class="pgrid">${r.matches.map((_, mi) => pMatchHTML(e, SC, r, ri, mi, iss, cum)).join("")}</div>${r.kind === "mixed" ? "" : benchHTML(e, SC, r, ri, iss)}${r.kind === "mixed" ? "</details>" : ""}</section>`;
+    ${r.kind === "mixed" ? mixedTableHTML(e, r, ri) +`<div class="cards-box"><h3 class="cards-head">点数の入力・入れ替え(試合カード)</h3>` : ""}
+    <div class="pgrid">${r.matches.map((_, mi) => pMatchHTML(e, SC, r, ri, mi, iss, cum)).join("")}</div>${r.kind === "mixed" ? "" : benchHTML(e, SC, r, ri, iss)}${r.kind === "mixed" ? "</div>" : ""}</section>`;
 }
 function nextCardHTML(e, SC) {
   const rs = e.practice.rounds, n = rs.length + 1, ri = rs.length, kind = nextKindOf(e);
