@@ -462,14 +462,17 @@ function pOutcome(e, m) {
 function pPlaced(r) { const out = []; r.matches.forEach((m) => m.a.concat(m.b).forEach((x) => x && out.push(x))); return out; }
 /* 組み合わせの鍵。両側の顔ぶれがまったく同じときだけ同じ鍵(4人のうち1人でも違えば、別の組み合わせ)。左右は区別しない */
 const matchKey = (A, B) => [sideIds(A).slice().sort().join("+"), sideIds(B).slice().sort().join("+")].sort().join(" vs ");
-function pHistory(e, upto) {
+/* day: これから見る回転の日。「かぶりをなくす範囲」が「その日だけ」のときは、同じ日の回転だけを、かぶりの元にする(出た試合数は、全部の日で数える) */
+function pHistory(e, upto, day) {
+  const here = day != null ? day : e.practice.rounds[upto] && e.practice.rounds[upto].day;
+  const onlyDay = e.practice.repeatScope === "day" && here != null;
   const met = {}, partner = {}, games = {};
   const add = (o, k, n) => { (o[k] || (o[k] = [])).push(n); };
   e.practice.rounds.slice(0, upto).forEach((r, ri) => r.matches.forEach((m) => {
-    const A = m.a.filter(Boolean), B = m.b.filter(Boolean);
-    if (A.length && A.length === m.a.length && B.length && B.length === m.b.length) add(met, matchKey(A, B), ri + 1);
-    if (A.length === 2) add(partner, keyOf(A[0], A[1]), ri + 1);
-    if (B.length === 2) add(partner, keyOf(B[0], B[1]), ri + 1);
+    const A = m.a.filter(Boolean), B = m.b.filter(Boolean), count = !onlyDay || r.day === here;
+    if (count && A.length && A.length === m.a.length && B.length && B.length === m.b.length) add(met, matchKey(A, B), ri + 1);
+    if (count && A.length === 2) add(partner, keyOf(A[0], A[1]), ri + 1);
+    if (count && B.length === 2) add(partner, keyOf(B[0], B[1]), ri + 1);
     A.concat(B).forEach((x) => (games[x] = (games[x] || 0) + 1));
   }));
   return { met, partner, games, prev: upto };
@@ -657,10 +660,10 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds, ban) {
   return { pairs, bench: best.slice(nSlot) };
 }
 /* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out, toSingles } */
-function genMixed(e, upto, manualRest, seed, must) {
+function genMixed(e, upto, manualRest, seed, must, day) {
   manualRest = manualRest || [];
   const mustIds = new Set(must || []);
-  const H0 = pHistory(e, upto || 0), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
+  const H0 = pHistory(e, upto || 0, day), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
   const H = e.practice.avoidRepeat === false ? { ...H0, met: {}, partner: {} } : H0; // 「前に当たった組み合わせを避ける」をはずすと、過去の対戦を見ない
   const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
   const free = (id) => pm[id] && !manualRest.includes(id);
@@ -673,14 +676,17 @@ function genMixed(e, upto, manualRest, seed, must) {
   // ペアの数が奇数で余った1組は、休ませずにシングルスへ回す(2人ともシングルスで出る)
   // 相方が休み(抜いた)のペアの、残った1人もシングルスへ
   const lone = e.pairs.filter((p) => pm[p.a] && pm[p.b] && !pm[p.a].single && !pm[p.b].single && free(p.a) !== free(p.b)).map((p) => pm[free(p.a) ? p.a : p.b]);
-  const extra = dbl.bench.flatMap((u) => u).concat(lone), toSingles = extra.map((p) => p.id);
+  const extra = dbl.bench.flatMap((u) => u).concat(lone), extraIds = extra.map((p) => p.id);
   const partnerOf = {}; e.pairs.forEach((p) => { partnerOf[p.a] = p.b; partnerOf[p.b] = p.a; });
   const sgl = solveUnits(e, singles.concat(extra.map((p) => [p])), H, rand, avoid, tol, levelOf, mustIds, (x, y) => partnerOf[x[0].id] === y[0].id); // 元のペアどうしは、なるべく当てない
   const mk = (kind, [A, B]) => ({ id: uid(), a: A.map((p) => p.id), b: B.map((p) => p.id), g: [], win: null, kind });
   const byLevel = (x, y) => (sideLevel(e, y.a) + sideLevel(e, y.b)) - (sideLevel(e, x.a) + sideLevel(e, x.b));
-  const dm = dbl.pairs.map((u) => mk("doubles", u)).sort(byLevel), sm = sgl.pairs.map((u) => mk("singles", u)).sort(byLevel);
+  // 当たる相手がほかにいないと、余った組の2人どうしになる。そのシングルスは作らず、組のまま休みにする
+  const stuck = sgl.pairs.filter(([x, y]) => partnerOf[x[0].id] === y[0].id && extraIds.includes(x[0].id) && extraIds.includes(y[0].id));
+  const stuckIds = stuck.flatMap(([x, y]) => [x[0].id, y[0].id]), toSingles = extraIds.filter((id) => !stuckIds.includes(id));
+  const dm = dbl.pairs.map((u) => mk("doubles", u)).sort(byLevel), sm = sgl.pairs.filter((u) => !stuck.includes(u)).map((u) => mk("singles", u)).sort(byLevel);
   const matches = dm.concat(sm).map((m, i) => { delete m.kind; m.court = i + 1; return m; });
-  const restInfo = [];
+  const restInfo = stuck.map(([x, y]) => ({ kind: "pair", ids: [x[0].id, y[0].id] }));
   sgl.bench.forEach((u) => restInfo.push({ kind: "single", ids: u.map((p) => p.id) }));
   const autoRest = restInfo.flatMap((x) => x.ids);
   return { matches, rest: [...new Set(manualRest.filter((id) => pm[id]).concat(autoRest))], autoRest, restInfo, out, toSingles };

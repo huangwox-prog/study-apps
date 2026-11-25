@@ -199,10 +199,12 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 .glines b{font-weight:650}.glines b:first-child{text-align:right}.glines b:last-child{text-align:left}.glines i{font-style:normal;color:var(--text-tertiary)}
 .gtotal{display:flex;justify-content:center;margin-top:2px;padding:2px 14px 0;border-top:2px solid var(--border)}.gtotal .pst{font-size:1.35rem}
 /* 日ごとのシートの切り替え。スクロールしても上に残る */
-.day-tabs{position:sticky;top:60px;z-index:30;display:flex;gap:8px;overflow-x:auto;padding:8px 10px;border-radius:18px 18px 18px 32px;background:color-mix(in srgb,var(--bg) 90%,transparent);border:1px solid var(--border-soft);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:var(--shadow-sm);scroll-margin-top:64px;scrollbar-width:none}
-.day-tab{display:flex;flex-direction:column;align-items:center;min-width:92px;padding:6px 18px;border-radius:12px 12px 12px 22px;font-weight:800;font-size:1.05rem;line-height:1.3;background:var(--surface-strong);border:2px solid var(--border-soft);color:var(--text-secondary);white-space:nowrap}
+.day-tabs{position:sticky;top:calc(var(--nav-h,56px) + 4px);z-index:30;display:flex;gap:8px;overflow-x:auto;padding:8px 10px;border-radius:18px 18px 18px 32px;background:color-mix(in srgb,var(--bg) 90%,transparent);border:1px solid var(--border-soft);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:var(--shadow-sm);scroll-margin-top:64px;scrollbar-width:none}
+.day-tab.empty-day:not(.on){border-style:dashed;opacity:.75}
+.day-tab{flex:1 0 auto;max-width:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:52px;min-width:58px;padding:6px 8px;border-radius:12px 12px 12px 22px;font-weight:800;font-size:1.05rem;line-height:1.3;background:var(--surface-strong);border:2px solid var(--border-soft);color:var(--text-secondary);white-space:nowrap}
 .day-tab small{font-size:.7rem;font-weight:700;opacity:.8}.day-tab.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
 .day-add{padding:6px 16px;border-radius:999px;font-weight:700;font-size:.88rem;border:2px dashed var(--border);color:var(--text-secondary);white-space:nowrap;align-self:center}
+@media(max-width:640px){.day-tabs{gap:4px;padding:6px}.day-tab{flex:1 1 0;min-width:0;padding:6px 2px;font-size:.9rem;white-space:nowrap}}
 .pm-num{display:flex;flex-direction:column;align-items:center;gap:4px}
 .court-in{width:3.2em;height:2.2em;padding:0;text-align:center;font-size:.95rem;font-weight:800;text-transform:uppercase;border-radius:10px;background:var(--surface-strong);color:var(--text);border:1.5px solid var(--border)}
 .court-lb{font-size:.72rem;font-weight:700;line-height:1;color:var(--text-secondary);white-space:nowrap;margin-bottom:-1px}
@@ -768,14 +770,17 @@ function pOutcome(e, m) {
 function pPlaced(r) { const out = []; r.matches.forEach((m) => m.a.concat(m.b).forEach((x) => x && out.push(x))); return out; }
 /* 組み合わせの鍵。両側の顔ぶれがまったく同じときだけ同じ鍵(4人のうち1人でも違えば、別の組み合わせ)。左右は区別しない */
 const matchKey = (A, B) => [sideIds(A).slice().sort().join("+"), sideIds(B).slice().sort().join("+")].sort().join(" vs ");
-function pHistory(e, upto) {
+/* day: これから見る回転の日。「かぶりをなくす範囲」が「その日だけ」のときは、同じ日の回転だけを、かぶりの元にする(出た試合数は、全部の日で数える) */
+function pHistory(e, upto, day) {
+  const here = day != null ? day : e.practice.rounds[upto] && e.practice.rounds[upto].day;
+  const onlyDay = e.practice.repeatScope === "day" && here != null;
   const met = {}, partner = {}, games = {};
   const add = (o, k, n) => { (o[k] || (o[k] = [])).push(n); };
   e.practice.rounds.slice(0, upto).forEach((r, ri) => r.matches.forEach((m) => {
-    const A = m.a.filter(Boolean), B = m.b.filter(Boolean);
-    if (A.length && A.length === m.a.length && B.length && B.length === m.b.length) add(met, matchKey(A, B), ri + 1);
-    if (A.length === 2) add(partner, keyOf(A[0], A[1]), ri + 1);
-    if (B.length === 2) add(partner, keyOf(B[0], B[1]), ri + 1);
+    const A = m.a.filter(Boolean), B = m.b.filter(Boolean), count = !onlyDay || r.day === here;
+    if (count && A.length && A.length === m.a.length && B.length && B.length === m.b.length) add(met, matchKey(A, B), ri + 1);
+    if (count && A.length === 2) add(partner, keyOf(A[0], A[1]), ri + 1);
+    if (count && B.length === 2) add(partner, keyOf(B[0], B[1]), ri + 1);
     A.concat(B).forEach((x) => (games[x] = (games[x] || 0) + 1));
   }));
   return { met, partner, games, prev: upto };
@@ -963,10 +968,10 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds, ban) {
   return { pairs, bench: best.slice(nSlot) };
 }
 /* manualRest: 手で休みにした人。戻り値 { matches, rest, autoRest, restInfo, out, toSingles } */
-function genMixed(e, upto, manualRest, seed, must) {
+function genMixed(e, upto, manualRest, seed, must, day) {
   manualRest = manualRest || [];
   const mustIds = new Set(must || []);
-  const H0 = pHistory(e, upto || 0), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
+  const H0 = pHistory(e, upto || 0, day), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
   const H = e.practice.avoidRepeat === false ? { ...H0, met: {}, partner: {} } : H0; // 「前に当たった組み合わせを避ける」をはずすと、過去の対戦を見ない
   const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
   const free = (id) => pm[id] && !manualRest.includes(id);
@@ -979,14 +984,17 @@ function genMixed(e, upto, manualRest, seed, must) {
   // ペアの数が奇数で余った1組は、休ませずにシングルスへ回す(2人ともシングルスで出る)
   // 相方が休み(抜いた)のペアの、残った1人もシングルスへ
   const lone = e.pairs.filter((p) => pm[p.a] && pm[p.b] && !pm[p.a].single && !pm[p.b].single && free(p.a) !== free(p.b)).map((p) => pm[free(p.a) ? p.a : p.b]);
-  const extra = dbl.bench.flatMap((u) => u).concat(lone), toSingles = extra.map((p) => p.id);
+  const extra = dbl.bench.flatMap((u) => u).concat(lone), extraIds = extra.map((p) => p.id);
   const partnerOf = {}; e.pairs.forEach((p) => { partnerOf[p.a] = p.b; partnerOf[p.b] = p.a; });
   const sgl = solveUnits(e, singles.concat(extra.map((p) => [p])), H, rand, avoid, tol, levelOf, mustIds, (x, y) => partnerOf[x[0].id] === y[0].id); // 元のペアどうしは、なるべく当てない
   const mk = (kind, [A, B]) => ({ id: uid(), a: A.map((p) => p.id), b: B.map((p) => p.id), g: [], win: null, kind });
   const byLevel = (x, y) => (sideLevel(e, y.a) + sideLevel(e, y.b)) - (sideLevel(e, x.a) + sideLevel(e, x.b));
-  const dm = dbl.pairs.map((u) => mk("doubles", u)).sort(byLevel), sm = sgl.pairs.map((u) => mk("singles", u)).sort(byLevel);
+  // 当たる相手がほかにいないと、余った組の2人どうしになる。そのシングルスは作らず、組のまま休みにする
+  const stuck = sgl.pairs.filter(([x, y]) => partnerOf[x[0].id] === y[0].id && extraIds.includes(x[0].id) && extraIds.includes(y[0].id));
+  const stuckIds = stuck.flatMap(([x, y]) => [x[0].id, y[0].id]), toSingles = extraIds.filter((id) => !stuckIds.includes(id));
+  const dm = dbl.pairs.map((u) => mk("doubles", u)).sort(byLevel), sm = sgl.pairs.filter((u) => !stuck.includes(u)).map((u) => mk("singles", u)).sort(byLevel);
   const matches = dm.concat(sm).map((m, i) => { delete m.kind; m.court = i + 1; return m; });
-  const restInfo = [];
+  const restInfo = stuck.map(([x, y]) => ({ kind: "pair", ids: [x[0].id, y[0].id] }));
   sgl.bench.forEach((u) => restInfo.push({ kind: "single", ids: u.map((p) => p.id) }));
   const autoRest = restInfo.flatMap((x) => x.ids);
   return { matches, rest: [...new Set(manualRest.filter((id) => pm[id]).concat(autoRest))], autoRest, restInfo, out, toSingles };
@@ -2119,15 +2127,16 @@ const keepCourts = (before, after) => after.forEach((m, i) => { if (before[i] &&
 
 /* ---------- 日ごとのシート ---------- */
 const daysOf = (e) => [...new Set(e.practice.rounds.map((r) => r.day))].sort((a, b) => a - b);
-function curDay(e) { const ds = daysOf(e), max = ds.length ? ds[ds.length - 1] : 0, sel = (ui.daySel || {})[e.id]; return sel && (ds.includes(sel) || sel === max + 1) ? sel : max || 1; }
+const DAY_TABS = 5; // 日は5日目まで。前のデータにそれより後の日があれば、その日も出す
+const lastDay = (e) => { const ds = daysOf(e); return ds.length ? ds[ds.length - 1] : 0; };
+function curDay(e) { const sel = (ui.daySel || {})[e.id]; return sel && sel <= Math.max(DAY_TABS, lastDay(e)) ? sel : lastDay(e) || 1; }
 const setDay = (e, d) => { (ui.daySel || (ui.daySel = {}))[e.id] = d; };
 /* day の回転を足す位置(回転は日の順に並べておく)。「次も抜く」の開始位置もずらす */
 const insertAt = (e, day) => e.practice.rounds.filter((r) => r.day <= day).length;
 function addRound(e, at, r) { if (at < e.practice.rounds.length) e.practice.dayOff.forEach((x) => { if (x.from >= at) x.from++; }); e.practice.rounds.splice(at, 0, r); setDay(e, r.day); }
 function dayTabsHTML(e) {
-  const ds = daysOf(e); if (!ds.length) return "";
-  const max = ds[ds.length - 1], cur = curDay(e), all = cur > max ? ds.concat(cur) : ds;
-  return `<div class="day-tabs" role="tablist" aria-label="日の切り替え">${all.map((d) => { const n = e.practice.rounds.filter((r) => r.day === d).length; return `<button role="tab" aria-selected="${d === cur}" class="day-tab ${d === cur ? "on" : ""}" data-action="day-sel" data-d="${d}">${d}日目<small>${n ? `${n}回転` : "これから"}</small></button>`; }).join("")}${cur > max || max >= 30 ? "" : `<button class="day-add" data-action="day-add">＋ ${max + 1}日目</button>`}</div>`;
+  const cur = curDay(e), all = Array.from({ length: Math.max(DAY_TABS, lastDay(e)) }, (_, i) => i + 1);
+  return `<div class="day-tabs" role="tablist" aria-label="日の切り替え">${all.map((d) => { const n = e.practice.rounds.filter((r) => r.day === d).length; return `<button role="tab" aria-selected="${d === cur}" class="day-tab ${d === cur ? "on" : ""} ${n ? "" : "empty-day"}" data-action="day-sel" data-d="${d}">${d}日目${n ? `<small>${n}回転</small>` : ""}</button>`; }).join("")}</div>`;
 }
 
 /* ---------- 回転の作成・組み直し ---------- */
@@ -2135,7 +2144,7 @@ function genFor(e, r, ri, must, reunite) { return Core.genRound(e, r.kind, restA
 function emptyLast(r) { if (r.kind === "mixed") return; /* 番号のある回転は、並びを変えない(番号が崩れるため) */ r.matches.sort((x, y) => (x.a.some((v) => !v) || x.b.some((v) => !v) ? 1 : 0) - (y.a.some((v) => !v) || y.b.some((v) => !v) ? 1 : 0)); }
 function regen(e, r, must, msg, reunite) {
   if (r.kind === "mixed") { // 1回転目(シングルス+ダブルス): 手で休みにした人は残して、奇数の休みは作り直す
-    const ri0 = e.practice.rounds.indexOf(r), manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && !(must || []).includes(id)), g = Core.genMixed(e, ri0, manual, undefined, must || []);
+    const ri0 = e.practice.rounds.indexOf(r), manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && !(must || []).includes(id)), g = Core.genMixed(e, ri0, manual, undefined, must || [], r.day);
     keepCourts(r.matches, g.matches); r.matches = g.matches; r.rest = g.rest; r.autoRest = g.autoRest; r.restInfo = g.restInfo; r.toSingles = g.toSingles; r.out = g.out; commit(); render(); if (msg) toast(msg); return;
   }
   const ri = e.practice.rounds.indexOf(r), g = genFor(e, r, ri, must || [], reunite);
@@ -2355,7 +2364,8 @@ function firstRoundHTML(e, SC) {
   const tolOpts = [0, 1, 2, 3].map((k) => `<option value="${k}" ${e.practice.tol === k ? "selected" : ""}>${k === 0 ? "同じランクだけ" : `前後${k}まで`}</option>`).join("");
   const warn = [];
   if (nSingle % 2) warn.push(`シングルスが ${nSingle}人(奇数)なので、1人は休みになります。`);
-  if (nPair % 2) warn.push(`ペアが ${nPair}組(奇数)なので、1組は休みになります。`);
+  if (nPair === 1) warn.push(`ペアが1組だけです。ダブルスの試合には、2組以上必要です。${nSingle ? "この2人は、シングルスに回ります。" : ""}`);
+  else if (nPair % 2) warn.push(`ペアが ${nPair}組(奇数)なので、1組の2人はシングルスに回ります(当たる相手がいないときは休み)。`);
   const day = curDay(e), nRound = e.practice.rounds.filter((r) => r.day === day).length + 1, dayHead = day > 1 || daysOf(e).length > 1 ? `${day}日目 ` : "";
   return `<section class="card stack" id="first-round"><div class="card-head" style="margin:0"><div><h2>${dayHead}${nRound}回転目を作る</h2><p class="faint">${e.practice.rounds.length ? "前の回転の設定が入っています。この回転で変えたいところだけ直してください。" : ""}名簿で、ひとりずつ「ダブルス・シングルス・出場しない」と、ランク(強さ・5段階)を決めます。ペアは、2人にチェックを入れて「この2人をペアにする」(学校がちがっても組めます)。</p></div></div>
     <div class="row"><span class="chip chip-live">ダブルス ${nPair}組</span><span class="chip chip-ok">シングルス ${nSingle}人</span><span class="chip ${nOut ? "chip-err" : ""}">出場しない ${nOut}人</span></div>
@@ -2367,6 +2377,7 @@ function firstRoundHTML(e, SC) {
       return `${sg.length ? `<div class="namerow"><span class="pairlabel sgl-label">シングルス ${sg.length}人</span>${sg.map((p) => `<span class="namechip">${nm(p)}</span>`).join("")}</div>` : ""}${ot.length ? `<div class="namerow"><span class="outlabel">出場しない ${ot.length}人</span>${ot.map((p) => `<span class="namechip is-out">${nm(p)}</span>`).join("")}</div>` : ""}`; })()}
     <details class="more" open><summary>組み方の設定</summary><div class="settings">
       <label class="check"><input type="checkbox" data-change="p-repeat" ${e.practice.avoidRepeat !== false ? "checked" : ""}>前に当たった組み合わせを避ける</label>
+      <div class="field"><span>かぶりをなくす範囲</span><div class="rds" role="radiogroup" aria-label="かぶりをなくす範囲">${[["day", "その日の回転だけ"], ["all", "全部の日"]].map(([v, t]) => { const on = (e.practice.repeatScope === "day" ? "day" : "all") === v; return `<label class="rd ${on ? "on" : ""}"><input type="radio" name="repeat-scope" value="${v}" data-change="p-scope" ${on ? "checked" : ""}>${t}</label>`; }).join("")}</div></div>
       <label class="field"><span>ランクの近い相手と当てる(差の許容)</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
       <label class="field"><span>点数</span><select class="select" data-change="ev-points">${[21, 15, 11].map((p) => `<option value="${p}" ${e.points === p ? "selected" : ""}>${p}点</option>`).join("")}</select></label>
       <label class="field"><span>ゲーム</span><select class="select" data-change="ev-games"><option value="1" ${e.games === 1 ? "selected" : ""}>1ゲーム</option><option value="3" ${e.games === 3 ? "selected" : ""}>3ゲーム(2ゲーム先取)</option></select></label></div></details>
@@ -2496,6 +2507,13 @@ function pstatsHTML(e) {
     <div id="pstats-body">${ui.pView === "sheet" ? sheetHTML(e) : ui.pView === "merge" ? mergeHTML(e) : listHTML(e)}</div></section>${ui.pPlayer ? playerPageHTML(e, ui.pPlayer) : ""}`;
 }
 App.views.rounds = practiceHTML; App.views.pstats = pstatsHTML;
+/* 上の帯は、画面が狭いと2段になる。日のボタンが隠れないように、帯の高さを測って、その下に止める */
+function watchNav() {
+  const set = () => { const n = document.querySelector("#app .nav"); if (n && n.offsetHeight) document.documentElement.style.setProperty("--nav-h", `${n.offsetHeight}px`); };
+  new MutationObserver(set).observe(document.getElementById("app"), { childList: true });
+  addEventListener("resize", set); set();
+}
+watchNav();
 
 /* ---------- 操作 ---------- */
 const withR = (b) => { const e = ev(), r = e.practice.rounds[Number(b.dataset.r)] || rById(e, b.dataset.r); return [e, r]; };
@@ -2510,8 +2528,8 @@ Object.assign(A, {
   "all-single": () => { const e = ev(); e.players.forEach((p) => { if (!Core.pairOfPlayer(e, p.id)) p.single = true; }); commit(); render(); },
   "all-out": () => { const e = ev(); if (!App.askOk("ペアも解除して、全員を「出場しない」に戻しますか？")) return; e.pairs.slice().forEach((p) => Core.removePair(e, p.id)); e.players.forEach((p) => (p.single = false)); commit(); render(); },
   "first-round": () => {
-    const e = ev(), day = curDay(e), n = insertAt(e, day), g = Core.genMixed(e, n, []);
-    if (!g.matches.length) { toast("試合を作れません。ダブルスは2組以上、シングルスは2人以上いると、試合になります。"); return; }
+    const e = ev(), day = curDay(e), n = insertAt(e, day), g = Core.genMixed(e, n, [], undefined, [], day);
+    if (!g.matches.length) { toast(`試合を作れません(今はペア${e.pairs.length}組)。ダブルスはペアが2組以上、シングルスは2人以上いると試合になります。`); return; }
 
     const r = { id: uid(), day, kind: "mixed", fixed: false, rest: g.rest, autoRest: g.autoRest, restInfo: g.restInfo, toSingles: g.toSingles, out: g.out, matches: g.matches };
     addRound(e, n, r); ui.sel = []; commit(); render();
@@ -2556,7 +2574,6 @@ Object.assign(A, {
   "pplayer-close": () => { ui.pPlayer = null; render(); },
   "pplayer-close-bg": (b, evt) => { if (evt.target === b) { ui.pPlayer = null; render(); } },
   "day-sel": (b) => { const e = ev(); setDay(e, Number(b.dataset.d)); ui.pOpen = null; ui.confirm = null; render(); const n = $(".day-tabs"); if (n && n.getBoundingClientRect().top < 70) n.scrollIntoView({ block: "start", behavior: "instant" }); },
-  "day-add": () => { const e = ev(), ds = daysOf(e), d = (ds.length ? ds[ds.length - 1] : 0) + 1; setDay(e, d); ui.pOpen = null; ui.sel = []; render(); toast(`${d}日目のシートです。名簿を確かめて「1回転目を作成」を押してください`); },
   pjump: (b) => { { const e = ev(), [r] = matchById(e, b.dataset.m); if (r) setDay(e, r.day); } ui.pPlayer = null; ui.tab = "rounds"; ui.pOpen = b.dataset.m; render(); const n = document.getElementById(`pm-${b.dataset.m}`); if (n) { n.scrollIntoView({ block: "center", behavior: "smooth" }); n.style.boxShadow = "0 0 0 4px var(--accent)"; setTimeout(() => (n.style.boxShadow = ""), 1400); } },
   pview: (b) => { ui.pView = b.dataset.view; render(); },
   psort: (b) => { ui.pSort = b.dataset.k; render(); },
@@ -2574,6 +2591,7 @@ Object.assign(Ch, {
     p.single = v === "single";
     commit(); render();
   },
+  "p-scope": (t) => { ev().practice.repeatScope = t.value === "day" ? "day" : "all"; commit(); render(); },
   "p-repeat": (t) => { ev().practice.avoidRepeat = t.checked; commit(); render(); },
   "pnext-kind": (t) => { ui.nextKind = t.value; render(); },
   "p-tol": (t) => { ev().practice.tol = clamp(Number(t.value), 0, Core.RANK_MAX - 1); commit(); render(); },
