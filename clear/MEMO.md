@@ -85,3 +85,4 @@
 
 - players[]: grade(0-6), pref, block. practice: nearGrade, avoidPref, avoidBlock (off by default; weights in Core.pMatchCost, weaker than rank tolerance).
 - Matching options are all checkboxes. avoidRepeat=false means closest rank first (repeats allowed). Rank tolerance overrun costs 2000 per level. practice.priority is no longer used.
+- Rest fairness (Core.solveUnits restCost): rested last round 5000, each past rest 2500, each missing game 2500 (higher than one rank-limit overrun 2000).

@@ -791,7 +791,9 @@ function pHistory(e, upto, day) {
     if (count && B.length === 2) add(partner, keyOf(B[0], B[1]), ri + 1);
     A.concat(B).forEach((x) => (games[x] = (games[x] || 0) + 1));
   }));
-  return { met, partner, games, prev: upto, opt: e.practice };
+  const rests = {}, justRested = {}; // これまでに休んだ回数と、直前の回転で休んだ人(手で抜いた回も数える。全部の日で数える)
+  e.practice.rounds.slice(0, upto).forEach((r, ri, list) => (r.rest || []).forEach((id) => { rests[id] = (rests[id] || 0) + 1; if (ri === list.length - 1) justRested[id] = true; }));
+  return { met, partner, games, rests, justRested, prev: upto, opt: e.practice };
 }
 const avgLv = (S) => S.reduce((s, p) => s + p.level, 0) / S.length;
 /* 組むときに使う強さ。ダブルスはペアのランク(選手のシングルスのランクは使わない) */
@@ -954,6 +956,10 @@ function genRound(e, kind, rest, upto, must = [], seed, reunite = false, fixedOv
 function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds, ban) {
   const byPair = units.length && units[0].length === 2;
   const isMust = (u) => !!mustIds && u.some((p) => mustIds.has(p.id)); // 「戻す」で指定した人は、休みにしない
+  /* 休みにするときの重さ。重い人ほど休みにしない:直前の回転で休んだ人 > 休んだ回数が多い人・試合数が少ない人。
+     ランク差の上限を1段超える重さ(2000)より重くして、同じ人ばかりが休まないようにする */
+  const maxG = Math.max(0, ...units.flat().map((p) => H.games[p.id] || 0));
+  const restCost = (u) => u.reduce((s, p) => s + (H.justRested[p.id] ? 5000 : 0) + (H.rests[p.id] || 0) * 2500 + (maxG - (H.games[p.id] || 0)) * 2500, 0);
   const nm = Math.floor(units.length / 2), nSlot = nm * 2;
   if (nm < 1) return { pairs: [], bench: units.slice() };
   const gOf = (p) => H.games[p.id] || 0;
@@ -961,11 +967,11 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds, ban) {
   let best = null, bestCost = Infinity;
   for (let t = 0; t < 10; t++) {
     const byGames = shuffle(units.slice(), rand).sort((a, b) => b.reduce((s, p) => s + gOf(p), 0) - a.reduce((s, p) => s + gOf(p), 0));
-    const ordered = byGames.filter((u) => !isMust(u)).concat(byGames.filter(isMust)); // 指定した人は、休みの候補のいちばん最後
+    const ordered = byGames.filter((u) => !isMust(u)).sort((a, b) => restCost(a) - restCost(b)).concat(byGames.filter(isMust)); // 指定した人は、休みの候補のいちばん最後
     const bench = ordered.slice(0, units.length - nSlot);
     const slots = shuffle(units.filter((u) => !bench.includes(u)), rand).sort((a, b) => lvl(b) - lvl(a));
     const arr = slots.concat(bench);
-    const costAt = (k) => { if (k >= nSlot) return isMust(arr[k]) ? 5000 : 0; const x = arr[Math.floor(k / 2) * 2], y = arr[Math.floor(k / 2) * 2 + 1]; return pMatchCost(H, tol, avoid, x, y, byPair, levelOf) + (ban && ban(x, y) ? 3000 : 0); };
+    const costAt = (k) => { if (k >= nSlot) return (isMust(arr[k]) ? 1000000 : 0) + restCost(arr[k]); const x = arr[Math.floor(k / 2) * 2], y = arr[Math.floor(k / 2) * 2 + 1]; return pMatchCost(H, tol, avoid, x, y, byPair, levelOf) + (ban && ban(x, y) ? 3000 : 0); };
     let cur = 0;
     for (let m = 0; m < nSlot; m += 2) cur += costAt(m);
     for (let k = nSlot; k < arr.length; k++) cur += costAt(k);
