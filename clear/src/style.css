@@ -311,3 +311,6 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
   #print-area table{font-size:9pt}#print-area th,#print-area td{border:1px solid #888;color:#000}
   .pp-head{display:flex;justify-content:space-between;font-size:12pt;margin-bottom:6px}
 }
+
+.rds-col{flex-direction:column;align-items:stretch}.rds-col .rd{border-radius:14px 14px 14px 22px;padding:8px 14px;align-items:flex-start;font-weight:500}.rds-col .rd b{font-weight:700}
+.prio-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}.prio-card{display:grid;grid-template-columns:auto 1.6em minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 10px;border-radius:14px 14px 14px 22px;background:var(--surface-strong);border:1.5px solid var(--border-soft);cursor:grab;touch-action:none}.prio-card.is-off{opacity:.55}.prio-card.drop-over{border-color:var(--accent);background:var(--accent-soft)}.prio-card.drag-src{opacity:.35}.prio-no{font-weight:800;color:var(--accent);text-align:center}.prio-main{align-items:flex-start;cursor:pointer}.prio-mv{display:inline-flex;gap:2px}.prio-mv .icon-btn{width:28px;height:28px;font-size:.8rem}.prio-mv .icon-btn:disabled{opacity:.3}

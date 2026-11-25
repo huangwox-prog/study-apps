@@ -8,6 +8,31 @@ const App = window.App, { A, Ch, F, ui, esc, $, lvTxt } = App;
 const ev = App.ev, commit = App.commit, render = App.render, toast = App.toast, pn = App.pn;
 Object.assign(ui, { pCardsOpen: true, pOpen: null, pView: "list", pSort: "level", nextKind: null, nextDay: null, nextRest: [], pSheetRound: "all", pPlayer: null, ask: null, showRest: false, showSet: false });
 
+/* 組み方の優先順位:項目のカードを上から並べる(上ほど優先)。つかんで動かす・▲▼で動かす・チェックで使う/使わない */
+const PRIO_INFO = {
+  fresh: ["前に当たった組み合わせを避ける", "同じ相手・同じ組が続くのを、なるべく避けます"],
+  school: ["別の学校の人と当てる", "同じ学校どうしが当たるのを、なるべく避けます"],
+  level: ["ランクが近い人と当てる", "ランクの差が小さい相手に当てます"],
+  grade: ["近い学年どうしで組む", "学年が入っている人だけ、学年の近い相手に当てます"],
+  pref: ["同じ県どうしを避ける", "県が入っている人だけ、同じ県どうしを避けます"],
+  block: ["同じブロックどうしを避ける", "ブロックが入っている人だけ、同じブロックどうしを避けます"],
+};
+const prioOn = (e, k) => Core.PRIO_ON[k](e.practice);
+function prioHTML(e) {
+  const o = e.practice, list = Core.prioList(o), cur = o.tol;
+  let no = 0;
+  const cards = list.map((k, i) => { const on = prioOn(e, k), [t, d] = PRIO_INFO[k];
+    return `<li class="prio-card ${on ? "" : "is-off"}" data-drag="prio" data-drag-id="${k}" data-drag-label="${esc(t)}" data-drop="prio" data-drop-id="${k}">
+      <span class="grip" aria-hidden="true">⠿</span><span class="prio-no">${on ? ++no : "−"}</span>
+      <label class="check prio-main"><input type="checkbox" data-change="p-prio-on" data-key="${k}" ${on ? "checked" : ""}><span><b>${t}</b><br><span class="faint">${d}</span></span></label>
+      <span class="prio-mv"><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t)} を上へ">▲</button><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="1" ${i === list.length - 1 ? "disabled" : ""} aria-label="${esc(t)} を下へ">▼</button></span></li>`; }).join("");
+  const tols = [...new Set([1, 2, cur])].filter((k) => k >= 0 && k <= Core.RANK_MAX - 1).sort((a, b) => a - b);
+  const tolOpts = tols.map((k) => `<option value="${k}" ${cur === k ? "selected" : ""}>${k === 0 ? "同じランクだけ" : `前後${k}まで`}</option>`).join("");
+  return `<div class="field prio"><span>組むときの優先(上にあるものほど優先。つかんで並べかえます)</span><ol class="prio-list">${cards}</ol></div>
+    <div class="settings"><label class="field"><span>ランク差の上限</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
+    <div class="field"><span>かぶりをなくす範囲</span><div class="rds" role="radiogroup" aria-label="かぶりをなくす範囲">${[["day", "その日の回転だけ"], ["all", "全部の日"]].map(([v, t]) => { const on = (o.repeatScope === "day" ? "day" : "all") === v; return `<label class="rd ${on ? "on" : ""}"><input type="radio" name="repeat-scope" value="${v}" data-change="p-scope" ${on ? "checked" : ""}>${t}</label>`; }).join("")}</div></div></div>
+    <label class="check" title="ランク5が少人数のときなどに、同じ相手ばかりになるのを防ぎます"><input type="checkbox" data-change="p-opt" data-key="widenTol" ${o.widenTol ? "checked" : ""} ${prioOn(e, "fresh") ? "" : "disabled"}>同じ相手が続きそうなときは、ランク差の上限を超えて、違う相手に当てる</label>`;
+}
 const rById = (e, id) => e.practice.rounds.find((r) => r.id === id);
 const mixedLabel = (r) => { const d = r.matches.some((m) => m.a.length === 2), s = r.matches.some((m) => m.a.length === 1); return d && !s ? "ダブルス" : s && !d ? "シングルス" : "シングルス+ダブルス"; }; // 実際の中身に合わせる(全部ダブルスなら「ダブルス」)
 const kindLabel = (r) => (r.kind === "mixed" ? mixedLabel(r) : r.kind === "doubles" ? (r.fixed ? "ダブルス(ペア固定)" : "ダブルス(毎回組み替え)") : "シングルス");
@@ -233,8 +258,7 @@ function nextCardHTML(e, SC) {
     <div class="field"><span>形式</span><div class="choice-grid">${kinds.map(([k, t, d]) => `<label class="choice"><input type="radio" name="nk" value="${k}" data-change="pnext-kind" ${kind === k ? "checked" : ""}><b>${t}</b><span class="faint">${d}</span></label>`).join("")}</div></div>
     ${fixedNo ? `<div class="confirm"><b>ペアがありません。</b>選手の画面でペアを作るか、<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button></div>` : ""}
     <details class="more" ${ui.showRest || ui.nextRest.length || Core.keptAt(e, ri).length ? "open" : ""} data-toggle="showRest"><summary>次の回転で抜く人${ui.nextRest.length || Core.keptAt(e, ri).length ? `(${ui.nextRest.length + Core.keptAt(e, ri).length}人)` : ""}</summary><div class="rchips">${e.players.slice().sort((a, b) => b.level - a.level).map((p) => rch(p.id)).join("")}</div><p class="faint">「抜く」=今回だけ(黄)。もう一度押すと「次も抜く」(赤)、もう一度で戻ります。</p></details>
-    <details class="more" data-toggle="showSet"><summary>組み方の設定(ランク差・学校)</summary><div class="settings"><label class="field"><span>組むときのランク差</span><select class="select" data-change="p-tol">${[0, 1, 2, 3].map((k) => `<option value="${k}" ${e.practice.tol === k ? "selected" : ""}>${k === 0 ? "同じランクだけ" : `前後${k}まで`}</option>`).join("")}</select></label>
-      <label class="check"><input type="checkbox" data-change="p-avoid" ${e.practice.avoidSchool ? "checked" : ""}>なるべく別の学校の人と当てる</label></div><p class="faint">ダブルスのペアは、自動のときは同じ学校どうしにします。学校のちがう組は、選手の画面で手で作ります。</p></details>
+    <details class="more" data-toggle="showSet"><summary>組み方の設定(優先する順)</summary>${prioHTML(e)}</details>
     <div class="row"><button class="btn btn-aurora" data-action="pround">第${n}回転を作る</button></div></section>`;
 }
 App.qMatch = (p) => { const q = norm(ui.q); return !q || norm(p.name).includes(q) || norm(p.school || "").includes(q); };
@@ -293,10 +317,7 @@ function firstRoundHTML(e, SC) {
     ${(() => { const sg = rows.filter((p) => playMode(e, p) === "single"), ot = rows.filter((p) => playMode(e, p) === "out"), nm = (p) => `${esc(p.name || "(名前なし)")}<span class="pschool" style="display:inline;margin-left:4px">${esc(p.school || "")}</span>`;
       return `${sg.length ? `<div class="namerow"><span class="pairlabel sgl-label">シングルス ${sg.length}人</span>${sg.map((p) => `<span class="namechip">${nm(p)}</span>`).join("")}</div>` : ""}${ot.length ? `<div class="namerow"><span class="outlabel">出場しない ${ot.length}人</span>${ot.map((p) => `<span class="namechip is-out">${nm(p)}</span>`).join("")}</div>` : ""}`; })()}
     <details class="more" open><summary>組み方の設定</summary><div class="settings">
-      <div class="checks"><label class="check"><input type="checkbox" data-change="p-opt" data-key="avoidRepeat" ${e.practice.avoidRepeat !== false ? "checked" : ""}>前に当たった組み合わせを避ける</label>
-      <div class="field"><span>かぶりをなくす範囲</span><div class="rds" role="radiogroup" aria-label="かぶりをなくす範囲">${[["day", "その日の回転だけ"], ["all", "全部の日"]].map(([v, t]) => { const on = (e.practice.repeatScope === "day" ? "day" : "all") === v; return `<label class="rd ${on ? "on" : ""}"><input type="radio" name="repeat-scope" value="${v}" data-change="p-scope" ${on ? "checked" : ""}>${t}</label>`; }).join("")}</div></div>
-      ${[["nearGrade", "近い学年どうしで組む", !!e.practice.nearGrade], ["avoidPref", "同じ県どうしを避ける", !!e.practice.avoidPref], ["avoidBlock", "同じブロックどうしを避ける", !!e.practice.avoidBlock]].map(([k, t, on]) => `<label class="check"><input type="checkbox" data-change="p-opt" data-key="${k}" ${on ? "checked" : ""}>${t}</label>`).join("")}</div>
-      <label class="field"><span>実力差の上限(ランクの差)</span><select class="select" data-change="p-tol">${tolOpts}</select></label>
+      ${prioHTML(e)}
       <label class="field"><span>点数</span><select class="select" data-change="ev-points">${[21, 15, 11].map((p) => `<option value="${p}" ${e.points === p ? "selected" : ""}>${p}点</option>`).join("")}</select></label>
       <label class="field"><span>ゲーム</span><select class="select" data-change="ev-games"><option value="1" ${e.games === 1 ? "selected" : ""}>1ゲーム</option><option value="3" ${e.games === 3 ? "selected" : ""}>3ゲーム(2ゲーム先取)</option></select></label></div></details>
     <div class="row"><button class="btn btn-aurora btn-lg" data-action="first-round" ${nPair + nSingle ? "" : "disabled"}>${nRound}回転目を作成</button>${nPair + nSingle ? "" : `<span class="faint">ダブルスかシングルスで出る人を、1人以上決めてください</span>`}</div></section>`;
@@ -480,6 +501,7 @@ Object.assign(A, {
   "preg-yes": (b) => { const e = ev(), r = rById(e, b.dataset.r); ui.confirm = null; regen(e, r, [], "組み直しました"); },
   pdel: (b) => { ui.confirm = `pdel:${b.dataset.r}`; render(); },
   "pdel-yes": (b) => { const e = ev(); e.practice.rounds = e.practice.rounds.filter((r) => r.id !== b.dataset.r); ui.confirm = null; commit(); render(); toast("削除しました"); },
+  "prio-mv": (b) => { const l = Core.prioList(ev().practice), i = l.indexOf(b.dataset.k), j = i + Number(b.dataset.d); if (i < 0 || j < 0 || j >= l.length) return; prioMove(b.dataset.k, l[j]); },
   pqwin: (b) => { const e = ev(), [, m] = matchById(e, b.dataset.m); if (!m) return; const w = b.dataset.w; m.win = m.win === w ? null : w; if (m.win && Core.pOutcome(e, { g: m.g, win: null }).winner) m.g = []; /* 途中の点数は残す。点数で決着していた試合を押し直すときだけ消す */ commit(); render(); },
   pplayer: (b) => { ui.pPlayer = b.dataset.id; render(); },
   "pplayer-close": () => { ui.pPlayer = null; render(); },
@@ -505,6 +527,7 @@ Object.assign(Ch, {
     p.single = v === "single";
     commit(); render();
   },
+  "p-prio-on": (t) => { const k = t.dataset.key, f = Core.PRIO_FLAG[k]; if (f) { ev().practice[f] = t.checked; commit(); render(); } },
   "p-opt": (t) => { ev().practice[t.dataset.key] = t.checked; commit(); render(); },
   "p-scope": (t) => { ev().practice.repeatScope = t.value === "day" ? "day" : "all"; commit(); render(); },
   "pnext-kind": (t) => { ui.nextKind = t.value; render(); },
@@ -512,6 +535,8 @@ Object.assign(Ch, {
   "p-avoid": (t) => { ev().practice.avoidSchool = t.checked; commit(); render(); },
   "p-sheet-round": (t) => { ui.pSheetRound = t.value; render(); },
 });
+const prioMove = (from, to) => { const o = ev().practice, l = Core.prioList(o), i = l.indexOf(from), j = l.indexOf(to); if (i < 0 || j < 0 || i === j) return; l.splice(i, 1); l.splice(j, 0, from); o.prio = l; commit(); render(); };
+App.drops.prio = prioMove;
 const prevIn = App.input;
 App.input = (t) => {
   if (prevIn(t)) return true;

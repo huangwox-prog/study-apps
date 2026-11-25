@@ -61,7 +61,7 @@
 
 ### いまの状態(2026-11-25 時点で確認済み)
 - GitHub の main(`ab0a43b` まで)、`src/` から作った `index.html`、claude.ai 版の3つは、同じ中身。ずれはない。
-- `src/test.html` は PASS 77。見本の練習試合で、ペア作り → シングルス → 1回転目 → 成績(3つの見かた)まで操作して、画面のエラーなし。
+- `src/test.html` は PASS 84。見本の練習試合で、ペア作り → シングルス → 1回転目 → 成績(3つの見かた)まで操作して、画面のエラーなし。
 - 見本は「練習試合」の32人版と64人版(ホームの「見本の練習試合(32人)/(64人)」。64人は4校×16人、架空の名前)。リーグ戦の見本をホームから外したのは意図どおり(持ち主に確認済み、2026-11-26)。
 
 ### この期間にクラウドで入れた変更(すべて main に入っている)
@@ -80,6 +80,14 @@
 - 名簿の貼り付け:見出しあり・タブ区切り・カンマ区切り・1行に2人(ペア)・名前なしの行・同じ名前を確認。選手の追加:同名同校の重複・空白だけの名前は断る。コンソールにエラーなし。
 - 回転の見出しは中身に合わせる(全部ダブルスなら「ダブルス」、混在なら「シングルス+ダブルス」)。
 - ペアの片方を削除すると、組み済みの試合は「2人対1人」の形で残る(空いた枠に、休みの人をドラッグして入れられる)。仕様として残している。
+
+### 組み方の優先順位(2026-11-26)
+- 練習試合の「組み方の設定」は、6つの項目のカードを上から並べる形(つかんで動かす / ▲▼ / チェックで使う・使わない)。上にあるものほど優先する。項目:前に当たった組み合わせを避ける(`fresh`) / 別の学校の人と当てる(`school`) / ランクが近い人と当てる(`level`) / 近い学年どうし(`grade`) / 同じ県どうしを避ける(`pref`) / 同じブロックどうしを避ける(`block`)。
+- データ:`practice.prio`(項目を優先する順に並べた配列。なければ標準の並び fresh→school→level→grade→pref→block)。オン・オフは前からある印をそのまま使う(`avoidRepeat` / `avoidSchool` / `levelNear` / `nearGrade` / `avoidPref` / `avoidBlock`)。古いデータはそのまま動く。
+- 重さ(`Core.prioWeights`):使う項目を上から数えて 250 → 50 → 10 … と5分の1ずつ。休み(2500〜5000)・ランク差の上限超え(2000/段)より、いつも軽い。
+- **ランク差の上限は、先生の決まり(前後1)なので、ふつうは必ず守る**(1段超えるごとに 2000)。上限は「前後1」「前後2」から選ぶ(古いデータの 0・3 はそのまま表示)。
+- 「同じ相手が続きそうなときは、ランク差の上限を超えて、違う相手に当てる」(`practice.widenTol`、標準はオフ)は、ランク5が少人数で5どうしばかり当たるときの対策。チェックを入れると、上限超えの重さが「かぶり」の0.67倍になる。ランク5が3人だけの12人・6回転のテストでは、同じ組み合わせが出た回数が、ランクだけ優先 16回 → 前と違う相手 4回 → 広げる 2回、ランク差は最大2まで広がる。
+- 組むときの計算は、前より約10倍速い(64人で1回転あたり 0.15秒前後)。
 
 ### 作業のしかた
 - 直すのは `src/` の部品。`build.ps1 -root <clearフォルダ>` で `index.html` と `artifact.html`(claude.ai 用)を作る。
@@ -114,5 +122,5 @@
 - day-tabs: not sticky (user request).
 
 - players[]: grade(0-6), pref, block. practice: nearGrade, avoidPref, avoidBlock (off by default; weights in Core.pMatchCost, weaker than rank tolerance).
-- Matching options are all checkboxes. avoidRepeat=false means closest rank first (repeats allowed). Rank tolerance overrun costs 2000 per level. practice.priority is no longer used.
+- (古い書き方・2026-11-26 に置き換えた)組み方の選びかたは、下の「組み方の優先順位」を見る。
 - Rest fairness (Core.solveUnits restCost): rested last round 5000, each past rest 2500, each missing game 2500 (higher than one rank-limit overrun 2000).

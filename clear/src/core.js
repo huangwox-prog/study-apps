@@ -477,7 +477,7 @@ function pHistory(e, upto, day) {
   }));
   const rests = {}, justRested = {}; // これまでに休んだ回数と、直前の回転で休んだ人(手で抜いた回も数える。全部の日で数える)
   e.practice.rounds.slice(0, upto).forEach((r, ri, list) => (r.rest || []).forEach((id) => { rests[id] = (rests[id] || 0) + 1; if (ri === list.length - 1) justRested[id] = true; }));
-  return { met, partner, games, rests, justRested, prev: upto, opt: e.practice };
+  return { met, partner, games, rests, justRested, prev: upto, opt: e.practice, w: prioWeights(e.practice) };
 }
 const avgLv = (S) => S.reduce((s, p) => s + p.level, 0) / S.length;
 /* 組むときに使う強さ。ダブルスはペアのランク(選手のシングルスのランクは使わない) */
@@ -486,31 +486,39 @@ const unitLevel = (e) => (S) => { if (S.length === 2) { const v = pairRank(e, S[
 const prefKey = (p) => String(p.pref || "").trim().replace(/^東京都$/, "東京").replace(/(県|府)$/, "");
 const blockKey = (p) => String(p.block || "").trim().replace(/ブロック$/, "");
 const gradeOf = (S) => { const g = S.map((p) => p.grade || 0).filter(Boolean); return g.length ? g.reduce((s, v) => s + v, 0) / g.length : 0; };
-/* 1試合の「悪さ」。小さいほどよい。優先: ①ランク差 ②続けてかぶり ③他校 ④かぶり */
+/* 組み方の優先順位。practice.prio に、6つの項目を優先する順に並べて持つ(上ほど優先)。
+   項目ごとのオン・オフは、前からある印(avoidRepeat など)をそのまま使う。古いデータ(prio がない)は標準の並びになる */
+const PRIO_KEYS = ["fresh", "school", "level", "grade", "pref", "block"];
+const PRIO_ON = { fresh: (o) => o.avoidRepeat !== false, school: (o) => o.avoidSchool !== false, level: (o) => o.levelNear !== false, grade: (o) => !!o.nearGrade, pref: (o) => !!o.avoidPref, block: (o) => !!o.avoidBlock };
+const PRIO_FLAG = { fresh: "avoidRepeat", school: "avoidSchool", level: "levelNear", grade: "nearGrade", pref: "avoidPref", block: "avoidBlock" };
+function prioList(o) { const a = (Array.isArray(o && o.prio) ? o.prio : []).filter((k, i, l) => PRIO_KEYS.includes(k) && l.indexOf(k) === i); PRIO_KEYS.forEach((k) => { if (!a.includes(k)) a.push(k); }); return a; }
+/* 使う項目だけを上から数えて、重さを 250 → 50 → 10 … と上ほど5倍にする(上の項目ほど強い)。
+   休み(2500〜5000)・ランク差の上限超え(2000/段)より、いつも軽くしておく */
+function prioWeights(o) { o = o || {}; const on = prioList(o).filter((k) => PRIO_ON[k](o)), w = {}; on.forEach((k, i) => (w[k] = 250 / Math.pow(5, i))); return w; }
+const CAP_OVER = 2000;
+/* 1試合の「悪さ」。小さいほどよい。使う項目ごとに「どれだけ悪いか」を出し、優先順位で決まる重さをかける。
+   ランク差の上限(tol)は、ふつうは1段超えるごとに 2000 で、ほぼ必ず守る。widenTol のときだけ、「前と違う相手」の重さの 0.67 倍で超えられる(かぶり1回 > 1段超え) */
 function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
+  const O = H.opt || {}, W = H.w || (H.w = prioWeights(O));
   let c = 0;
-  // 基本はランクの近い相手。「実力差の上限」を超える相手は、ほかに相手がいないとき以外は当てない
-  //   「前に当たった組み合わせを避ける」あり(初め)= 上限の中なら、前と違う相手を選ぶ / なし = ランクがいちばん近い相手を選ぶ(同じ相手が続くこともある)
-  const levelFirst = !!(H.opt && H.opt.avoidRepeat === false), near = levelFirst ? 500 : 0, OVER = 2000;
-  if (A.length === 2) {
-    const d = Math.abs(levelOf(A) - levelOf(B));
-    c += d * (near || 6) + (d > tol ? (d - tol) * OVER : 0);
+  const capW = O.widenTol && W.fresh ? W.fresh * 0.67 : CAP_OVER, na = A.length, nb = B.length, pairs = na * nb;
+  if (na === 2) { const d = Math.abs(levelOf(A) - levelOf(B)); c += d * (W.level || 0) + (d > tol ? (d - tol) * capW : 0); }
+  const wantSchool = avoid && W.school, wantPref = W.pref, wantBlock = W.block;
+  let same = 0, sPref = 0, sBlock = 0;
+  for (let i = 0; i < na; i++) for (let k = 0; k < nb; k++) {
+    const x = A[i], y = B[k];
+    if (na === 1) { const d = Math.abs(x.level - y.level); c += d * (W.level || 0) + (d > tol ? (d - tol) * capW : 0); }
+    if (wantSchool && x.school && x.school === y.school) same++;
+    if (wantPref && prefKey(x) && prefKey(x) === prefKey(y)) sPref++;
+    if (wantBlock && blockKey(x) && blockKey(x) === blockKey(y)) sBlock++;
   }
-  const one = A.length === 1;
-  for (const x of A) for (const y of B) {
-    if (one) { const d = Math.abs(x.level - y.level); c += d * (near || 1.5) + (d > tol ? (d - tol) * OVER : 0); }
-    if (avoid && x.school && x.school === y.school) c += one ? 150 : 50;
-    // チェックを入れたときだけ:同じ県・同じブロックはなるべく当てない(同じ学校より弱い)
-    const O = H.opt || {};
-    if (O.avoidPref && prefKey(x) && prefKey(x) === prefKey(y)) c += one ? 60 : 15;
-    if (O.avoidBlock && blockKey(x) && blockKey(x) === blockKey(y)) c += one ? 40 : 10;
-  }
-  // チェックを入れたときだけ:近い学年どうしを当てる(学年が入っている人だけで比べる。ダブルスは組の平均)
-  if (H.opt && H.opt.nearGrade) { const ga = gradeOf(A), gb = gradeOf(B); if (ga && gb) c += Math.abs(ga - gb) * 40; }
+  if (wantSchool) c += (same / pairs) * W.school;
+  if (wantPref) c += (sPref / pairs) * W.pref;
+  if (wantBlock) c += (sBlock / pairs) * W.block;
+  if (W.grade) { const ga = gradeOf(A), gb = gradeOf(B); if (ga && gb) c += Math.abs(ga - gb) * W.grade; }
   // 前と同じ組み合わせ(ダブルスは4人とも同じで、組も同じとき)
-  const f = H.met[matchKey(A.map((p) => p.id), B.map((p) => p.id))];
-  if (f) c += f.length * (levelFirst ? 100 : 200) + (f.includes(H.prev) ? 250 : 0);
-  if (A.length === 2) {
+  if (W.fresh) { const f = H.met[matchKey(A.map((p) => p.id), B.map((p) => p.id))]; if (f) c += W.fresh * (f.length + (f.includes(H.prev) ? 0.5 : 0)); }
+  if (na === 2) {
     if (!byPair) [A, B].forEach(([p, q]) => {
       const f = H.partner[keyOf(p.id, q.id)];
       if (f) c += f.length * 100;
@@ -683,7 +691,7 @@ function solveUnits(e, units, H, rand, avoid, tol, levelOf, mustIds, ban) {
 function genMixed(e, upto, manualRest, seed, must, day) {
   manualRest = manualRest || [];
   const mustIds = new Set(must || []);
-  const H0 = pHistory(e, upto || 0, day), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
+  const H0 = pHistory(e, upto || 0, day), tol = e.practice.tol, avoid = e.practice.avoidSchool !== false; // 別の学校に当てるかどうかは、優先順位の「別の学校」で決まる
   const H = H0; // 前に当たった組み合わせは、いつも見る(どれだけ重く見るかは、優先順位で決まる)
   const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
   const free = (id) => pm[id] && !manualRest.includes(id);
@@ -970,7 +978,7 @@ return {
   gamesOf, setScore, setWo, setWin, woOf, winOf, outcomeOf, outcome, extraGame, gameWarn, scoreCap, cleanResult,
   standings, rankTiers,
   seedPositions, roundName, bracketEntries, buildBracket, bracketState, bracketMatches, findNode, setBScore, setBWo, setBWin, swapSlots,
-  genMixed, sideIds, sideLevel, pOutcome, pPlaced, pHistory, pMatchCost, tempPairs, autoPairs, keptAt, genRound, partnerCandidates, pCum, pIssues, pStats, pairStats, totals,
+  genMixed, PRIO_KEYS, PRIO_FLAG, PRIO_ON, prioList, prioWeights, sideIds, sideLevel, pOutcome, pPlaced, pHistory, pMatchCost, tempPairs, autoPairs, keptAt, genRound, partnerCandidates, pCum, pIssues, pStats, pairStats, totals,
   SCHEMA, blankEvent, migrate, normalize2,
 };
 })();
