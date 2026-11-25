@@ -478,7 +478,7 @@ Object.assign(A, {
     if (used && !askOk(`${p.name} は試合に入っています。削除すると、その試合の組み合わせや結果も消えます。削除しますか？`)) return;
     e.players = e.players.filter((x) => x.id !== id); e.pairs = e.pairs.filter((x) => x.a !== id && x.b !== id);
     ui.sel = ui.sel.filter((x) => x !== id);
-    e.practice.rounds.forEach((r) => { r.rest = r.rest.filter((x) => x !== id); r.matches.forEach((m) => { m.a = m.a.map((x) => (x === id ? null : x)); m.b = m.b.map((x) => (x === id ? null : x)); }); });
+    e.practice.rounds.forEach((r) => { const drop = (list) => (list || []).filter((x) => x !== id); r.autoRest = drop(r.autoRest); r.toSingles = drop(r.toSingles); r.out = drop(r.out); r.left = drop(r.left); r.restInfo = (r.restInfo || []).map((x) => ({ ...x, ids: drop(x.ids) })).filter((x) => x.ids.length); r.rest = r.rest.filter((x) => x !== id); r.matches.forEach((m) => { m.a = m.a.map((x) => (x === id ? null : x)); m.b = m.b.map((x) => (x === id ? null : x)); }); });
     e.practice.dayOff = e.practice.dayOff.filter((x) => x.id !== id);
     const ids = new Set(Core.entries(e).map((x) => x.id)); e.leagues.forEach((l) => (l.ids = l.ids.filter((x) => ids.has(x)))); e.bracket = e.bracket && e.bracket.slots.some((s) => s && !ids.has(s)) ? null : e.bracket;
     commit(); render(); },

@@ -261,7 +261,7 @@ function mixedTableHTML(e, r, ri) {
   const nm = (ids) => ids.filter(Boolean).map((id) => esc(pn(e, id))).join("・");
   const rows = r.matches.map((m, i) => { const dbl = m.a.length === 2;
     return `<tr><td class="mt-court">${CIRC[i] || i + 1}</td><td><span class="kind ${dbl ? "k-dbl" : "k-sgl"}">${dbl ? "ダブルス" : "シングルス"}</span></td><td class="mt-vs"><b>${nm(m.a)}</b><i>vs</i><b>${nm(m.b)}</b></td><td class="mt-sch">${esc(sideSch(e, m.a))}<i>vs</i>${esc(sideSch(e, m.b))}</td></tr>`; }).join("");
-  const info = r.restInfo && r.restInfo.length ? r.restInfo : [];
+  const info = (r.restInfo || []).map((x) => ({ ...x, ids: x.ids.filter((id) => playerMap(e)[id]) })).filter((x) => x.ids.length); // 削除した選手は出さない
   const manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && playerMap(e)[id]);
   const back = (ids) => `<button class="btn btn-primary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${ids.join(",")}">戻す</button>`;
   const restBlock = `<div class="rest-out" data-drop="pteam pmember" data-drop-id="${ri}"><b>休みになっています</b>(表には入りません)${info.length || manual.length ? "" : `<div class="faint" style="margin-top:6px">休みの人はいません。試合カードの「抜く」を押すか、名前をここへドラッグすると、休みにできます。</div>`}${info.map((x) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${nm(x.ids)}</b><span class="pschool" style="display:inline">${esc(sideSch(e, x.ids))}</span> <span class="faint">${x.kind === "pair" ? "ペアの数が奇数のため、この組は休みです" : "シングルスに出る人が奇数なので、1人だけ休みになります"}</span> ${x.kind === "pair" ? back(x.ids) : `<button class="btn btn-secondary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${x.ids.join(",")}">別の人と替える</button>`}</div>`).join("")}${manual.map((id) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${esc(pn(e, id))}</b> <span class="pschool" style="display:inline">${esc(playerMap(e)[id].school)}</span> <span class="faint">抜いた人</span> ${back([id])}</div>`).join("")}</div>`;
@@ -304,7 +304,7 @@ function playerPageHTML(e, id) {
 
 /* ---------- 成績 ---------- */
 const sideTxt = (e, ids) => ids.filter(Boolean).map((x) => pn(e, x)).join("・");
-const sideSch = (e, ids) => [...new Set(ids.filter(Boolean).map((x) => (playerMap(e)[x].school || "").trim()).filter(Boolean))].join("・");
+const sideSch = (e, ids) => [...new Set(ids.filter((x) => x && playerMap(e)[x]).map((x) => (playerMap(e)[x].school || "").trim()).filter(Boolean))].join("・");
 const playerNo = (e) => { const m = {}; e.players.forEach((p, i) => (m[p.id] = i + 1)); return m; };
 /* 対戦結果表(紙の形): 試合番号・回転・選手番号・ランク・選手名/学校・得点・相手側の同じ列。勝った側の名前の欄と得点は赤く「勝ち」 */
 function sheetRows(e) {
