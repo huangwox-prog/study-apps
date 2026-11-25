@@ -183,7 +183,18 @@ details summary{cursor:pointer;font-weight:650;color:var(--text-secondary)}detai
 .rchip.keep .rchip-tog{background:var(--error);border-color:var(--error);color:var(--bg)}
 .pgrid{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:1240px){.pgrid{grid-template-columns:1fr 1fr}}
-.pmatch{display:grid;grid-template-columns:2em minmax(0,1fr) auto minmax(0,1fr);gap:8px 12px;align-items:center;padding:10px 12px;border-radius:16px 16px 16px 28px;background:var(--surface-strong);border:1px solid var(--border-soft)}
+/* 試合中(点数が入っていて、勝敗がまだ決まっていない):うっすら赤いネオン */
+.pmatch.is-live{border:2px solid rgba(255,59,78,.75);box-shadow:0 0 6px rgba(255,59,78,.55),0 0 18px rgba(255,59,78,.35),inset 0 0 12px rgba(255,59,78,.14)}
+.mtable tr.row-live td{background:rgba(255,59,78,.07);box-shadow:inset 0 2px 0 rgba(255,59,78,.75),inset 0 -2px 0 rgba(255,59,78,.75),inset 0 10px 10px -9px rgba(255,59,78,.8),inset 0 -10px 10px -9px rgba(255,59,78,.8)}
+.mtable tr.row-live td:first-child{box-shadow:inset 2px 0 0 rgba(255,59,78,.75),inset 0 2px 0 rgba(255,59,78,.75),inset 0 -2px 0 rgba(255,59,78,.75),inset 0 0 12px rgba(255,59,78,.35)}
+.mtable tr.row-live td:last-child{box-shadow:inset -2px 0 0 rgba(255,59,78,.75),inset 0 2px 0 rgba(255,59,78,.75),inset 0 -2px 0 rgba(255,59,78,.75),inset 0 0 12px rgba(255,59,78,.35)}
+.pm-num{display:flex;flex-direction:column;align-items:center;gap:4px}
+.court-in{width:3.2em;height:2.2em;padding:0;text-align:center;font-size:.95rem;font-weight:800;text-transform:uppercase;border-radius:10px;background:var(--surface-strong);color:var(--text);border:1.5px solid var(--border)}
+.court-lb{font-size:.72rem;font-weight:700;line-height:1;color:var(--text-secondary);white-space:nowrap;margin-bottom:-1px}
+.court-in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.mt-ct{font-weight:800;font-size:1.15rem;white-space:nowrap}
+@media(max-width:640px){.pm-num{flex-direction:row;gap:10px}}
+.pmatch{display:grid;grid-template-columns:3.4em minmax(0,1fr) auto minmax(0,1fr);gap:8px 12px;align-items:center;padding:10px 12px;border-radius:16px 16px 16px 28px;background:var(--surface-strong);border:1px solid var(--border-soft)}
 .pmatch.is-done{border-color:color-mix(in srgb,var(--success) 35%,transparent)}.pm-num{font-weight:800;color:var(--accent);font-size:1.1rem}
 .pm-extra{grid-column:2/-1;display:flex;flex-direction:column;gap:4px}
 .team{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:4px 6px 4px 24px;border-radius:12px;border:2px solid var(--border-soft);background:var(--surface-soft)}

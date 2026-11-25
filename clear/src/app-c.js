@@ -15,16 +15,27 @@ const restAll = (e, r, ri) => [...new Set([...r.rest, ...Core.keptAt(e, ri)])];
 const isKept = (e, id, ri) => Core.keptAt(e, ri).includes(id);
 const matchById = (e, mid) => { for (const r of e.practice.rounds) { const m = r.matches.find((x) => x.id === mid); if (m) return [r, m]; } return [null, null]; };
 
+/* コート番号(2文字まで。例 A3)。全角は半角に、英字は大文字にそろえる。打っている途中で画面は作り直さない(入力が切れないように) */
+const courtText = (v) => Array.from(String(v || "").normalize("NFKC").replace(/\s+/g, "").toUpperCase()).slice(0, 2).join("");
+function setCourt(t, done) {
+  const [, m] = matchById(ev(), t.dataset.m); if (!m) return;
+  m.ct = courtText(t.value); if (done) t.value = m.ct;
+  document.querySelectorAll(`[data-ct="${m.id}"]`).forEach((n) => (n.textContent = m.ct));
+  commit();
+}
+/* 組み直しても、コートは番号の位置に残す */
+const keepCourts = (before, after) => after.forEach((m, i) => { if (before[i] && before[i].ct) m.ct = before[i].ct; });
+
 /* ---------- 回転の作成・組み直し ---------- */
 function genFor(e, r, ri, must, reunite) { return Core.genRound(e, r.kind, restAll(e, r, ri), ri, must, undefined, !!reunite, r.kind === "doubles" ? !!r.fixed : false); }
 function emptyLast(r) { if (r.kind === "mixed") return; /* 番号のある回転は、並びを変えない(番号が崩れるため) */ r.matches.sort((x, y) => (x.a.some((v) => !v) || x.b.some((v) => !v) ? 1 : 0) - (y.a.some((v) => !v) || y.b.some((v) => !v) ? 1 : 0)); }
 function regen(e, r, must, msg, reunite) {
   if (r.kind === "mixed") { // 1回転目(シングルス+ダブルス): 手で休みにした人は残して、奇数の休みは作り直す
     const ri0 = e.practice.rounds.indexOf(r), manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && !(must || []).includes(id)), g = Core.genMixed(e, ri0, manual, undefined, must || []);
-    r.matches = g.matches; r.rest = g.rest; r.autoRest = g.autoRest; r.restInfo = g.restInfo; r.toSingles = g.toSingles; r.out = g.out; commit(); render(); if (msg) toast(msg); return;
+    keepCourts(r.matches, g.matches); r.matches = g.matches; r.rest = g.rest; r.autoRest = g.autoRest; r.restInfo = g.restInfo; r.toSingles = g.toSingles; r.out = g.out; commit(); render(); if (msg) toast(msg); return;
   }
   const ri = e.practice.rounds.indexOf(r), g = genFor(e, r, ri, must || [], reunite);
-  r.matches = g.matches; r.left = g.leftover || []; commit(); render(); if (msg) toast(msg);
+  keepCourts(r.matches, g.matches); r.matches = g.matches; r.left = g.leftover || []; commit(); render(); if (msg) toast(msg);
 }
 function createRound(e, reunite) {
   const kindSel = nextKindOf(e), kind = kindSel === "singles" ? "singles" : "doubles", fixed = kindSel === "fixed";
@@ -124,6 +135,7 @@ App.drops.pbenchp = (from, to) => {
 
 /* ---------- 画面 ---------- */
 const lvl = (e, id) => (playerMap(e)[id] ? playerMap(e)[id].level : 3);
+const isLive = (o) => o.started && !o.winner; // 試合中:点数が入っていて、勝敗がまだ決まっていない
 const m2 = (r, mi) => r.matches[mi].a.length === 2; // ダブルスの試合は、1人ずつのランクは出さずに、ペアのランクを出す
 /* 結果表のランクの欄。ダブルスはペアのランク(ペアにしたことがない組は —) */
 const rankCell = (e, ids) => { const l = ids.filter(Boolean), pm = playerMap(e); if (ids.length !== 2) return idStack(l.map((id) => pm[id].level)); const v = l.length === 2 ? Core.pairRank(e, l[0], l[1]) : null; return v == null ? "—" : lvTxt(v); };
@@ -156,7 +168,7 @@ function pMatchHTML(e, SC, r, ri, mi, iss, cum) {
   const cur = `data-m="${m.id}"`;
   const inputs = open ? `<div class="pm-extra" style="grid-column:1/-1">${Array.from({ length: e.games }, (_, g) => { const [x, y] = m.g[g] || [null, null], bad = Core.gameWarn(e, x, y); return `<div class="game">${e.games > 1 ? `<span class="game-label">第${g + 1}</span>` : ""}<input class="score ${bad ? "bad" : ""}" id="ps-${m.id}-${g}-0" inputmode="numeric" maxlength="2" autocomplete="off" data-input="pscore" ${cur} data-g="${g}" data-s="0" value="${x ?? ""}"><span>-</span><input class="score ${bad ? "bad" : ""}" id="ps-${m.id}-${g}-1" inputmode="numeric" maxlength="2" autocomplete="off" data-input="pscore" ${cur} data-g="${g}" data-s="1" value="${y ?? ""}"></div>`; }).join("")}
       <div class="row"><button class="qwin ${o.winner === "a" ? "on" : ""}" data-action="pqwin" ${cur} data-w="a">${o.winner === "a" ? "○ " : ""}左が勝ち</button><button class="qwin ${o.winner === "b" ? "on" : ""}" data-action="pqwin" ${cur} data-w="b">${o.winner === "b" ? "○ " : ""}右が勝ち</button><button class="btn btn-ghost btn-sm" data-action="popen" ${cur}>閉じる</button></div></div>` : "";
-  return `<div class="pmatch ${o.winner ? "is-done" : ""}" id="pm-${m.id}"><span class="pm-num">${mi + 1}</span>${teamHTML(e, SC, r, ri, mi, "a", cum, o.winner === "a")}
+  return `<div class="pmatch ${o.winner ? "is-done" : isLive(o) ? "is-live" : ""}" id="pm-${m.id}"><span class="pm-num">${mi + 1}<label class="court-lb" for="ct-${m.id}">コート</label><input class="court-in" id="ct-${m.id}" data-input="pcourt" data-change="pcourt" data-m="${m.id}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${teamHTML(e, SC, r, ri, mi, "a", cum, o.winner === "a")}
     <button class="pm-mid" data-action="popen" ${cur} aria-label="点数を入れる" style="text-align:center;min-width:64px">${gtxt ? `<span class="num" style="font-size:.8rem;display:block">${esc(gtxt)}</span>` : `<span class="faint" style="font-size:.72rem">点数を入れる</span>`}${pStHTML(e, o)}</button>
     ${teamHTML(e, SC, r, ri, mi, "b", cum, o.winner === "b")}${notes ? `<div class="pm-extra" style="grid-column:2/-1;display:flex;flex-wrap:wrap;gap:4px">${notes}</div>` : ""}${inputs}</div>`;
 }
@@ -260,7 +272,7 @@ function firstRoundHTML(e, SC) {
 function mixedTableHTML(e, r, ri) {
   const nm = (ids) => ids.filter(Boolean).map((id) => esc(pn(e, id))).join("・");
   const rows = r.matches.map((m, i) => { const dbl = m.a.length === 2;
-    return `<tr><td class="mt-court">${CIRC[i] || i + 1}</td><td><span class="kind ${dbl ? "k-dbl" : "k-sgl"}">${dbl ? "ダブルス" : "シングルス"}</span></td><td class="mt-vs"><b>${nm(m.a)}</b><i>vs</i><b>${nm(m.b)}</b></td><td class="mt-sch">${esc(sideSch(e, m.a))}<i>vs</i>${esc(sideSch(e, m.b))}</td></tr>`; }).join("");
+    return `<tr class="${isLive(Core.pOutcome(e, m)) ? "row-live" : ""}"><td class="mt-court">${CIRC[i] || i + 1}</td><td class="mt-ct" data-ct="${m.id}">${esc(m.ct || "")}</td><td><span class="kind ${dbl ? "k-dbl" : "k-sgl"}">${dbl ? "ダブルス" : "シングルス"}</span></td><td class="mt-vs"><b>${nm(m.a)}</b><i>vs</i><b>${nm(m.b)}</b></td><td class="mt-sch">${esc(sideSch(e, m.a))}<i>vs</i>${esc(sideSch(e, m.b))}</td></tr>`; }).join("");
   const info = (r.restInfo || []).map((x) => ({ ...x, ids: x.ids.filter((id) => playerMap(e)[id]) })).filter((x) => x.ids.length); // 削除した選手は出さない
   const manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && playerMap(e)[id]);
   const back = (ids) => `<button class="btn btn-primary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${ids.join(",")}">戻す</button>`;
@@ -269,7 +281,7 @@ function mixedTableHTML(e, r, ri) {
   const tsNote = ts.length ? `<p class="faint" style="margin:8px 0 0">${ts.map((id) => esc(pn(e, id))).join("・")} は、ペアの数が奇数か相方が休みなので、この回転だけシングルスで出ます。</p>` : "";
   const out = (r.out || []).filter((id) => playerMap(e)[id]);
   const outBlock = out.length ? `<p class="faint" style="margin:8px 0 0">出場しない: ${out.map((id) => esc(pn(e, id))).join("、")}</p>` : "";
-  return `<div class="table-wrap" style="margin-top:6px"><table class="mtable"><thead><tr><th>番号</th><th>種目</th><th>対戦カード</th><th>学校名</th></tr></thead><tbody>${rows || `<tr><td colspan="4" class="faint">試合がありません</td></tr>`}</tbody></table></div>${tsNote}${restBlock}${outBlock}`;
+  return `<div class="table-wrap" style="margin-top:6px"><table class="mtable"><thead><tr><th>番号</th><th>コート</th><th>種目</th><th>対戦カード</th><th>学校名</th></tr></thead><tbody>${rows || `<tr><td colspan="5" class="faint">試合がありません</td></tr>`}</tbody></table></div>${tsNote}${restBlock}${outBlock}`;
 }
 function practiceHTML(e) {
   const SC = App.schoolColors(e), rs = e.practice.rounds, cumAll = Core.pCum(e);
@@ -446,6 +458,7 @@ Object.assign(A, {
   "print-practice": () => App.doPrint(),
 });
 Object.assign(Ch, {
+  pcourt: (t) => setCourt(t, true),
   "play-mode": (t) => {
     const e = ev(), id = t.dataset.id, p = playerMap(e)[id]; if (!p) return;
     const pr = Core.pairOfPlayer(e, id), v = t.value;
@@ -468,6 +481,7 @@ App.input = (t) => {
   if (prevIn(t)) return true;
   const e = ev();
   if (t.dataset.input === "q") { if (t.isComposing) return true; applySearch(t); return true; }
+  if (t.dataset.input === "pcourt") { setCourt(t, false); return true; }
   if (t.dataset.input === "pscore") { const [, m] = matchById(e, t.dataset.m); if (!m) return true; const g = Number(t.dataset.g), s = Number(t.dataset.s);
     App.scoreCommit(e, t, (n) => { while (m.g.length <= g) m.g.push([null, null]); m.g[g][s] = n; m.win = null; if (m.g.every((x) => x[0] == null && x[1] == null)) m.g = []; }, () => m.g, `ps-${m.id}`); return true; }
   return false;
@@ -478,8 +492,8 @@ App.applySearch = applySearch;
 /* ---------- Excel に出す表(練習試合) ---------- */
 App.blocks.push((e) => {
   if (e.mode !== "practice" || !e.practice.rounds.length) return null;
-  const rows = [["回転", "日", "形式", "試合", "左", "左の学校", "右", "右の学校", ...App.gameHeads(e), "勝ち"]];
-  e.practice.rounds.forEach((r, ri) => r.matches.forEach((m, mi) => { const o = Core.pOutcome(e, m); rows.push([ri + 1, r.day, m.a.length === 2 ? "ダブルス" : "シングルス", mi + 1, sideTxt(e, m.a), sideSch(e, m.a), sideTxt(e, m.b), sideSch(e, m.b), ...App.xlGames(e, m.g), o.winner ? (o.winner === "a" ? "左" : "右") : ""]); }));
+  const rows = [["回転", "日", "形式", "試合", "コート", "左", "左の学校", "右", "右の学校", ...App.gameHeads(e), "勝ち"]];
+  e.practice.rounds.forEach((r, ri) => r.matches.forEach((m, mi) => { const o = Core.pOutcome(e, m); rows.push([ri + 1, r.day, m.a.length === 2 ? "ダブルス" : "シングルス", mi + 1, m.ct || "", sideTxt(e, m.a), sideSch(e, m.a), sideTxt(e, m.b), sideSch(e, m.b), ...App.xlGames(e, m.g), o.winner ? (o.winner === "a" ? "左" : "右") : ""]); }));
   const st = Core.pStats(e), srows = [["選手", "学校", "ランク", "試合", "勝", "敗", "勝率(%)", ...st.days.map((d) => `${d}日目勝率(%)`)]];
   st.rows.slice().sort((a, b) => (a.p.school || "").localeCompare(b.p.school || "", "ja") || b.p.level - a.p.level || a.p.name.localeCompare(b.p.name, "ja")).forEach((r) => srows.push([r.p.name, r.p.school, r.p.level, r.games, r.w, r.l, r.rate == null ? "" : r.rate, ...st.days.map((d) => (r.day[d].rate == null ? "" : r.day[d].rate))]));
   const blocks = [{ title: "回転ごとの対戦と結果", rows }, { title: "成績(個人)", rows: srows }];
