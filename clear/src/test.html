@@ -136,6 +136,12 @@ t("移行: 練習試合の登録ペア・固定ペア→ペア、休み(dayOff)�
   const e = C.migrate(raw); eq(e.pairs.length, 2); eq(e.practice.dayOff[0].id, "q5"); eq(C.pOutcome(e, e.practice.rounds[0].matches[0]).winner, "a"); eq(e.practice.pairMode, "fixed"); });
 t("移行: 1ゲーム時代の練習試合の結果(m.win)が残る", () => { const raw = { id: "pr", mode: "practice", games: 1, points: 21, players: [{ id: "x", name: "x", school: "", level: 3 }, { id: "y", name: "y", school: "", level: 3 }], practice: { rounds: [{ id: "r", day: 1, kind: "singles", rest: [], matches: [{ id: "m", a: ["x"], b: ["y"], g: [[21, 15]], win: "a" }] }] } }; const e = C.migrate(raw); eq(e.games, 3); eq(C.pOutcome(e, e.practice.rounds[0].matches[0]).winner, "a"); });
 
+/* バグ取り(2026-11-26) */
+t("掃除: いない選手のidは、練習試合の試合の側・結果・シードから消える", () => { const e = mk(4); e.mode = "practice"; e.practice.rounds = [{ id: "r", day: 1, kind: "singles", rest: ["zz"], matches: [{ id: "m", a: ["p0"], b: ["zz"], g: [], win: null }] }]; e.results = { "p0__p1": { g: [[21, 5]] }, "p0__zz": { g: [[21, 5]] } }; e.seeds = { p0: 1, zz: 2 }; const n = C.normalize2(JSON.parse(JSON.stringify(e))); eq(n.practice.rounds[0].matches[0].b, [null]); eq(n.practice.rounds[0].rest, []); eq(Object.keys(n.results), ["p0__p1"]); eq(Object.keys(n.seeds), ["p0"]); });
+t("掃除: いない選手が入ったトーナメントの枠は空き(不戦勝)になる", () => { const e = mk(4); e.bracket = { slots: ["p0", "zz", "p2", "p3"], results: {}, seeds: {} }; const n = C.normalize2(JSON.parse(JSON.stringify(e))); eq(n.bracket.slots, ["p0", null, "p2", "p3"]); });
+t("掃除: ふつうのデータは変わらない(2回かけても同じ)", () => { const e = mk(4); e.leagues = [{ id: "L", ids: ["p0", "p1", "p2", "p3"] }]; C.setWin(e, "p0", "p1", "p0"); const n1 = C.normalize2(JSON.parse(JSON.stringify(e))); eq(Object.keys(n1.results), ["p0__p1"]); const n2 = C.normalize2(JSON.parse(JSON.stringify(n1))); eq(JSON.stringify(n2), JSON.stringify(n1)); });
+t("移行: 点数が数字でない入力は空にする(NaNにしない)", () => { const raw = { id: "pr", mode: "practice", games: 3, points: 15, players: [{ id: "x", name: "x", school: "", level: 3 }, { id: "y", name: "y", school: "", level: 3 }], practice: { rounds: [{ id: "r", day: 1, kind: "singles", rest: [], matches: [{ id: "m", a: ["x"], b: ["y"], g: [["abc", 15], [null, ""], ["21", 19]] }] }] } }; const e = C.migrate(raw); eq(e.practice.rounds[0].matches[0].g, [[null, 15], [null, null], [21, 19]]); });
+
 document.getElementById("out").textContent = out.join("\n") + `\n\n${pass} 通過 / ${fail} 失敗`;
 document.title = fail ? "FAIL " + fail : "PASS " + pass;
 </script>

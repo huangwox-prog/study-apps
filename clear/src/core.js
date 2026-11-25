@@ -824,6 +824,7 @@ function blankEvent(over) {
   }, over || {});
 }
 /* 古い形(v1)や、v2 の読み込み。どちらも v2 を返す。元のオブジェクトは変えない */
+const numOrNull = (v) => { const n = v == null || v === "" ? NaN : Number(v); return Number.isFinite(n) ? n : null; };
 function migrate(raw) {
   raw = clone(raw || {});
   if (raw.v === SCHEMA) return normalize2(raw);
@@ -906,7 +907,7 @@ function migrate(raw) {
           rest: [...new Set((Array.isArray(r.rest) ? r.rest : []).map(String).filter((id) => idsAll.has(id)))],
           matches: (Array.isArray(r.matches) ? r.matches : []).filter((m) => m && typeof m === "object").map((m) => ({
             id: String(m.id || uid()), a: side(m.a, n), b: side(m.b, n),
-            g: (Array.isArray(m.g) ? m.g : []).slice(0, 3).map((x) => [x && x[0] != null ? Number(x[0]) : null, x && x[1] != null ? Number(x[1]) : null]),
+            g: (Array.isArray(m.g) ? m.g : []).slice(0, 3).map((x) => [numOrNull(x && x[0]), numOrNull(x && x[1])]),
             win: m.win === "a" || m.win === "b" ? m.win : null,
           })),
         };
@@ -952,6 +953,11 @@ function normalize2(ev) {
   const pr = e.practice || {};
   e.practice = Object.assign(blankEvent().practice, pr);
   e.practice.rounds = (e.practice.rounds || []).map((r) => ({ ...r, day: clamp(parseInt(r.day, 10) || 1, 1, 30), rest: (r.rest || []).filter((id) => pids.has(id)) })).sort((a, b) => a.day - b.day); // 日の順にそろえる(同じ日の中の順番は変えない)
+  // いない選手・ペアのidが、試合の側・トーナメントの枠・結果に残っていたら掃除する(選手を消したあとの取りこぼし)
+  e.practice.rounds.forEach((r) => r.matches.forEach((m) => { m.a = m.a.map((x) => (x && !pids.has(x) ? null : x)); m.b = m.b.map((x) => (x && !pids.has(x) ? null : x)); }));
+  if (e.bracket && Array.isArray(e.bracket.slots)) e.bracket.slots = e.bracket.slots.map((x) => (x && !eids.has(x) ? null : x));
+  if (e.seeds && typeof e.seeds === "object") Object.keys(e.seeds).forEach((k) => { if (!eids.has(k)) delete e.seeds[k]; });
+  if (e.results && typeof e.results === "object") Object.keys(e.results).forEach((k) => { if (!k.split("__").every((x) => eids.has(x))) delete e.results[k]; });
   return e;
 }
 

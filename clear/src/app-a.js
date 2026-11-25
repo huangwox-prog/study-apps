@@ -492,7 +492,7 @@ Object.assign(A, {
   "detail-mode": () => { ui.detailMode = !ui.detailMode; if (!ui.detailMode) ui.detailId = null; render(); },
   "p-detail": (b) => { ui.detailId = ui.detailId === b.dataset.id ? null : b.dataset.id; render(); },
   plsort: (b) => { ui.plSort = b.dataset.k === "school" ? "school" : "level"; ui.orders = {}; render(); },
-  "del-player": (b) => { const e = ev(), id = b.dataset.id, p = playerMap(e)[id]; if (!p) return; const used = e.practice.rounds.some((r) => Core.pPlaced(r).includes(id)) || Object.keys(e.results).some((k) => k.includes(id));
+  "del-player": (b) => { const e = ev(), id = b.dataset.id, p = playerMap(e)[id]; if (!p) return; const used = e.practice.rounds.some((r) => Core.pPlaced(r).includes(id)) || Object.keys(e.results).some((k) => k.split("__").includes(id));
     if (used && !askOk(`${p.name} は試合に入っています。削除すると、その試合の組み合わせや結果も消えます。削除しますか？`)) return;
     e.players = e.players.filter((x) => x.id !== id); e.pairs = e.pairs.filter((x) => x.a !== id && x.b !== id);
     ui.sel = ui.sel.filter((x) => x !== id);
@@ -527,7 +527,7 @@ Object.assign(A, {
   "auto-pairs": () => { const e = ev(), n = Core.autoPairs(e); commit(); render(); toast(n ? `${n}組のペアを作りました` : "作れるペアがありません(同じ学校で2人以上の人がいません)"); },
   "imp-go": () => importGo(ev()),
   "imp-clear": () => { ui.imp = null; render(); },
-  "imp-layout": (b) => { ui.imp.layout = b.dataset.k; $("#import-preview").innerHTML = importPreviewHTML(ev()); },
+  "imp-layout": (b) => { if (!ui.imp) return; ui.imp.layout = b.dataset.k; $("#import-preview").innerHTML = importPreviewHTML(ev()); },
 });
 Object.assign(Ch, {
   "ev-name": (t) => { const e = ev(); e.name = t.value.trim() || "名前なし"; commit(); render(); },
@@ -543,8 +543,8 @@ Object.assign(Ch, {
   "p-name": (t) => { const p = playerMap(ev())[t.dataset.id]; if (p) { p.name = t.value.trim(); commit(); render(); } },
   // 学校を変えたら、新しい学校の県・ブロックに合わせる(その学校にまだ入っていなければ、そのまま)
   "p-school": (t) => { const e = ev(), p = playerMap(e)[t.dataset.id]; if (p) { p.school = t.value.trim(); ["pref", "block"].forEach((k) => { const q = sameSchool(e, p).find((x) => x[k]); if (q) p[k] = q[k]; }); commit(); render(); } },
-  "imp-role": (t) => { const imp = ui.imp, j = Number(t.dataset.col), r = t.value; if (r !== "skip") imp.roles.forEach((x, k) => { if (x === r && k !== j) imp.roles[k] = "skip"; }); imp.roles[j] = r; $("#import-preview").innerHTML = importPreviewHTML(ev()); },
-  "imp-header": (t) => { ui.imp.header = t.checked; ui.imp.roles = guessRoles(ui.imp.rows, ui.imp.header); $("#import-preview").innerHTML = importPreviewHTML(ev()); },
+  "imp-role": (t) => { const imp = ui.imp; if (!imp) return; const j = Number(t.dataset.col), r = t.value; if (r !== "skip") imp.roles.forEach((x, k) => { if (x === r && k !== j) imp.roles[k] = "skip"; }); imp.roles[j] = r; $("#import-preview").innerHTML = importPreviewHTML(ev()); },
+  "imp-header": (t) => { if (!ui.imp) return; ui.imp.header = t.checked; ui.imp.roles = guessRoles(ui.imp.rows, ui.imp.header); $("#import-preview").innerHTML = importPreviewHTML(ev()); },
 });
 Object.assign(F, {
   create: (f) => { const d = new FormData(f); newEvent(ui.createMode, String(d.get("name") || "").trim(), d.get("type") === "doubles" ? "doubles" : "singles"); },
@@ -554,7 +554,9 @@ Object.assign(F, {
     if (e.players.some((p) => p.name === name && p.school === school)) { toast("同じ名前・同じ学校の人がもういます"); return; }
     const text = (k) => String(d.get(k) || "").trim(), mate = (k) => { const q = school && e.players.find((p) => p.school === school && p[k]); return q ? q[k] : ""; };
     const np = { id: uid(), name, school, level: ui.newLevel, grade: clamp(parseInt(d.get("grade"), 10) || 0, 0, 6), pref: text("pref") || mate("pref"), block: text("block") || mate("block") };
-    e.players.push(np); ["pref", "block"].forEach((k) => { if (text(k)) shareSchool(e, np, k); }); f.elements.name.value = ""; commit(); render(); // 名前だけ空にする(学校は、続けて入れやすいよう残す) const n = $("#new-name"); if (n) n.focus();
+    e.players.push(np); ["pref", "block"].forEach((k) => { if (text(k)) shareSchool(e, np, k); }); f.elements.name.value = ""; commit(); render();
+    // 名前だけ空にする(学校は、続けて入れやすいよう残す)
+    const n = $("#new-name"); if (n) n.focus();
   },
 });
 App.input = (t) => {
