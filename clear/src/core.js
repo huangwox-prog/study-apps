@@ -1,7 +1,7 @@
 /* ============================================================
    CLEAR 計算部 (core)  — 画面(DOM)には一切触らない。
    データ v2:
-     players[]  { id, name, school, level(1〜5) }       … 選手は1人ずつ
+     players[]  { id, name, school, level(1〜5), grade(学年 0=なし,1〜6), pref(県), block(ブロック) } … 選手は1人ずつ
      pairs[]    { id, a, b, level(1〜5) }                … 2人をつなぐ記録。level はペアのランク(自分で決める。初めは3)
      pairMemo   { "idA|idB の鍵": level }                … 解いたペアのランクの控え(組み直しても、過去の回転でも同じランクを使う)
      リーグ戦・トーナメントの「出場単位(entry)」 = シングルスは選手、ダブルスはペア(id で呼ぶ)
@@ -475,26 +475,39 @@ function pHistory(e, upto, day) {
     if (count && B.length === 2) add(partner, keyOf(B[0], B[1]), ri + 1);
     A.concat(B).forEach((x) => (games[x] = (games[x] || 0) + 1));
   }));
-  return { met, partner, games, prev: upto };
+  return { met, partner, games, prev: upto, opt: e.practice };
 }
 const avgLv = (S) => S.reduce((s, p) => s + p.level, 0) / S.length;
 /* 組むときに使う強さ。ダブルスはペアのランク(選手のシングルスのランクは使わない) */
 const unitLevel = (e) => (S) => { if (S.length === 2) { const v = pairRank(e, S[0].id, S[1].id); if (v != null) return v; } return avgLv(S); };
+/* 県・ブロックは「山形」と「山形県」、「東北」と「東北ブロック」を同じとみなす */
+const prefKey = (p) => String(p.pref || "").trim().replace(/^東京都$/, "東京").replace(/(県|府)$/, "");
+const blockKey = (p) => String(p.block || "").trim().replace(/ブロック$/, "");
+const gradeOf = (S) => { const g = S.map((p) => p.grade || 0).filter(Boolean); return g.length ? g.reduce((s, v) => s + v, 0) / g.length : 0; };
 /* 1試合の「悪さ」。小さいほどよい。優先: ①ランク差 ②続けてかぶり ③他校 ④かぶり */
 function pMatchCost(H, tol, avoid, A, B, byPair, levelOf) {
   let c = 0;
+  // 基本はランクの近い相手。「実力差の上限」を超える相手は、ほかに相手がいないとき以外は当てない
+  //   「前に当たった組み合わせを避ける」あり(初め)= 上限の中なら、前と違う相手を選ぶ / なし = ランクがいちばん近い相手を選ぶ(同じ相手が続くこともある)
+  const levelFirst = !!(H.opt && H.opt.avoidRepeat === false), near = levelFirst ? 500 : 0, OVER = 2000;
   if (A.length === 2) {
     const d = Math.abs(levelOf(A) - levelOf(B));
-    c += d * 6 + (d > tol ? (d - tol) * 400 : 0);
+    c += d * (near || 6) + (d > tol ? (d - tol) * OVER : 0);
   }
   const one = A.length === 1;
   for (const x of A) for (const y of B) {
-    if (one) { const d = Math.abs(x.level - y.level); c += d * 1.5 + (d > tol ? (d - tol) * 300 : 0); }
+    if (one) { const d = Math.abs(x.level - y.level); c += d * (near || 1.5) + (d > tol ? (d - tol) * OVER : 0); }
     if (avoid && x.school && x.school === y.school) c += one ? 150 : 50;
+    // チェックを入れたときだけ:同じ県・同じブロックはなるべく当てない(同じ学校より弱い)
+    const O = H.opt || {};
+    if (O.avoidPref && prefKey(x) && prefKey(x) === prefKey(y)) c += one ? 60 : 15;
+    if (O.avoidBlock && blockKey(x) && blockKey(x) === blockKey(y)) c += one ? 40 : 10;
   }
+  // チェックを入れたときだけ:近い学年どうしを当てる(学年が入っている人だけで比べる。ダブルスは組の平均)
+  if (H.opt && H.opt.nearGrade) { const ga = gradeOf(A), gb = gradeOf(B); if (ga && gb) c += Math.abs(ga - gb) * 40; }
   // 前と同じ組み合わせ(ダブルスは4人とも同じで、組も同じとき)
   const f = H.met[matchKey(A.map((p) => p.id), B.map((p) => p.id))];
-  if (f) c += f.length * 100 + (f.includes(H.prev) ? 250 : 0);
+  if (f) c += f.length * (levelFirst ? 100 : 200) + (f.includes(H.prev) ? 250 : 0);
   if (A.length === 2) {
     if (!byPair) [A, B].forEach(([p, q]) => {
       const f = H.partner[keyOf(p.id, q.id)];
@@ -531,7 +544,8 @@ function tempPairs(e, players, H, rand) {
 /* 固定ペアを自動で作る:同じ学校の中でランクが近い人どうし。余った人はペアなし。登録済みのペアはそのまま */
 function autoPairs(e) {
   const inP = new Set(e.pairs.flatMap((p) => [p.a, p.b]));
-  const left = e.players.filter((p) => !inP.has(p.id) && (p.school || "").trim()).sort((a, b) => b.level - a.level);
+  const near = !!(e.practice && e.practice.nearGrade); // 近い学年どうしを組むときは、学年の順に並べてから組む
+  const left = e.players.filter((p) => !inP.has(p.id) && (p.school || "").trim()).sort((a, b) => (near ? (b.grade || 0) - (a.grade || 0) : 0) || b.level - a.level);
   const made = [];
   for (let i = 0; i < left.length; i++) {
     const j = left.findIndex((q, k) => k > i && q.school.trim() === left[i].school.trim());
@@ -664,7 +678,7 @@ function genMixed(e, upto, manualRest, seed, must, day) {
   manualRest = manualRest || [];
   const mustIds = new Set(must || []);
   const H0 = pHistory(e, upto || 0, day), tol = e.practice.tol, avoid = true; // 同じ学校どうしは、いつもなるべく避ける
-  const H = e.practice.avoidRepeat === false ? { ...H0, met: {}, partner: {} } : H0; // 「前に当たった組み合わせを避ける」をはずすと、過去の対戦を見ない
+  const H = H0; // 前に当たった組み合わせは、いつも見る(どれだけ重く見るかは、優先順位で決まる)
   const pm = playerMap(e), rand = rng(((seed == null ? Date.now() : seed) ^ ((upto || 0) * 7919)) >>> 0);
   const free = (id) => pm[id] && !manualRest.includes(id);
   const inPair = new Set(e.pairs.flatMap((p) => [p.a, p.b]));
@@ -911,7 +925,7 @@ function normalize2(ev) {
   e.type = e.mode !== "practice" && e.type === "doubles" ? "doubles" : "singles";
   e.games = e.games === 3 ? 3 : 1;
   e.points = [11, 15, 21].includes(e.points) ? e.points : 21;
-  e.players = (Array.isArray(e.players) ? e.players : []).filter((p) => p && p.id).map((p) => ({ id: String(p.id), name: String(p.name || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, RANK_MAX), single: !!p.single }));
+  e.players = (Array.isArray(e.players) ? e.players : []).filter((p) => p && p.id).map((p) => ({ id: String(p.id), name: String(p.name || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, RANK_MAX), single: !!p.single, grade: clamp(parseInt(p.grade, 10) || 0, 0, 6), pref: String(p.pref || ""), block: String(p.block || "") }));
   const pids = new Set(e.players.map((p) => p.id)), used = new Set();
   e.pairs = (Array.isArray(e.pairs) ? e.pairs : []).filter((x) => x && x.id && pids.has(x.a) && pids.has(x.b) && x.a !== x.b && !used.has(x.a) && !used.has(x.b) && used.add(x.a) && used.add(x.b))
     .map((x) => {

@@ -146,10 +146,10 @@ function render() {
   let selS = null, selE = null;
   try { if (ae && typeof ae.selectionStart === "number") { selS = ae.selectionStart; selE = ae.selectionEnd; } } catch (x) {}
   // 入力途中の「名前・学校」は、ほかの操作で描き直しても消さない
-  const af = $('form[data-form="add-player"]'), draft = af ? { name: af.elements.name && af.elements.name.value, school: af.elements.school && af.elements.school.value } : null;
+  const KEEP = ["name", "school", "grade", "pref", "block"], af = $('form[data-form="add-player"]'), draft = af ? KEEP.map((k) => [k, af.elements[k] ? af.elements[k].value : ""]) : null;
   app.innerHTML = `<nav class="nav">${navHTML(e)}</nav><main class="page ${e && e.mode === "practice" && ui.tab === "rounds" ? "wide" : ""}">${e ? eventHTML(e) : homeHTML()}</main>`;
   const af2 = $('form[data-form="add-player"]');
-  if (draft && af2 && (draft.name || draft.school)) { if (af2.elements.name) af2.elements.name.value = draft.name || ""; if (af2.elements.school) af2.elements.school.value = draft.school || ""; }
+  if (draft && af2) draft.forEach(([k, v]) => { if (v && af2.elements[k]) af2.elements[k].value = v; });
   if (focus) { const n = document.getElementById(focus); if (n && n.tagName !== "BUTTON") { n.focus({ preventScroll: true }); if (selS != null) { try { n.setSelectionRange(selS, selE); } catch (x) {} } } }
   scrollTo(0, keepY);
 }
@@ -223,6 +223,21 @@ function settingsHTML(e) {
     ${ui.confirm === "del-event" ? `<span class="confirm" style="background:var(--error-soft);color:var(--ink-text)"><b>削除します。元に戻せません。</b><button class="btn btn-del btn-sm" data-action="del-event">削除する</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></span>` : `<button class="btn btn-ghost btn-sm btn-danger" data-action="ask-del-event">${TRASH} このデータを削除</button>`}</div>`;
 }
 
+/* ============ 選手の詳細(学年・県・ブロック) ============ */
+const PREFS = "北海道 青森県 岩手県 宮城県 秋田県 山形県 福島県 茨城県 栃木県 群馬県 埼玉県 千葉県 東京都 神奈川県 新潟県 富山県 石川県 福井県 山梨県 長野県 岐阜県 静岡県 愛知県 三重県 滋賀県 京都府 大阪府 兵庫県 奈良県 和歌山県 鳥取県 島根県 岡山県 広島県 山口県 徳島県 香川県 愛媛県 高知県 福岡県 佐賀県 長崎県 熊本県 大分県 宮崎県 鹿児島県 沖縄県".split(" ");
+const BLOCKS = ["北海道", "東北", "関東", "北信越", "東海", "近畿", "中国", "四国", "九州"];
+const detailLists = () => `<datalist id="prefs">${PREFS.map((s) => `<option value="${s}">`).join("")}</datalist><datalist id="blocks">${BLOCKS.map((s) => `<option value="${s}">`).join("")}</datalist>`;
+const gradeOptions = (v) => `<option value="0">—</option>${[1, 2, 3, 4, 5, 6].map((g) => `<option value="${g}" ${Number(v) === g ? "selected" : ""}>${g}年</option>`).join("")}`;
+const detailText = (p) => [p.grade ? `${p.grade}年` : "", p.pref || "", p.block || ""].filter(Boolean).join("・");
+function detailFields(p, attr) {
+  const f = (name, label, list, ph) => `<label class="field"><span>${label}</span><input class="input" ${attr(name)} list="${list}" maxlength="12" autocomplete="off" placeholder="${ph}" value="${esc(p[name] || "")}"></label>`;
+  return `<label class="field"><span>学年</span><select class="select" ${attr("grade")}>${gradeOptions(p.grade)}</select></label>${f("pref", "県", "prefs", "例: 山形県")}${f("block", "ブロック", "blocks", "例: 東北")}`;
+}
+
+/* 県・ブロックは、同じ高校なら同じ。1人に入れたら、同じ学校の全員に自動で入れる */
+const sameSchool = (e, p) => ((p.school || "").trim() ? e.players.filter((q) => q.id !== p.id && (q.school || "").trim() === p.school.trim()) : []);
+function shareSchool(e, p, key) { const list = sameSchool(e, p); list.forEach((q) => (q[key] = p[key] || "")); return list; }
+
 /* ============ 選手・ペア ============ */
 const pairCapable = (e) => isDbl(e) || e.mode === "practice";
 const canonSchool = (s) => String(s || "").trim();
@@ -241,19 +256,20 @@ function playersHTML(e) {
     const partner = Core.partnerOf(e, p.id);
     return `${shead}<tr>${dbl ? `<td><input type="checkbox" class="chk" data-action="sel" data-id="${p.id}" ${ui.sel.includes(p.id) ? "checked" : ""} aria-label="${esc(p.name)} を選ぶ"></td>` : ""}
       <td class="c-name ${SC.cls(p.school)}"><input class="cell-input" value="${esc(p.name)}" data-change="p-name" data-id="${p.id}" aria-label="名前">${dupNames[`${p.name}|${p.school}`] > 1 ? `<span class="chip chip-warn">重複</span>` : ""}</td>
-      <td><input class="cell-input" list="schools" value="${esc(p.school)}" data-change="p-school" data-id="${p.id}" aria-label="学校"></td>
+      <td><input class="cell-input" list="schools" value="${esc(p.school)}" data-change="p-school" data-id="${p.id}" aria-label="学校">${ui.detailMode ? `<button type="button" class="detail-btn ${ui.detailId === p.id ? "on" : ""}" data-action="p-detail" data-id="${p.id}" aria-expanded="${ui.detailId === p.id}">詳細<span data-detail="${p.id}">${detailText(p) ? ` ${esc(detailText(p))}` : ""}</span></button>` : ""}</td>
       <td>${levelPicker(`data-action="set-level" data-id="${p.id}"`, p.level)}</td>
       ${dbl ? `<td>${partner ? `<span class="pairtag">${esc(pn(e, partner))}</span>` : e.mode === "practice" ? (p.single ? `<button type="button" class="chip chip-live" data-action="single-toggle" data-id="${p.id}" title="シングルスで出るのをやめる">シングルスで出る ×</button>` : `<button type="button" class="btn btn-secondary btn-sm" data-action="single-toggle" data-id="${p.id}">シングルスで出る</button>`) : `<span class="faint">—</span>`}</td>` : ""}
       ${e.mode === "practice" ? `<td><button class="link-btn" data-action="pplayer" data-id="${p.id}">${last[p.id] || 0}試合 ›</button></td>` : ""}
-      <td><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(p.name)} を削除">${TRASH}</button></td></tr>`;
+      <td><button class="icon-btn" data-action="del-player" data-id="${p.id}" aria-label="${esc(p.name)} を削除">${TRASH}</button></td></tr>${ui.detailMode && ui.detailId === p.id ? `<tr class="detail-row"><td colspan="${cols}"><div class="detail-grid">${detailFields(p, (n) => `id="pd-${n}" data-change="p-extra" data-field="${n}" data-id="${p.id}"`)}</div></td></tr>` : ""}`;
   }).join("");
   const selNames = ui.sel.map((id) => esc(pn(e, id)));
   return `<section class="card"><div class="card-head"><div><h2>${isDbl(e) ? "ペアを作る" : "選手を入れる"}</h2><p class="faint">ランクは 1〜5(5 がいちばん強い)。${dbl ? "ペアは、一覧から2人を選んで作ります。" : ""}</p></div>
-      <div class="seg" role="group"><button class="${ui.addMode === "one" ? "on" : ""}" data-action="add-mode" data-k="one">1人ずつ</button><button class="${ui.addMode === "paste" ? "on" : ""}" data-action="add-mode" data-k="paste">名簿を貼り付け</button></div></div>
+      <div class="row"><button type="button" class="onoff ${ui.detailMode ? "is-on" : ""}" data-action="detail-mode" role="switch" aria-checked="${!!ui.detailMode}" aria-label="詳細設定">詳細設定<span class="onoff-track"><i></i></span><b>${ui.detailMode ? "オン" : "オフ"}</b></button><div class="seg" role="group"><button class="${ui.addMode === "one" ? "on" : ""}" data-action="add-mode" data-k="one">1人ずつ</button><button class="${ui.addMode === "paste" ? "on" : ""}" data-action="add-mode" data-k="paste">名簿を貼り付け</button></div></div></div>
     ${ui.addMode === "one" ? `<form class="add-form" data-form="add-player"><label class="field"><span>名前</span><input class="input" name="name" id="new-name" maxlength="30" autocomplete="off" required></label>
       <label class="field"><span>学校</span><input class="input" name="school" list="schools" maxlength="30" autocomplete="off"></label>
-      <div class="field"><span>ランク</span>${levelPicker(`data-action="new-level"`, ui.newLevel)}</div><button class="btn btn-primary" type="submit">追加</button></form>` : pasteHTML(e)}
-    <datalist id="schools">${SC.list.map((s) => `<option value="${esc(s)}">`).join("")}</datalist></section>
+      <div class="field"><span>ランク</span>${levelPicker(`data-action="new-level"`, ui.newLevel)}</div><button class="btn btn-primary" type="submit">追加</button>
+      ${ui.detailMode ? `<div class="add-more"><div class="detail-grid">${detailFields({}, (n) => `name="${n}" id="new-${n}"`)}</div><p class="faint" style="margin:6px 0 0">県とブロックは、同じ学校の全員に自動で入ります。登録した人の分は、下の一覧の「詳細」で入れます。</p></div>` : ""}</form>` : pasteHTML(e)}
+    ${detailLists()}<datalist id="schools">${SC.list.map((s) => `<option value="${esc(s)}">`).join("")}</datalist></section>
   <section class="card"><div class="card-head"><div><h2>登録 ${e.players.length}人</h2><p class="faint">名前・学校・ランクはここで直せます。同じ名前・同じ学校が2人いると「重複」と出ます。</p></div>
       <div class="seg"><button class="${ui.plSort === "level" ? "on" : ""}" data-action="plsort" data-k="level">ランク順</button><button class="${ui.plSort === "school" ? "on" : ""}" data-action="plsort" data-k="school">学校順</button></div></div>
     ${dbl && e.players.length > 1 ? (() => { const unp = Core.unpairedPlayers(e).length; if (e.pairs.length && !unp) return ""; return `<div class="confirm" style="background:var(--accent-soft);margin-bottom:12px;flex-direction:column;align-items:flex-start"><b style="color:var(--accent)">ペアの作り方${unp && e.pairs.length ? `(まだペアになっていない人が ${unp}人います)` : ""}</b><span>① 下の一覧で、組ませたい2人の左の □ にチェックを入れる。<br>② 画面の下に出る「この2人をペアにする」を押す。</span>${e.mode === "practice" ? `<span>③ ダブルスに出ない人は、その人の行の右の「シングルスで出る」を押す(何人かまとめるときは、チェックを入れて下のボタン)。</span>` : ""}<span class="faint">間違えたときは、下の「ペア」の欄で「解除」できます。${e.mode === "practice" ? "同じ学校どうしを一度に作るなら「同じ学校で自動作成」。" : ""}</span>${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>`; })() : ""}
@@ -473,6 +489,8 @@ Object.assign(A, {
   "add-mode": (b) => { ui.addMode = b.dataset.k; render(); },
   "new-level": (b) => { ui.newLevel = Number(b.dataset.lv); b.closest(".lvpick").querySelectorAll(".lv-b").forEach((x) => { const on = Number(x.dataset.lv) === ui.newLevel; x.classList.toggle("cur", on); x.setAttribute("aria-pressed", String(on)); }); },
   "set-level": (b) => { const p = playerMap(ev())[b.dataset.id]; if (p) { p.level = Number(b.dataset.lv); commit(); keepInPlace(b, render); } },
+  "detail-mode": () => { ui.detailMode = !ui.detailMode; if (!ui.detailMode) ui.detailId = null; render(); },
+  "p-detail": (b) => { ui.detailId = ui.detailId === b.dataset.id ? null : b.dataset.id; render(); },
   plsort: (b) => { ui.plSort = b.dataset.k === "school" ? "school" : "level"; ui.orders = {}; render(); },
   "del-player": (b) => { const e = ev(), id = b.dataset.id, p = playerMap(e)[id]; if (!p) return; const used = e.practice.rounds.some((r) => Core.pPlaced(r).includes(id)) || Object.keys(e.results).some((k) => k.includes(id));
     if (used && !askOk(`${p.name} は試合に入っています。削除すると、その試合の組み合わせや結果も消えます。削除しますか？`)) return;
@@ -518,8 +536,13 @@ Object.assign(Ch, {
   "ev-points": (t) => { ev().points = Number(t.value); commit(); render(); },
   "ev-maxday": (t) => { ev().maxPerDay = clamp(Number(t.value), 1, 12); commit(); render(); },
   "switch-event": (t) => { currentId = t.value; ui.orders = {}; ui.tab = "players"; ui.sel = []; render(); },
+  // 詳細の欄は、入力のたびに画面を作り直さない(次の欄に移るときに、カーソルが外れないように)
+  "p-extra": (t) => { const p = playerMap(ev())[t.dataset.id]; if (!p) return; const k = t.dataset.field; if (k === "grade") p.grade = clamp(parseInt(t.value, 10) || 0, 0, 6); else p[k] = t.value.trim(); commit(); const same = k === "pref" || k === "block" ? shareSchool(ev(), p, k) : [];
+    if (same.length) { commit(); toast(`${p.school}の全員(${same.length + 1}人)の${k === "pref" ? "県" : "ブロック"}をそろえました`); }
+    [p, ...same].forEach((q) => { const n = document.querySelector(`[data-detail="${q.id}"]`); if (n) n.textContent = detailText(q) ? ` ${detailText(q)}` : ""; }); },
   "p-name": (t) => { const p = playerMap(ev())[t.dataset.id]; if (p) { p.name = t.value.trim(); commit(); render(); } },
-  "p-school": (t) => { const p = playerMap(ev())[t.dataset.id]; if (p) { p.school = t.value.trim(); commit(); render(); } },
+  // 学校を変えたら、新しい学校の県・ブロックに合わせる(その学校にまだ入っていなければ、そのまま)
+  "p-school": (t) => { const e = ev(), p = playerMap(e)[t.dataset.id]; if (p) { p.school = t.value.trim(); ["pref", "block"].forEach((k) => { const q = sameSchool(e, p).find((x) => x[k]); if (q) p[k] = q[k]; }); commit(); render(); } },
   "imp-role": (t) => { const imp = ui.imp, j = Number(t.dataset.col), r = t.value; if (r !== "skip") imp.roles.forEach((x, k) => { if (x === r && k !== j) imp.roles[k] = "skip"; }); imp.roles[j] = r; $("#import-preview").innerHTML = importPreviewHTML(ev()); },
   "imp-header": (t) => { ui.imp.header = t.checked; ui.imp.roles = guessRoles(ui.imp.rows, ui.imp.header); $("#import-preview").innerHTML = importPreviewHTML(ev()); },
 });
@@ -529,7 +552,9 @@ Object.assign(F, {
     const e = ev(), d = new FormData(f), name = String(d.get("name") || "").trim(), school = String(d.get("school") || "").trim();
     if (!name) return;
     if (e.players.some((p) => p.name === name && p.school === school)) { toast("同じ名前・同じ学校の人がもういます"); return; }
-    e.players.push({ id: uid(), name, school, level: ui.newLevel }); f.elements.name.value = ""; commit(); render(); // 名前だけ空にする(学校は、続けて入れやすいよう残す) const n = $("#new-name"); if (n) n.focus();
+    const text = (k) => String(d.get(k) || "").trim(), mate = (k) => { const q = school && e.players.find((p) => p.school === school && p[k]); return q ? q[k] : ""; };
+    const np = { id: uid(), name, school, level: ui.newLevel, grade: clamp(parseInt(d.get("grade"), 10) || 0, 0, 6), pref: text("pref") || mate("pref"), block: text("block") || mate("block") };
+    e.players.push(np); ["pref", "block"].forEach((k) => { if (text(k)) shareSchool(e, np, k); }); f.elements.name.value = ""; commit(); render(); // 名前だけ空にする(学校は、続けて入れやすいよう残す) const n = $("#new-name"); if (n) n.focus();
   },
 });
 App.input = (t) => {

@@ -82,3 +82,6 @@
 - repeatScope: practice.repeatScope = 'day' | 'all' (かぶりをなくす範囲)
 
 - day-tabs: not sticky (user request).
+
+- players[]: grade(0-6), pref, block. practice: nearGrade, avoidPref, avoidBlock (off by default; weights in Core.pMatchCost, weaker than rank tolerance).
+- Matching options are all checkboxes. avoidRepeat=false means closest rank first (repeats allowed). Rank tolerance overrun costs 2000 per level. practice.priority is no longer used.
