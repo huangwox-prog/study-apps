@@ -116,7 +116,23 @@ function schoolColors(e) {
 Object.assign(App, { pname, pn, modeName, unitWord, countText, schoolColors });
 const levelBar = (lv) => `<span class="lv"><span class="lv-bar">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= Math.round(lv) ? "on" : ""}"></i>`).join("")}</span>${lvTxt(lv)}</span>`;
 const levelPicker = (attrs, cur) => `<span class="lvpick" role="group" aria-label="ランク">${[1, 2, 3, 4, 5].map((i) => `<button type="button" class="lv-b ${i === cur ? "cur" : ""}" ${attrs} data-lv="${i}" aria-pressed="${i === cur}">${i}</button>`).join("")}</span>`;
-Object.assign(App, { levelBar, levelPicker });
+/* 名簿の並び。ランクを変えても、行はその場から動かさない(押している行が飛ぶと、次に別の人を押してしまう)。
+   並べ直すのは、画面を開き直したとき・並び順を切り替えたとき・人の増減や学校の変更があったときだけ */
+function keepOrder(key, list, cmp) {
+  const sig = list.map((p) => `${p.id}:${p.school}`).sort().join("|"), memo = ui.orders || (ui.orders = {});
+  if (!memo[key] || memo[key].sig !== sig) memo[key] = { sig, ids: list.slice().sort(cmp).map((p) => p.id) };
+  const at = {}; memo[key].ids.forEach((id, i) => (at[id] = i));
+  return list.slice().sort((a, b) => at[a.id] - at[b.id]);
+}
+/* 押したボタンが、画面の同じ場所に残るようにする(上にある注意書きが増減しても、指の下がずれない) */
+function keepInPlace(b, redraw) {
+  const sel = "#app " + [...b.attributes].filter((a) => a.name.startsWith("data-")).map((a) => `[${a.name}="${CSS.escape(a.value)}"]`).join("");
+  const top = b.getBoundingClientRect().top;
+  redraw();
+  const n = document.querySelector(sel);
+  if (n) scrollBy({ top: n.getBoundingClientRect().top - top, behavior: "instant" });
+}
+Object.assign(App, { levelBar, levelPicker, keepOrder, keepInPlace });
 
 /* ============ 描画の入口 ============ */
 const root = () => $("#app");
@@ -213,8 +229,7 @@ const canonSchool = (s) => String(s || "").trim();
 function playersHTML(e) {
   const dbl = isDbl(e), SC = schoolColors(e); // ペア・シングルスの操作は、ダブルスのリーグ戦・トーナメントの登録だけ。練習試合は、回転ごとの名簿(対戦タブ)で決める
   const pmap = playerMap(e), cnt = Core.pCum(e), last = cnt.length ? cnt[cnt.length - 1] : {};
-  let list = e.players.slice();
-  list.sort(ui.plSort === "school" ? (a, b) => a.school.localeCompare(b.school, "ja") || b.level - a.level : (a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja"));
+  const list = keepOrder(`players:${e.id}:${ui.plSort}`, e.players, ui.plSort === "school" ? (a, b) => a.school.localeCompare(b.school, "ja") || b.level - a.level : (a, b) => b.level - a.level || a.school.localeCompare(b.school, "ja"));
   const dupNames = {}; e.players.forEach((p) => { const k = `${p.name}|${p.school}`; dupNames[k] = (dupNames[k] || 0) + 1; });
   // 学校別(初期)のときは、学校ごとの見出しを入れる
   const cols = (dbl ? 1 : 0) + 3 + (dbl ? 1 : 0) + (e.mode === "practice" ? 1 : 0) + 1, schoolN = {};
@@ -438,10 +453,10 @@ function newEvent(mode, name, type) {
 }
 App.newEvent = newEvent;
 Object.assign(A, {
-  tab: (b) => { ui.tab = b.dataset.tab; ui.sel = []; ui.confirm = null; render(); },
+  tab: (b) => { ui.tab = b.dataset.tab; ui.orders = {}; ui.sel = []; ui.confirm = null; render(); },
   home: () => { Object.assign(ui, { view: "home", createMode: null, confirm: null, copyText: null }); render(); scrollTo(0, 0); },
   theme: () => { setTheme(isDark() ? "light" : "dark"); render(); },
-  "open-event": (b) => { currentId = b.dataset.id; ui.view = "event"; ui.confirmDel = null; ui.tab = "players"; ui.sel = []; ui.imp = null; render(); scrollTo(0, 0); },
+  "open-event": (b) => { currentId = b.dataset.id; ui.view = "event"; ui.confirmDel = null; ui.orders = {}; ui.tab = "players"; ui.sel = []; ui.imp = null; render(); scrollTo(0, 0); },
   "del-home": (b) => { ui.confirmDel = b.dataset.id; render(); },
   "del-home-no": () => { ui.confirmDel = null; render(); },
   "del-home-yes": (b) => { const id = b.dataset.id; delete events[id]; ui.confirmDel = null; Store.remove(id); render(); toast("削除しました"); },
@@ -457,8 +472,8 @@ Object.assign(A, {
   sample: (b) => { const s = App.makeSample(b.dataset.type); events[s.id] = s; currentId = s.id; ui.view = "event"; ui.tab = s.mode === "practice" ? "players" : "matches"; Store.save(s); render(); scrollTo(0, 0); },
   "add-mode": (b) => { ui.addMode = b.dataset.k; render(); },
   "new-level": (b) => { ui.newLevel = Number(b.dataset.lv); b.closest(".lvpick").querySelectorAll(".lv-b").forEach((x) => { const on = Number(x.dataset.lv) === ui.newLevel; x.classList.toggle("cur", on); x.setAttribute("aria-pressed", String(on)); }); },
-  "set-level": (b) => { const p = playerMap(ev())[b.dataset.id]; if (p) { p.level = Number(b.dataset.lv); commit(); render(); } },
-  plsort: (b) => { ui.plSort = b.dataset.k === "school" ? "school" : "level"; render(); },
+  "set-level": (b) => { const p = playerMap(ev())[b.dataset.id]; if (p) { p.level = Number(b.dataset.lv); commit(); keepInPlace(b, render); } },
+  plsort: (b) => { ui.plSort = b.dataset.k === "school" ? "school" : "level"; ui.orders = {}; render(); },
   "del-player": (b) => { const e = ev(), id = b.dataset.id, p = playerMap(e)[id]; if (!p) return; const used = e.practice.rounds.some((r) => Core.pPlaced(r).includes(id)) || Object.keys(e.results).some((k) => k.includes(id));
     if (used && !askOk(`${p.name} は試合に入っています。削除すると、その試合の組み合わせや結果も消えます。削除しますか？`)) return;
     e.players = e.players.filter((x) => x.id !== id); e.pairs = e.pairs.filter((x) => x.a !== id && x.b !== id);
@@ -490,7 +505,7 @@ Object.assign(A, {
     Core.setSingle(e, ids, true); ui.sel = []; ui.confirm = null; commit(); render(); toast(`${ids.length}人を、シングルスで出る人にしました`);
   },
   "pair-del": (b) => { Core.removePair(ev(), b.dataset.id); const e = ev(); e.leagues.forEach((l) => (l.ids = l.ids.filter((x) => x !== b.dataset.id))); commit(); render(); },
-  "pair-lv": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.id); if (!pr) return; pr.level = Core.clamp(Core.roundHalf(Core.pairLevel(e, pr) + Number(b.dataset.d)), 1, RANK_MAX); commit(); render(); },
+  "pair-lv": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.id); if (!pr) return; pr.level = Core.clamp(Core.roundHalf(Core.pairLevel(e, pr) + Number(b.dataset.d)), 1, RANK_MAX); commit(); keepInPlace(b, render); },
   "auto-pairs": () => { const e = ev(), n = Core.autoPairs(e); commit(); render(); toast(n ? `${n}組のペアを作りました` : "作れるペアがありません(同じ学校で2人以上の人がいません)"); },
   "imp-go": () => importGo(ev()),
   "imp-clear": () => { ui.imp = null; render(); },
@@ -502,7 +517,7 @@ Object.assign(Ch, {
   "ev-games": (t) => { ev().games = Number(t.value) === 3 ? 3 : 1; commit(); render(); },
   "ev-points": (t) => { ev().points = Number(t.value); commit(); render(); },
   "ev-maxday": (t) => { ev().maxPerDay = clamp(Number(t.value), 1, 12); commit(); render(); },
-  "switch-event": (t) => { currentId = t.value; ui.tab = "players"; ui.sel = []; render(); },
+  "switch-event": (t) => { currentId = t.value; ui.orders = {}; ui.tab = "players"; ui.sel = []; render(); },
   "p-name": (t) => { const p = playerMap(ev())[t.dataset.id]; if (p) { p.name = t.value.trim(); commit(); render(); } },
   "p-school": (t) => { const p = playerMap(ev())[t.dataset.id]; if (p) { p.school = t.value.trim(); commit(); render(); } },
   "imp-role": (t) => { const imp = ui.imp, j = Number(t.dataset.col), r = t.value; if (r !== "skip") imp.roles.forEach((x, k) => { if (x === r && k !== j) imp.roles[k] = "skip"; }); imp.roles[j] = r; $("#import-preview").innerHTML = importPreviewHTML(ev()); },

@@ -210,7 +210,7 @@ function firstRoundHTML(e, SC) {
   // 名簿: 学校ごとにまとめる(学校の中は、ランクの強い順)。同じ学校のペアは、その学校の中に。学校がちがう「混合ペア」は、いちばん下に別にまとめる。ペアの2人は、かならず上下に並べる
   const isMixed = (pr) => pr && pmap[pr.a] && pmap[pr.b] && (pmap[pr.a].school || "").trim() !== (pmap[pr.b].school || "").trim();
   const mixedPairs = e.pairs.filter(isMixed), mixedIds = new Set(mixedPairs.flatMap((pr) => [pr.a, pr.b]));
-  const base = e.players.filter((p) => !mixedIds.has(p.id)).sort((a, b) => (a.school || "").localeCompare(b.school || "", "ja") || b.level - a.level || (a.name || "").localeCompare(b.name || "", "ja"));
+  const base = App.keepOrder(`roster:${e.id}`, e.players.filter((p) => !mixedIds.has(p.id)), (a, b) => (a.school || "").localeCompare(b.school || "", "ja") || b.level - a.level || (a.name || "").localeCompare(b.name || "", "ja"));
   const rows = [], seen = new Set(), partnerRow = new Set();
   base.forEach((p) => { if (seen.has(p.id)) return; rows.push(p); seen.add(p.id); const m = pairOf[p.id] && pmap[Core.partnerOf(e, p.id)]; if (m && !seen.has(m.id)) { rows.push(m); seen.add(m.id); partnerRow.add(m.id); } });
   const mixedStart = rows.length;
@@ -389,7 +389,7 @@ Object.assign(A, {
     if (kind === "fixed") { const rest = [...new Set([...ui.nextRest, ...Core.keptAt(e, ri)])], list = brokenFixed(e, rest); if (list.length) { ui.ask = { type: "create", list }; render(); return; } }
     createRound(e, false);
   },
-  "pair-level-set": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.pair); if (!pr) return; pr.level = Core.clamp(Number(b.dataset.lv), 1, Core.RANK_MAX); commit(); render(); },
+  "pair-level-set": (b) => { const e = ev(), pr = e.pairs.find((x) => x.id === b.dataset.pair); if (!pr) return; pr.level = Core.clamp(Number(b.dataset.lv), 1, Core.RANK_MAX); commit(); App.keepInPlace(b, render); },
   "mixed-back": (b) => { const e = ev(), r = e.practice.rounds[Number(b.dataset.r)]; if (!r) return; const ids = b.dataset.ids.split(",").filter(Boolean); const auto = ids.every((x) => (r.autoRest || []).includes(x)); regen(e, r, ids, auto ? `${ids.map((x) => pn(e, x)).join("・")} を試合に入れて、別の人を休みにしました` : `${ids.map((x) => pn(e, x)).join("・")} を試合に戻しました`); },
   "all-single": () => { const e = ev(); e.players.forEach((p) => { if (!Core.pairOfPlayer(e, p.id)) p.single = true; }); commit(); render(); },
   "all-out": () => { const e = ev(); if (!App.askOk("ペアも解除して、全員を「出場しない」に戻しますか？")) return; e.pairs.slice().forEach((p) => Core.removePair(e, p.id)); e.players.forEach((p) => (p.single = false)); commit(); render(); },
