@@ -80,3 +80,5 @@
 - 日は1〜5日目。
 
 - repeatScope: practice.repeatScope = 'day' | 'all' (かぶりをなくす範囲)
+
+- day-tabs: not sticky (user request).

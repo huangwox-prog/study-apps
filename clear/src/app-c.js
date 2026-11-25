@@ -20,7 +20,7 @@ const courtText = (v) => Array.from(String(v || "").normalize("NFKC").replace(/\
 function setCourt(t, done) {
   const [, m] = matchById(ev(), t.dataset.m); if (!m) return;
   m.ct = courtText(t.value); if (done) t.value = m.ct;
-  document.querySelectorAll(`[data-ct="${m.id}"]`).forEach((n) => (n.textContent = m.ct));
+  document.querySelectorAll(`input.court-in[data-m="${m.id}"]`).forEach((n) => { if (n !== t) n.value = m.ct; }); // 対戦表と試合カードの欄をそろえる
   commit();
 }
 /* 組み直しても、コートは番号の位置に残す */
@@ -30,14 +30,16 @@ const keepCourts = (before, after) => after.forEach((m, i) => { if (before[i] &&
 const daysOf = (e) => [...new Set(e.practice.rounds.map((r) => r.day))].sort((a, b) => a - b);
 const DAY_TABS = 5; // 日は5日目まで。前のデータにそれより後の日があれば、その日も出す
 const lastDay = (e) => { const ds = daysOf(e); return ds.length ? ds[ds.length - 1] : 0; };
-function curDay(e) { const sel = (ui.daySel || {})[e.id]; return sel && sel <= Math.max(DAY_TABS, lastDay(e)) ? sel : lastDay(e) || 1; }
+/* 上に出す日の数。最初は1日目だけ。「＋」で足した日と、回転がある日までを出す(足しただけで回転のない日は、開き直すと消える) */
+const shownDays = (e) => Math.max(1, lastDay(e), (ui.dayMax || {})[e.id] || 0);
+function curDay(e) { const sel = (ui.daySel || {})[e.id]; return sel && sel <= shownDays(e) ? sel : lastDay(e) || 1; }
 const setDay = (e, d) => { (ui.daySel || (ui.daySel = {}))[e.id] = d; };
 /* day の回転を足す位置(回転は日の順に並べておく)。「次も抜く」の開始位置もずらす */
 const insertAt = (e, day) => e.practice.rounds.filter((r) => r.day <= day).length;
 function addRound(e, at, r) { if (at < e.practice.rounds.length) e.practice.dayOff.forEach((x) => { if (x.from >= at) x.from++; }); e.practice.rounds.splice(at, 0, r); setDay(e, r.day); }
 function dayTabsHTML(e) {
-  const cur = curDay(e), all = Array.from({ length: Math.max(DAY_TABS, lastDay(e)) }, (_, i) => i + 1);
-  return `<div class="day-tabs" role="tablist" aria-label="日の切り替え">${all.map((d) => { const n = e.practice.rounds.filter((r) => r.day === d).length; return `<button role="tab" aria-selected="${d === cur}" class="day-tab ${d === cur ? "on" : ""} ${n ? "" : "empty-day"}" data-action="day-sel" data-d="${d}">${d}日目${n ? `<small>${n}回転</small>` : ""}</button>`; }).join("")}</div>`;
+  const cur = curDay(e), shown = shownDays(e), all = Array.from({ length: shown }, (_, i) => i + 1);
+  return `<div class="day-tabs" role="tablist" aria-label="日の切り替え">${all.map((d) => { const n = e.practice.rounds.filter((r) => r.day === d).length; return `<button role="tab" aria-selected="${d === cur}" class="day-tab ${d === cur ? "on" : ""} ${n ? "" : "empty-day"}" data-action="day-sel" data-d="${d}">${d}日目${n ? `<small>${n}回転</small>` : ""}</button>`; }).join("")}${shown < DAY_TABS ? `<button class="day-add" data-action="day-add" aria-label="${shown + 1}日目を追加" title="${shown + 1}日目を追加">＋</button>` : ""}</div>`;
 }
 
 /* ---------- 回転の作成・組み直し ---------- */
@@ -288,7 +290,7 @@ function firstRoundHTML(e, SC) {
 function mixedTableHTML(e, r, ri) {
   const nm = (ids) => ids.filter(Boolean).map((id) => esc(pn(e, id))).join("・");
   const rows = r.matches.map((m, i) => { const dbl = m.a.length === 2;
-    return `<tr class="${isLive(Core.pOutcome(e, m)) ? "row-live" : ""}"><td class="mt-court">${CIRC[i] || i + 1}</td><td class="mt-ct" data-ct="${m.id}">${esc(m.ct || "")}</td><td><span class="kind ${dbl ? "k-dbl" : "k-sgl"}">${dbl ? "ダブルス" : "シングルス"}</span></td><td class="mt-vs"><b>${nm(m.a)}</b><i>vs</i><b>${nm(m.b)}</b></td><td class="mt-sch">${esc(sideSch(e, m.a))}<i>vs</i>${esc(sideSch(e, m.b))}</td></tr>`; }).join("");
+    return `<tr class="${isLive(Core.pOutcome(e, m)) ? "row-live" : ""}"><td class="mt-court">${CIRC[i] || i + 1}</td><td class="mt-ct"><input class="court-in" id="ctt-${m.id}" data-input="pcourt" data-change="pcourt" data-m="${m.id}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${i + 1}番の試合のコート番号"></td><td><span class="kind ${dbl ? "k-dbl" : "k-sgl"}">${dbl ? "ダブルス" : "シングルス"}</span></td><td class="mt-vs"><b>${nm(m.a)}</b><i>vs</i><b>${nm(m.b)}</b></td><td class="mt-sch">${esc(sideSch(e, m.a))}<i>vs</i>${esc(sideSch(e, m.b))}</td></tr>`; }).join("");
   const info = (r.restInfo || []).map((x) => ({ ...x, ids: x.ids.filter((id) => playerMap(e)[id]) })).filter((x) => x.ids.length); // 削除した選手は出さない
   const manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && playerMap(e)[id]);
   const back = (ids) => `<button class="btn btn-primary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${ids.join(",")}">戻す</button>`;
@@ -408,13 +410,6 @@ function pstatsHTML(e) {
     <div id="pstats-body">${ui.pView === "sheet" ? sheetHTML(e) : ui.pView === "merge" ? mergeHTML(e) : listHTML(e)}</div></section>${ui.pPlayer ? playerPageHTML(e, ui.pPlayer) : ""}`;
 }
 App.views.rounds = practiceHTML; App.views.pstats = pstatsHTML;
-/* 上の帯は、画面が狭いと2段になる。日のボタンが隠れないように、帯の高さを測って、その下に止める */
-function watchNav() {
-  const set = () => { const n = document.querySelector("#app .nav"); if (n && n.offsetHeight) document.documentElement.style.setProperty("--nav-h", `${n.offsetHeight}px`); };
-  new MutationObserver(set).observe(document.getElementById("app"), { childList: true });
-  addEventListener("resize", set); set();
-}
-watchNav();
 
 /* ---------- 操作 ---------- */
 const withR = (b) => { const e = ev(), r = e.practice.rounds[Number(b.dataset.r)] || rById(e, b.dataset.r); return [e, r]; };
@@ -474,6 +469,7 @@ Object.assign(A, {
   pplayer: (b) => { ui.pPlayer = b.dataset.id; render(); },
   "pplayer-close": () => { ui.pPlayer = null; render(); },
   "pplayer-close-bg": (b, evt) => { if (evt.target === b) { ui.pPlayer = null; render(); } },
+  "day-add": () => { const e = ev(), d = shownDays(e) + 1; if (d > DAY_TABS) return; (ui.dayMax || (ui.dayMax = {}))[e.id] = d; setDay(e, d); ui.pOpen = null; ui.confirm = null; ui.sel = []; render(); },
   "day-sel": (b) => { const e = ev(); setDay(e, Number(b.dataset.d)); ui.pOpen = null; ui.confirm = null; render(); const n = $(".day-tabs"); if (n && n.getBoundingClientRect().top < 70) n.scrollIntoView({ block: "start", behavior: "instant" }); },
   pjump: (b) => { { const e = ev(), [r] = matchById(e, b.dataset.m); if (r) setDay(e, r.day); } ui.pPlayer = null; ui.tab = "rounds"; ui.pOpen = b.dataset.m; render(); const n = document.getElementById(`pm-${b.dataset.m}`); if (n) { n.scrollIntoView({ block: "center", behavior: "smooth" }); n.style.boxShadow = "0 0 0 4px var(--accent)"; setTimeout(() => (n.style.boxShadow = ""), 1400); } },
   pview: (b) => { ui.pView = b.dataset.view; render(); },
@@ -575,7 +571,7 @@ document.addEventListener("click", (evt) => {
 // 点数の入力欄は、その試合の外を押したら閉じる(上の処理のあとで調べる)
 document.addEventListener("click", (evt) => {
   const t = evt.target; if (!ui.pOpen || !t.closest) return;
-  if (t.closest(`#pm-${ui.pOpen}`) || t.closest('[data-action="popen"],[data-action="pjump"],select,option')) return;
+  if (t.closest(`#pm-${ui.pOpen}`) || t.closest('[data-action="popen"],[data-action="pjump"],select,option,input.court-in')) return;
   ui.pOpen = null; render();
 });
 document.addEventListener("change", (evt) => { const t = evt.target; if (!t.dataset) return; if (t.dataset.change && Ch[t.dataset.change]) Ch[t.dataset.change](t); });
