@@ -39,7 +39,20 @@ const insertAt = (e, day) => e.practice.rounds.filter((r) => r.day <= day).lengt
 function addRound(e, at, r) { if (at < e.practice.rounds.length) e.practice.dayOff.forEach((x) => { if (x.from >= at) x.from++; }); e.practice.rounds.splice(at, 0, r); setDay(e, r.day); }
 function dayTabsHTML(e) {
   const cur = curDay(e), shown = shownDays(e), all = Array.from({ length: shown }, (_, i) => i + 1);
-  return `<div class="day-tabs" role="tablist" aria-label="日の切り替え">${all.map((d) => { const n = e.practice.rounds.filter((r) => r.day === d).length; return `<button role="tab" aria-selected="${d === cur}" class="day-tab ${d === cur ? "on" : ""} ${n ? "" : "empty-day"}" data-action="day-sel" data-d="${d}">${d}日目${n ? `<small>${n}回転</small>` : ""}</button>`; }).join("")}${shown < DAY_TABS ? `<button class="day-add" data-action="day-add" aria-label="${shown + 1}日目を追加" title="${shown + 1}日目を追加">＋</button>` : ""}</div>`;
+  const del = /^dday:\d+$/.test(ui.confirm || "") ? Number(ui.confirm.slice(5)) : 0, delN = del ? e.practice.rounds.filter((r) => r.day === del).length : 0;
+  const ask = del ? `<div class="confirm"><b>${del}日目を消します。</b><span>この日の回転 ${delN}つと、入れた結果も消えます。${lastDay(e) > del ? `${del + 1}日目から後は、1つ前の日にくり上がります。` : ""}</span><button class="btn btn-del btn-sm" data-action="day-del-yes" data-d="${del}">消す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : "";
+  return `<div class="day-tabs" role="tablist" aria-label="日の切り替え">${all.map((d) => { const n = e.practice.rounds.filter((r) => r.day === d).length; return `<span class="day-wrap"><button role="tab" aria-selected="${d === cur}" class="day-tab ${d === cur ? "on" : ""} ${n ? "" : "empty-day"}" data-action="day-sel" data-d="${d}">${d}日目${n ? `<small>${n}回転</small>` : ""}</button>${d > 1 ? `<button type="button" class="day-x" data-action="day-del" data-d="${d}" aria-label="${d}日目を消す" title="${d}日目を消す">×</button>` : ""}</span>`; }).join("")}${shown < DAY_TABS ? `<button class="day-add" data-action="day-add" aria-label="${shown + 1}日目を追加" title="${shown + 1}日目を追加">＋</button>` : ""}</div>${ask}`;
+}
+
+/* 日を丸ごと消す。後ろの日は1つ前にくり上げる(日の番号に空きを作らない) */
+function removeDay(e, d) {
+  const shown = shownDays(e), cur = curDay(e), rs = e.practice.rounds;
+  e.practice.dayOff.forEach((x) => (x.from -= rs.slice(0, x.from).filter((r) => r.day === d).length));
+  e.practice.rounds = rs.filter((r) => r.day !== d);
+  e.practice.rounds.forEach((r) => { if (r.day > d) r.day--; });
+  (ui.dayMax || (ui.dayMax = {}))[e.id] = Math.max(1, shown - 1);
+  setDay(e, Math.max(1, cur >= d ? cur - 1 : cur));
+  if (!e.practice.rounds.some((r) => r.id === ui.pSheetRound)) ui.pSheetRound = "all";
 }
 
 /* ---------- 回転の作成・組み直し ---------- */
@@ -470,6 +483,8 @@ Object.assign(A, {
   "pplayer-close": () => { ui.pPlayer = null; render(); },
   "pplayer-close-bg": (b, evt) => { if (evt.target === b) { ui.pPlayer = null; render(); } },
   "day-add": () => { const e = ev(), d = shownDays(e) + 1; if (d > DAY_TABS) return; (ui.dayMax || (ui.dayMax = {}))[e.id] = d; setDay(e, d); ui.pOpen = null; ui.confirm = null; ui.sel = []; render(); },
+  "day-del": (b) => { const e = ev(), d = Number(b.dataset.d); if (d < 2) return; if (e.practice.rounds.some((r) => r.day === d)) { ui.confirm = `dday:${d}`; render(); return; } removeDay(e, d); ui.confirm = null; ui.pOpen = null; commit(); render(); toast(`${d}日目を消しました`); },
+  "day-del-yes": (b) => { const e = ev(), d = Number(b.dataset.d); if (d < 2) return; removeDay(e, d); ui.confirm = null; ui.pOpen = null; commit(); render(); toast(`${d}日目を消しました`); },
   "day-sel": (b) => { const e = ev(); setDay(e, Number(b.dataset.d)); ui.pOpen = null; ui.confirm = null; render(); const n = $(".day-tabs"); if (n && n.getBoundingClientRect().top < 70) n.scrollIntoView({ block: "start", behavior: "instant" }); },
   pjump: (b) => { { const e = ev(), [r] = matchById(e, b.dataset.m); if (r) setDay(e, r.day); } ui.pPlayer = null; ui.tab = "rounds"; ui.pOpen = b.dataset.m; render(); const n = document.getElementById(`pm-${b.dataset.m}`); if (n) { n.scrollIntoView({ block: "center", behavior: "smooth" }); n.style.boxShadow = "0 0 0 4px var(--accent)"; setTimeout(() => (n.style.boxShadow = ""), 1400); } },
   pview: (b) => { ui.pView = b.dataset.view; render(); },
