@@ -93,3 +93,19 @@ begin
     alter publication supabase_realtime add table public.events;
   end if;
 end $$;
+
+-- ============ 部員名簿(1人の先生につき1行。id は 'main') ============
+create table if not exists public.roster (
+  user_id    uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  id         text not null,
+  data       jsonb not null,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, id)
+);
+grant select, insert, update, delete on public.roster to authenticated;
+alter table public.roster enable row level security;
+drop policy if exists "roster own" on public.roster;
+create policy "roster own" on public.roster
+  for all to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);

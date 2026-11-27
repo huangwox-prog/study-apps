@@ -169,7 +169,7 @@ function render() {
   try { if (ae && typeof ae.selectionStart === "number") { selS = ae.selectionStart; selE = ae.selectionEnd; } } catch (x) {}
   // 入力途中の「名前・学校」は、ほかの操作で描き直しても消さない
   const KEEP = ["name", "school", "grade", "pref", "block"], af = $('form[data-form="add-player"]'), draft = af ? KEEP.map((k) => [k, af.elements[k] ? af.elements[k].value : ""]) : null;
-  app.innerHTML = `<nav class="nav">${navHTML(e)}</nav><main class="page ${e && e.mode === "practice" && ui.tab === "rounds" ? "wide" : ""}">${e ? eventHTML(e) : homeHTML()}</main>`;
+  app.innerHTML = `<nav class="nav">${navHTML(e)}</nav><main class="page ${e && e.mode === "practice" && ui.tab === "rounds" ? "wide" : ""}">${e ? eventHTML(e) : ui.view === "roster" && App.views.roster ? App.views.roster() : homeHTML()}</main>`;
   const af2 = $('form[data-form="add-player"]');
   if (draft && af2) draft.forEach(([k, v]) => { if (v && af2.elements[k]) af2.elements[k].value = v; });
   if (focus) { const n = document.getElementById(focus); if (n && n.tagName !== "BUTTON") { n.focus({ preventScroll: true }); if (selS != null) { try { n.setSelectionRange(selS, selE); } catch (x) {} } } }
@@ -191,6 +191,7 @@ function homeHTML() {
   if (ui.createMode) return createHTML(ui.createMode);
   if (isGuest()) return `<div class="home-head"><h2 class="home-title">ようこそ</h2><p class="muted">新しく作るには、ログイン(新規登録)してください。</p></div>
     <div class="row"><button class="btn btn-primary" data-action="go-login">ログイン・新規登録</button></div>
+    ${App.rosterHomeCard ? App.rosterHomeCard() : ""}
     <section class="card stack"><h3 style="margin:0">見本で試す</h3><p class="faint" style="margin:0">架空の学校・選手で、練習試合の組み方を試せます。人の追加は${GUEST_ADDS}人までです。</p>
       <div class="row"><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice">見本の練習試合(32人)</button><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></div></section>
     <section class="card stack"><h3 style="margin:0">前に使ったことがある人</h3>
@@ -199,6 +200,7 @@ function homeHTML() {
   return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
     <div class="make-grid">${Object.entries(MODES).filter(([k]) => k !== "league") /* リーグ戦は、新しく作る表示を出さない(前に作ったデータは「続きから」で開ける) */.map(([k, [n, d]]) => `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b><span class="faint">${d}</span></button>`).join("")}</div>
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
+    ${App.rosterHomeCard ? App.rosterHomeCard() : ""}
     ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}
     ${accountHTML()}`;
 }
@@ -237,7 +239,7 @@ function eventHTML(e) {
   if (!tabs.some((t) => t[0] === ui.tab)) ui.tab = tabs[0][0];
   const body = (App.views[ui.tab] || (() => ""))(e);
   return `${heroHTML(e)}<div class="tabs" role="tablist">${tabs.map(([k, n], i) => `<button class="tab ${ui.tab === k ? "is-active" : ""}" role="tab" data-action="tab" data-tab="${k}">${i + 1} ${n}</button>`).join("")}</div>
-    ${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${body}`;
+    ${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${body}${App.rosterPickHTML ? App.rosterPickHTML(e) : ""}`;
 }
 function heroHTML(e) {
   const t = Core.totals(e);
@@ -302,7 +304,7 @@ function playersHTML(e) {
   }).join("");
   const selNames = ui.sel.map((id) => esc(pn(e, id)));
   return `<section class="card"><div class="card-head"><div><h2>${isDbl(e) ? "ペアを作る" : "選手を入れる"}</h2><p class="faint">ランクは 1〜5(5 がいちばん強い)。${dbl ? "ペアは、一覧から2人を選んで作ります。" : ""}</p></div>
-      <div class="row"><button type="button" class="onoff ${ui.detailMode ? "is-on" : ""}" data-action="detail-mode" role="switch" aria-checked="${!!ui.detailMode}" aria-label="詳細設定">詳細設定<span class="onoff-track"><i></i></span><b>${ui.detailMode ? "オン" : "オフ"}</b></button><div class="seg" role="group"><button class="${ui.addMode === "one" ? "on" : ""}" data-action="add-mode" data-k="one">1人ずつ</button><button class="${ui.addMode === "paste" ? "on" : ""}" data-action="add-mode" data-k="paste">名簿を貼り付け</button></div></div></div>
+      <div class="row"><button type="button" class="onoff ${ui.detailMode ? "is-on" : ""}" data-action="detail-mode" role="switch" aria-checked="${!!ui.detailMode}" aria-label="詳細設定">詳細設定<span class="onoff-track"><i></i></span><b>${ui.detailMode ? "オン" : "オフ"}</b></button><div class="seg" role="group"><button class="${ui.addMode === "one" ? "on" : ""}" data-action="add-mode" data-k="one">1人ずつ</button><button class="${ui.addMode === "paste" ? "on" : ""}" data-action="add-mode" data-k="paste">名簿を貼り付け</button></div>${App.rosterPickBtn ? App.rosterPickBtn(e) : ""}</div></div>
     ${isGuest() ? `<p class="note ${guestLeft(e) ? "" : "warn"}" style="margin:0 0 8px">ログインしていないので、追加できるのはあと${guestLeft(e)}人です(1つにつき${GUEST_ADDS}人まで)。<button class="link-btn" data-action="go-login">ログイン・新規登録</button></p>` : ""}
     ${ui.addMode === "one" ? `<form class="add-form" data-form="add-player"><label class="field"><span>名前</span><input class="input" name="name" id="new-name" maxlength="30" autocomplete="off" required></label>
       <label class="field"><span>学校</span><input class="input" name="school" list="schools" maxlength="30" autocomplete="off"></label>
@@ -627,6 +629,7 @@ App.boot = async () => {
   render();
   await Store.init();
   events = await Store.loadAll();
+  if (App.Roster) await App.Roster.load();
   const list = sortedEvents(); currentId = list.length ? list[0].id : null;
   ready = true; render(); Store.subscribe();
   if (!Store.db) setSave("local");

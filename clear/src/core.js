@@ -963,7 +963,7 @@ function normalize2(ev) {
   e.type = e.mode !== "practice" && e.type === "doubles" ? "doubles" : "singles";
   e.games = e.games === 3 ? 3 : 1;
   e.points = [11, 15, 21].includes(e.points) ? e.points : 21;
-  e.players = (Array.isArray(e.players) ? e.players : []).filter((p) => p && p.id).map((p) => ({ id: String(p.id), name: String(p.name || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, RANK_MAX), single: !!p.single, grade: clamp(parseInt(p.grade, 10) || 0, 0, 6), pref: String(p.pref || ""), block: String(p.block || "") }));
+  e.players = (Array.isArray(e.players) ? e.players : []).filter((p) => p && p.id).map((p) => ({ id: String(p.id), name: String(p.name || ""), school: String(p.school || ""), level: clamp(parseInt(p.level, 10) || 3, 1, RANK_MAX), single: !!p.single, grade: clamp(parseInt(p.grade, 10) || 0, 0, 6), pref: String(p.pref || ""), block: String(p.block || ""), ...(p.rid ? { rid: String(p.rid) } : {}) }));
   const pids = new Set(e.players.map((p) => p.id)), used = new Set();
   e.pairs = (Array.isArray(e.pairs) ? e.pairs : []).filter((x) => x && x.id && pids.has(x.a) && pids.has(x.b) && x.a !== x.b && !used.has(x.a) && !used.has(x.b) && used.add(x.a) && used.add(x.b))
     .map((x) => {
