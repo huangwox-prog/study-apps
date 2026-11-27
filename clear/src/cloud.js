@@ -171,7 +171,7 @@ const UI = {
     else if (this.mode === "newpass") body = `<h2>新しいパスワード</h2>${msg}${pass("new-password", "新しいパスワード(8文字以上)")}<button class="btn btn-primary" type="submit" ${dis}>変更してはじめる</button>`;
     else if (this.mode === "sent") body = `<h2>メールを送りました</h2>${msg}<div class="auth-links">${link("login", "ログインへ")}</div>`;
     app.innerHTML = `<div class="auth-wrap"><form class="card auth-card" id="auth-form" novalidate>
-      <div class="auth-brand"><span>CLEAR</span></div>${body}</form></div>`;
+      <div class="auth-brand"><span>スマッチ</span></div>${body}</form></div>`;
     const f = document.getElementById("auth-form");
     f.addEventListener("submit", (e) => { e.preventDefault(); this.submit(f); });
     f.querySelectorAll("[data-auth-go]").forEach((b) => b.addEventListener("click", () => { const em = f.elements.email; if (em) this.email = em.value.trim(); this.show(b.dataset.authGo); }));

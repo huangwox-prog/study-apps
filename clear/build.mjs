@@ -9,13 +9,13 @@ const root = dirname(fileURLToPath(import.meta.url));
 const src = join(root, "src"), out = join(root, "clear-new");
 mkdirSync(out, { recursive: true });
 const rd = (n) => readFileSync(join(src, n), "utf8");
-const css = rd("style.css"), core = rd("core.js"), a = rd("app-a.js"), b = rd("app-b.js"), c = rd("app-c.js"), cloud = rd("cloud.js");
+const css = rd("style.css"), core = rd("core.js"), a = rd("app-a.js"), b = rd("app-b.js"), c = rd("app-c.js"), cloud = rd("cloud.js"), head = rd("head.html").trim();
 
 // 公開ページ用:ログイン(Supabase)の部品を入れる。claude.ai 版には入れない
 const page = (withCloud) => `<!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>CLEAR</title>
+${head}
 <style>
 ${css}
 </style></head>

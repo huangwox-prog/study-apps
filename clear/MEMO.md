@@ -144,3 +144,9 @@
 - Supabase の本番(2026-11-28):プロジェクト名 clear(組織 CLEAR、無料、東京 ap-northeast-1)。URL https://wcpksigsukcpljazeomp.supabase.co 、キーは publishable キー(`cloud.js` に入れてある)。schema.sql は流し済み。Site URL と Redirect URL(`clear/**`)も設定済み。ログインしていない人は表に触れない(permission denied)ことを確認。
 - 注意:無料プランの確認メールは1時間に数通まで。人が増えたら独自の SMTP を設定する。
 - ログインせずに使う人の制限(2026-11-28):新しく作れない(ホームに作るボタンを出さず、ログインへの案内。`pick-mode`・`create`・`newEvent` でも断る)。見本と前に作ったものは開ける。人の追加は1つにつき3人まで(`GUEST_ADDS`。`e.guestAdds` に数える。名簿の貼り付けも数に入る。消しても数は戻らない)。ログインすると制限なし。
+
+## 名前を「スマッチ」に(2026-11-28)
+- 画面の名前・ログイン画面・ページの題名を「スマッチ」に変えた。フォルダ `clear/` と保存キー `arca-league-v1` はそのまま(ブックマークとデータを壊さないため)。
+- 題名・説明文・OGP は `src/head.html`(build で `<head>` に入る。build.ps1 は ASCII だけにするため、日本語はこのファイルに置く)。
+- 紹介ページ `study-apps/sumatch/`(検索で見つけてもらう入口。画面写真は見本から撮った `shot-*.png`)。`study-apps/sitemap.xml` も追加。
+- メール:送り主「スマッチ」`sumatchi408@gmail.com`(Gmail の SMTP、アプリパスワード)。確認メール・パスワード再設定メールは日本語。

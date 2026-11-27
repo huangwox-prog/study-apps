@@ -1,7 +1,15 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>CLEAR</title>
+<title>スマッチ｜バドミントンの合同練習・練習試合の対戦表を自動作成</title>
+<meta name="description" content="バドミントン部の顧問向け。名簿を貼るだけで、練習試合の組み合わせ（ランクが近い・他校と当たる・同じ相手が続かない）を回転ごとに自動作成。リーグ戦・トーナメント、成績集計、Excelへのコピーと印刷にも対応。PCとスマホで同じデータを使えます。">
+<meta property="og:title" content="スマッチ｜バドミントンの対戦表を自動作成">
+<meta property="og:description" content="合同練習・練習試合の組み合わせを、ランクと学校を見て自動で。顧問の先生の段取りを楽にするWebアプリ。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://huangwox-prog.github.io/study-apps/clear/">
+<meta property="og:site_name" content="スマッチ">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://huangwox-prog.github.io/study-apps/clear/">
 <style>
 /* CLEAR — 紙と墨の地、オーロラ(群青→菫→翠)、左下だけ大きく丸いカード */
 :root {
@@ -1533,7 +1541,7 @@ const UI = {
     else if (this.mode === "newpass") body = `<h2>新しいパスワード</h2>${msg}${pass("new-password", "新しいパスワード(8文字以上)")}<button class="btn btn-primary" type="submit" ${dis}>変更してはじめる</button>`;
     else if (this.mode === "sent") body = `<h2>メールを送りました</h2>${msg}<div class="auth-links">${link("login", "ログインへ")}</div>`;
     app.innerHTML = `<div class="auth-wrap"><form class="card auth-card" id="auth-form" novalidate>
-      <div class="auth-brand"><span>CLEAR</span></div>${body}</form></div>`;
+      <div class="auth-brand"><span>スマッチ</span></div>${body}</form></div>`;
     const f = document.getElementById("auth-form");
     f.addEventListener("submit", (e) => { e.preventDefault(); this.submit(f); });
     f.querySelectorAll("[data-auth-go]").forEach((b) => b.addEventListener("click", () => { const em = f.elements.email; if (em) this.email = em.value.trim(); this.show(b.dataset.authGo); }));
@@ -1753,7 +1761,7 @@ App.render = render;
 let ready = false;
 function navHTML(e) {
   const sel = Object.keys(events).length > 1 && e ? `<select class="select" id="ev-switch" data-change="switch-event" aria-label="作ったものを切り替える">${sortedEvents().map((x) => `<option value="${x.id}" ${x.id === currentId ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>` : "";
-  return `<button class="lockup" data-action="home" aria-label="はじめの画面へ">${ARC()}<span>CLEAR</span></button>${sel}
+  return `<button class="lockup" data-action="home" aria-label="はじめの画面へ">${ARC()}<span>スマッチ</span></button>${sel}
     <div class="nav-right">${saveHTML()}<button class="theme-btn" data-action="theme" aria-label="ライト/ダークの切り替え">${isDark() ? "☀ ライトにする" : "☾ ダークにする"}</button></div>`;
 }
 function isDark() { const t = document.documentElement.dataset.theme; return t ? t === "dark" : matchMedia("(prefers-color-scheme:dark)").matches; }

@@ -179,7 +179,7 @@ App.render = render;
 let ready = false;
 function navHTML(e) {
   const sel = Object.keys(events).length > 1 && e ? `<select class="select" id="ev-switch" data-change="switch-event" aria-label="作ったものを切り替える">${sortedEvents().map((x) => `<option value="${x.id}" ${x.id === currentId ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>` : "";
-  return `<button class="lockup" data-action="home" aria-label="はじめの画面へ">${ARC()}<span>CLEAR</span></button>${sel}
+  return `<button class="lockup" data-action="home" aria-label="はじめの画面へ">${ARC()}<span>スマッチ</span></button>${sel}
     <div class="nav-right">${saveHTML()}<button class="theme-btn" data-action="theme" aria-label="ライト/ダークの切り替え">${isDark() ? "☀ ライトにする" : "☾ ダークにする"}</button></div>`;
 }
 function isDark() { const t = document.documentElement.dataset.theme; return t ? t === "dark" : matchMedia("(prefers-color-scheme:dark)").matches; }

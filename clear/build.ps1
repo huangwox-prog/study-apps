@@ -4,12 +4,12 @@ $src = Join-Path $root "src"
 $out = Join-Path $root "clear-new"
 New-Item -ItemType Directory -Force $out | Out-Null
 $rd = { param($n) [IO.File]::ReadAllText((Join-Path $src $n), [Text.Encoding]::UTF8) }
-$css = & $rd "style.css"; $core = & $rd "core.js"; $a = & $rd "app-a.js"; $b = & $rd "app-b.js"; $c = & $rd "app-c.js"; $cloud = & $rd "cloud.js"
+$css = & $rd "style.css"; $core = & $rd "core.js"; $a = & $rd "app-a.js"; $b = & $rd "app-b.js"; $c = & $rd "app-c.js"; $cloud = & $rd "cloud.js"; $head = (& $rd "head.html").Trim()
 $page = @"
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>CLEAR</title>
+$head
 <style>
 $css
 </style></head>
