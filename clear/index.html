@@ -1689,6 +1689,11 @@ let saveState = "saved";
 function setSave(s) { saveState = s; const el = $("#save-state"); if (el) el.outerHTML = saveHTML(); }
 function saveHTML() { const m = { saved: ["", "保存済み"], saving: ["is-saving", "保存中…"], local: ["is-local", "この端末に保存"], error: ["is-error", "保存に失敗"] }; const [c, l] = m[saveState] || m.saved; return `<span id="save-state" class="save-state ${c}">${l}</span>`; }
 const commit = (App.commit = () => { const e = ev(); if (e) Store.save(e); });
+/* ログインせずに使っているとき:新しく作れるのは見本だけ。人の追加は、1つにつき3人まで(試せる程度) */
+const GUEST_ADDS = 3;
+const isGuest = (App.isGuest = () => !!(window.Cloud && window.Cloud.guest));
+const guestLeft = (e) => (isGuest() ? Math.max(0, GUEST_ADDS - (e.guestAdds || 0)) : Infinity);
+const guestNeedLogin = (what) => toast(`ログインしていないので、${what}。「ログイン・新規登録」からどうぞ`);
 const sortedEvents = () => Object.values(events).sort((a, b) => (b.date || "").localeCompare(a.date || "") || (b.updatedAt || 0) - (a.updatedAt || 0));
 
 /* ============ 呼び名 ============ */
@@ -1758,6 +1763,11 @@ function setTheme(t) { document.documentElement.dataset.theme = t; try { localSt
 function homeHTML() {
   const list = sortedEvents();
   if (ui.createMode) return createHTML(ui.createMode);
+  if (isGuest()) return `<div class="home-head"><h2 class="home-title">見本で試せます</h2><p class="muted">新しく作るには、ログイン(新規登録)してください。ログインしていないあいだは、見本と、前に作ったものだけ使えます。人の追加は1つにつき${GUEST_ADDS}人までです。</p></div>
+    <div class="row"><button class="btn btn-primary" data-action="go-login">ログイン・新規登録</button></div>
+    <p class="faint" style="margin:0">見てみる: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
+    ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}
+    ${accountHTML()}`;
   return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
     <div class="make-grid">${Object.entries(MODES).filter(([k]) => k !== "league") /* リーグ戦は、新しく作る表示を出さない(前に作ったデータは「続きから」で開ける) */.map(([k, [n, d]]) => `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b><span class="faint">${d}</span></button>`).join("")}</div>
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
@@ -1865,6 +1875,7 @@ function playersHTML(e) {
   const selNames = ui.sel.map((id) => esc(pn(e, id)));
   return `<section class="card"><div class="card-head"><div><h2>${isDbl(e) ? "ペアを作る" : "選手を入れる"}</h2><p class="faint">ランクは 1〜5(5 がいちばん強い)。${dbl ? "ペアは、一覧から2人を選んで作ります。" : ""}</p></div>
       <div class="row"><button type="button" class="onoff ${ui.detailMode ? "is-on" : ""}" data-action="detail-mode" role="switch" aria-checked="${!!ui.detailMode}" aria-label="詳細設定">詳細設定<span class="onoff-track"><i></i></span><b>${ui.detailMode ? "オン" : "オフ"}</b></button><div class="seg" role="group"><button class="${ui.addMode === "one" ? "on" : ""}" data-action="add-mode" data-k="one">1人ずつ</button><button class="${ui.addMode === "paste" ? "on" : ""}" data-action="add-mode" data-k="paste">名簿を貼り付け</button></div></div></div>
+    ${isGuest() ? `<p class="note ${guestLeft(e) ? "" : "warn"}" style="margin:0 0 8px">ログインしていないので、追加できるのはあと${guestLeft(e)}人です(1つにつき${GUEST_ADDS}人まで)。<button class="link-btn" data-action="go-login">ログイン・新規登録</button></p>` : ""}
     ${ui.addMode === "one" ? `<form class="add-form" data-form="add-player"><label class="field"><span>名前</span><input class="input" name="name" id="new-name" maxlength="30" autocomplete="off" required></label>
       <label class="field"><span>学校</span><input class="input" name="school" list="schools" maxlength="30" autocomplete="off"></label>
       <div class="field"><span>ランク</span>${levelPicker(`data-action="new-level"`, ui.newLevel)}</div><button class="btn btn-primary" type="submit">追加</button>
@@ -2014,6 +2025,11 @@ function importPreviewHTML(e) {
 }
 function importGo(e) {
   const res = buildImport(e);
+  if (isGuest()) {
+    const n = res.rows.reduce((t, r) => t + (r.names.length === 2 && r.names[1] ? 2 : 1), 0), left = guestLeft(e);
+    if (n > left) { guestNeedLogin(left ? `追加できるのはあと${left}人です(取り込もうとしたのは${n}人)` : `人の追加は${GUEST_ADDS}人までです`); return; }
+    e.guestAdds = (e.guestAdds || 0) + n;
+  }
   res.rows.forEach((r) => {
     const mk = (nm, school) => { const p = { id: uid(), name: nm, school: school || "", level: r.level }; e.players.push(p); return p; };
     // 「東高・西高」のように2校書いてあれば、それぞれの学校にする
@@ -2063,6 +2079,7 @@ App.copyTables = copyTables;
 /* ============ 操作(ボタン・入力) ============ */
 const A = App.A, Ch = App.Ch, F = App.F;
 function newEvent(mode, name, type) {
+  if (isGuest()) { guestNeedLogin("新しく作れません"); return; }
   const e = Core.blankEvent({ id: uid(), name: name || "名前なし", mode, type: mode === "practice" ? "singles" : type });
   if (mode === "practice") { e.games = 3; e.points = 15; }
   events[e.id] = e; currentId = e.id; ui.view = "event"; ui.tab = "players"; ui.createMode = null; Store.save(e); render(); scrollTo(0, 0);
@@ -2083,7 +2100,7 @@ Object.assign(A, {
     render(); toast(`${loc.length} 件を取り込みました`);
   },
   "del-home-yes": (b) => { const id = b.dataset.id; delete events[id]; ui.confirmDel = null; Store.remove(id); render(); toast("削除しました"); },
-  "pick-mode": (b) => { ui.createMode = b.dataset.mode; render(); scrollTo(0, 0); },
+  "pick-mode": (b) => { if (isGuest()) { guestNeedLogin("新しく作れません"); return; } ui.createMode = b.dataset.mode; render(); scrollTo(0, 0); },
   "cancel-create": () => { ui.createMode = null; render(); },
   "toggle-settings": () => { ui.showSettings = !ui.showSettings; ui.confirm = null; render(); },
   "ask-del-event": () => { ui.confirm = "del-event"; render(); },
@@ -2154,13 +2171,15 @@ Object.assign(Ch, {
   "imp-header": (t) => { if (!ui.imp) return; ui.imp.header = t.checked; ui.imp.roles = guessRoles(ui.imp.rows, ui.imp.header); $("#import-preview").innerHTML = importPreviewHTML(ev()); },
 });
 Object.assign(F, {
-  create: (f) => { const d = new FormData(f); newEvent(ui.createMode, String(d.get("name") || "").trim(), d.get("type") === "doubles" ? "doubles" : "singles"); },
+  create: (f) => { if (isGuest()) { guestNeedLogin("新しく作れません"); return; } const d = new FormData(f); newEvent(ui.createMode, String(d.get("name") || "").trim(), d.get("type") === "doubles" ? "doubles" : "singles"); },
   "add-player": (f) => {
     const e = ev(), d = new FormData(f), name = String(d.get("name") || "").trim(), school = String(d.get("school") || "").trim();
     if (!name) return;
     if (e.players.some((p) => p.name === name && p.school === school)) { toast("同じ名前・同じ学校の人がもういます"); return; }
+    if (guestLeft(e) < 1) { guestNeedLogin(`人の追加は${GUEST_ADDS}人までです`); return; }
     const text = (k) => String(d.get(k) || "").trim(), mate = (k) => { const q = school && e.players.find((p) => p.school === school && p[k]); return q ? q[k] : ""; };
     const np = { id: uid(), name, school, level: ui.newLevel, grade: clamp(parseInt(d.get("grade"), 10) || 0, 0, 6), pref: text("pref") || mate("pref"), block: text("block") || mate("block") };
+    if (isGuest()) e.guestAdds = (e.guestAdds || 0) + 1;
     e.players.push(np); ["pref", "block"].forEach((k) => { if (text(k)) shareSchool(e, np, k); }); f.elements.name.value = ""; commit(); render();
     // 名前だけ空にする(学校は、続けて入れやすいよう残す)
     const n = $("#new-name"); if (n) n.focus();
