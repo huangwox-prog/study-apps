@@ -127,3 +127,16 @@
 
 (2026-11-26 公開ページを作り直すために、この行を追加。アプリの中身は変えていない)
 - priority item mix (practice.mixSchool, off by default): prefer opponents from schools faced least (Core.schoolExtra). prioList inserts a missing mix right after school. Priority list look: rank badges + vertical axis (style.css .prio-*).
+
+## ログインとクラウド保存(2026-11-28、クラウドの Claude Code から)
+
+- ねらい:先生が PC で入れて、スマホで見られるようにする。のちに月500円の会員だけが使えるようにする(Stripe はまだ)。
+- 部品は `src/cloud.js`(公開ページだけに入る。claude.ai 版 `artifact.html` には入らないので、claude.ai 版は出し直さなくてよい)。
+- `cloud.js` の先頭の `SUPABASE_URL` と `SUPABASE_ANON_KEY` が**空のあいだは今までと同じ**(ログインなし、この端末に保存)。入れると、ログインしないと使えない。
+- 表の作り方は `supabase/schema.sql`(SQL Editor で1回流す)。`events`(1件=1行、`user_id`+`id`)、`backups`、`profiles`(`is_subscribed` など。本人は読むだけ、書き換えは Stripe の受け口だけ)。全部 RLS で自分の行だけ。
+- 保存のしくみは今までの `Store` のまま。`cloud.js` が claude.ai の db と同じ形(collection / doc / get / set / delete / onSnapshot)で Supabase を読み書きする。
+- ログインしたときの端末の控えは `arca-league-v1:<ユーザーid>`。ログイン前のデータ `arca-league-v1` はそのまま残し、ホームの「アカウントに取り込む」で移す(元は消さない)。
+- ログアウトはホームのいちばん下。
+- 作り直し:Windows は今までどおり `build.ps1`。PowerShell が無いところは `node build.mjs --root`(`index.html` を直接作る)。
+- 確認:偽の Supabase で、ログイン・まちがいの表示・新規登録・取り込み・別の端末から読む・ログアウト・再設定を自動で確かめた(スマホ幅390px、エラーなし)。本物の Supabase ではまだ。
+- 次:Supabase のキーを入れる → 本物で確認 → Stripe(Checkout と Webhook → `profiles.is_subscribed`)→ 会員でない人は支払いの画面へ。特定商取引法の表記ページも要る。

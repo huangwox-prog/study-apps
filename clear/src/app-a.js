@@ -29,14 +29,31 @@ App.toast = toast;
 /* ============ 保存 ============
    まず、古い形のデータの控えを残してから新しい形(v2)に移す。控えは消さない */
 const Store = {
-  db: null, timers: new Map(), pending: new Map(), writing: new Set(),
-  async init() { if (window.claude && typeof window.claude.use === "function") { try { this.db = await window.claude.use("db"); } catch (e) { this.db = null; } } },
-  lsRaw() { try { return localStorage.getItem(LS_KEY) || ""; } catch (e) { return ""; } },
+  db: null, timers: new Map(), pending: new Map(), writing: new Set(), lsKey: LS_KEY, cloud: false,
+  async init() {
+    if (window.claude && typeof window.claude.use === "function") { try { this.db = await window.claude.use("db"); } catch (e) { this.db = null; } return; }
+    // 公開ページでログインを使う設定のとき:ログインが済むまで待つ。
+    // この端末の控えはアカウントごとに別のキーに置く(ログイン前の今までのデータ LS_KEY は、そのまま残して取り込みに使う)
+    if (window.Cloud && window.Cloud.configured) {
+      try { this.db = await window.Cloud.start(); } catch (e) { this.db = null; }
+      if (this.db && window.Cloud.user) { this.cloud = true; this.lsKey = LS_KEY + ":" + window.Cloud.user.id; }
+      else toast("ログインの部品を読み込めませんでした。この端末に保存します");
+    }
+  },
+  lsRaw() { try { return localStorage.getItem(this.lsKey) || ""; } catch (e) { return ""; } },
   lsRead() { try { return JSON.parse(this.lsRaw() || "{}") || {}; } catch (e) { return {}; } },
-  lsWrite() { try { localStorage.setItem(LS_KEY, JSON.stringify(events)); } catch (e) {} },
+  lsWrite() { try { localStorage.setItem(this.lsKey, JSON.stringify(events)); } catch (e) {} },
+  /* ログイン前にこの端末に保存していたデータのうち、まだアカウントに無いもの */
+  localOnly() {
+    if (!this.cloud) return [];
+    let raw = {};
+    try { raw = JSON.parse(localStorage.getItem(LS_KEY) || "{}") || {}; } catch (e) { raw = {}; }
+    return Object.keys(raw).filter((k) => raw[k] && !events[k]).map((k) => Object.assign(Core.migrate(raw[k]), { id: k }));
+  },
   backupLocal(raw) {
     // 新しい形に移す前の元データを、そのまま別のキーに残す(すでにあれば上書きしない)
-    try { if (raw && !localStorage.getItem(BACKUP_KEY)) localStorage.setItem(BACKUP_KEY, raw); } catch (e) {}
+    const key = this.lsKey === LS_KEY ? BACKUP_KEY : BACKUP_KEY + this.lsKey.slice(LS_KEY.length);
+    try { if (raw && !localStorage.getItem(key)) localStorage.setItem(key, raw); } catch (e) {}
   },
   async loadAll() {
     if (this.db) {
@@ -170,7 +187,15 @@ function homeHTML() {
   return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
     <div class="make-grid">${Object.entries(MODES).filter(([k]) => k !== "league") /* リーグ戦は、新しく作る表示を出さない(前に作ったデータは「続きから」で開ける) */.map(([k, [n, d]]) => `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b><span class="faint">${d}</span></button>`).join("")}</div>
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
-    ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}`;
+    ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}
+    ${accountHTML()}`;
+}
+/* ログインしているときだけ:アカウントとログアウト、ログイン前のデータの取り込み */
+function accountHTML() {
+  if (!Store.cloud || !window.Cloud || !window.Cloud.user) return "";
+  const loc = Store.localOnly();
+  const imp = loc.length ? `<div class="card stack"><b>この端末に、ログイン前のデータが ${loc.length} 件あります</b><span class="faint">${loc.slice(0, 5).map((x) => esc(x.name || "(名前なし)")).join("、")}${loc.length > 5 ? " ほか" : ""}</span><div class="row"><button class="btn btn-primary btn-sm" data-action="import-local">アカウントに取り込む</button></div><span class="faint">取り込むと、ほかの端末(スマホなど)からも見られます。この端末の元のデータは消えません。</span></div>` : "";
+  return `<section class="stack">${imp}<div class="account-box faint"><span>ログイン中:${esc(window.Cloud.user.email || "")}</span><button class="link-btn" data-action="logout">ログアウト</button></div></section>`;
 }
 function eventCardHTML(x) {
   if (ui.confirmDel === x.id) return `<div class="card event-card is-confirm"><b>「${esc(x.name)}」を削除しますか？</b><span class="faint">元に戻せません。</span><div class="row"><button class="btn btn-del btn-sm" data-action="del-home-yes" data-id="${x.id}">削除する</button><button class="btn btn-ghost btn-sm" data-action="del-home-no">やめる</button></div></div>`;
@@ -475,6 +500,12 @@ Object.assign(A, {
   "open-event": (b) => { currentId = b.dataset.id; ui.view = "event"; ui.confirmDel = null; ui.orders = {}; ui.tab = "players"; ui.sel = []; ui.imp = null; render(); scrollTo(0, 0); },
   "del-home": (b) => { ui.confirmDel = b.dataset.id; render(); },
   "del-home-no": () => { ui.confirmDel = null; render(); },
+  logout: () => { if (Store.pending.size && !askOk("まだ保存が終わっていない変更があります。ログアウトしますか？")) return; window.Cloud && window.Cloud.signOut(); },
+  "import-local": () => {
+    const loc = Store.localOnly(); if (!loc.length) return;
+    loc.forEach((x) => { events[x.id] = x; Store.save(x); });
+    render(); toast(`${loc.length} 件を取り込みました`);
+  },
   "del-home-yes": (b) => { const id = b.dataset.id; delete events[id]; ui.confirmDel = null; Store.remove(id); render(); toast("削除しました"); },
   "pick-mode": (b) => { ui.createMode = b.dataset.mode; render(); scrollTo(0, 0); },
   "cancel-create": () => { ui.createMode = null; render(); },
