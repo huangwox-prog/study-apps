@@ -9,7 +9,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const src = join(root, "src"), out = join(root, "clear-new");
 mkdirSync(out, { recursive: true });
 const rd = (n) => readFileSync(join(src, n), "utf8");
-const css = rd("style.css"), core = rd("core.js"), a = rd("app-a.js"), b = rd("app-b.js"), c = rd("app-c.js"), d = rd("app-d.js"), cloud = rd("cloud.js"), head = rd("head.html").trim();
+const css = rd("style.css"), core = rd("core.js"), a = rd("app-base.js"), b = rd("app-league.js"), c = rd("app-practice.js"), st = rd("app-stats.js"), d = rd("app-roster.js"), cloud = rd("cloud.js"), head = rd("head.html").trim();
 
 // 公開ページ用:ログイン(Supabase)の部品を入れる。claude.ai 版には入れない
 const page = (withCloud) => `<!doctype html>
@@ -33,6 +33,7 @@ ${cloud}
 ${a}
 ${b}
 ${c}
+${st}
 ${d}
 App.boot();
 </script>

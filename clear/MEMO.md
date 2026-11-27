@@ -10,7 +10,7 @@
 | アプリ本体(1ファイル) | `clear/index.html` |
 | 公開ページ(GitHub Pages) | https://huangwox-prog.github.io/study-apps/clear/ |
 | claude.ai 版(持ち主だけ) | https://claude.ai/artifact/6oAYFc7wQDsfhPSrSaPSWK |
-| 作り直しの部品 | `src/`(core.js 計算 / app-a.js 土台・選手・ペア / app-b.js リーグ・トーナメント / app-c.js 練習試合・成績・ドラッグ / style.css)と `build.ps1` |
+| 作り直しの部品 | `src/`(下の「ファイルの分け方」)と `build.ps1` / `build.mjs` |
 
 - 反映の状況(2026-11-13): claude.ai 版も GitHub 版も、作り直し版に更新済み。GitHub へは、git が無いPCだったので、ブラウザの「Upload files」で `index.html`・`MEMO.md`・`build.ps1`・`確認表.md`(`clear/`)と `src/`(`clear/src/`)を上げた。
 - `build.ps1 -root <フォルダ>` が `src/*` を `clear-new/index.html`(と claude.ai 用の `artifact.html`)に1ファイルにまとめる。PowerShell 5.1 は BOM なしの UTF-8 を ANSI で読むので、`build.ps1` の中は ASCII だけにする。
@@ -165,3 +165,19 @@
 - 顔写真は 200×200 の JPEG に縮めて data URL で持つ(1枚およそ数KB〜15KB)。
 - 練習試合などの「選手」の画面の「名簿から入れる」で、名簿の人を `rid`(名簿の id)つきで入れる。`Core.migrate` は `rid` を残す。出場履歴と成績は、全部の作ったものから `rid` で集める(試合数・勝敗は練習試合だけ)。
 - スポーツテストは枠だけ(項目は先生が決める)。測定日ごとに表で入力、いちばん良い記録に色。入力のたびに全体を描き直さない(Tab の移動先が消えるため)。
+
+## ファイルの分け方(2026-11-28 に整理)
+| ファイル | 中身 |
+|---|---|
+| `src/core.js` | 計算だけ(画面に触らない)。組み方・順位・移し替え(`Core.migrate`)など |
+| `src/cloud.js` | ログイン(Supabase)と、保存の受け口。公開ページだけに入る |
+| `src/app-base.js` | 土台:保存(`Store`)・描画の入口・はじめの画面・選手とペア・名簿の貼り付け・Excel |
+| `src/app-league.js` | リーグ戦・トーナメント・順位一覧・トーナメントの印刷・見本 |
+| `src/app-practice.js` | 練習試合:回転の作成・組み直し・ドラッグ・点数。最後に画面の操作のつなぎ(クリック・入力などの受け口) |
+| `src/app-stats.js` | 練習試合の成績(画面用のカードと、PDF用の紙の形)・選手ごとのページ・印刷 |
+| `src/app-roster.js` | 部員名簿 |
+| `src/style.css` / `src/head.html` | 見た目 / ページの題名・説明文 |
+- 読み込む順は build の順(core → cloud → base → league → practice → stats → roster)。ファイルどうしは `App`(と練習の小さな関数をまとめた `App.P`)でつながる。
+- 書き方は Prettier でそろえる(`.prettierrc.json`、1行120文字)。画面のHTML(テンプレート文字列)の中は、改行を入れると表示に空白が入るので、長くてもそのまま。
+- 整理で消したもの:使われていなかった関数(`nextCardHTML` など)と操作、使っていない変数。CSS の閉じかっこの余り(後ろのルールが効かなくなるもの)を直した。
+- 自動テストは `tests/`(使い方は `tests/README.md`)。直したら `src/test.html` と合わせて全部通す。
