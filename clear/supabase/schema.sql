@@ -19,6 +19,10 @@ create table if not exists public.backups (
   primary key (user_id, id)
 );
 
+-- アプリ(ログインした人)から表を使えるようにする。どの行に触れるかは下の RLS で絞る
+grant select, insert, update, delete on public.events  to authenticated;
+grant select, insert, update, delete on public.backups to authenticated;
+
 -- 自分の行だけ読み書きできる(RLS)
 alter table public.events  enable row level security;
 alter table public.backups enable row level security;
@@ -47,6 +51,7 @@ create table if not exists public.profiles (
 );
 
 alter table public.profiles enable row level security;
+grant select on public.profiles to authenticated;
 
 -- 本人は自分の行を読めるだけ。書き換えはできない(is_subscribed を自分で true にできないように)。
 -- 書き換えるのは、あとで作る Stripe の受け口(service_role で動く)だけ

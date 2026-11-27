@@ -141,3 +141,5 @@
 - 確認:偽の Supabase で、ログイン・まちがいの表示・新規登録・取り込み・別の端末から読む・ログアウト・再設定を自動で確かめた(スマホ幅390px、エラーなし)。本物の Supabase ではまだ。
 - 次:Supabase のキーを入れる → 本物で確認 → Stripe(Checkout と Webhook → `profiles.is_subscribed`)→ 会員でない人は支払いの画面へ。特定商取引法の表記ページも要る。
 - 抜け穴(2026-11-28):`cloud.js` の `ALLOW_GUEST = true` のあいだは、ログイン画面に「ログインせずに使う」を出す(今までどおり `arca-league-v1` に保存)。選んだ端末は `clear-guest`=1 を覚えて、次からログイン画面を出さない。ホームの下の「ログイン・新規登録」で戻れる。前から使っている先生が締め出されないため。有料だけにするときに false にする。
+- Supabase の本番(2026-11-28):プロジェクト名 clear(組織 CLEAR、無料、東京 ap-northeast-1)。URL https://wcpksigsukcpljazeomp.supabase.co 、キーは publishable キー(`cloud.js` に入れてある)。schema.sql は流し済み。Site URL と Redirect URL(`clear/**`)も設定済み。ログインしていない人は表に触れない(permission denied)ことを確認。
+- 注意:無料プランの確認メールは1時間に数通まで。人が増えたら独自の SMTP を設定する。
