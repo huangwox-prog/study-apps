@@ -29,14 +29,16 @@ header.top{display:flex;align-items:center;justify-content:space-between;padding
 .btn-main{background:var(--accent);color:#fff;box-shadow:0 12px 28px -14px rgba(47,76,240,.6)}
 .btn-sub{background:var(--card);border-color:var(--line);color:var(--text)}
 .btn-sm{padding:8px 18px;font-size:.9rem}
-.hero{background:var(--ink);color:#f4f4f6;border-radius:34px 34px 34px 72px;padding:clamp(32px,6vw,72px) clamp(24px,5vw,64px);margin:8px 0 56px;position:relative;overflow:hidden}
-.hero::after{content:"";position:absolute;right:-120px;top:-120px;width:360px;height:360px;border-radius:50%;background:var(--aurora);opacity:.35;filter:blur(40px)}
-.hero p.kicker{margin:0 0 8px;color:#a9abb4;font-weight:700;letter-spacing:.12em;font-size:.85rem}
-.hero h1{margin:0 0 16px;font-size:clamp(1.8rem,1.2rem + 3vw,3rem);line-height:1.3;letter-spacing:-.02em}
-.hero h1 span{background:var(--aurora);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero .lead{color:#c9cbd3;max-width:640px;margin:0 0 28px;font-size:1.05rem}
-.hero .row{display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
-.hero .note{color:#9799a3;font-size:.85rem;margin-top:14px}
+.hero{position:relative;padding:clamp(48px,10vw,120px) 0 clamp(56px,9vw,104px);margin:0 0 40px;text-align:left}
+.hero::before{content:"";position:absolute;z-index:-1;right:-10%;top:-20%;width:min(620px,80vw);height:min(620px,80vw);border-radius:50%;background:var(--aurora);opacity:.22;filter:blur(90px)}
+.hero p.kicker{margin:0 0 14px;color:var(--accent);font-weight:800;letter-spacing:.14em;font-size:.95rem}
+.hero h1{margin:0 0 24px;font-size:clamp(2.1rem,1rem + 6vw,5.2rem);line-height:1.15;letter-spacing:-.04em;font-weight:900}
+.hero h1 .nw{display:inline-block}
+.hero h1 .grad{background:var(--aurora);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lead{color:var(--sub);max-width:680px;margin:0 0 36px;font-size:clamp(1rem,.9rem + .4vw,1.2rem)}
+.hero .row{display:flex;gap:12px;flex-wrap:wrap}
+.hero .btn{padding:15px 32px;font-size:1.05rem}
+.hero .note{color:var(--faint);font-size:.88rem;margin-top:16px}
 section{margin:0 0 64px}
 h2{font-size:clamp(1.4rem,1.1rem + 1.4vw,2rem);letter-spacing:-.02em;margin:0 0 8px;line-height:1.4}
 .sub{color:var(--sub);margin:0 0 24px}
@@ -72,7 +74,7 @@ footer a{color:var(--faint)}
 <main class="wrap">
   <div class="hero">
     <p class="kicker">バドミントン部の顧問の先生へ</p>
-    <h1>合同練習の対戦表、<br><span>名簿を貼るだけ</span>で。</h1>
+    <h1><span class="nw">合同練習の</span><span class="nw">対戦表、</span><br><span class="nw"><span class="grad">名簿を貼るだけ</span>で。</span></h1>
     <p class="lead">スマッチは、バドミントンの練習試合・合同練習の組み合わせを自動で作るWebアプリです。ランクが近い人どうし、なるべく他校の人と、同じ相手が続かないように、回転ごとに組み直します。</p>
     <div class="row">
       <a class="btn btn-main" href="../clear/">無料ではじめる</a>
