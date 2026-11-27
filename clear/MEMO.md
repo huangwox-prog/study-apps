@@ -140,3 +140,4 @@
 - 作り直し:Windows は今までどおり `build.ps1`。PowerShell が無いところは `node build.mjs --root`(`index.html` を直接作る)。
 - 確認:偽の Supabase で、ログイン・まちがいの表示・新規登録・取り込み・別の端末から読む・ログアウト・再設定を自動で確かめた(スマホ幅390px、エラーなし)。本物の Supabase ではまだ。
 - 次:Supabase のキーを入れる → 本物で確認 → Stripe(Checkout と Webhook → `profiles.is_subscribed`)→ 会員でない人は支払いの画面へ。特定商取引法の表記ページも要る。
+- 抜け穴(2026-11-28):`cloud.js` の `ALLOW_GUEST = true` のあいだは、ログイン画面に「ログインせずに使う」を出す(今までどおり `arca-league-v1` に保存)。選んだ端末は `clear-guest`=1 を覚えて、次からログイン画面を出さない。ホームの下の「ログイン・新規登録」で戻れる。前から使っている先生が締め出されないため。有料だけにするときに false にする。

@@ -10,6 +10,10 @@
    anon キーは公開してよいキー(表ごとの RLS で守る)。service_role キーは絶対に貼らない */
 const SUPABASE_URL = "";
 const SUPABASE_ANON_KEY = "";
+/* true のあいだは、ログイン画面に「ログインせずに使う」を出す(今までの使い方。データはその端末だけ)。
+   前から使っている人が締め出されないようにするための一時的な入口。有料だけにするときに false にする */
+const ALLOW_GUEST = true;
+const GUEST_KEY = "clear-guest";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const inClaude = !!(window.claude && typeof window.claude.use === "function");
@@ -24,6 +28,7 @@ const CSS = `
 .auth-links{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center}
 .auth-msg{font-size:.86rem;padding:8px 12px;border-radius:12px;background:var(--surface-soft);color:var(--text-secondary)}
 .auth-msg.err{background:var(--error-soft);color:var(--error)}.auth-msg.ok{background:var(--success-soft);color:var(--success)}
+.auth-guest{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--hairline);text-align:center}
 .account-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:8px}
 `;
 
@@ -94,7 +99,11 @@ function makeDb(client, uid) {
 
 const Cloud = (window.Cloud = {
   configured: !inClaude && !!(SUPABASE_URL && SUPABASE_ANON_KEY),
-  client: null, user: null, profile: null,
+  allowGuest: ALLOW_GUEST,
+  client: null, user: null, profile: null, guest: false,
+  isGuestSaved() { try { return localStorage.getItem(GUEST_KEY) === "1"; } catch (e) { return false; } },
+  /* ログインせずに使う人が、ホームからログインに切り替える */
+  goLogin() { try { localStorage.removeItem(GUEST_KEY); } catch (e) {} location.reload(); },
 
   /* ログインが済むまで待って、Store 用の db を返す。使えないときは null(この端末に保存) */
   async start() {
@@ -105,6 +114,7 @@ const Cloud = (window.Cloud = {
     let recovering = /type=recovery/.test(location.hash);
     return new Promise((resolve) => {
       let done = false;
+      UI.guest = () => { if (done) return; done = true; this.guest = true; try { localStorage.setItem(GUEST_KEY, "1"); } catch (e) {} resolve(null); };
       const finish = (session) => {
         if (done || !session) return;
         done = true; this.user = session.user;
@@ -121,7 +131,9 @@ const Cloud = (window.Cloud = {
       });
       client.auth.getSession().then(({ data }) => {
         if (recovering) { UI.show("newpass"); return; }
-        if (data && data.session) finish(data.session); else UI.show("login");
+        if (data && data.session) finish(data.session);
+        else if (ALLOW_GUEST && this.isGuestSaved()) UI.guest(); // 前に「ログインせずに使う」を選んだ端末は、そのまま開く
+        else UI.show("login");
       }).catch(() => UI.show("login"));
     });
   },
@@ -143,7 +155,7 @@ const Cloud = (window.Cloud = {
 
 /* ============ ログインの画面 ============ */
 const UI = {
-  mode: "login", msg: "", msgKind: "", busy: false, email: "",
+  mode: "login", msg: "", msgKind: "", busy: false, email: "", guest: null,
   show(mode, msg = "", kind = "") { this.mode = mode; this.msg = msg; this.msgKind = kind; this.busy = false; this.draw(); },
   draw() {
     const app = document.getElementById("app"); if (!app) return;
@@ -153,7 +165,7 @@ const UI = {
     const dis = this.busy ? "disabled" : "";
     const link = (to, t) => `<button type="button" class="link-btn" data-auth-go="${to}">${t}</button>`;
     let body = "";
-    if (this.mode === "login") body = `<h2>ログイン</h2>${msg}${email}${pass("current-password")}<button class="btn btn-primary" type="submit" ${dis}>ログイン</button><div class="auth-links">${link("signup", "はじめての方(新規登録)")}${link("reset", "パスワードを忘れた")}</div>`;
+    if (this.mode === "login") body = `<h2>ログイン</h2>${msg}${email}${pass("current-password")}<button class="btn btn-primary" type="submit" ${dis}>ログイン</button><div class="auth-links">${link("signup", "はじめての方(新規登録)")}${link("reset", "パスワードを忘れた")}</div>${ALLOW_GUEST ? `<div class="auth-guest"><button type="button" class="btn btn-ghost" data-auth-guest>ログインせずに使う</button><span class="faint">今までどおり、この端末だけに保存します。あとからいつでもログインできます。</span></div>` : ""}`;
     else if (this.mode === "signup") body = `<h2>新規登録</h2>${msg}${email}${pass("new-password", "パスワード(8文字以上)")}<button class="btn btn-primary" type="submit" ${dis}>登録する</button><div class="auth-links">${link("login", "登録済みの方はログイン")}</div>`;
     else if (this.mode === "reset") body = `<h2>パスワードの再設定</h2>${msg}<p class="faint" style="margin:0">登録したメールアドレスに、再設定のリンクを送ります。</p>${email}<button class="btn btn-primary" type="submit" ${dis}>リンクを送る</button><div class="auth-links">${link("login", "ログインに戻る")}</div>`;
     else if (this.mode === "newpass") body = `<h2>新しいパスワード</h2>${msg}${pass("new-password", "新しいパスワード(8文字以上)")}<button class="btn btn-primary" type="submit" ${dis}>変更してはじめる</button>`;
@@ -163,6 +175,7 @@ const UI = {
     const f = document.getElementById("auth-form");
     f.addEventListener("submit", (e) => { e.preventDefault(); this.submit(f); });
     f.querySelectorAll("[data-auth-go]").forEach((b) => b.addEventListener("click", () => { const em = f.elements.email; if (em) this.email = em.value.trim(); this.show(b.dataset.authGo); }));
+    const g = f.querySelector("[data-auth-guest]"); if (g) g.addEventListener("click", () => this.guest && this.guest());
     const first = f.querySelector("input"); if (first && !first.value) first.focus(); else if (f.elements.password) f.elements.password.focus();
   },
   async submit(f) {

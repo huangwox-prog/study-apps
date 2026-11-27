@@ -37,7 +37,7 @@ const Store = {
     if (window.Cloud && window.Cloud.configured) {
       try { this.db = await window.Cloud.start(); } catch (e) { this.db = null; }
       if (this.db && window.Cloud.user) { this.cloud = true; this.lsKey = LS_KEY + ":" + window.Cloud.user.id; }
-      else toast("ログインの部品を読み込めませんでした。この端末に保存します");
+      else if (!window.Cloud.guest) toast("ログインの部品を読み込めませんでした。この端末に保存します");
     }
   },
   lsRaw() { try { return localStorage.getItem(this.lsKey) || ""; } catch (e) { return ""; } },
@@ -192,6 +192,7 @@ function homeHTML() {
 }
 /* ログインしているときだけ:アカウントとログアウト、ログイン前のデータの取り込み */
 function accountHTML() {
+  if (window.Cloud && window.Cloud.guest) return `<section class="stack"><div class="account-box faint"><span>ログインせずに使っています(この端末だけに保存)。ログインすると、PCとスマホで同じデータを使えます。</span><button class="link-btn" data-action="go-login">ログイン・新規登録</button></div></section>`;
   if (!Store.cloud || !window.Cloud || !window.Cloud.user) return "";
   const loc = Store.localOnly();
   const imp = loc.length ? `<div class="card stack"><b>この端末に、ログイン前のデータが ${loc.length} 件あります</b><span class="faint">${loc.slice(0, 5).map((x) => esc(x.name || "(名前なし)")).join("、")}${loc.length > 5 ? " ほか" : ""}</span><div class="row"><button class="btn btn-primary btn-sm" data-action="import-local">アカウントに取り込む</button></div><span class="faint">取り込むと、ほかの端末(スマホなど)からも見られます。この端末の元のデータは消えません。</span></div>` : "";
@@ -501,6 +502,7 @@ Object.assign(A, {
   "del-home": (b) => { ui.confirmDel = b.dataset.id; render(); },
   "del-home-no": () => { ui.confirmDel = null; render(); },
   logout: () => { if (Store.pending.size && !askOk("まだ保存が終わっていない変更があります。ログアウトしますか？")) return; window.Cloud && window.Cloud.signOut(); },
+  "go-login": () => { window.Cloud && window.Cloud.goLogin(); },
   "import-local": () => {
     const loc = Store.localOnly(); if (!loc.length) return;
     loc.forEach((x) => { events[x.id] = x; Store.save(x); });
