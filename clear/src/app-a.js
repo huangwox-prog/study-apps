@@ -189,11 +189,13 @@ function setTheme(t) { document.documentElement.dataset.theme = t; try { localSt
 function homeHTML() {
   const list = sortedEvents();
   if (ui.createMode) return createHTML(ui.createMode);
-  if (isGuest()) return `<div class="home-head"><h2 class="home-title">見本で試せます</h2><p class="muted">新しく作るには、ログイン(新規登録)してください。ログインしていないあいだは、見本と、前に作ったものだけ使えます。人の追加は1つにつき${GUEST_ADDS}人までです。</p></div>
+  if (isGuest()) return `<div class="home-head"><h2 class="home-title">ようこそ</h2><p class="muted">新しく作るには、ログイン(新規登録)してください。</p></div>
     <div class="row"><button class="btn btn-primary" data-action="go-login">ログイン・新規登録</button></div>
-    <p class="faint" style="margin:0">見てみる: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
-    ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}
-    ${accountHTML()}`;
+    <section class="card stack"><h3 style="margin:0">見本で試す</h3><p class="faint" style="margin:0">架空の学校・選手で、練習試合の組み方を試せます。人の追加は${GUEST_ADDS}人までです。</p>
+      <div class="row"><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice">見本の練習試合(32人)</button><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></div></section>
+    <section class="card stack"><h3 style="margin:0">前に使ったことがある人</h3>
+      ${list.length ? `<p class="faint" style="margin:0">この端末に前のデータがあります。このまま開けます(人の追加は${GUEST_ADDS}人まで)。</p><div class="event-grid">${list.map(eventCardHTML).join("")}</div>` : `<p class="faint" style="margin:0">この端末・このブラウザには、前のデータがありません。前に使ったパソコンやスマホで開いてください。</p>`}
+      <p class="faint" style="margin:0"><b>引き継ぎ方:</b>前に使った端末で ①「ログイン・新規登録」でアカウントを作る ②ログインする ③ホームの下の「アカウントに取り込む」を押す。これで、ほかの端末からも見られて、制限なく使えます。元のデータは消えません。</p></section>`;
   return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
     <div class="make-grid">${Object.entries(MODES).filter(([k]) => k !== "league") /* リーグ戦は、新しく作る表示を出さない(前に作ったデータは「続きから」で開ける) */.map(([k, [n, d]]) => `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b><span class="faint">${d}</span></button>`).join("")}</div>
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
