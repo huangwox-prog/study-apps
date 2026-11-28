@@ -33,19 +33,25 @@
     block: ["同じブロックどうしを避ける", "ブロックが入っている人だけ、同じブロックどうしを避けます"],
   };
   const prioOn = (e, k) => Core.PRIO_ON[k](e.practice);
+  /* 画面の並び:使う項目を上にまとめ、使わない項目は下に分ける(使わない項目は計算に関係しないので、並びを変えても組み方は同じ) */
+  const prioShown = (o) => {
+    const l = Core.prioList(o);
+    return l.filter((k) => Core.PRIO_ON[k](o)).concat(l.filter((k) => !Core.PRIO_ON[k](o)));
+  };
   function prioHTML(e) {
     const o = e.practice,
-      list = Core.prioList(o),
-      cur = o.tol;
+      list = prioShown(o),
+      cur = o.tol,
+      firstOff = list.findIndex((k) => !prioOn(e, k));
     let no = 0;
     const cards = list
       .map((k, i) => {
         const on = prioOn(e, k),
           [t, d] = PRIO_INFO[k];
-        return `<li class="prio-card ${on ? `step-${Math.min(no + 1, 4)}` : "is-off"}" data-drag="prio" data-drag-id="${k}" data-drag-label="${esc(t)}" data-drop="prio" data-drop-id="${k}">
+        return `${i === firstOff ? `<li class="prio-sep">使わない項目(チェックを入れると、使う項目のいちばん下に入ります)</li>` : ""}<li class="prio-card ${on ? `step-${Math.min(no + 1, 4)}` : "is-off"}" data-drag="prio" data-drag-id="${k}" data-drag-label="${esc(t)}" data-drop="prio" data-drop-id="${k}">
       <span class="grip" aria-hidden="true">⠿</span><span class="prio-no">${on ? `<b>${++no}</b><small>${no === 1 ? "最優先" : "番目"}</small>` : "<small>使わない</small>"}</span>
       <label class="check prio-main"><input type="checkbox" data-change="p-prio-on" data-key="${k}" ${on ? "checked" : ""}><span><b>${t}</b><br><span class="faint">${d}</span></span></label>
-      <span class="prio-mv"><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t)} を上へ">▲</button><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="1" ${i === list.length - 1 ? "disabled" : ""} aria-label="${esc(t)} を下へ">▼</button></span></li>`;
+      <span class="prio-mv">${on ? `<button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="${esc(t)} を上へ">▲</button><button class="icon-btn" data-action="prio-mv" data-k="${k}" data-d="1" ${i === (firstOff < 0 ? list.length : firstOff) - 1 ? "disabled" : ""} aria-label="${esc(t)} を下へ">▼</button>` : ""}</span></li>`;
       })
       .join("");
     const tols = [...new Set([1, 2, cur])].filter((k) => k >= 0 && k <= Core.RANK_MAX - 1).sort((a, b) => a - b);
@@ -1053,7 +1059,7 @@
       toast("削除しました");
     },
     "prio-mv": (b) => {
-      const l = Core.prioList(ev().practice),
+      const l = prioShown(ev().practice),
         i = l.indexOf(b.dataset.k),
         j = i + Number(b.dataset.d);
       if (i < 0 || j < 0 || j >= l.length) return;
@@ -1184,12 +1190,21 @@
     },
     "p-prio-on": (t) => {
       const k = t.dataset.key,
-        f = Core.PRIO_FLAG[k];
-      if (f) {
-        ev().practice[f] = t.checked;
-        commit();
-        render();
+        f = Core.PRIO_FLAG[k],
+        o = ev().practice;
+      if (!f) return;
+      if (t.checked) {
+        /* 使う項目のいちばん下に入れる。「いろいろな学校」だけは「別の学校」のすぐ下(下のほうだと、ほとんど効かない) */
+        const on = prioShown(o).filter((x) => x !== k && Core.PRIO_ON[x](o)),
+          off = prioShown(o).filter((x) => x !== k && !Core.PRIO_ON[x](o)),
+          at = k === "mix" && on.includes("school") ? on.indexOf("school") + 1 : on.length;
+        on.splice(at, 0, k);
+        o.prio = on.concat(off);
       }
+      o[f] = t.checked;
+      if (!t.checked) o.prio = prioShown(o);
+      commit();
+      render();
     },
     "p-opt": (t) => {
       ev().practice[t.dataset.key] = t.checked;
@@ -1209,7 +1224,7 @@
   });
   const prioMove = (from, to) => {
     const o = ev().practice,
-      l = Core.prioList(o),
+      l = prioShown(o),
       i = l.indexOf(from),
       j = l.indexOf(to);
     if (i < 0 || j < 0 || i === j) return;

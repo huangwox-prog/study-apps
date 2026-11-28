@@ -3667,3 +3667,12 @@ details[open] > summary {
   word-break: break-all;
   text-align: center;
 }
+.prio-sep {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 8px 4px 2px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+}
