@@ -192,7 +192,7 @@
 - プライバシーポリシーの「運営用のアカウントには2段階認証」は、Gmail(sumatchi408)は設定済み。GitHub も設定すること。
 
 ## claude.ai 版の出し直し(2026-11-28)
-- `node build.mjs` が `clear-new/artifact-doc.html` も作る。これを claude.ai 版(slug `2eefc904-caf9-41b1-94a4-54c90cfa0108`、短いURLは `6oAYFc7wQDsfhPSrSaPSWK`)の `index.html` として出し直す(`<!DOCTYPE html>` が無いと受け付けない)。題名は「スマッチ」に変えた。
+- `node build.mjs` が `clear-new/artifact-doc.html` も作る。これを claude.ai 版(slug `2eefc904-caf9-41b1-94a4-54c90cfa0108`、短いURLは `6oAYFc7wQDsfhPSrSaPSWK`、題名は2026-11-28に「ラブオール」)の `index.html` として出し直す(`<!DOCTYPE html>` が無いと受け付けない)。題名は「スマッチ」に変えた。
 - 2026-11-28 の時点で、claude.ai 版も GitHub 版と同じ中身(部員名簿・成績の画面・整理・規約へのリンク)。claude.ai 版の部員名簿は、claude.ai の db の `roster` コレクションに保存される。
 
 ## 選手用コード(2026-11-28)
