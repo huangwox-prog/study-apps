@@ -29,40 +29,49 @@ const U = "http://localhost:8771/clear/cloud.html";
 
   // 選手: コード入りURLで開く(ログインなし)
   const S = await ctx.newPage(); S.on("pageerror", (e) => errs.push(e.message));
-  await S.goto(U + "?code=" + code); await S.waitForSelector(".sh-m");
+  await S.goto(U + "?code=" + code); await S.waitForSelector(".pmatch");
   ok(!(await S.$("#auth-form")), "選手: ログイン画面を出さずに入れる");
-  ok((await S.$$(".sh-m")).length > 0, "選手: 対戦が見える");
+  ok((await S.$$(".pmatch")).length > 0, "選手: 対戦が見える");
   ok(!/ランク|レベル/.test(await S.innerText("body")), "選手: ランクの文字が出ない");
   const got = await S.evaluate((c) => window.Cloud.client.rpc("share_get", { p_code: c }).then((r) => JSON.stringify(r.data)), code);
   ok(!/level|note|rank/i.test(got) && /"name"/.test(got), "選手: ランク・メモのデータが届いていない");
   await S.screenshot({ path: "share-student-390.png", fullPage: true });
   // 点数を入れる → いいえ → 何も変わらない
-  await S.click(`.sh-score[data-m="${first.m}"]`); await S.waitForSelector(".sh-game input");
-  const ins = await S.$$(".sh-game input"); await ins[0].fill("21"); await ins[1].fill("15");
+  await S.click(`.pm-mid[data-m="${first.m}"]`); await S.waitForSelector(".pm-extra .score");
+  const ins = await S.$$(".pm-extra .score");
+  // ありえない点数は止める
+  for (const [x, y, w] of [["15", "14", "15-14"], ["17", "14", "17-14"], ["22", "20", "21点"], ["10", "5", "終わっていません"]]) {
+    const ii = await S.$$(".pm-extra .score"); await ii[0].fill(x); await ii[1].fill(y); await S.click('[data-sh="save"]'); await S.waitForTimeout(150);
+    const em = await S.$(".pm-extra .note.err"); const et = em ? await em.textContent() : "(なし)";
+    ok(!(await S.$(".sh-confirm")) && et.includes(w), "選手: " + x + "-" + y + " は止める: " + et);
+  }
+  const ng = await S.evaluate(() => document.querySelectorAll(".pm-extra .score").length);
+  { const ii = await S.$$(".pm-extra .score"); await ii[0].fill("15"); await ii[1].fill("10"); }
+  if (ng > 2) { await S.click('[data-sh="save"]'); await S.waitForTimeout(150); ok((await S.textContent(".pm-extra .note.err")).includes("勝負がつくまで"), "選手: 勝負がつくまで入れないと止める"); const i2 = await S.$$(".pm-extra .score"); await i2[2].fill("15"); await i2[3].fill("12"); }
   await S.click('[data-sh="save"]'); await S.waitForSelector(".sh-confirm");
   ok((await S.textContent(".sh-confirm")).includes("この記録を更新します。よろしいですか？"), "選手: 「この記録を更新します。よろしいですか？」が出る");
   await S.screenshot({ path: "share-confirm-390.png" });
   await S.click('[data-sh="no"]'); await S.waitForTimeout(200);
   const g0 = await S.evaluate(([r, m]) => __mockdb.events.flatMap((e) => e.data.practice ? e.data.practice.rounds : []).find((x) => x.id === r).matches.find((x) => x.id === m).g, [first.r, first.m]);
-  ok(!(g0 || []).some((g) => g && g[0] === 21), "選手: 「いいえ」なら記録しない");
-  ok(await S.isVisible(".sh-game input"), "選手: 「いいえ」で入力に戻る");
+  ok(!(g0 || []).some((g) => g && g[0] === 15), "選手: 「いいえ」なら記録しない");
+  ok(await S.isVisible(".pm-extra .score"), "選手: 「いいえ」で入力に戻る");
   // はい → 記録される
   await S.click('[data-sh="save"]'); await S.waitForSelector(".sh-confirm"); await S.click('[data-sh="yes"]');
   await S.waitForFunction(() => !document.querySelector(".modal-bg"));
   const g1 = await S.evaluate(([r, m]) => __mockdb.events.flatMap((e) => e.data.practice ? e.data.practice.rounds : []).find((x) => x.id === r).matches.find((x) => x.id === m).g, [first.r, first.m]);
-  ok(JSON.stringify(g1[0]) === "[21,15]", "選手: 「はい」で記録される " + JSON.stringify(g1));
+  ok(JSON.stringify(g1[0]) === "[15,10]" && (await S.evaluate(() => 1)), "選手: 「はい」で記録される " + JSON.stringify(g1));
   ok((await S.textContent("#toast")).includes("記録しました"), "選手: 記録しましたと出る");
-  ok((await S.textContent(`.sh-score[data-m="${first.m}"]`)).includes("21 - 15"), "選手: 画面に点数が出る");
+  ok((await S.textContent(`.pm-mid[data-m="${first.m}"]`)).replace(/\s/g, "").includes("15-10"), "選手: 画面に点数が出る");
   // 片方だけの点数は止める
-  await S.click(`.sh-score[data-m="${first.m}"]`); await S.waitForSelector(".sh-game input");
-  const ins2 = await S.$$(".sh-game input"); await ins2[1].fill("");
+  await S.click(`.pm-mid[data-m="${first.m}"]`); await S.waitForSelector(".pm-extra .score");
+  const ins2 = await S.$$(".pm-extra .score"); await ins2[1].fill("");
   await S.click('[data-sh="save"]'); await S.waitForTimeout(200);
   ok(!(await S.$(".sh-confirm")), "選手: 片方だけの点数では確認に進まない");
   await S.click('[data-sh="cancel"]');
   // 名前で探す
-  const nm = await S.evaluate(() => document.querySelector(".sh-side b").textContent);
+  const nm = await S.evaluate(() => document.querySelector(".pmatch .pname").textContent);
   await S.fill("#sh-q", nm); await S.waitForTimeout(200);
-  ok((await S.$$(".sh-m")).length >= 1 && (await S.$$eval(".sh-m", (a, n) => a.every((x) => x.textContent.includes(n)), nm)), "選手: 名前で探せる");
+  ok((await S.$$(".pmatch")).length >= 1 && (await S.$$eval(".pmatch", (a, n) => a.every((x) => x.textContent.includes(n)), nm)), "選手: 名前で探せる");
 
   // まちがったコード(ログイン画面から)
   const W = await ctx.newPage(); W.on("pageerror", (e) => errs.push(e.message));

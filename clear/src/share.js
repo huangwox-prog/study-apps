@@ -17,22 +17,6 @@
 .sh-wrap{max-width:760px;margin:0 auto;padding:20px 14px 60px;display:flex;flex-direction:column;gap:14px}
 .sh-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;letter-spacing:.06em}
 .sh-code{font-size:1.6rem;letter-spacing:.3em;text-align:center;font-variant-numeric:tabular-nums}
-.sh-head h1{margin:0;font-size:1.3rem}
-.sh-round h2{margin:0 0 8px;font-size:1.05rem}
-.sh-m{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--hairline)}
-.sh-m:first-of-type{border-top:0}
-.sh-no{font-size:.78rem;color:var(--text-tertiary);text-align:center;min-width:2.4em;line-height:1.2}
-.sh-side{display:flex;flex-direction:column;gap:2px;min-width:0}
-.sh-side.b{text-align:right}
-.sh-side b{font-weight:650;overflow-wrap:anywhere}
-.sh-side small{color:var(--text-tertiary);font-size:.74rem}
-.sh-side.win b{color:var(--success)}
-.sh-score{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:84px;padding:6px 8px;border-radius:12px;border:1px solid var(--border);background:var(--surface-soft);color:var(--text);font:inherit;cursor:pointer}
-.sh-score .num{font-variant-numeric:tabular-nums;font-weight:700}
-.sh-score .faint{font-size:.74rem}
-.sh-games{display:flex;flex-direction:column;gap:10px}
-.sh-game{display:flex;align-items:center;justify-content:center;gap:8px}
-.sh-game .input{width:4.2em;text-align:center;font-size:1.3rem;font-variant-numeric:tabular-nums}
 .sh-names{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;font-weight:650}
 .sh-confirm{border:2px solid var(--error);}
 .sh-confirm h3{color:var(--error);margin:0}
@@ -141,48 +125,75 @@
     const e = ev(),
       d = S.data,
       pm = Object.fromEntries(e.players.map((p) => [p.id, p])),
+      SC = window.App && App.schoolColors ? App.schoolColors(e) : { cls: () => "", list: [] },
       rs = e.practice.rounds,
       multi = rs.some((r) => r.day !== (rs[0] && rs[0].day)),
       q = S.q.trim();
-    const side = (ids, cls) =>
-      `<div class="sh-side ${cls}">${(ids || [])
+    /* 先生の対戦カードと同じ形(ランク・試合数・抜くボタンは出さない) */
+    const team = (ids, s, win) =>
+      `<div class="team ${s} ${ids.length === 2 ? "pair" : ""} ${win ? "win" : ""}" style="padding-left:6px">${(
+        ids || []
+      )
         .filter(Boolean)
-        .map(
-          (id) =>
-            `<b>${esc(pm[id] ? pm[id].name : "?")}</b>${pm[id] && pm[id].school ? `<small>${esc(pm[id].school)}</small>` : ""}`
-        )
+        .map((id) => {
+          const p = pm[id];
+          return `<div class="member ${p ? SC.cls(p.school) : ""}"><span class="pname">${esc(p ? p.name : "?")}</span>${p && p.school ? `<span class="pschool">${esc(p.school)}</span>` : ""}</div>`;
+        })
         .join("")}</div>`;
     const hit = (m) =>
       !q ||
       m.a.concat(m.b).some((id) => pm[id] && ((pm[id].name || "").includes(q) || (pm[id].school || "").includes(q)));
+    const card = (r, m, mi) => {
+      const o = Core.pOutcome(e, m),
+        open = S.edit && S.edit.m === m.id && S.edit.r === r.id,
+        many = e.games > 1;
+      const gs = (m.g || []).slice(0, e.games);
+      const gtxt = gs
+        .map(([x, y], g) =>
+          x != null || y != null
+            ? `<span class="gl ${many ? "" : "one"}">${many ? `<small>第${g + 1}ゲーム</small>` : ""}<b>${x ?? ""}</b><i>-</i><b>${y ?? ""}</b></span>`
+            : ""
+        )
+        .join("");
+      const tot =
+        o.started && many
+          ? `<span class="gtotal"><span class="pst"><span class="${o.winner === "a" ? "w" : ""}">${o.ga}</span> − <span class="${o.winner === "b" ? "w" : ""}">${o.gb}</span></span></span>`
+          : "";
+      const inputs = open
+        ? `<div class="pm-extra" style="grid-column:1/-1">${S.edit.g
+            .map(
+              (g, i) =>
+                `<div class="game">${many ? `<span class="game-label">第${i + 1}</span>` : ""}<input class="score" inputmode="numeric" maxlength="2" autocomplete="off" data-g="${i}" data-s="0" value="${g[0] ?? ""}" aria-label="第${i + 1}ゲーム 左の点数"><span>-</span><input class="score" inputmode="numeric" maxlength="2" autocomplete="off" data-g="${i}" data-s="1" value="${g[1] ?? ""}" aria-label="第${i + 1}ゲーム 右の点数"></div>`
+            )
+            .join("")}
+          ${S.edit.err ? `<div class="note err" style="white-space:normal">${esc(S.edit.err)}</div>` : ""}
+          <div class="row"><button class="btn btn-primary btn-sm" data-sh="save">記録する</button><button class="btn btn-ghost btn-sm" data-sh="cancel">閉じる</button></div></div>`
+        : "";
+      return `<div class="pmatch ${o.winner ? "is-done" : ""}"><span class="pm-num">${mi + 1}${m.ct ? `<span class="court-lb">コート</span><span class="mt-ct">${esc(m.ct)}</span>` : ""}</span>${team(m.a, "a", o.winner === "a")}
+      <button class="pm-mid" data-sh="edit" data-r="${esc(r.id)}" data-m="${esc(m.id)}" aria-label="点数を入れる" style="text-align:center;min-width:64px">${gtxt ? `<span class="glines num">${gtxt}</span>` : `<span class="faint" style="font-size:.72rem">点数を入れる</span>`}${tot}</button>
+      ${team(m.b, "b", o.winner === "b")}${inputs}</div>`;
+    };
     const rounds = rs
       .map((r, ri) => {
         const no = rs.slice(0, ri + 1).filter((x) => x.day === r.day).length;
-        const ms = r.matches
-          .map((m, mi) => {
-            if (!hit(m)) return "";
-            const o = Core.pOutcome(e, m);
-            const gs = (m.g || []).slice(0, e.games).filter((g) => g && (g[0] != null || g[1] != null));
-            const txt = gs.length
-              ? gs.map((g) => `<span class="num">${g[0] ?? ""} - ${g[1] ?? ""}</span>`).join("")
-              : o.winner
-                ? `<span class="faint">${o.winner === "a" ? "左" : "右"}の勝ち</span><span class="faint">点数を入れる</span>`
-                : `<span class="faint">点数を入れる</span>`;
-            return `<div class="sh-m"><div class="sh-no">${m.ct ? `コート<br><b>${esc(m.ct)}</b>` : mi + 1}</div>${side(m.a, o.winner === "a" ? "a win" : "a")}
-            <button class="sh-score" data-sh="edit" data-r="${esc(r.id)}" data-m="${esc(m.id)}" aria-label="点数を入れる">${txt}</button>${side(m.b, o.winner === "b" ? "b win" : "b")}</div>`;
-          })
-          .join("");
+        const done = r.matches.filter((m) => Core.pOutcome(e, m).winner).length;
+        const ms = r.matches.map((m, mi) => (hit(m) ? card(r, m, mi) : "")).join("");
         return ms
-          ? `<section class="card sh-round"><h2>${multi ? `${r.day}日目 ` : ""}${no}回転目</h2>${ms}</section>`
+          ? `<section class="card"><div class="card-head"><div><h2>${multi ? `${r.day}日目 ` : ""}${no}回転目</h2><p class="faint">${r.matches.length}試合 · ${done}/${r.matches.length} 終了</p></div></div><div class="pgrid">${ms}</div></section>`
           : "";
       })
       .join("");
-    root.innerHTML = `<div class="sh-wrap">${top}
-      <section class="card stack sh-head"><h1>${esc(d.name || "練習試合")}</h1>${d.date ? `<span class="faint">${esc(d.date)}</span>` : ""}
-      <p class="faint" style="margin:0">${e.points}点・${e.games === 3 ? "3ゲーム(2ゲーム先取)" : "1ゲーム"}。点数のところを押すと入れられます。</p>${msg}
-      <div class="row"><input class="input" id="sh-q" type="search" placeholder="名前・学校で探す" value="${esc(S.q)}" autocomplete="off" style="flex:1"><button class="btn btn-secondary btn-sm" data-sh="reload">新しくする</button></div></section>
+    const all = rs.flatMap((r) => r.matches),
+      fin = all.filter((m) => Core.pOutcome(e, m).winner).length;
+    root.innerHTML = `<nav class="nav"><span class="lockup"><span>スマッチ</span></span><div class="nav-right"><button class="btn btn-ghost btn-sm" data-sh="leave">コードを入れ直す</button></div></nav>
+      <main class="page"><section class="hero"><span class="kicker">練習試合</span>
+      <div class="hero-name" style="white-space:normal">${esc(d.name || "練習試合")}</div>
+      <div class="hero-sub">${d.date ? `<span>${esc(d.date)}</span>` : ""}<span>${e.points}点・${e.games === 3 ? "3ゲーム(2ゲーム先取)" : "1ゲーム"}</span></div>
+      <div class="hero-stats"><div><span class="stat-value num">${rs.length}</span><span class="stat-label">回転</span></div><div><span class="stat-value num">${fin}/${all.length}</span><span class="stat-label">試合 終了/全体</span></div></div></section>
+      ${msg}<section class="card stack"><div class="qbox"><input class="input" id="sh-q" type="search" placeholder="名前・学校で探す" value="${esc(S.q)}" autocomplete="off"><button class="btn btn-secondary btn-sm" data-sh="reload">新しくする</button></div>
+      <p class="faint" style="margin:0">点数のところを押すと入れられます。</p></section>
       ${rounds || `<section class="card"><p class="faint" style="margin:0">${rs.length && q ? "見つかりませんでした" : "まだ対戦がありません。先生が組むまで待ってください。"}</p></section>`}
-      ${S.edit ? editHTML(e, pm) : ""}</div>`;
+      ${S.edit && S.ask ? askHTML(e, pm) : ""}</main>`;
     const qi = document.getElementById("sh-q");
     qi.addEventListener("input", () => {
       S.q = qi.value;
@@ -203,40 +214,56 @@
       .map((id) => esc(pm[id] ? pm[id].name : "?"))
       .join("・");
   }
-  function editHTML(e, pm) {
+  /* ありえない点数を止める(サーバーの share_score と同じ決まり)。だめなら理由を返す */
+  function check(e, g) {
+    const cap = e.points === 21 ? 30 : e.points === 15 ? 21 : 15,
+      need = e.games === 3 ? 2 : 1;
+    let wa = 0,
+      wb = 0,
+      n = 0;
+    for (let i = 0; i < g.length; i++) {
+      const [x, y] = g[i],
+        L = e.games > 1 ? `第${i + 1}ゲーム:` : "";
+      if (x == null && y == null) {
+        if (g.slice(i + 1).some((h) => h[0] != null || h[1] != null)) return `${L}間のゲームが空いています。`;
+        break;
+      }
+      if (wa >= need || wb >= need) return `${L}もう勝負がついているので、このゲームはいりません。消してください。`;
+      if (x == null || y == null) return `${L}左と右の両方に点数を入れてください。`;
+      const hi = Math.max(x, y),
+        lo = Math.min(x, y);
+      const ok =
+        hi !== lo &&
+        ((hi === e.points && lo <= e.points - 2) ||
+          (hi > e.points && hi < cap && hi - lo === 2) ||
+          (hi === cap && (lo === cap - 1 || lo === cap - 2)));
+      if (!ok) {
+        if (hi > cap) return `${L}${cap}点より多くはなりません。`;
+        if (hi < e.points) return `${L}${x}-${y} ではゲームが終わっていません(${e.points}点まで)。`;
+        return `${L}${x}-${y} にはなりません(${e.points - 1}点どうしからは、2点差がつくか${cap}点で終わり)。`;
+      }
+      if (x > y) wa++;
+      else wb++;
+      n++;
+    }
+    if (!n) return "点数を入れてください。";
+    if (wa < need && wb < need) return "勝負がつくまで(どちらかが2ゲーム取るまで)入れてください。";
+    return "";
+  }
+  function askHTML(e, pm) {
     const x = S.edit,
       m = findMatch(x.r, x.m);
     if (!m) return "";
-    const head = `<div class="sh-names"><span>${names(pm, m.a)}</span><span class="faint">vs</span><span>${names(pm, m.b)}</span></div>`;
-    if (S.ask) {
-      const sum = x.g
-        .map((g, i) =>
-          g[0] != null || g[1] != null
-            ? `${e.games > 1 ? `第${i + 1}ゲーム ` : ""}<b>${g[0] ?? "-"} - ${g[1] ?? "-"}</b>`
-            : ""
-        )
-        .filter(Boolean)
-        .join("<br>");
-      return `<div class="modal-bg"><div class="modal stack sh-confirm" role="alertdialog" aria-modal="true" aria-labelledby="sh-ask">
-        <h3 id="sh-ask">この記録を更新します。<br>よろしいですか？</h3>${head}
-        <div class="sh-sum">${sum || "点数を消します"}</div>
-        <p class="faint" style="margin:0">前に入っていた点数は書きかわります。</p>
-        <div class="sh-btns"><button class="btn btn-secondary" data-sh="no">いいえ</button><button class="btn btn-primary" data-sh="yes" ${S.busy ? "disabled" : ""}>${S.busy ? "記録しています…" : "はい"}</button></div></div></div>`;
-    }
-    const rows = x.g
-      .map(
-        (
-          g,
-          i
-        ) => `<div class="sh-game">${e.games > 1 ? `<span class="faint" style="width:5.5em">第${i + 1}ゲーム</span>` : ""}
-        <input class="input" inputmode="numeric" maxlength="2" autocomplete="off" data-g="${i}" data-s="0" value="${g[0] ?? ""}" aria-label="第${i + 1}ゲーム 左の点数">
-        <span>-</span><input class="input" inputmode="numeric" maxlength="2" autocomplete="off" data-g="${i}" data-s="1" value="${g[1] ?? ""}" aria-label="第${i + 1}ゲーム 右の点数"></div>`
-      )
-      .join("");
-    const warn = x.g.some((g) => Core.gameWarn(e, g[0], g[1]));
-    return `<div class="modal-bg"><div class="modal stack" role="dialog" aria-modal="true"><h3 style="margin:0">点数を入れる</h3>${head}
-      <div class="sh-games">${rows}</div>${warn ? `<div class="auth-msg">ありえない点数になっていないか、確かめてください。</div>` : ""}
-      <div class="sh-btns"><button class="btn btn-secondary" data-sh="cancel">やめる</button><button class="btn btn-primary" data-sh="save">記録する</button></div></div></div>`;
+    const sum = x.g
+      .map((g, i) => (g[0] != null ? `${e.games > 1 ? `第${i + 1}ゲーム ` : ""}<b>${g[0]} - ${g[1]}</b>` : ""))
+      .filter(Boolean)
+      .join("<br>");
+    return `<div class="modal-bg"><div class="modal stack sh-confirm" role="alertdialog" aria-modal="true" aria-labelledby="sh-ask">
+      <h3 id="sh-ask">この記録を更新します。<br>よろしいですか？</h3>
+      <div class="sh-names"><span>${names(pm, m.a)}</span><span class="faint">vs</span><span>${names(pm, m.b)}</span></div>
+      <div class="sh-sum">${sum}</div>
+      <p class="faint" style="margin:0">前に入っていた点数は書きかわります。</p>
+      <div class="sh-btns"><button class="btn btn-secondary" data-sh="no">いいえ</button><button class="btn btn-primary" data-sh="yes" ${S.busy ? "disabled" : ""}>${S.busy ? "記録しています…" : "はい"}</button></div></div></div>`;
   }
   function findMatch(rid, mid) {
     const r = S.data && (S.data.rounds || []).find((x) => x.id === rid);
@@ -245,7 +272,7 @@
 
   function bind(root) {
     root.querySelectorAll("[data-sh]").forEach((b) => b.addEventListener("click", () => act(b.dataset.sh, b)));
-    root.querySelectorAll(".sh-game input").forEach((inp) =>
+    root.querySelectorAll(".pm-extra .score").forEach((inp) =>
       inp.addEventListener("input", () => {
         inp.value = inp.value.replace(/\D/g, "").slice(0, 2);
         const v = inp.value === "" ? null : Number(inp.value);
@@ -282,7 +309,7 @@
       };
       S.ask = false;
       draw();
-      const f = app().querySelector(".sh-game input");
+      const f = app().querySelector(".pm-extra .score");
       if (f) f.focus();
       return;
     }
@@ -292,9 +319,9 @@
       return;
     }
     if (k === "save") {
-      const bad = S.edit.g.some((g) => (g[0] == null) !== (g[1] == null));
-      if (bad) {
-        toast("左と右の両方に点数を入れてください");
+      S.edit.err = check(ev(), S.edit.g);
+      if (S.edit.err) {
+        draw();
         return;
       }
       S.ask = true;

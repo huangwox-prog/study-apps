@@ -248,7 +248,8 @@ declare
   ri int;
   mi int;
   x jsonb;
-  v jsonb;
+  pts int; ng int; cap int; need int; a int; b int; hi int; lo int;
+  wa int := 0; wb int := 0;
 begin
   s := public.share_find(p_code);
   if s.code is null then return null; end if; -- 例外にすると「まちがえた回数」の記録まで消えるので、null で返す
@@ -262,15 +263,25 @@ begin
     from jsonb_array_elements(coalesce(d #> array['practice', 'rounds', ri::text, 'matches'], '[]'::jsonb)) with ordinality t(m, ord)
     where t.m->>'id' = p_mid;
   if mi is null then raise exception 'match not found'; end if;
-  if jsonb_typeof(p_g) <> 'array' or jsonb_array_length(p_g) < 1 or jsonb_array_length(p_g) > 3 then raise exception 'bad score'; end if;
+  -- ありえない点数は記録しない(21点なら 21-19・22-20・30-29 などだけ。勝負がついたら次のゲームはない)
+  pts := coalesce((d->>'points')::int, 21);
+  ng := case when d->>'games' = '3' then 3 else 1 end;
+  cap := case pts when 21 then 30 when 15 then 21 else 15 end;
+  need := case ng when 3 then 2 else 1 end;
+  if jsonb_typeof(p_g) <> 'array' or jsonb_array_length(p_g) < 1 or jsonb_array_length(p_g) > ng then raise exception 'bad score'; end if;
   for x in select * from jsonb_array_elements(p_g) loop
-    if jsonb_typeof(x) <> 'array' or jsonb_array_length(x) <> 2 then raise exception 'bad score'; end if;
-    for v in select * from jsonb_array_elements(x) loop
-      if not (jsonb_typeof(v) = 'null' or (jsonb_typeof(v) = 'number' and (v::text)::numeric between 0 and 99 and (v::text)::numeric = floor((v::text)::numeric))) then
-        raise exception 'bad score';
-      end if;
-    end loop;
+    if wa >= need or wb >= need then raise exception 'bad score'; end if;
+    if jsonb_typeof(x) <> 'array' or jsonb_array_length(x) <> 2
+       or jsonb_typeof(x->0) <> 'number' or jsonb_typeof(x->1) <> 'number' then raise exception 'bad score'; end if;
+    if (x->>0)::numeric <> floor((x->>0)::numeric) or (x->>1)::numeric <> floor((x->>1)::numeric) then raise exception 'bad score'; end if;
+    a := (x->>0)::int; b := (x->>1)::int;
+    hi := greatest(a, b); lo := least(a, b);
+    if not (hi <> lo and lo >= 0 and ((hi = pts and lo <= pts - 2) or (hi > pts and hi < cap and hi - lo = 2) or (hi = cap and lo in (cap - 1, cap - 2)))) then
+      raise exception 'bad score';
+    end if;
+    if a > b then wa := wa + 1; else wb := wb + 1; end if;
   end loop;
+  if wa < need and wb < need then raise exception 'bad score'; end if;
   d := jsonb_set(d, array['practice', 'rounds', ri::text, 'matches', mi::text, 'g'], p_g);
   d := jsonb_set(d, array['practice', 'rounds', ri::text, 'matches', mi::text, 'win'], 'null'::jsonb);
   d := jsonb_set(d, '{updatedAt}', to_jsonb((extract(epoch from now()) * 1000)::bigint));
