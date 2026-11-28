@@ -11334,7 +11334,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             .doc("main")
             .set(JSON.parse(JSON.stringify(roster)));
         } catch (e) {
-          toast("名簿をオンラインに保存できませんでした。この端末には残っています");
+          toast("マイ選手をオンラインに保存できませんでした。この端末には残っています");
         }
       }, 700);
     },
@@ -11404,18 +11404,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   /* ============ はじめの画面の入口 ============ */
   App.rosterHomeCard = () => {
     if (isGuest())
-      return `<section class="card rs-home"><h3 style="margin:0">部員名簿</h3><p class="faint" style="margin:4px 0 0">ログインすると使えます。</p></section>`;
+      return `<section class="card rs-home"><h3 style="margin:0">マイ選手</h3><p class="faint" style="margin:4px 0 0">ログインすると使えます。</p></section>`;
     const n = activePlayers().length;
-    return `<button class="card rs-home rs-home-btn" data-action="roster-open"><span class="rs-home-ico" aria-hidden="true">👥</span><span><b>部員名簿</b>${n ? `<span class="faint">${n}人</span>` : ""}</span><span class="rs-home-go">›</span></button>`;
+    return `<button class="card rs-home rs-home-btn" data-action="roster-open"><span class="rs-home-ico" aria-hidden="true">👥</span><span><b>マイ選手</b>${n ? `<span class="faint">${n}人</span>` : ""}</span><span class="rs-home-go">›</span></button>`;
   };
 
   /* ============ 名簿の画面 ============ */
   function rosterHTML() {
     if (isGuest())
-      return `<section class="card stack"><h2>部員名簿</h2><p class="muted">部員名簿は、ログインすると使えます。</p><div class="row"><button class="btn btn-primary" data-action="go-login">ログイン・新規登録</button></div></section>`;
-    if (!loaded) return `<div class="loading">名簿を読み込み中…</div>`;
+      return `<section class="card stack"><h2>マイ選手</h2><p class="muted">マイ選手は、ログインすると使えます。</p><div class="row"><button class="btn btn-primary" data-action="go-login">ログイン・新規登録</button></div></section>`;
+    if (!loaded) return `<div class="loading">マイ選手を読み込み中…</div>`;
     const tab = ui.rsTab || "players";
-    return `<div class="rs-top"><button class="back-btn" data-action="home"><span>‹</span>はじめの画面</button><h2 class="rs-title">部員名簿</h2></div>
+    return `<div class="rs-top"><button class="back-btn" data-action="home"><span>‹</span>はじめの画面</button><h2 class="rs-title">マイ選手</h2></div>
     <div class="tabs seg" role="tablist" style="align-self:flex-start;margin-bottom:14px"><button class="${tab === "players" ? "on" : ""}" data-action="rs-tab" data-k="players">部員</button><button class="${tab === "tests" ? "on" : ""}" data-action="rs-tab" data-k="tests">スポーツテスト</button></div>
     ${tab === "tests" ? testsHTML() : playersListHTML()}${ui.rsPlayer && rp(ui.rsPlayer) ? playerCardHTML(rp(ui.rsPlayer)) : ""}`;
   }
@@ -11462,10 +11462,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       <label class="field"><span>学年</span><select class="select" name="grade">${GRADES.map((g, i) => `<option value="${i}" ${i === p.grade ? "selected" : ""}>${i ? g : "—"}</option>`).join("")}</select></label></div>
       <div class="field"><span>ランク</span>${App.levelPicker(`data-action="rs-level" data-id="${p.id}"`, p.level)}</div>
       <label class="field"><span>メモ(得意なショット・課題・けがなど)</span><textarea class="input" name="note" rows="3" maxlength="1000">${esc(p.note)}</textarea></label>
-      <div class="row"><button class="btn btn-primary btn-sm" type="submit">保存</button><button type="button" class="btn btn-ghost btn-sm" data-action="rs-active" data-id="${p.id}">${p.active ? "引退・休部にする" : "部員に戻す"}</button><button type="button" class="btn btn-del btn-sm" data-action="rs-del" data-id="${p.id}">名簿から消す</button></div></form></details>
+      <div class="row"><button class="btn btn-primary btn-sm" type="submit">保存</button><button type="button" class="btn btn-ghost btn-sm" data-action="rs-active" data-id="${p.id}">${p.active ? "引退・休部にする" : "部員に戻す"}</button><button type="button" class="btn btn-del btn-sm" data-action="rs-del" data-id="${p.id}">マイ選手から消す</button></div></form></details>
     ${p.note ? `<div class="rs-note"><b>メモ</b><p>${esc(p.note).replace(/\n/g, "<br>")}</p></div>` : ""}
     <h3 style="margin:6px 0 0">出場履歴</h3>
-    ${t.h.length ? `<div class="rs-hist">${t.h.map((x) => `<button class="rs-hrow" data-action="rs-open-event" data-id="${x.e.id}"><span class="rs-hdate">${esc(x.e.date || "")}</span><span class="rs-hname"><b>${esc(x.e.name)}</b><span class="faint">${MODE[x.e.mode] || ""}</span></span><span class="rs-hres">${x.games ? `${x.games}試合 <b>${x.w}勝${x.l}敗</b>` : `<span class="faint">出場</span>`}</span></button>`).join("")}</div>` : `<p class="faint" style="margin:0">まだ出場がありません。練習試合の「選手」の画面で「名簿から入れる」を使うと、ここに出ます。</p>`}
+    ${t.h.length ? `<div class="rs-hist">${t.h.map((x) => `<button class="rs-hrow" data-action="rs-open-event" data-id="${x.e.id}"><span class="rs-hdate">${esc(x.e.date || "")}</span><span class="rs-hname"><b>${esc(x.e.name)}</b><span class="faint">${MODE[x.e.mode] || ""}</span></span><span class="rs-hres">${x.games ? `${x.games}試合 <b>${x.w}勝${x.l}敗</b>` : `<span class="faint">出場</span>`}</span></button>`).join("")}</div>` : `<p class="faint" style="margin:0">まだ出場がありません。練習試合の「選手」の画面で「マイ選手から入れる」を使うと、ここに出ます。</p>`}
     <h3 style="margin:6px 0 0">スポーツテスト</h3>
     ${
       roster.testItems.length && tests.length
@@ -11526,15 +11526,46 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
   }
 
   /* ============ 練習試合などに名簿から入れる ============ */
-  App.rosterPickBtn = (e) =>
-    isGuest() || !loaded
-      ? ""
-      : `<button type="button" class="btn btn-secondary btn-sm" data-action="rs-pick-open">名簿から入れる${activePlayers().length ? `(${activePlayers().length}人)` : ""}</button>`;
+  /* 名簿にいて、まだこの試合に入っていない人 */
+  const notIn = (e) => {
+    const inIds = new Set(((e && e.players) || []).map((p) => p.rid).filter(Boolean));
+    return activePlayers().filter((p) => !inIds.has(p.id));
+  };
+  App.rosterPickBtn = (e) => {
+    if (isGuest() || !loaded) return "";
+    const left = notIn(e).length;
+    return `<button type="button" class="btn btn-secondary btn-sm" data-action="rs-pick-open">マイ選手から入れる${activePlayers().length ? `(${activePlayers().length}人)` : ""}</button>${
+      left
+        ? `<button type="button" class="btn btn-primary btn-sm" data-action="rs-add-all">マイ選手を全員入れる(${left}人)</button>`
+        : ""
+    }`;
+  };
+  /* 名簿の人を試合に入れる(もう入っている人はとばす)。入れた人数 */
+  function addFromRoster(e, ids) {
+    let n = 0;
+    ids.forEach((id) => {
+      const p = rp(id);
+      if (!p || e.players.some((x) => x.rid === p.id)) return;
+      e.players.push({
+        id: uid(),
+        rid: p.id,
+        name: p.name,
+        school: p.school,
+        level: p.level,
+        grade: p.grade,
+        pref: "",
+        block: "",
+        single: false,
+      });
+      n++;
+    });
+    return n;
+  }
   function pickHTML(e) {
     const list = activePlayers(),
       inIds = new Set(e.players.map((p) => p.rid).filter(Boolean));
     const sel = ui.rsPick || [];
-    return `<div class="modal-bg"><div class="modal stack"><div class="card-head" style="margin:0"><div><h2>名簿から入れる</h2></div><button class="btn btn-ghost btn-sm" data-action="rs-pick-close">やめる</button></div>
+    return `<div class="modal-bg"><div class="modal stack"><div class="card-head" style="margin:0"><div><h2>マイ選手から入れる</h2></div><button class="btn btn-ghost btn-sm" data-action="rs-pick-close">やめる</button></div>
     ${
       list.length
         ? `<div class="row"><button class="btn btn-ghost btn-sm" data-action="rs-pick-all">まだ入っていない人を全部選ぶ</button>${sel.length ? `<button class="btn btn-ghost btn-sm" data-action="rs-pick-none">選ぶのをやめる</button>` : ""}</div>
@@ -11546,7 +11577,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       })
       .join("")}</div>
     <div class="row"><button class="btn btn-primary" data-action="rs-pick-go" ${sel.length ? "" : "disabled"}>${sel.length}人を入れる</button></div>`
-        : `<p class="muted" style="margin:0">名簿にまだ誰もいません。</p><div class="row"><button class="btn btn-primary" data-action="roster-open">部員名簿を開く</button></div>`
+        : `<p class="muted" style="margin:0">マイ選手にまだ誰もいません。</p><div class="row"><button class="btn btn-primary" data-action="roster-open">マイ選手を開く</button></div>`
     }</div></div>`;
   }
   App.rosterPickHTML = (e) => (ui.rsPick ? pickHTML(e) : "");
@@ -11610,13 +11641,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     },
     "rs-del": (b) => {
       const p = rp(b.dataset.id);
-      if (!p || !App.askOk(`${p.name} を名簿から消しますか？(作った練習試合の中の名前は残ります)`)) return;
+      if (!p || !App.askOk(`${p.name} をマイ選手から消しますか？(作った練習試合の中の名前は残ります)`)) return;
       roster.players = roster.players.filter((x) => x.id !== p.id);
       roster.tests.forEach((t) => delete t.values[p.id]);
       ui.rsPlayer = null;
       Roster.save();
       render();
-      toast("名簿から消しました");
+      toast("マイ選手から消しました");
     },
     "rs-open-event": (b) => {
       ui.rsPlayer = null;
@@ -11675,6 +11706,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         .map((p) => p.id);
       render();
     },
+    "rs-add-all": () => {
+      const e = App.ev();
+      if (!e) return;
+      const n = addFromRoster(
+        e,
+        notIn(e).map((p) => p.id)
+      );
+      App.commit();
+      render();
+      toast(n ? `マイ選手を${n}人入れました` : "マイ選手は全員、もう入っています");
+    },
     "rs-pick-none": () => {
       ui.rsPick = [];
       render();
@@ -11685,23 +11727,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       const ids = ui.rsPick.slice(),
         left = isGuest() ? 0 : Infinity;
       if (ids.length > left) return;
-      let n = 0;
-      ids.forEach((id) => {
-        const p = rp(id);
-        if (!p || e.players.some((x) => x.rid === p.id)) return;
-        e.players.push({
-          id: uid(),
-          rid: p.id,
-          name: p.name,
-          school: p.school,
-          level: p.level,
-          grade: p.grade,
-          pref: "",
-          block: "",
-          single: false,
-        });
-        n++;
-      });
+      const n = addFromRoster(e, ids);
       ui.rsPick = null;
       App.commit();
       render();

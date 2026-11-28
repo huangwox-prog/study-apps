@@ -36,6 +36,15 @@ const srv = http.createServer((q, r) => { const f = path.join(__dirname, "site",
   await p.click('[data-action="rs-pick-open"]'); await p.click('[data-action="rs-pick-all"]'); await p.click('[data-action="rs-pick-go"]'); await p.waitForTimeout(300);
   const ev = await p.evaluate(() => App.ev().players.map((x) => [x.name, x.rid ? 1 : 0, x.level, x.grade])); ok(ev.length === 4 && ev.every((x) => x[1]), "名簿の4人が入る " + JSON.stringify(ev));
   await p.click('[data-action="rs-pick-open"]'); ok((await p.$$(".rs-pick.is-in")).length === 4, "入った人は選べない"); await p.click('[data-action="rs-pick-close"]');
+  ok(!(await p.$('[data-action="rs-add-all"]')), "全員入ったら「マイ選手を全員入れる」は出ない");
+  // 別の練習試合に、ボタン1つでマイ選手を全員入れる
+  await p.click('[data-action="home"]'); await p.click('[data-action="pick-mode"][data-mode="practice"]'); await p.fill("input[name=name]", "練習試合2"); await p.click('form[data-form="create"] button[type=submit]'); await p.waitForTimeout(300);
+  ok((await p.textContent('[data-action="rs-add-all"]')).includes("4人"), "「マイ選手を全員入れる(4人)」が出る");
+  await p.click('[data-action="rs-add-all"]'); await p.waitForTimeout(300);
+  ok((await p.evaluate(() => App.ev().players.filter((x) => x.rid).length)) === 4 && !(await p.$('[data-action="rs-add-all"]')), "ボタン1つでマイ選手の4人が入る");
+  // あとの「出場履歴」の数がずれないよう、この試合は消して、はじめの練習試合にもどる
+  await p.evaluate(() => { App.ev().players = []; App.commit(); });
+  await p.click('[data-action="home"]'); await p.click('.event-open:has-text("合同練習")'); await p.waitForTimeout(300);
   // 回転を作って点数
   await p.click('[data-action="tab"][data-tab="rounds"]'); const s1 = await p.$('[data-action="all-single"]:not([disabled])'); if (s1) { await s1.click(); await p.waitForTimeout(300); }
   for (const a of ["first-round", "ask-create", "ask-go"]) { const b = await p.$(`[data-action="${a}"]:not([disabled])`); if (b) { await b.click({ timeout: 3000 }).catch(() => {}); await p.waitForTimeout(700); } }
