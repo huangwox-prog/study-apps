@@ -60,7 +60,7 @@
     ${ui.confirm === "reassign" ? `<div class="confirm"><b>いまのリーグ分けを消して、分け直します。</b>入れた結果は残りますが、組み合わせが変わると使われないものも出ます。<button class="btn btn-primary btn-sm" data-action="auto-yes">分け直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
     <div class="row"><button class="btn btn-aurora" data-action="auto" ${n < 3 ? "disabled" : ""}>${e.leagues.length ? "分け直す" : "リーグに分ける"}</button>${n < 3 ? `<span class="faint">3${isDbl(e) ? "組" : "人"}以上で分けられます</span>` : ""}</div></section>
     ${un.length ? `<section class="card" data-drop="member" data-drop-id="-1"><h3>どこにも入っていない</h3><div class="row" style="margin-top:8px">${un.map((p) => `<span class="chip" data-drag="member" data-drag-id="${p.id}" data-drag-label="${esc(nameFlat(p))}">⠿ ${esc(nameFlat(p))}</span>`).join("")}</div></section>` : ""}
-    ${e.leagues.length ? `<div class="league-grid">${cards}</div><p class="faint">名前をつかんで別のリーグへ落とすか、右のメニューで移せます。</p>` : ""}`;
+    ${e.leagues.length ? `<div class="league-grid">${cards}</div>` : ""}`;
   }
   /* ---------- 試合と結果 ---------- */
   function leaguePillsHTML(e) {
@@ -366,7 +366,7 @@
     const st = Core.bracketState(e),
       n = entries(e).length,
       unp = isDbl(e) ? Core.unpairedPlayers(e) : [];
-    const head = `<section class="card"><div class="card-head"><div><h2>トーナメント表</h2><p class="faint">シードを決めて「表を作る」。名前をつかんで別の枠に落とすと、2つが入れ替わります。</p></div></div>
+    const head = `<section class="card"><div class="card-head"><div><h2>トーナメント表</h2></div></div>
     ${unp.length ? `<div class="confirm"><b>ペアになっていない人が ${unp.length}人います。</b>選手の画面でペアにしてください。</div>` : ""}
     ${ui.confirm === "rebuild" ? `<div class="confirm"><b>いまの表を作り直します。</b>入れた結果は消えます。<button class="btn btn-primary btn-sm" data-action="build-yes">作り直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
     ${
@@ -400,7 +400,7 @@
       n = list.length,
       cnt = Object.keys(e.seeds).length;
     if (n < 2) return "";
-    return `<details class="seedbox"><summary>シードを決める${cnt ? ` <span class="chip chip-live">${cnt}人指定</span>` : ""}</summary><p class="faint" style="margin:0 0 10px">指定しない人は、ランクの高い順にシードになります。</p>
+    return `<details class="seedbox"><summary>シードを決める${cnt ? ` <span class="chip chip-live">${cnt}人指定</span>` : ""}</summary>
     <div class="seed-list">${list.map((p) => `<div class="seed-row"><span class="pname">${esc(p.name)}<span class="pschool">${esc(p.school)}</span></span><select class="select" data-change="seed" data-id="${p.id}"><option value="">—</option>${Array.from({ length: Math.min(n, 16) }, (_, i) => `<option value="${i + 1}" ${e.seeds[p.id] === i + 1 ? "selected" : ""}>シード${i + 1}</option>`).join("")}</select></div>`).join("")}</div>${cnt ? `<button class="btn btn-ghost btn-sm" data-action="seed-clear">指定を解除</button>` : ""}</details>`;
   }
   function bpanelHTML(e, st, n) {

@@ -1,1 +1,3 @@
 site/
+*.png
+!face.png

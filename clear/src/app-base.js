@@ -291,9 +291,9 @@
 
   /* ============ 呼び名 ============ */
   const MODES = {
-    practice: ["練習試合", "ランクの近い人どうしを、回転ごとに自動で組みます"],
-    league: ["リーグ戦", "リーグに分けて、リーグの中で全員と1回ずつ"],
-    tournament: ["トーナメント", "負けたら終わりの勝ち抜き戦"],
+    practice: ["練習試合"],
+    league: ["リーグ戦"],
+    tournament: ["トーナメント"],
   };
   const modeName = (e) => MODES[e.mode][0];
   function pname(e, id) {
@@ -439,15 +439,12 @@
     <section class="card stack"><h3 style="margin:0">前に使ったことがある人</h3>
       ${list.length ? `<p class="faint" style="margin:0">この端末に前のデータがあります。このまま開けます(人の追加は${GUEST_ADDS}人まで)。</p><div class="event-grid">${list.map(eventCardHTML).join("")}</div>` : `<p class="faint" style="margin:0">この端末・このブラウザには、前のデータがありません。前に使ったパソコンやスマホで開いてください。</p>`}
       <p class="faint" style="margin:0"><b>引き継ぎ方:</b>前に使った端末で ①「ログイン・新規登録」でアカウントを作る ②ログインする ③ホームの下の「アカウントに取り込む」を押す。これで、ほかの端末からも見られて、制限なく使えます。元のデータは消えません。</p></section>${legalFooter()}`;
-    return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
+    return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2></div>
     <div class="make-grid">${Object.entries(MODES)
       .filter(
         ([k]) => k !== "league"
       ) /* リーグ戦は、新しく作る表示を出さない(前に作ったデータは「続きから」で開ける) */
-      .map(
-        ([k, [n, d]]) =>
-          `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b><span class="faint">${d}</span></button>`
-      )
+      .map(([k, [n]]) => `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b></button>`)
       .join("")}</div>
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
     ${App.rosterHomeCard ? App.rosterHomeCard() : ""}
@@ -642,18 +639,18 @@
         ? `<form class="add-form" data-form="add-player"><label class="field"><span>名前</span><input class="input" name="name" id="new-name" maxlength="30" autocomplete="off" required></label>
       <label class="field"><span>学校</span><input class="input" name="school" list="schools" maxlength="30" autocomplete="off"></label>
       <div class="field"><span>ランク</span>${levelPicker(`data-action="new-level"`, ui.newLevel)}</div><button class="btn btn-primary" type="submit">追加</button>
-      ${ui.detailMode ? `<div class="add-more"><div class="detail-grid">${detailFields({}, (n) => `name="${n}" id="new-${n}"`)}</div><p class="faint" style="margin:6px 0 0">県とブロックは、同じ学校の全員に自動で入ります。登録した人の分は、下の一覧の「詳細」で入れます。</p></div>` : ""}</form>`
+      ${ui.detailMode ? `<div class="add-more"><div class="detail-grid">${detailFields({}, (n) => `name="${n}" id="new-${n}"`)}</div></div>` : ""}</form>`
         : pasteHTML(e)
     }
     ${detailLists()}<datalist id="schools">${SC.list.map((s) => `<option value="${esc(s)}">`).join("")}</datalist></section>
-  <section class="card"><div class="card-head"><div><h2>登録 ${e.players.length}人</h2><p class="faint">名前・学校・ランクはここで直せます。同じ名前・同じ学校が2人いると「重複」と出ます。</p></div>
+  <section class="card"><div class="card-head"><div><h2>登録 ${e.players.length}人</h2></div>
       <div class="seg"><button class="${ui.plSort === "level" ? "on" : ""}" data-action="plsort" data-k="level">ランク順</button><button class="${ui.plSort === "school" ? "on" : ""}" data-action="plsort" data-k="school">学校順</button></div></div>
     ${
       dbl && e.players.length > 1
         ? (() => {
             const unp = Core.unpairedPlayers(e).length;
             if (e.pairs.length && !unp) return "";
-            return `<div class="confirm" style="background:var(--accent-soft);margin-bottom:12px;flex-direction:column;align-items:flex-start"><b style="color:var(--accent)">ペアの作り方${unp && e.pairs.length ? `(まだペアになっていない人が ${unp}人います)` : ""}</b><span>① 下の一覧で、組ませたい2人の左の □ にチェックを入れる。<br>② 画面の下に出る「この2人をペアにする」を押す。</span>${e.mode === "practice" ? `<span>③ ダブルスに出ない人は、その人の行の右の「シングルスで出る」を押す(何人かまとめるときは、チェックを入れて下のボタン)。</span>` : ""}<span class="faint">間違えたときは、下の「ペア」の欄で「解除」できます。${e.mode === "practice" ? "同じ学校どうしを一度に作るなら「同じ学校で自動作成」。" : ""}</span>${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>`;
+            return `<div class="confirm" style="background:var(--accent-soft);margin-bottom:12px;flex-direction:column;align-items:flex-start"><b style="color:var(--accent)">ペアの作り方${unp && e.pairs.length ? `(まだペアになっていない人が ${unp}人います)` : ""}</b><span>① 下の一覧で、組ませたい2人の左の □ にチェックを入れる。<br>② 画面の下に出る「この2人をペアにする」を押す。</span>${e.mode === "practice" ? `<span>③ ダブルスに出ない人は、その人の行の右の「シングルスで出る」を押す(何人かまとめるときは、チェックを入れて下のボタン)。</span>` : ""}${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>`;
           })()
         : ""
     }
@@ -920,7 +917,7 @@
       const sel = (j) =>
         `<select class="select imp-role ${imp.roles[j] === "skip" ? "is-skip" : ""}" data-change="imp-role" data-col="${j}" aria-label="${j + 1}列目は何か">${IMP_ROLES.map(([r, l]) => `<option value="${r}" ${imp.roles[j] === r ? "selected" : ""}>${l}</option>`).join("")}</select>`;
       const shown = imp.rows.slice(0, imp.header ? 7 : 6);
-      table = `<p class="faint" style="margin:0">列の上のメニューで、それぞれの列が何かを確かめてください。</p><div class="table-wrap"><table class="imp-table"><thead><tr>${Array.from({ length: width }, (_, j) => `<th>${sel(j)}</th>`).join("")}</tr></thead><tbody>${shown.map((r, i) => `<tr class="${imp.header && i === 0 ? "is-head" : ""}">${Array.from({ length: width }, (_, j) => `<td class="${imp.roles[j] === "skip" ? "is-skip" : ""}">${esc(r[j] || "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      table = `<div class="table-wrap"><table class="imp-table"><thead><tr>${Array.from({ length: width }, (_, j) => `<th>${sel(j)}</th>`).join("")}</tr></thead><tbody>${shown.map((r, i) => `<tr class="${imp.header && i === 0 ? "is-head" : ""}">${Array.from({ length: width }, (_, j) => `<td class="${imp.roles[j] === "skip" ? "is-skip" : ""}">${esc(r[j] || "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
       ${imp.rows.length > shown.length ? `<p class="faint" style="margin:0">ほか ${imp.rows.length - shown.length} 行</p>` : ""}<label class="check"><input type="checkbox" data-change="imp-header" ${imp.header ? "checked" : ""}>1行目は見出し(取り込まない)</label>`;
     }
     const lay = `<div class="seg"><button class="${imp.layout === "auto" ? "on" : ""}" data-action="imp-layout" data-k="auto">自動</button><button class="${imp.layout === "one" ? "on" : ""}" data-action="imp-layout" data-k="one">1行に1人</button>${pairCapable(e) ? `<button class="${imp.layout === "pair" ? "on" : ""}" data-action="imp-layout" data-k="pair">1行に1ペア</button>` : ""}</div>`;

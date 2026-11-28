@@ -565,7 +565,7 @@
       cls
     ) => `<span class="bchip ${cls} ${SC.cls(pm[id].school)}" data-drag="pbenchp" data-drag-id="${ri}:${id}" data-drag-label="${esc(pm[id].name)}"><button class="plink" style="border:none;background:none;font-weight:650;padding:0" data-action="pplayer" data-id="${id}">${esc(pm[id].name)}</button>
     ${cls === "spare" ? `<button data-action="pbench-rest" data-r="${ri}" data-id="${id}">今回だけ抜く</button>` : `<button data-action="pkeep" data-r="${ri}" data-id="${id}" title="次の回転も抜くか切り替え">${keptNow.has(id) ? "次も抜く ✓" : "次も抜く"}</button>`}<button data-action="pback" data-r="${ri}" data-id="${id}">戻す</button></span>`;
-    return `<div class="bench" data-drop="pteam pmember" data-drop-id="${ri}"><b>試合に入っていない人</b><span class="faint">名前をここへドラッグすると「今回だけ抜く」(黄)。「次も抜く」で次の回転以降も外します(赤)。灰色は人数の余りです。</span>
+    return `<div class="bench" data-drop="pteam pmember" data-drop-id="${ri}"><b>試合に入っていない人</b>
     ${(() => {
       if (r.kind !== "doubles") return "";
       const solo = (r.left || []).filter((id) => spare.includes(id) && pm[id]);
@@ -762,7 +762,7 @@
     const manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && playerMap(e)[id]);
     const back = (ids) =>
       `<button class="btn btn-primary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${ids.join(",")}">戻す</button>`;
-    const restBlock = `<div class="rest-out" data-drop="pteam pmember" data-drop-id="${ri}"><b>休みになっています</b>(表には入りません)${info.length || manual.length ? "" : `<div class="faint" style="margin-top:6px">休みの人はいません。試合カードの「抜く」を押すか、名前をここへドラッグすると、休みにできます。</div>`}${info.map((x) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${nm(x.ids)}</b><span class="pschool" style="display:inline">${esc(sideSch(e, x.ids))}</span> <span class="faint">${x.kind === "pair" ? "ペアの数が奇数のため、この組は休みです" : "シングルスに出る人が奇数なので、1人だけ休みになります"}</span> ${x.kind === "pair" ? back(x.ids) : `<button class="btn btn-secondary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${x.ids.join(",")}">別の人と替える</button>`}</div>`).join("")}${manual.map((id) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${esc(pn(e, id))}</b> <span class="pschool" style="display:inline">${esc(playerMap(e)[id].school)}</span> <span class="faint">抜いた人</span> ${back([id])}</div>`).join("")}</div>`;
+    const restBlock = `<div class="rest-out" data-drop="pteam pmember" data-drop-id="${ri}"><b>休みになっています</b>(表には入りません)${info.length || manual.length ? "" : `<div class="faint" style="margin-top:6px">休みの人はいません。</div>`}${info.map((x) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${nm(x.ids)}</b><span class="pschool" style="display:inline">${esc(sideSch(e, x.ids))}</span> <span class="faint">${x.kind === "pair" ? "ペアの数が奇数のため、この組は休みです" : "シングルスに出る人が奇数なので、1人だけ休みになります"}</span> ${x.kind === "pair" ? back(x.ids) : `<button class="btn btn-secondary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${x.ids.join(",")}">別の人と替える</button>`}</div>`).join("")}${manual.map((id) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${esc(pn(e, id))}</b> <span class="pschool" style="display:inline">${esc(playerMap(e)[id].school)}</span> <span class="faint">抜いた人</span> ${back([id])}</div>`).join("")}</div>`;
     const ts = (r.toSingles || []).filter((id) => playerMap(e)[id]);
     const tsNote = ts.length
       ? `<p class="faint" style="margin:8px 0 0">${ts.map((id) => esc(pn(e, id))).join("・")} は、ペアの数が奇数か相方が休みなので、この回転だけシングルスで出ます。</p>`

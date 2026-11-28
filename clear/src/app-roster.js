@@ -170,9 +170,9 @@
   /* ============ はじめの画面の入口 ============ */
   App.rosterHomeCard = () => {
     if (isGuest())
-      return `<section class="card stack rs-home"><div><h3 style="margin:0">部員名簿</h3><p class="faint" style="margin:4px 0 0">自分の学校の選手を登録して、顔写真・出場履歴・成績・スポーツテストをまとめて管理できます。練習試合を作るときも、名簿から選ぶだけで入ります。ログインすると使えます。</p></div></section>`;
+      return `<section class="card rs-home"><h3 style="margin:0">部員名簿</h3><p class="faint" style="margin:4px 0 0">ログインすると使えます。</p></section>`;
     const n = activePlayers().length;
-    return `<button class="card rs-home rs-home-btn" data-action="roster-open"><span class="rs-home-ico" aria-hidden="true">👥</span><span><b>部員名簿</b><span class="faint">${n ? `${n}人 · 顔写真・出場履歴・成績・スポーツテスト` : "自分の学校の選手を登録して、顔写真・出場履歴・成績・スポーツテストを管理"}</span></span><span class="rs-home-go">›</span></button>`;
+    return `<button class="card rs-home rs-home-btn" data-action="roster-open"><span class="rs-home-ico" aria-hidden="true">👥</span><span><b>部員名簿</b>${n ? `<span class="faint">${n}人</span>` : ""}</span><span class="rs-home-go">›</span></button>`;
   };
 
   /* ============ 名簿の画面 ============ */
@@ -190,12 +190,12 @@
       old = roster.players.filter((p) => !p.active);
     const q = (ui.rsQ || "").trim();
     const shown = q ? list.filter((p) => p.name.includes(q) || p.school.includes(q)) : list;
-    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員を登録する</h2><p class="faint">1度登録すれば、練習試合を作るたびに名前を打たなくて済みます。</p></div></div>
+    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員を登録する</h2></div></div>
     <form class="add-form" data-form="rs-add"><label class="field"><span>名前</span><input class="input" name="name" id="rs-name" maxlength="30" autocomplete="off" required></label>
       <label class="field"><span>学校</span><input class="input" name="school" maxlength="30" autocomplete="off" value="${esc(roster.school)}"></label>
       <label class="field"><span>学年</span><select class="select" name="grade">${GRADES.map((g, i) => `<option value="${i}" ${i === (ui.rsGrade || 0) ? "selected" : ""}>${i ? g : "—"}</option>`).join("")}</select></label>
       <div class="field"><span>ランク</span>${App.levelPicker(`data-action="rs-new-level"`, ui.rsLevel || 3)}</div><button class="btn btn-primary" type="submit">登録</button></form></section>
-    <section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員 ${list.length}人</h2><p class="faint">カードを押すと、顔写真・出場履歴・成績・スポーツテストを見たり直したりできます。</p></div></div>
+    <section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員 ${list.length}人</h2></div></div>
       ${list.length > 6 ? `<div class="qbox"><input class="input" type="search" data-change="rs-q" value="${esc(q)}" placeholder="名前・学校で探す"></div>` : ""}
       ${
         shown.length
@@ -257,7 +257,7 @@
       tests = roster.tests,
       list = activePlayers();
     const cur = tests.find((x) => x.id === ui.rsTest) || tests[tests.length - 1];
-    const itemsCard = `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>測る項目</h2><p class="faint">項目は自由に決められます(例:50m走・握力・反復横とび・シャトルラン・ハイクリアの飛距離)。</p></div></div>
+    const itemsCard = `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>測る項目</h2></div></div>
     ${items.length ? `<div class="rs-items">${items.map((it, i) => `<div class="rs-item"><b>${esc(it.name)}</b><span class="faint">${it.unit ? esc(it.unit) + " · " : ""}${it.better === "low" ? "小さいほど良い" : "大きいほど良い"}</span><span class="rs-item-ops"><button class="icon-btn" data-action="rs-item-mv" data-i="${i}" data-d="-1" aria-label="上へ" ${i ? "" : "disabled"}>▲</button><button class="icon-btn" data-action="rs-item-mv" data-i="${i}" data-d="1" aria-label="下へ" ${i < items.length - 1 ? "" : "disabled"}>▼</button><button class="icon-btn" data-action="rs-item-del" data-id="${it.id}" aria-label="${esc(it.name)}を消す">×</button></span></div>`).join("")}</div>` : `<p class="faint" style="margin:0">まだ項目がありません。</p>`}
     <form class="add-form" data-form="rs-item-add"><label class="field"><span>項目名</span><input class="input" name="name" maxlength="30" placeholder="例:50m走" required></label><label class="field"><span>単位</span><input class="input" name="unit" maxlength="10" placeholder="例:秒"></label>
       <label class="field"><span>良いのは</span><select class="select" name="better"><option value="high">大きいほど良い</option><option value="low">小さいほど良い</option></select></label><button class="btn btn-secondary" type="submit">項目を足す</button></form></section>`;
@@ -300,7 +300,7 @@
     const list = activePlayers(),
       inIds = new Set(e.players.map((p) => p.rid).filter(Boolean));
     const sel = ui.rsPick || [];
-    return `<div class="modal-bg"><div class="modal stack"><div class="card-head" style="margin:0"><div><h2>名簿から入れる</h2><p class="faint">入れる人にチェックを入れてください。名前・学校・学年・ランクがそのまま入ります。</p></div><button class="btn btn-ghost btn-sm" data-action="rs-pick-close">やめる</button></div>
+    return `<div class="modal-bg"><div class="modal stack"><div class="card-head" style="margin:0"><div><h2>名簿から入れる</h2></div><button class="btn btn-ghost btn-sm" data-action="rs-pick-close">やめる</button></div>
     ${
       list.length
         ? `<div class="row"><button class="btn btn-ghost btn-sm" data-action="rs-pick-all">まだ入っていない人を全部選ぶ</button>${sel.length ? `<button class="btn btn-ghost btn-sm" data-action="rs-pick-none">選ぶのをやめる</button>` : ""}</div>

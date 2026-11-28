@@ -6219,9 +6219,9 @@ if (typeof module !== "undefined") module.exports = Core;
 
   /* ============ 呼び名 ============ */
   const MODES = {
-    practice: ["練習試合", "ランクの近い人どうしを、回転ごとに自動で組みます"],
-    league: ["リーグ戦", "リーグに分けて、リーグの中で全員と1回ずつ"],
-    tournament: ["トーナメント", "負けたら終わりの勝ち抜き戦"],
+    practice: ["練習試合"],
+    league: ["リーグ戦"],
+    tournament: ["トーナメント"],
   };
   const modeName = (e) => MODES[e.mode][0];
   function pname(e, id) {
@@ -6367,15 +6367,12 @@ if (typeof module !== "undefined") module.exports = Core;
     <section class="card stack"><h3 style="margin:0">前に使ったことがある人</h3>
       ${list.length ? `<p class="faint" style="margin:0">この端末に前のデータがあります。このまま開けます(人の追加は${GUEST_ADDS}人まで)。</p><div class="event-grid">${list.map(eventCardHTML).join("")}</div>` : `<p class="faint" style="margin:0">この端末・このブラウザには、前のデータがありません。前に使ったパソコンやスマホで開いてください。</p>`}
       <p class="faint" style="margin:0"><b>引き継ぎ方:</b>前に使った端末で ①「ログイン・新規登録」でアカウントを作る ②ログインする ③ホームの下の「アカウントに取り込む」を押す。これで、ほかの端末からも見られて、制限なく使えます。元のデータは消えません。</p></section>${legalFooter()}`;
-    return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
+    return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2></div>
     <div class="make-grid">${Object.entries(MODES)
       .filter(
         ([k]) => k !== "league"
       ) /* リーグ戦は、新しく作る表示を出さない(前に作ったデータは「続きから」で開ける) */
-      .map(
-        ([k, [n, d]]) =>
-          `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b><span class="faint">${d}</span></button>`
-      )
+      .map(([k, [n]]) => `<button class="make-card" data-action="pick-mode" data-mode="${k}"><b>${n}</b></button>`)
       .join("")}</div>
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
     ${App.rosterHomeCard ? App.rosterHomeCard() : ""}
@@ -6570,18 +6567,18 @@ if (typeof module !== "undefined") module.exports = Core;
         ? `<form class="add-form" data-form="add-player"><label class="field"><span>名前</span><input class="input" name="name" id="new-name" maxlength="30" autocomplete="off" required></label>
       <label class="field"><span>学校</span><input class="input" name="school" list="schools" maxlength="30" autocomplete="off"></label>
       <div class="field"><span>ランク</span>${levelPicker(`data-action="new-level"`, ui.newLevel)}</div><button class="btn btn-primary" type="submit">追加</button>
-      ${ui.detailMode ? `<div class="add-more"><div class="detail-grid">${detailFields({}, (n) => `name="${n}" id="new-${n}"`)}</div><p class="faint" style="margin:6px 0 0">県とブロックは、同じ学校の全員に自動で入ります。登録した人の分は、下の一覧の「詳細」で入れます。</p></div>` : ""}</form>`
+      ${ui.detailMode ? `<div class="add-more"><div class="detail-grid">${detailFields({}, (n) => `name="${n}" id="new-${n}"`)}</div></div>` : ""}</form>`
         : pasteHTML(e)
     }
     ${detailLists()}<datalist id="schools">${SC.list.map((s) => `<option value="${esc(s)}">`).join("")}</datalist></section>
-  <section class="card"><div class="card-head"><div><h2>登録 ${e.players.length}人</h2><p class="faint">名前・学校・ランクはここで直せます。同じ名前・同じ学校が2人いると「重複」と出ます。</p></div>
+  <section class="card"><div class="card-head"><div><h2>登録 ${e.players.length}人</h2></div>
       <div class="seg"><button class="${ui.plSort === "level" ? "on" : ""}" data-action="plsort" data-k="level">ランク順</button><button class="${ui.plSort === "school" ? "on" : ""}" data-action="plsort" data-k="school">学校順</button></div></div>
     ${
       dbl && e.players.length > 1
         ? (() => {
             const unp = Core.unpairedPlayers(e).length;
             if (e.pairs.length && !unp) return "";
-            return `<div class="confirm" style="background:var(--accent-soft);margin-bottom:12px;flex-direction:column;align-items:flex-start"><b style="color:var(--accent)">ペアの作り方${unp && e.pairs.length ? `(まだペアになっていない人が ${unp}人います)` : ""}</b><span>① 下の一覧で、組ませたい2人の左の □ にチェックを入れる。<br>② 画面の下に出る「この2人をペアにする」を押す。</span>${e.mode === "practice" ? `<span>③ ダブルスに出ない人は、その人の行の右の「シングルスで出る」を押す(何人かまとめるときは、チェックを入れて下のボタン)。</span>` : ""}<span class="faint">間違えたときは、下の「ペア」の欄で「解除」できます。${e.mode === "practice" ? "同じ学校どうしを一度に作るなら「同じ学校で自動作成」。" : ""}</span>${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>`;
+            return `<div class="confirm" style="background:var(--accent-soft);margin-bottom:12px;flex-direction:column;align-items:flex-start"><b style="color:var(--accent)">ペアの作り方${unp && e.pairs.length ? `(まだペアになっていない人が ${unp}人います)` : ""}</b><span>① 下の一覧で、組ませたい2人の左の □ にチェックを入れる。<br>② 画面の下に出る「この2人をペアにする」を押す。</span>${e.mode === "practice" ? `<span>③ ダブルスに出ない人は、その人の行の右の「シングルスで出る」を押す(何人かまとめるときは、チェックを入れて下のボタン)。</span>` : ""}${e.mode === "practice" ? `<button class="btn btn-secondary btn-sm" data-action="auto-pairs">同じ学校で自動作成</button>` : ""}</div>`;
           })()
         : ""
     }
@@ -6848,7 +6845,7 @@ if (typeof module !== "undefined") module.exports = Core;
       const sel = (j) =>
         `<select class="select imp-role ${imp.roles[j] === "skip" ? "is-skip" : ""}" data-change="imp-role" data-col="${j}" aria-label="${j + 1}列目は何か">${IMP_ROLES.map(([r, l]) => `<option value="${r}" ${imp.roles[j] === r ? "selected" : ""}>${l}</option>`).join("")}</select>`;
       const shown = imp.rows.slice(0, imp.header ? 7 : 6);
-      table = `<p class="faint" style="margin:0">列の上のメニューで、それぞれの列が何かを確かめてください。</p><div class="table-wrap"><table class="imp-table"><thead><tr>${Array.from({ length: width }, (_, j) => `<th>${sel(j)}</th>`).join("")}</tr></thead><tbody>${shown.map((r, i) => `<tr class="${imp.header && i === 0 ? "is-head" : ""}">${Array.from({ length: width }, (_, j) => `<td class="${imp.roles[j] === "skip" ? "is-skip" : ""}">${esc(r[j] || "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+      table = `<div class="table-wrap"><table class="imp-table"><thead><tr>${Array.from({ length: width }, (_, j) => `<th>${sel(j)}</th>`).join("")}</tr></thead><tbody>${shown.map((r, i) => `<tr class="${imp.header && i === 0 ? "is-head" : ""}">${Array.from({ length: width }, (_, j) => `<td class="${imp.roles[j] === "skip" ? "is-skip" : ""}">${esc(r[j] || "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
       ${imp.rows.length > shown.length ? `<p class="faint" style="margin:0">ほか ${imp.rows.length - shown.length} 行</p>` : ""}<label class="check"><input type="checkbox" data-change="imp-header" ${imp.header ? "checked" : ""}>1行目は見出し(取り込まない)</label>`;
     }
     const lay = `<div class="seg"><button class="${imp.layout === "auto" ? "on" : ""}" data-action="imp-layout" data-k="auto">自動</button><button class="${imp.layout === "one" ? "on" : ""}" data-action="imp-layout" data-k="one">1行に1人</button>${pairCapable(e) ? `<button class="${imp.layout === "pair" ? "on" : ""}" data-action="imp-layout" data-k="pair">1行に1ペア</button>` : ""}</div>`;
@@ -7560,7 +7557,7 @@ if (typeof module !== "undefined") module.exports = Core;
     ${ui.confirm === "reassign" ? `<div class="confirm"><b>いまのリーグ分けを消して、分け直します。</b>入れた結果は残りますが、組み合わせが変わると使われないものも出ます。<button class="btn btn-primary btn-sm" data-action="auto-yes">分け直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
     <div class="row"><button class="btn btn-aurora" data-action="auto" ${n < 3 ? "disabled" : ""}>${e.leagues.length ? "分け直す" : "リーグに分ける"}</button>${n < 3 ? `<span class="faint">3${isDbl(e) ? "組" : "人"}以上で分けられます</span>` : ""}</div></section>
     ${un.length ? `<section class="card" data-drop="member" data-drop-id="-1"><h3>どこにも入っていない</h3><div class="row" style="margin-top:8px">${un.map((p) => `<span class="chip" data-drag="member" data-drag-id="${p.id}" data-drag-label="${esc(nameFlat(p))}">⠿ ${esc(nameFlat(p))}</span>`).join("")}</div></section>` : ""}
-    ${e.leagues.length ? `<div class="league-grid">${cards}</div><p class="faint">名前をつかんで別のリーグへ落とすか、右のメニューで移せます。</p>` : ""}`;
+    ${e.leagues.length ? `<div class="league-grid">${cards}</div>` : ""}`;
   }
   /* ---------- 試合と結果 ---------- */
   function leaguePillsHTML(e) {
@@ -7866,7 +7863,7 @@ if (typeof module !== "undefined") module.exports = Core;
     const st = Core.bracketState(e),
       n = entries(e).length,
       unp = isDbl(e) ? Core.unpairedPlayers(e) : [];
-    const head = `<section class="card"><div class="card-head"><div><h2>トーナメント表</h2><p class="faint">シードを決めて「表を作る」。名前をつかんで別の枠に落とすと、2つが入れ替わります。</p></div></div>
+    const head = `<section class="card"><div class="card-head"><div><h2>トーナメント表</h2></div></div>
     ${unp.length ? `<div class="confirm"><b>ペアになっていない人が ${unp.length}人います。</b>選手の画面でペアにしてください。</div>` : ""}
     ${ui.confirm === "rebuild" ? `<div class="confirm"><b>いまの表を作り直します。</b>入れた結果は消えます。<button class="btn btn-primary btn-sm" data-action="build-yes">作り直す</button><button class="btn btn-ghost btn-sm" data-action="cancel">やめる</button></div>` : ""}
     ${
@@ -7900,7 +7897,7 @@ if (typeof module !== "undefined") module.exports = Core;
       n = list.length,
       cnt = Object.keys(e.seeds).length;
     if (n < 2) return "";
-    return `<details class="seedbox"><summary>シードを決める${cnt ? ` <span class="chip chip-live">${cnt}人指定</span>` : ""}</summary><p class="faint" style="margin:0 0 10px">指定しない人は、ランクの高い順にシードになります。</p>
+    return `<details class="seedbox"><summary>シードを決める${cnt ? ` <span class="chip chip-live">${cnt}人指定</span>` : ""}</summary>
     <div class="seed-list">${list.map((p) => `<div class="seed-row"><span class="pname">${esc(p.name)}<span class="pschool">${esc(p.school)}</span></span><select class="select" data-change="seed" data-id="${p.id}"><option value="">—</option>${Array.from({ length: Math.min(n, 16) }, (_, i) => `<option value="${i + 1}" ${e.seeds[p.id] === i + 1 ? "selected" : ""}>シード${i + 1}</option>`).join("")}</select></div>`).join("")}</div>${cnt ? `<button class="btn btn-ghost btn-sm" data-action="seed-clear">指定を解除</button>` : ""}</details>`;
   }
   function bpanelHTML(e, st, n) {
@@ -8955,7 +8952,7 @@ if (typeof module !== "undefined") module.exports = Core;
       cls
     ) => `<span class="bchip ${cls} ${SC.cls(pm[id].school)}" data-drag="pbenchp" data-drag-id="${ri}:${id}" data-drag-label="${esc(pm[id].name)}"><button class="plink" style="border:none;background:none;font-weight:650;padding:0" data-action="pplayer" data-id="${id}">${esc(pm[id].name)}</button>
     ${cls === "spare" ? `<button data-action="pbench-rest" data-r="${ri}" data-id="${id}">今回だけ抜く</button>` : `<button data-action="pkeep" data-r="${ri}" data-id="${id}" title="次の回転も抜くか切り替え">${keptNow.has(id) ? "次も抜く ✓" : "次も抜く"}</button>`}<button data-action="pback" data-r="${ri}" data-id="${id}">戻す</button></span>`;
-    return `<div class="bench" data-drop="pteam pmember" data-drop-id="${ri}"><b>試合に入っていない人</b><span class="faint">名前をここへドラッグすると「今回だけ抜く」(黄)。「次も抜く」で次の回転以降も外します(赤)。灰色は人数の余りです。</span>
+    return `<div class="bench" data-drop="pteam pmember" data-drop-id="${ri}"><b>試合に入っていない人</b>
     ${(() => {
       if (r.kind !== "doubles") return "";
       const solo = (r.left || []).filter((id) => spare.includes(id) && pm[id]);
@@ -9152,7 +9149,7 @@ if (typeof module !== "undefined") module.exports = Core;
     const manual = r.rest.filter((id) => !(r.autoRest || []).includes(id) && playerMap(e)[id]);
     const back = (ids) =>
       `<button class="btn btn-primary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${ids.join(",")}">戻す</button>`;
-    const restBlock = `<div class="rest-out" data-drop="pteam pmember" data-drop-id="${ri}"><b>休みになっています</b>(表には入りません)${info.length || manual.length ? "" : `<div class="faint" style="margin-top:6px">休みの人はいません。試合カードの「抜く」を押すか、名前をここへドラッグすると、休みにできます。</div>`}${info.map((x) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${nm(x.ids)}</b><span class="pschool" style="display:inline">${esc(sideSch(e, x.ids))}</span> <span class="faint">${x.kind === "pair" ? "ペアの数が奇数のため、この組は休みです" : "シングルスに出る人が奇数なので、1人だけ休みになります"}</span> ${x.kind === "pair" ? back(x.ids) : `<button class="btn btn-secondary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${x.ids.join(",")}">別の人と替える</button>`}</div>`).join("")}${manual.map((id) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${esc(pn(e, id))}</b> <span class="pschool" style="display:inline">${esc(playerMap(e)[id].school)}</span> <span class="faint">抜いた人</span> ${back([id])}</div>`).join("")}</div>`;
+    const restBlock = `<div class="rest-out" data-drop="pteam pmember" data-drop-id="${ri}"><b>休みになっています</b>(表には入りません)${info.length || manual.length ? "" : `<div class="faint" style="margin-top:6px">休みの人はいません。</div>`}${info.map((x) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${nm(x.ids)}</b><span class="pschool" style="display:inline">${esc(sideSch(e, x.ids))}</span> <span class="faint">${x.kind === "pair" ? "ペアの数が奇数のため、この組は休みです" : "シングルスに出る人が奇数なので、1人だけ休みになります"}</span> ${x.kind === "pair" ? back(x.ids) : `<button class="btn btn-secondary btn-sm" data-action="mixed-back" data-r="${ri}" data-ids="${x.ids.join(",")}">別の人と替える</button>`}</div>`).join("")}${manual.map((id) => `<div class="rest-row"><span class="chip chip-warn">休み</span> <b>${esc(pn(e, id))}</b> <span class="pschool" style="display:inline">${esc(playerMap(e)[id].school)}</span> <span class="faint">抜いた人</span> ${back([id])}</div>`).join("")}</div>`;
     const ts = (r.toSingles || []).filter((id) => playerMap(e)[id]);
     const tsNote = ts.length
       ? `<p class="faint" style="margin:8px 0 0">${ts.map((id) => esc(pn(e, id))).join("・")} は、ペアの数が奇数か相方が休みなので、この回転だけシングルスで出ます。</p>`
@@ -10009,7 +10006,7 @@ if (typeof module !== "undefined") module.exports = Core;
         return `${head}<tr><td class="num">${mi + 1}${dup ? `<small class="sh-dup">かぶり</small>` : ""}</td><td class="num">${Core.roundNo(e, ri)}</td><td class="sh-id num">${idStack(m.a.map((id) => id && no[id]))}</td><td class="num">${lv(m.a)}</td>${nameCellHTML(e, m.a, o.winner === "a", SC)}<td class="sh-sc num">${sc}</td>${nameCellHTML(e, m.b, o.winner === "b", SC)}<td class="num">${lv(m.b)}</td><td class="sh-id num">${idStack(m.b.map((id) => id && no[id]))}</td></tr>`;
       })
       .join("");
-    return `    <p class="faint" style="margin:0">紙の対戦表と同じ並びです。選手番号は「選手」の画面の登録順。勝った側の名前の欄と得点が赤くなります。</p>
+    return `    
     <div class="table-wrap"><table class="sheet"><thead><tr><th>試合<br>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>得点</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead><tbody>${body || `<tr><td colspan="9" class="faint">まだ試合がありません</td></tr>`}</tbody></table></div>`;
   }
   /* 組み合わせごとの成績: 同じ相手(ダブルスは同じペアどうし)の試合を、回転をまたいで1行にまとめる。各回の得点をゲームとして縦に並べ、ゲーム数は勝った数の合計 */
@@ -10076,8 +10073,7 @@ if (typeof module !== "undefined") module.exports = Core;
         return `<tr><td class="num">${i + 1}${x.times > 1 ? `<small class="sh-dup">${x.times}回対戦</small>` : ""}</td><td class="num">${x.rounds.join(daysOf(e).length > 1 ? "<br>" : "・")}</td><td class="sh-id num">${idStack(x.a.map((id) => no[id]))}</td><td class="num">${rankCell(e, x.a)}</td>${nameCellHTML(e, x.a, false, SC)}<td class="sh-gc num ${wa ? "sh-win" : ""}">${x.shown ? x.gA : ""}</td><td class="sh-sc num">${sc}</td><td class="sh-gc num ${wb ? "sh-win" : ""}">${x.shown ? x.gB : ""}</td>${nameCellHTML(e, x.b, false, SC)}<td class="num">${rankCell(e, x.b)}</td><td class="sh-id num">${idStack(x.b.map((id) => no[id]))}</td></tr>`;
       })
       .join("");
-    return `<p class="faint" style="margin:0">同じ相手(ダブルスは同じペアどうし)と当たった試合を1行にまとめます。各回の得点をゲームとして並べ、ゲーム数は勝った数です。回転の欄は当たった回転です。</p>
-    <div class="table-wrap"><table class="sheet"><thead><tr><th>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>ゲーム<br>数</th><th>得点</th><th>ゲーム<br>数</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead><tbody>${body || `<tr><td colspan="11" class="faint">まだ試合がありません</td></tr>`}</tbody></table></div>`;
+    return `<div class="table-wrap"><table class="sheet"><thead><tr><th>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>ゲーム<br>数</th><th>得点</th><th>ゲーム<br>数</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead><tbody>${body || `<tr><td colspan="11" class="faint">まだ試合がありません</td></tr>`}</tbody></table></div>`;
   }
   function listHTML(e) {
     const st = Core.pStats(e),
@@ -10212,7 +10208,7 @@ if (typeof module !== "undefined") module.exports = Core;
         return `<div class="st-row"><span class="st-no">${CIRC[i] || i + 1}</span><span class="st-kind"><span class="kind ${dbl ? "k-dbl" : "k-sgl"}">${dbl ? "ダブルス" : "シングルス"}</span>${x.times > 1 ? `<span class="chip chip-live">${x.times}回対戦</span>` : ""}<span class="st-rounds">${x.rounds.join("・")}${daysOf(e).length > 1 ? "" : "回転目"}</span></span>${stSideHTML(e, x.a, SC, no, `a ${st === "a" ? "win" : ""}`)}${stScoreHTML(x.gA, x.gB, x.lines, st === "even" ? "x" : st)}${stSideHTML(e, x.b, SC, no, `b ${st === "b" ? "win" : ""}`)}</div>`;
       })
       .join("");
-    return `<section class="card st-card"><div class="card-head"><div><h2>組み合わせごとの成績</h2><p class="faint">同じ相手(ダブルスは同じペアどうし)と当たった試合を1行にまとめます。大きい数字は勝ったゲームの合計です。</p></div></div><div class="st-list">${body || `<p class="faint" style="margin:0">${ui.q ? "見つかりませんでした" : "まだ試合がありません"}</p>`}</div></section>`;
+    return `<section class="card st-card"><div class="card-head"><div><h2>組み合わせごとの成績</h2></div></div><div class="st-list">${body || `<p class="faint" style="margin:0">${ui.q ? "見つかりませんでした" : "まだ試合がありません"}</p>`}</div></section>`;
   }
   function rateBar(rate) {
     return `<span class="st-rate"><b>${rate == null ? "—" : rate + "%"}</b><span class="st-bar"><i style="width:${rate || 0}%"></i></span></span>`;
@@ -10276,7 +10272,7 @@ if (typeof module !== "undefined") module.exports = Core;
         ["merge", "組み合わせ"],
       ];
     const body = ui.pView === "sheet" ? sheetViewHTML(e) : ui.pView === "merge" ? mergeViewHTML(e) : listViewHTML(e);
-    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>成績</h2><p class="faint">名前を押すと、その人の試合の一覧が出ます。</p></div><button class="btn btn-secondary btn-sm" data-action="print-practice">PDFで保存</button></div>
+    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>成績</h2></div><button class="btn btn-secondary btn-sm" data-action="print-practice">PDFで保存</button></div>
     <div class="view-switch seg" style="align-self:flex-start">${views.map(([k, l]) => `<button class="${ui.pView === k ? "on" : ""}" data-action="pview" data-view="${k}">${l}</button>`).join("")}</div>
     <div class="qbox"><input class="input" id="q" type="search" data-input="q" value="${esc(ui.q)}" placeholder="名前・学校で探す" autocomplete="off">${ui.q ? `<button class="btn btn-ghost btn-sm" data-action="qclear">消す</button>` : ""}</div>
     ${
@@ -10524,9 +10520,9 @@ if (typeof module !== "undefined") module.exports = Core;
   /* ============ はじめの画面の入口 ============ */
   App.rosterHomeCard = () => {
     if (isGuest())
-      return `<section class="card stack rs-home"><div><h3 style="margin:0">部員名簿</h3><p class="faint" style="margin:4px 0 0">自分の学校の選手を登録して、顔写真・出場履歴・成績・スポーツテストをまとめて管理できます。練習試合を作るときも、名簿から選ぶだけで入ります。ログインすると使えます。</p></div></section>`;
+      return `<section class="card rs-home"><h3 style="margin:0">部員名簿</h3><p class="faint" style="margin:4px 0 0">ログインすると使えます。</p></section>`;
     const n = activePlayers().length;
-    return `<button class="card rs-home rs-home-btn" data-action="roster-open"><span class="rs-home-ico" aria-hidden="true">👥</span><span><b>部員名簿</b><span class="faint">${n ? `${n}人 · 顔写真・出場履歴・成績・スポーツテスト` : "自分の学校の選手を登録して、顔写真・出場履歴・成績・スポーツテストを管理"}</span></span><span class="rs-home-go">›</span></button>`;
+    return `<button class="card rs-home rs-home-btn" data-action="roster-open"><span class="rs-home-ico" aria-hidden="true">👥</span><span><b>部員名簿</b>${n ? `<span class="faint">${n}人</span>` : ""}</span><span class="rs-home-go">›</span></button>`;
   };
 
   /* ============ 名簿の画面 ============ */
@@ -10544,12 +10540,12 @@ if (typeof module !== "undefined") module.exports = Core;
       old = roster.players.filter((p) => !p.active);
     const q = (ui.rsQ || "").trim();
     const shown = q ? list.filter((p) => p.name.includes(q) || p.school.includes(q)) : list;
-    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員を登録する</h2><p class="faint">1度登録すれば、練習試合を作るたびに名前を打たなくて済みます。</p></div></div>
+    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員を登録する</h2></div></div>
     <form class="add-form" data-form="rs-add"><label class="field"><span>名前</span><input class="input" name="name" id="rs-name" maxlength="30" autocomplete="off" required></label>
       <label class="field"><span>学校</span><input class="input" name="school" maxlength="30" autocomplete="off" value="${esc(roster.school)}"></label>
       <label class="field"><span>学年</span><select class="select" name="grade">${GRADES.map((g, i) => `<option value="${i}" ${i === (ui.rsGrade || 0) ? "selected" : ""}>${i ? g : "—"}</option>`).join("")}</select></label>
       <div class="field"><span>ランク</span>${App.levelPicker(`data-action="rs-new-level"`, ui.rsLevel || 3)}</div><button class="btn btn-primary" type="submit">登録</button></form></section>
-    <section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員 ${list.length}人</h2><p class="faint">カードを押すと、顔写真・出場履歴・成績・スポーツテストを見たり直したりできます。</p></div></div>
+    <section class="card stack"><div class="card-head" style="margin:0"><div><h2>部員 ${list.length}人</h2></div></div>
       ${list.length > 6 ? `<div class="qbox"><input class="input" type="search" data-change="rs-q" value="${esc(q)}" placeholder="名前・学校で探す"></div>` : ""}
       ${
         shown.length
@@ -10611,7 +10607,7 @@ if (typeof module !== "undefined") module.exports = Core;
       tests = roster.tests,
       list = activePlayers();
     const cur = tests.find((x) => x.id === ui.rsTest) || tests[tests.length - 1];
-    const itemsCard = `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>測る項目</h2><p class="faint">項目は自由に決められます(例:50m走・握力・反復横とび・シャトルラン・ハイクリアの飛距離)。</p></div></div>
+    const itemsCard = `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>測る項目</h2></div></div>
     ${items.length ? `<div class="rs-items">${items.map((it, i) => `<div class="rs-item"><b>${esc(it.name)}</b><span class="faint">${it.unit ? esc(it.unit) + " · " : ""}${it.better === "low" ? "小さいほど良い" : "大きいほど良い"}</span><span class="rs-item-ops"><button class="icon-btn" data-action="rs-item-mv" data-i="${i}" data-d="-1" aria-label="上へ" ${i ? "" : "disabled"}>▲</button><button class="icon-btn" data-action="rs-item-mv" data-i="${i}" data-d="1" aria-label="下へ" ${i < items.length - 1 ? "" : "disabled"}>▼</button><button class="icon-btn" data-action="rs-item-del" data-id="${it.id}" aria-label="${esc(it.name)}を消す">×</button></span></div>`).join("")}</div>` : `<p class="faint" style="margin:0">まだ項目がありません。</p>`}
     <form class="add-form" data-form="rs-item-add"><label class="field"><span>項目名</span><input class="input" name="name" maxlength="30" placeholder="例:50m走" required></label><label class="field"><span>単位</span><input class="input" name="unit" maxlength="10" placeholder="例:秒"></label>
       <label class="field"><span>良いのは</span><select class="select" name="better"><option value="high">大きいほど良い</option><option value="low">小さいほど良い</option></select></label><button class="btn btn-secondary" type="submit">項目を足す</button></form></section>`;
@@ -10654,7 +10650,7 @@ if (typeof module !== "undefined") module.exports = Core;
     const list = activePlayers(),
       inIds = new Set(e.players.map((p) => p.rid).filter(Boolean));
     const sel = ui.rsPick || [];
-    return `<div class="modal-bg"><div class="modal stack"><div class="card-head" style="margin:0"><div><h2>名簿から入れる</h2><p class="faint">入れる人にチェックを入れてください。名前・学校・学年・ランクがそのまま入ります。</p></div><button class="btn btn-ghost btn-sm" data-action="rs-pick-close">やめる</button></div>
+    return `<div class="modal-bg"><div class="modal stack"><div class="card-head" style="margin:0"><div><h2>名簿から入れる</h2></div><button class="btn btn-ghost btn-sm" data-action="rs-pick-close">やめる</button></div>
     ${
       list.length
         ? `<div class="row"><button class="btn btn-ghost btn-sm" data-action="rs-pick-all">まだ入っていない人を全部選ぶ</button>${sel.length ? `<button class="btn btn-ghost btn-sm" data-action="rs-pick-none">選ぶのをやめる</button>` : ""}</div>

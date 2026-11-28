@@ -104,7 +104,7 @@
         return `${head}<tr><td class="num">${mi + 1}${dup ? `<small class="sh-dup">かぶり</small>` : ""}</td><td class="num">${Core.roundNo(e, ri)}</td><td class="sh-id num">${idStack(m.a.map((id) => id && no[id]))}</td><td class="num">${lv(m.a)}</td>${nameCellHTML(e, m.a, o.winner === "a", SC)}<td class="sh-sc num">${sc}</td>${nameCellHTML(e, m.b, o.winner === "b", SC)}<td class="num">${lv(m.b)}</td><td class="sh-id num">${idStack(m.b.map((id) => id && no[id]))}</td></tr>`;
       })
       .join("");
-    return `    <p class="faint" style="margin:0">紙の対戦表と同じ並びです。選手番号は「選手」の画面の登録順。勝った側の名前の欄と得点が赤くなります。</p>
+    return `    
     <div class="table-wrap"><table class="sheet"><thead><tr><th>試合<br>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>得点</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead><tbody>${body || `<tr><td colspan="9" class="faint">まだ試合がありません</td></tr>`}</tbody></table></div>`;
   }
   /* 組み合わせごとの成績: 同じ相手(ダブルスは同じペアどうし)の試合を、回転をまたいで1行にまとめる。各回の得点をゲームとして縦に並べ、ゲーム数は勝った数の合計 */
@@ -171,8 +171,7 @@
         return `<tr><td class="num">${i + 1}${x.times > 1 ? `<small class="sh-dup">${x.times}回対戦</small>` : ""}</td><td class="num">${x.rounds.join(daysOf(e).length > 1 ? "<br>" : "・")}</td><td class="sh-id num">${idStack(x.a.map((id) => no[id]))}</td><td class="num">${rankCell(e, x.a)}</td>${nameCellHTML(e, x.a, false, SC)}<td class="sh-gc num ${wa ? "sh-win" : ""}">${x.shown ? x.gA : ""}</td><td class="sh-sc num">${sc}</td><td class="sh-gc num ${wb ? "sh-win" : ""}">${x.shown ? x.gB : ""}</td>${nameCellHTML(e, x.b, false, SC)}<td class="num">${rankCell(e, x.b)}</td><td class="sh-id num">${idStack(x.b.map((id) => no[id]))}</td></tr>`;
       })
       .join("");
-    return `<p class="faint" style="margin:0">同じ相手(ダブルスは同じペアどうし)と当たった試合を1行にまとめます。各回の得点をゲームとして並べ、ゲーム数は勝った数です。回転の欄は当たった回転です。</p>
-    <div class="table-wrap"><table class="sheet"><thead><tr><th>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>ゲーム<br>数</th><th>得点</th><th>ゲーム<br>数</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead><tbody>${body || `<tr><td colspan="11" class="faint">まだ試合がありません</td></tr>`}</tbody></table></div>`;
+    return `<div class="table-wrap"><table class="sheet"><thead><tr><th>番号</th><th>回転</th><th class="sh-id">選手<br>番号</th><th>ランク</th><th>選手名<br>学校名</th><th>ゲーム<br>数</th><th>得点</th><th>ゲーム<br>数</th><th>選手名<br>学校名</th><th>ランク</th><th class="sh-id">選手<br>番号</th></tr></thead><tbody>${body || `<tr><td colspan="11" class="faint">まだ試合がありません</td></tr>`}</tbody></table></div>`;
   }
   function listHTML(e) {
     const st = Core.pStats(e),
@@ -307,7 +306,7 @@
         return `<div class="st-row"><span class="st-no">${CIRC[i] || i + 1}</span><span class="st-kind"><span class="kind ${dbl ? "k-dbl" : "k-sgl"}">${dbl ? "ダブルス" : "シングルス"}</span>${x.times > 1 ? `<span class="chip chip-live">${x.times}回対戦</span>` : ""}<span class="st-rounds">${x.rounds.join("・")}${daysOf(e).length > 1 ? "" : "回転目"}</span></span>${stSideHTML(e, x.a, SC, no, `a ${st === "a" ? "win" : ""}`)}${stScoreHTML(x.gA, x.gB, x.lines, st === "even" ? "x" : st)}${stSideHTML(e, x.b, SC, no, `b ${st === "b" ? "win" : ""}`)}</div>`;
       })
       .join("");
-    return `<section class="card st-card"><div class="card-head"><div><h2>組み合わせごとの成績</h2><p class="faint">同じ相手(ダブルスは同じペアどうし)と当たった試合を1行にまとめます。大きい数字は勝ったゲームの合計です。</p></div></div><div class="st-list">${body || `<p class="faint" style="margin:0">${ui.q ? "見つかりませんでした" : "まだ試合がありません"}</p>`}</div></section>`;
+    return `<section class="card st-card"><div class="card-head"><div><h2>組み合わせごとの成績</h2></div></div><div class="st-list">${body || `<p class="faint" style="margin:0">${ui.q ? "見つかりませんでした" : "まだ試合がありません"}</p>`}</div></section>`;
   }
   function rateBar(rate) {
     return `<span class="st-rate"><b>${rate == null ? "—" : rate + "%"}</b><span class="st-bar"><i style="width:${rate || 0}%"></i></span></span>`;
@@ -371,7 +370,7 @@
         ["merge", "組み合わせ"],
       ];
     const body = ui.pView === "sheet" ? sheetViewHTML(e) : ui.pView === "merge" ? mergeViewHTML(e) : listViewHTML(e);
-    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>成績</h2><p class="faint">名前を押すと、その人の試合の一覧が出ます。</p></div><button class="btn btn-secondary btn-sm" data-action="print-practice">PDFで保存</button></div>
+    return `<section class="card stack"><div class="card-head" style="margin:0"><div><h2>成績</h2></div><button class="btn btn-secondary btn-sm" data-action="print-practice">PDFで保存</button></div>
     <div class="view-switch seg" style="align-self:flex-start">${views.map(([k, l]) => `<button class="${ui.pView === k ? "on" : ""}" data-action="pview" data-view="${k}">${l}</button>`).join("")}</div>
     <div class="qbox"><input class="input" id="q" type="search" data-input="q" value="${esc(ui.q)}" placeholder="名前・学校で探す" autocomplete="off">${ui.q ? `<button class="btn btn-ghost btn-sm" data-action="qclear">消す</button>` : ""}</div>
     ${
