@@ -3649,3 +3649,21 @@ details[open] > summary {
 .legal-foot a {
   color: var(--text-tertiary);
 }
+/* 選手用コード(先生の画面) */
+.share-code {
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  padding: 10px 0;
+}
+.share-code.off {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+.share-url {
+  font-size: 0.8rem;
+  word-break: break-all;
+  text-align: center;
+}

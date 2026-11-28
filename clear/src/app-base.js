@@ -518,7 +518,7 @@
     if (!tabs.some((t) => t[0] === ui.tab)) ui.tab = tabs[0][0];
     const body = (App.views[ui.tab] || (() => ""))(e);
     return `${heroHTML(e)}<div class="tabs" role="tablist">${tabs.map(([k, n], i) => `<button class="tab ${ui.tab === k ? "is-active" : ""}" role="tab" data-action="tab" data-tab="${k}">${i + 1} ${n}</button>`).join("")}</div>
-    ${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${body}${App.rosterPickHTML ? App.rosterPickHTML(e) : ""}`;
+    ${ui.exportOpen ? exportHTML(e) : ""}${ui.copyText ? copyBoxHTML() : ""}${body}${App.rosterPickHTML ? App.rosterPickHTML(e) : ""}${App.shareHTML ? App.shareHTML(e) : ""}`;
   }
   function heroHTML(e) {
     const t = Core.totals(e);
@@ -545,7 +545,7 @@
     <textarea class="hero-name" id="ev-name" rows="1" data-change="ev-name" aria-label="名前">${esc(e.name)}</textarea>
     <div class="hero-sub"><label>日付 <input class="input" type="date" value="${esc(e.date)}" data-change="ev-date"></label><span>${fmt} · 1人1日${e.maxPerDay}試合まで</span><button class="btn btn-ghost btn-sm" data-action="toggle-settings">設定を変える</button></div>
     <div class="hero-stats">${stats.map(([v, l]) => `<div><span class="stat-value num">${v}</span><span class="stat-label">${l}</span></div>`).join("")}</div>
-    <div class="hero-actions"><button class="btn btn-excel btn-sm" data-action="toggle-export">Excelに貼り付け</button></div>
+    <div class="hero-actions"><button class="btn btn-excel btn-sm" data-action="toggle-export">Excelに貼り付け</button>${App.shareBtn ? App.shareBtn(e) : ""}</div>
     ${ui.showSettings ? settingsHTML(e) : ""}</section>`;
   }
   function settingsHTML(e) {

@@ -159,6 +159,12 @@
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
       }));
       let recovering = /type=recovery/.test(location.hash);
+      // 生徒用(?code=… か #join)は、ログインなしで生徒用ページだけを開く。先生の画面には進まない
+      const join = window.Share ? window.Share.wanted() : null;
+      if (join !== null) {
+        window.Share.open(join);
+        return new Promise(() => {});
+      }
       return new Promise((resolve) => {
         let done = false;
         UI.guest = () => {
@@ -259,7 +265,7 @@
       const link = (to, t) => `<button type="button" class="link-btn" data-auth-go="${to}">${t}</button>`;
       let body = "";
       if (this.mode === "login")
-        body = `<h2>ログイン</h2>${msg}${email}${pass("current-password")}<button class="btn btn-primary" type="submit" ${dis}>ログイン</button><div class="auth-links">${link("signup", "はじめての方(新規登録)")}${link("reset", "パスワードを忘れた")}</div>${ALLOW_GUEST ? `<div class="auth-guest"><button type="button" class="btn btn-ghost" data-auth-guest>ログインせずに使う</button><span class="faint">見本を試す・前に使っていたデータを開くときはこちら。あとからいつでもログインできます。</span></div>` : ""}`;
+        body = `<h2>ログイン</h2>${msg}${email}${pass("current-password")}<button class="btn btn-primary" type="submit" ${dis}>ログイン</button><div class="auth-links">${link("signup", "はじめての方(新規登録)")}${link("reset", "パスワードを忘れた")}</div>${window.Share ? `<button type="button" class="btn btn-secondary" data-auth-join>試合コードで参加(選手の方)</button>` : ""}${ALLOW_GUEST ? `<div class="auth-guest"><button type="button" class="btn btn-ghost" data-auth-guest>ログインせずに使う</button><span class="faint">見本を試す・前に使っていたデータを開くときはこちら。あとからいつでもログインできます。</span></div>` : ""}`;
       else if (this.mode === "signup")
         body = `<h2>新規登録</h2>${msg}${email}${pass("new-password", "パスワード(8文字以上)")}<p class="faint" style="margin:0;font-size:.82rem">登録すると、利用規約とプライバシーポリシーに同意したことになります。</p><button class="btn btn-primary" type="submit" ${dis}>登録する</button><div class="auth-links">${link("login", "登録済みの方はログイン")}</div>`;
       else if (this.mode === "reset")
@@ -282,6 +288,8 @@
           this.show(b.dataset.authGo);
         })
       );
+      const j = f.querySelector("[data-auth-join]");
+      if (j) j.addEventListener("click", () => window.Share.open(""));
       const g = f.querySelector("[data-auth-guest]");
       if (g) g.addEventListener("click", () => this.guest && this.guest());
       const first = f.querySelector("input");
