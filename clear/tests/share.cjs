@@ -24,7 +24,13 @@ const U = "http://localhost:8771/clear/cloud.html";
   const code = (await T.textContent(".share-code")).replace(/\D/g, "");
   ok(/^\d{8}$/.test(code), "先生: 8桁のコードが出る " + code);
   ok((await T.textContent(".share-url")).includes("?code=" + code), "先生: 参加用URLが出る");
+  ok(!!(await T.$(".share-qr svg")), "先生: QRコードが出る");
   await T.screenshot({ path: "share-teacher-390.png" });
+  await T.click(".share-qr"); await T.waitForSelector(".share-full .share-qr.big svg");
+  ok((await T.textContent(".share-full")).replace(/\D/g, "").includes(code), "先生: QRコードを大きく出せる(番号も出る)");
+  await T.screenshot({ path: "share-qr-big-390.png" });
+  await T.click('.share-full [data-action="share-small"].btn'); await T.waitForSelector(".modal .share-code");
+  ok(!(await T.$(".share-full")), "先生: 大きい表示を閉じられる");
   const first = await T.evaluate(() => { const r = App.ev().practice.rounds[0], m = r.matches[0]; return { r: r.id, m: m.id }; });
 
   // 選手: コード入りURLで開く(ログインなし)
@@ -74,6 +80,10 @@ const U = "http://localhost:8771/clear/cloud.html";
   ok(!!(await S.$(".sh-confirm")), "選手: 片方だけの点数でも記録できる(試合中)");
   await S.click('[data-sh="yes"]'); await S.waitForFunction(() => !document.querySelector(".modal-bg"));
   ok(await S.$eval(`.pm-mid[data-m="${first.m}"]`, (b) => b.closest(".pmatch").classList.contains("is-live")), "選手: 途中の試合は黄色(試合中)になる");
+  // コート番号を選手が入れる(全角・小文字でも)
+  await S.fill(`#sc-${first.m}`, "ａ1"); await S.press(`#sc-${first.m}`, "Enter"); await S.waitForTimeout(300);
+  const ct = await S.evaluate(([r, m]) => __mockdb.events.flatMap((e) => e.data.practice ? e.data.practice.rounds : []).find((x) => x.id === r).matches.find((x) => x.id === m).ct, [first.r, first.m]);
+  ok(ct === "A1", "選手: コート番号を入れられる(全角・小文字は直す) " + ct);
   // 名前で探す
   const nm = await S.evaluate(() => document.querySelector(".pmatch .pname").textContent);
   await S.fill("#sh-q", nm); await S.waitForTimeout(200);

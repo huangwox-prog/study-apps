@@ -176,3 +176,36 @@ begin
 end;
 $$;
 grant execute on function public.share_score(text, text, text, jsonb) to anon, authenticated;
+
+-- コート番号(2文字まで。数字と英大文字だけ。空にもできる)を選手が入れる
+create or replace function public.share_court(p_code text, p_round text, p_mid text, p_ct text)
+returns jsonb
+language plpgsql
+security definer set search_path = ''
+as $$
+declare
+  s public.shares;
+  d jsonb;
+  ri int;
+  mi int;
+begin
+  s := public.share_find(p_code);
+  if s.code is null then return null; end if;
+  if p_ct is null or p_ct !~ '^[0-9A-Z]{0,2}$' then raise exception 'bad court'; end if;
+  select data into d from public.events where user_id = s.user_id and id = s.event_id for update;
+  if d is null then raise exception 'event not found'; end if;
+  select (t.ord - 1)::int into ri
+    from jsonb_array_elements(coalesce(d #> '{practice,rounds}', '[]'::jsonb)) with ordinality t(r, ord)
+    where t.r->>'id' = p_round;
+  if ri is null then raise exception 'round not found'; end if;
+  select (t.ord - 1)::int into mi
+    from jsonb_array_elements(coalesce(d #> array['practice', 'rounds', ri::text, 'matches'], '[]'::jsonb)) with ordinality t(m, ord)
+    where t.m->>'id' = p_mid;
+  if mi is null then raise exception 'match not found'; end if;
+  d := jsonb_set(d, array['practice', 'rounds', ri::text, 'matches', mi::text, 'ct'], to_jsonb(p_ct));
+  d := jsonb_set(d, '{updatedAt}', to_jsonb((extract(epoch from now()) * 1000)::bigint));
+  update public.events set data = d, updated_at = now() where user_id = s.user_id and id = s.event_id;
+  return public.share_get(p_code);
+end;
+$$;
+grant execute on function public.share_court(text, text, text, text) to anon, authenticated;

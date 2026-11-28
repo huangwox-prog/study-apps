@@ -7,9 +7,21 @@
   "use strict";
   const { A, esc } = App;
   const cloud = () => (window.Cloud && window.Cloud.client && window.Cloud.user ? window.Cloud : null);
-  const S = { open: false, loading: false, code: null, enabled: true, err: "" };
+  const S = { open: false, loading: false, code: null, enabled: true, err: "", big: false };
   const spaced = (c) => (c ? c.slice(0, 4) + " " + c.slice(4) : "");
   const joinUrl = (c) => location.origin + location.pathname + "?code=" + c;
+  /* 参加用URLのQRコード(SVG)。部品(vendor-qrcode.js)が読めないときは出さない */
+  const qrSvg = (c) => {
+    if (typeof window.qrcode !== "function") return "";
+    try {
+      const q = window.qrcode(0, "M");
+      q.addData(joinUrl(c));
+      q.make();
+      return q.createSvgTag({ cellSize: 6, margin: 4, scalable: true, alt: "参加用のQRコード" });
+    } catch (x) {
+      return "";
+    }
+  };
 
   App.shareBtn = (e) =>
     cloud() && e.mode === "practice"
@@ -24,11 +36,14 @@
       body = `<p style="margin:0">コードを作ると、選手が自分のスマホで対戦を見て、点数を入れられるようになります。</p>
       <button class="btn btn-primary" data-action="share-new">コードを作る</button>`;
     else
-      body = `<div class="share-code num ${S.enabled ? "" : "off"}">${spaced(S.code)}</div>
+      body = `${S.enabled && qrSvg(S.code) ? `<button class="share-qr" data-action="share-big" aria-label="QRコードを大きく表示">${qrSvg(S.code)}</button><p class="faint" style="margin:0;text-align:center;font-size:.82rem">スマホのカメラで読み取ると入れます。押すと大きく表示します。</p>` : ""}
+      <div class="share-code num ${S.enabled ? "" : "off"}">${spaced(S.code)}</div>
       ${S.enabled ? "" : `<div class="confirm"><b>止めています。</b>このコードでは今は入れません。</div>`}
       <div class="share-url faint">${esc(joinUrl(S.code))}</div>
       <div class="row"><button class="btn btn-secondary btn-sm" data-action="share-copy" data-k="code">コードをコピー</button><button class="btn btn-secondary btn-sm" data-action="share-copy" data-k="url">URLをコピー</button></div>
       <div class="row"><button class="btn btn-ghost btn-sm" data-action="share-toggle">${S.enabled ? "止める" : "また使えるようにする"}</button><button class="btn btn-ghost btn-sm" data-action="share-new">新しいコードにする</button></div>`;
+    if (S.big && S.code && S.enabled)
+      return `<div class="share-full" data-action="share-small"><div class="share-full-in"><b>ラブオール 試合コード</b><div class="share-qr big">${qrSvg(S.code)}</div><div class="share-code num">${spaced(S.code)}</div><span>カメラで読み取るか、「ラブオール 試合コード」で検索して番号を入れてください</span><button class="btn btn-secondary" data-action="share-small">閉じる</button></div></div>`;
     return `<div class="modal-bg" data-action="share-close-bg"><div class="modal stack"><div class="card-head" style="margin:0"><div><h2>選手用コード</h2></div><button class="btn btn-ghost btn-sm" data-action="share-close">閉じる</button></div>
     ${S.err ? `<div class="confirm perr">${esc(S.err)}</div>` : ""}${body}
     <p class="faint" style="margin:0;font-size:.8rem">コードを知っている人は、選手の名前・学校と点数を見て、点数を入れられます。ランクやメモは見えません。組み合わせは変えられません。</p></div></div>`;
@@ -53,6 +68,15 @@
     "share-open": () => {
       S.open = true;
       fetchShare();
+    },
+    "share-big": () => {
+      S.big = true;
+      App.render();
+    },
+    "share-small": (b, evt) => {
+      if (evt && evt.target !== b && !b.matches("button")) return;
+      S.big = false;
+      App.render();
     },
     "share-close": () => {
       S.open = false;

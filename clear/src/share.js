@@ -17,10 +17,10 @@
 .sh-wrap{max-width:760px;margin:0 auto;padding:20px 14px 60px;display:flex;flex-direction:column;gap:14px}
 .sh-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;letter-spacing:.06em}
 .sh-code{font-size:1.6rem;letter-spacing:.3em;text-align:center;font-variant-numeric:tabular-nums}
-.sh-names{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;font-weight:650}
+.sh-names{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;font-weight:650;font-size:1.35rem;line-height:1.35}
 .sh-confirm{border:2px solid var(--error);}
 .sh-confirm h3{color:var(--error);margin:0}
-.sh-sum{padding:10px 12px;border-radius:12px;background:var(--surface-soft);font-variant-numeric:tabular-nums}
+.sh-sum{padding:10px 12px;border-radius:12px;background:var(--surface-soft);font-variant-numeric:tabular-nums;font-size:1.15rem}
 .sh-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 `;
 
@@ -87,7 +87,8 @@
         sessionStorage.setItem("sumatch-code", code);
       } catch (e) {}
     }
-    if (!(quiet && (S.edit || S.ask))) draw();
+    const typing = document.activeElement && document.activeElement.classList.contains("sh-court");
+    if (!(quiet && (S.edit || S.ask || typing))) draw();
   }
 
   /* ---------- 画面 ---------- */
@@ -169,7 +170,7 @@
           ${S.edit.err ? `<div class="note err" style="white-space:normal">${esc(S.edit.err)}</div>` : ""}
           <div class="row"><button class="btn btn-primary btn-sm" data-sh="save">記録する</button><button class="btn btn-ghost btn-sm" data-sh="cancel">閉じる</button></div></div>`
         : "";
-      return `<div class="pmatch ${o.winner ? "is-done" : o.started ? "is-live" : ""}"><span class="pm-num">${mi + 1}${m.ct ? `<span class="court-lb">コート</span><span class="mt-ct">${esc(m.ct)}</span>` : ""}</span>${team(m.a, "a", o.winner === "a")}
+      return `<div class="pmatch ${o.winner ? "is-done" : o.started ? "is-live" : ""}"><span class="pm-num">${mi + 1}<label class="court-lb" for="sc-${esc(m.id)}">コート</label><input class="court-in sh-court" id="sc-${esc(m.id)}" data-r="${esc(r.id)}" data-m="${esc(m.id)}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${team(m.a, "a", o.winner === "a")}
       <button class="pm-mid" data-sh="edit" data-r="${esc(r.id)}" data-m="${esc(m.id)}" aria-label="点数を入れる" style="text-align:center;min-width:64px">${gtxt ? `<span class="glines num">${gtxt}</span>` : `<span class="faint" style="font-size:.72rem">点数を入れる</span>`}${tot}</button>
       ${team(m.b, "b", o.winner === "b")}${inputs}</div>`;
     };
@@ -257,6 +258,22 @@
 
   function bind(root) {
     root.querySelectorAll("[data-sh]").forEach((b) => b.addEventListener("click", () => act(b.dataset.sh, b)));
+    /* コート番号:全角は半角に、英字は大文字に。2文字まで。決まったら(欄を離れたら)すぐ記録する */
+    root.querySelectorAll(".sh-court").forEach((inp) => {
+      const norm = () =>
+        inp.value
+          .normalize("NFKC")
+          .toUpperCase()
+          .replace(/[^0-9A-Z]/g, "")
+          .slice(0, 2);
+      inp.addEventListener("input", (ev) => {
+        if (!ev.isComposing) inp.value = norm();
+      });
+      inp.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter") inp.blur();
+      });
+      inp.addEventListener("change", () => saveCourt(inp, norm()));
+    });
     /* 点数の欄:全角でも入る。2けた入れたら次の欄へ(先生の画面と同じ) */
     const boxes = [...root.querySelectorAll(".pm-extra .score")];
     boxes.forEach((inp, i) => {
@@ -368,6 +385,25 @@
       draw();
       toast("記録しました");
     }
+  }
+
+  async function saveCourt(inp, v) {
+    const m = findMatch(inp.dataset.r, inp.dataset.m);
+    inp.value = v;
+    if (!m || (m.ct || "") === v) return;
+    const { data, error } = await window.Cloud.client.rpc("share_court", {
+      p_code: S.code,
+      p_round: inp.dataset.r,
+      p_mid: inp.dataset.m,
+      p_ct: v,
+    });
+    if (error || !data) {
+      toast(error ? jaErr(error) : "このコードは使えなくなりました(先生が止めたか、新しいコードにしました)。");
+      return load(S.code, true);
+    }
+    S.data = data;
+    toast(v ? `コート ${v} にしました` : "コート番号を消しました");
+    if (!S.edit) draw();
   }
 
   function stopPoll() {

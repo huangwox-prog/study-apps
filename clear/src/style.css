@@ -3676,3 +3676,54 @@ details[open] > summary {
   font-weight: 700;
   color: var(--text-tertiary);
 }
+/* 選手用コードのQRコード */
+.share-qr {
+  display: block;
+  width: min(260px, 70vw);
+  margin: 0 auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  cursor: zoom-in;
+}
+.share-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.share-full {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow: auto;
+}
+.share-full-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  max-width: 640px;
+}
+.share-full-in > b {
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+}
+.share-full-in > span {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+.share-qr.big {
+  width: min(70vh, 86vw, 560px);
+  cursor: default;
+  border: 0;
+}
+.share-full .share-code {
+  font-size: clamp(2.4rem, 8vw, 4.4rem);
+}
