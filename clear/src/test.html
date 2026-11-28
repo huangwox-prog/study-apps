@@ -156,6 +156,13 @@ t("いろいろな学校と当てる: 初めは使わない・保存しても残
 t("優先順位: 使う項目だけに、上ほど大きい重さがつく", () => { const w = C.prioWeights({ prio: ["level", "fresh", "school", "grade", "pref", "block"], nearGrade: false }); if (!(w.level > w.fresh && w.fresh > w.school) || w.grade) throw new Error(JSON.stringify(w)); const w2 = C.prioWeights({ avoidRepeat: false }); if (w2.fresh) throw new Error("fresh should be off"); });
 t("優先順位: 並べ替えで、先に置いた項目が勝つ(ランク優先とかぶり回避の入れ替え)", () => { const run = (prio) => { const e = mk(12, () => ""); e.practice.tol = 1; e.practice.avoidSchool = false; e.practice.prio = prio; e.players.forEach((p, i) => { p.level = i < 3 ? 5 : i < 7 ? 4 : i < 10 ? 3 : 2; C.setSingle(e, [p.id], true); }); const seen = {}; let dup = 0; for (let k = 0; k < 6; k++) { const r = C.genMixed(e, k, [], 100 + k); r.matches.forEach((m) => { const key = C.keyOf(m.a[0], m.b[0]); if (seen[key]) dup++; seen[key] = 1; }); e.practice.rounds.push({ id: "r" + k, day: 1, kind: "mixed", rest: [], matches: r.matches }); } return dup; }; const freshFirst = run(["fresh", "level"]), levelFirst = run(["level", "fresh"]); if (!(freshFirst < levelFirst)) throw new Error(freshFirst + " vs " + levelFirst); });
 
+/* 選手が入れた点数を、先生の保存で消さない */
+t("つき合わせ: 先生がさわっていない試合は、選手の点数・コートを取り込む", () => { const base = { mode: "practice", practice: { rounds: [{ id: "r", matches: [{ id: "m1", g: [], ct: "" }, { id: "m2", g: [[3, 1]] }] }] } };
+  const local = C.clone(base); local.practice.rounds[0].matches[1].g = [[5, 1]]; // 先生は m2 を変えた
+  const server = C.clone(base); server.practice.rounds[0].matches[0].g = [[15, 9]]; server.practice.rounds[0].matches[0].ct = "A1"; server.practice.rounds[0].matches[1].g = [[9, 9]]; // 選手は m1 と m2
+  eq(C.mergeShared(local, server, base), true); eq(local.practice.rounds[0].matches[0].g, [[15, 9]]); eq(local.practice.rounds[0].matches[0].ct, "A1"); eq(local.practice.rounds[0].matches[1].g, [[5, 1]]); });
+t("つき合わせ: 練習試合以外・知らない試合は何もしない", () => { eq(C.mergeShared({ mode: "league" }, {}, {}), false); const b = { mode: "practice", practice: { rounds: [] } }; eq(C.mergeShared(C.clone(b), b, b), false); });
+
 document.getElementById("out").textContent = out.join("\n") + `\n\n${pass} 通過 / ${fail} 失敗`;
 document.title = fail ? "FAIL " + fail : "PASS " + pass;
 </script>

@@ -75,6 +75,7 @@
    まず、古い形のデータの控えを残してから新しい形(v2)に移す。控えは消さない */
   const Store = {
     db: null,
+    base: new Map(), // 練習試合ごとに、サーバーにあると最後に分かっている形(選手の点数を消さないためのつき合わせに使う)
     timers: new Map(),
     pending: new Map(),
     writing: new Set(),
@@ -157,6 +158,7 @@
               } catch (e) {}
             }
             out[d.id] = Object.assign(Core.migrate(raw), { id: d.id });
+            this.base.set(d.id, clone(out[d.id]));
           }
           return out;
         } catch (e) {
@@ -205,7 +207,18 @@
       const stamp = this.pending.get(id);
       this.writing.add(id);
       try {
+        /* 練習試合は、保存の直前にサーバーの最新を読み、選手が入れた点数・コートを消さないように取り込む */
+        if (e.mode === "practice" && this.cloud && this.base.has(id)) {
+          try {
+            const snap = await this.db.collection("events").doc(id).get();
+            if (snap.exists && Core.mergeShared(e, snap.data(), this.base.get(id))) {
+              this.lsWrite();
+              render();
+            }
+          } catch (x) {}
+        }
         await this.db.collection("events").doc(id).set(clone(e));
+        this.base.set(id, clone(e));
         if (this.pending.get(id) === stamp) this.pending.delete(id);
         setSave(this.pending.size ? "saving" : "saved");
       } catch (err) {
@@ -240,11 +253,17 @@
               }
               return;
             }
-            const d = Object.assign(Core.migrate(ch.doc.data()), { id });
+            const d = Object.assign(Core.migrate(ch.doc.data()), { id }),
+              prev = this.base.get(id);
             if (!events[id] || (d.updatedAt || 0) > (events[id].updatedAt || 0)) {
               events[id] = d;
               changed = true;
+            } else if (prev && Core.mergeShared(events[id], d, prev)) {
+              /* 時計のずれなどで新しく見えなくても、選手が入れた点数・コートは取り込む */
+              this.lsWrite();
+              changed = true;
             }
+            this.base.set(id, clone(d));
           });
           if (changed) {
             if (!events[currentId]) {

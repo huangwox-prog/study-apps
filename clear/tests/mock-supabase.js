@@ -44,10 +44,14 @@
         if (fn === "share_score") { const s = find(a.p_code); if (!s) return { data: null, error: null }; const ev = DB.events.find((r) => r.user_id === s.user_id && r.id === s.event_id);
           const r = ev.data.practice.rounds.find((x) => x.id === a.p_round); if (!r) throw new Error("round not found"); const m = r.matches.find((x) => x.id === a.p_mid); if (!m) throw new Error("match not found");
           const d = ev.data, pts = d.points || 21, ng = d.games === 3 ? 3 : 1, cap = pts === 21 ? 30 : pts === 15 ? 21 : 15;
+          if (a.p_base != null && JSON.stringify(m.g || []) !== JSON.stringify(a.p_base)) throw new Error("conflict");
           if (!Array.isArray(a.p_g) || !a.p_g.length || a.p_g.length > ng) throw new Error("bad score");
+    const need = ng === 3 ? 2 : 1; let wa = 0, wb = 0, gap = false;
           for (const g of a.p_g) {
             if (!Array.isArray(g) || g.length !== 2 || g.some((v) => v !== null && !(Number.isInteger(v) && v >= 0 && v <= cap))) throw new Error("bad score");
-            if (g[0] != null && g[1] != null) { const hi = Math.max(...g), lo = Math.min(...g); if ((hi === lo && hi >= cap) || (hi > pts && hi - lo > 2)) throw new Error("bad score"); }
+            if (g[0] == null && g[1] == null) { gap = true; continue; }
+      if (gap || wa >= need || wb >= need) throw new Error("bad score");
+      if (g[0] != null && g[1] != null) { const hi = Math.max(...g), lo = Math.min(...g); if ((hi === lo && hi >= cap) || (hi > pts && hi - lo > 2)) throw new Error("bad score"); if (hi !== lo && (hi >= cap || (hi >= pts && hi - lo >= 2))) { if (g[0] > g[1]) wa++; else wb++; } }
           }
           m.g = a.p_g; m.win = null; ev.data.updatedAt = Date.now(); persist(); return { data: get(a.p_code), error: null }; }
         if (fn === "share_court") { const s = find(a.p_code); if (!s) return { data: null, error: null }; if (!/^[0-9A-Z]{0,2}$/.test(a.p_ct || "")) throw new Error("bad court");

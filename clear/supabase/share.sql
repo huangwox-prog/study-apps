@@ -125,7 +125,9 @@ grant execute on function public.share_get(text) to anon, authenticated;
 
 -- コードで点数を入れる。p_g は [[a,b],[a,b],[a,b]] の形(空きは null)。0〜99 の整数だけ
 drop function if exists public.share_score(text, text, int, jsonb);
-create or replace function public.share_score(p_code text, p_round text, p_mid text, p_g jsonb)
+drop function if exists public.share_score(text, text, text, jsonb);
+-- p_base:選手が開いたときの点数。いまの点数とちがえば(ほかの人が先に記録した)、上書きせずに 'conflict' を返す。null なら比べない
+create or replace function public.share_score(p_code text, p_round text, p_mid text, p_g jsonb, p_base jsonb default null)
 returns jsonb
 language plpgsql
 security definer set search_path = ''
@@ -137,6 +139,7 @@ declare
   mi int;
   x jsonb;
   pts int; ng int; cap int; a int; b int; hi int; lo int; i int;
+  need int; wa int := 0; wb int := 0; gap boolean := false;
 begin
   s := public.share_find(p_code);
   if s.code is null then return null; end if; -- 例外にすると「まちがえた回数」の記録まで消えるので、null で返す
@@ -154,9 +157,16 @@ begin
   pts := coalesce((d->>'points')::int, 21);
   ng := case when d->>'games' = '3' then 3 else 1 end;
   cap := case pts when 21 then 30 when 15 then 21 else 15 end;
+  need := case ng when 3 then 2 else 1 end;
+  if p_base is not null and coalesce(d #> array['practice', 'rounds', ri::text, 'matches', mi::text, 'g'], '[]'::jsonb) <> p_base then
+    raise exception 'conflict';
+  end if;
   if jsonb_typeof(p_g) <> 'array' or jsonb_array_length(p_g) < 1 or jsonb_array_length(p_g) > ng then raise exception 'bad score'; end if;
   for x in select * from jsonb_array_elements(p_g) loop
     if jsonb_typeof(x) <> 'array' or jsonb_array_length(x) <> 2 then raise exception 'bad score'; end if;
+    -- 空のゲームのあとにゲームがある・勝負がついたあとにゲームがある、はありえない
+    if jsonb_typeof(x->0) = 'null' and jsonb_typeof(x->1) = 'null' then gap := true; continue; end if;
+    if gap or wa >= need or wb >= need then raise exception 'bad score'; end if;
     for i in 0..1 loop
       if jsonb_typeof(x->i) = 'null' then continue; end if;
       if jsonb_typeof(x->i) <> 'number' or (x->>i)::numeric <> floor((x->>i)::numeric)
@@ -166,6 +176,10 @@ begin
       a := (x->>0)::int; b := (x->>1)::int;
       hi := greatest(a, b); lo := least(a, b);
       if (hi = lo and hi >= cap) or (hi > pts and hi - lo > 2) then raise exception 'bad score'; end if;
+      -- 終わったゲームだけ勝ち数に数える(設定の点に届いて2点差、または上限)
+      if hi <> lo and (hi >= cap or (hi >= pts and hi - lo >= 2)) then
+        if a > b then wa := wa + 1; else wb := wb + 1; end if;
+      end if;
     end if;
   end loop;
   d := jsonb_set(d, array['practice', 'rounds', ri::text, 'matches', mi::text, 'g'], p_g);
@@ -175,7 +189,7 @@ begin
   return public.share_get(p_code);
 end;
 $$;
-grant execute on function public.share_score(text, text, text, jsonb) to anon, authenticated;
+grant execute on function public.share_score(text, text, text, jsonb, jsonb) to anon, authenticated;
 
 -- コート番号(2文字まで。数字と英大文字だけ。空にもできる)を選手が入れる
 create or replace function public.share_court(p_code text, p_round text, p_mid text, p_ct text)

@@ -425,6 +425,41 @@ const Core = (() => {
   /* 入力できる点数の上限(21点なら30) */
   const scoreCap = (e) => (e.points === 21 ? 30 : e.points === 15 ? 21 : 15);
 
+  /* ---------- 選手が入れた点数を消さないためのつき合わせ ----------
+   先生の画面は練習試合をまるごと保存する。保存の直前にサーバーの最新(server)を読み、
+   先生が最後に知っていた形(base)とくらべて「サーバーでは変わった(選手が入れた)のに、先生はさわっていない」
+   試合の点数・勝ち・コートを、先生のデータ(local)に取り込む。両方が変えていたら先生のほうを残す。
+   取り込んだら true */
+  function mergeShared(local, server, base) {
+    if (!local || !server || !base || local.mode !== "practice") return false;
+    const idx = (d) => {
+      const m = {};
+      ((d.practice && d.practice.rounds) || []).forEach((r) =>
+        (r.matches || []).forEach((x) => (m[r.id + "/" + x.id] = x))
+      );
+      return m;
+    };
+    const S = idx(server),
+      B = idx(base),
+      J = (v) => JSON.stringify(v === undefined ? null : v);
+    let changed = false;
+    (local.practice.rounds || []).forEach((r) =>
+      (r.matches || []).forEach((m) => {
+        const k = r.id + "/" + m.id,
+          sm = S[k],
+          bm = B[k];
+        if (!sm || !bm) return;
+        ["g", "win", "ct"].forEach((f) => {
+          if (J(sm[f]) !== J(bm[f]) && J(m[f]) === J(bm[f])) {
+            m[f] = sm[f] === undefined ? undefined : JSON.parse(J(sm[f]));
+            changed = true;
+          }
+        });
+      })
+    );
+    return changed;
+  }
+
   /* ---------- 順位 (BWF 一般競技規程 16.2) ---------- */
   function standings(e, league) {
     const em = entryMap(e);
@@ -1886,6 +1921,7 @@ const Core = (() => {
     sideIds,
     sideLevel,
     pOutcome,
+    mergeShared,
     pPlaced,
     pHistory,
     pMatchCost,
