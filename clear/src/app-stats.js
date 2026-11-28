@@ -1,5 +1,5 @@
 /* ============================================================
-   スマッチ 画面 (app-stats) — 練習試合の成績と印刷
+   ラブオール 画面 (app-stats) — 練習試合の成績と印刷
    - 画面用:「対戦」の画面と同じ見た目のカード(sheetViewHTML / listViewHTML / mergeViewHTML)
    - PDF用:紙の形の表(sheetHTML / listHTML / mergeHTML)。先生の決まりの形なので変えない
    - 選手ごとのページ(名前を押すと開く)

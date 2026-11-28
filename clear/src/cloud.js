@@ -1,5 +1,5 @@
 /* ============================================================
-   スマッチ ログインとクラウド保存 (cloud) — 公開ページ(GitHub Pages)だけで使う
+   ラブオール ログインとクラウド保存 (cloud) — 公開ページ(GitHub Pages)だけで使う
    - SUPABASE_URL と SUPABASE_ANON_KEY が空のあいだは何もしない(今までどおりこの端末に保存)
    - 入れると、ログインしないと使えなくなり、データは Supabase の events 表に保存される
    - claude.ai 版には入れない(build で外している)
@@ -238,7 +238,7 @@
   });
 
   /* ============ ログインの画面 ============ */
-  const LEGAL = "https://huangwox-prog.github.io/study-apps/sumatch/";
+  const LEGAL = "https://huangwox-prog.github.io/study-apps/loveall/";
   const legalLinks = `<p class="auth-legal"><a href="${LEGAL}terms.html" target="_blank" rel="noopener">利用規約</a><a href="${LEGAL}privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><a href="${LEGAL}tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a></p>`;
   const UI = {
     mode: "login",
@@ -275,7 +275,7 @@
       else if (this.mode === "sent")
         body = `<h2>メールを送りました</h2>${msg}<div class="auth-links">${link("login", "ログインへ")}</div>`;
       app.innerHTML = `<div class="auth-wrap"><form class="card auth-card" id="auth-form" novalidate>
-      <div class="auth-brand"><span>スマッチ</span></div>${body}${legalLinks}</form></div>`;
+      <div class="auth-brand"><span>ラブオール</span></div>${body}${legalLinks}</form></div>`;
       const f = document.getElementById("auth-form");
       f.addEventListener("submit", (e) => {
         e.preventDefault();

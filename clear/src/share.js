@@ -1,5 +1,5 @@
 /* ============================================================
-   スマッチ 生徒用ページ (share) — 公開ページだけで使う
+   ラブオール 生徒用ページ (share) — 公開ページだけで使う
    - 先生が出した8桁のコードを入れると、その練習試合の対戦と点数が見られて、点数だけ入れられる
    - ログインはいらない。サーバーの関数(share_get / share_score)だけを通るので、
      名前・学校・点数より多いもの(ランク・メモなど)はそもそも届かない
@@ -95,7 +95,7 @@
     const root = app();
     if (!root) return;
     const msg = S.err ? `<div class="auth-msg err" role="alert">${esc(S.err)}</div>` : "";
-    const top = `<div class="sh-top"><span>スマッチ</span><button class="link-btn" data-sh="leave">${S.data ? "コードを入れ直す" : "ログイン画面へ"}</button></div>`;
+    const top = `<div class="sh-top"><span>ラブオール</span><button class="link-btn" data-sh="leave">${S.data ? "コードを入れ直す" : "ログイン画面へ"}</button></div>`;
     if (!S.data) {
       root.innerHTML = `<div class="sh-wrap">${top}<form class="card stack" id="sh-form" novalidate>
         <h2 style="margin:0">試合コードで参加</h2>${msg}
@@ -185,7 +185,7 @@
       .join("");
     const all = rs.flatMap((r) => r.matches),
       fin = all.filter((m) => Core.pOutcome(e, m).winner).length;
-    root.innerHTML = `<nav class="nav"><span class="lockup"><span>スマッチ</span></span><div class="nav-right"><button class="btn btn-ghost btn-sm" data-sh="leave">コードを入れ直す</button></div></nav>
+    root.innerHTML = `<nav class="nav"><span class="lockup"><span>ラブオール</span></span><div class="nav-right"><button class="btn btn-ghost btn-sm" data-sh="leave">コードを入れ直す</button></div></nav>
       <main class="page"><section class="hero"><span class="kicker">練習試合</span>
       <div class="hero-name" style="white-space:normal">${esc(d.name || "練習試合")}</div>
       <div class="hero-sub">${d.date ? `<span>${esc(d.date)}</span>` : ""}<span>${e.points}点・${e.games === 3 ? "3ゲーム(2ゲーム先取)" : "1ゲーム"}</span></div>
@@ -386,7 +386,7 @@
         st.textContent = CSS;
         document.head.appendChild(st);
       }
-      document.title = "試合コードで参加 | スマッチ";
+      document.title = "試合コードで参加 | ラブオール";
       let saved = "";
       try {
         saved = sessionStorage.getItem("sumatch-code") || "";

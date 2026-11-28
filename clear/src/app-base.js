@@ -1,5 +1,5 @@
 /* ============================================================
-   スマッチ 画面 (app-base) — 土台・保存・はじめの画面・選手とペア・取り込み・Excel
+   ラブオール 画面 (app-base) — 土台・保存・はじめの画面・選手とペア・取り込み・Excel
    ============================================================ */
 (() => {
   "use strict";
@@ -412,7 +412,7 @@
             .map((x) => `<option value="${x.id}" ${x.id === currentId ? "selected" : ""}>${esc(x.name)}</option>`)
             .join("")}</select>`
         : "";
-    return `<button class="lockup" data-action="home" aria-label="はじめの画面へ">${ARC()}<span>スマッチ</span></button>${sel}
+    return `<button class="lockup" data-action="home" aria-label="はじめの画面へ">${ARC()}<span>ラブオール</span></button>${sel}
     <div class="nav-right">${saveHTML()}<button class="theme-btn" data-action="theme" aria-label="ライト/ダークの切り替え">${isDark() ? "☀ ライトにする" : "☾ ダークにする"}</button></div>`;
   }
   function isDark() {
@@ -453,7 +453,7 @@
   }
   /* 規約などへのリンク(はじめの画面のいちばん下) */
   function legalFooter() {
-    const u = "https://huangwox-prog.github.io/study-apps/sumatch/";
+    const u = "https://huangwox-prog.github.io/study-apps/loveall/";
     return `<p class="legal-foot"><a href="${u}terms.html" target="_blank" rel="noopener">利用規約</a><a href="${u}privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><a href="${u}tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a></p>`;
   }
   /* ログインしているときだけ:アカウントとログアウト、ログイン前のデータの取り込み */
