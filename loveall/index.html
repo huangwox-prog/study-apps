@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ラブオール｜バドミントン対戦表メーカー - 練習試合・合同練習の組み合わせを自動作成</title>
-<meta name="description" content="バドミントン部のコーチの先生向けWebアプリ。名簿を貼るだけで、ランクが近く・他校と当たり・同じ相手が続かない練習試合の組み合わせを回転ごとに自動作成。リーグ戦・トーナメント、成績集計、Excelへのコピーと印刷にも対応。インストール不要で、PCとスマホで同じデータを使えます。">
+<meta name="description" content="バドミントン部のコーチの先生向けWebアプリ。名簿を入れれば、ランクが近く・他校と当たり・同じ相手が続かない練習試合の組み合わせを回転ごとに自動作成。リーグ戦・トーナメント、成績集計、Excelへのコピーと印刷にも対応。インストール不要で、PCとスマホで同じデータを使えます。">
 <link rel="canonical" href="https://huangwox-prog.github.io/study-apps/loveall/">
 <meta property="og:title" content="ラブオール｜バドミントン対戦表メーカー">
 <meta property="og:description" content="合同練習・練習試合の組み合わせを、ランクと学校を見て自動で。コーチの先生の段取りを楽にするWebアプリ。">
@@ -61,7 +61,16 @@ details{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 summary{font-weight:700;cursor:pointer}
 details p{margin:8px 0 0;color:var(--sub)}
 .cta{text-align:center;padding:40px 20px;background:var(--card);border:1px solid var(--line);border-radius:34px}
-header.top{gap:10px}.logo{white-space:nowrap;flex-shrink:0}@media(max-width:420px){header.top .btn-sm{padding:8px 13px;font-size:.84rem}}
+header.top{gap:10px}.logo{white-space:nowrap;flex-shrink:0}@media(max-width:420px){header.top{padding:14px 14px}header.top .btn-sm{padding:7px 11px;font-size:.8rem}header.top span{gap:6px!important}.logo{font-size:1.05rem}}
+.entry{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:720px}
+@media(max-width:600px){.entry{grid-template-columns:1fr}}
+.ent{display:flex;flex-direction:column;gap:4px;padding:20px 22px;border-radius:22px 22px 22px 36px;text-decoration:none;border:1px solid var(--line);background:var(--card);color:var(--text);transition:transform .15s}
+.ent:hover{transform:translateY(-2px)}
+.ent small{font-weight:800;font-size:.88rem;color:var(--accent);letter-spacing:.04em}
+.ent b{font-size:1.35rem;letter-spacing:-.01em}
+.ent span{font-size:.88rem;color:var(--sub)}
+.ent.coach{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 14px 30px -16px rgba(47,76,240,.7)}
+.ent.coach small,.ent.coach span{color:rgba(255,255,255,.85)}
 footer{color:var(--faint);font-size:.85rem;padding:24px 20px 48px;text-align:center}
 footer a{color:var(--faint)}
 </style>
@@ -69,19 +78,19 @@ footer a{color:var(--faint)}
 <body>
 <header class="top">
   <a class="logo" href="./" aria-label="ラブオール"><svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M3 28C6 9 23 4 28.5 20" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><circle cx="28.4" cy="23.6" r="2.1" fill="currentColor"/></svg>ラブオール</a>
-  <span style="display:flex;gap:8px;justify-content:flex-end"><a class="btn btn-sub btn-sm" href="code/">試合コード</a><a class="btn btn-main btn-sm" href="../clear/">アプリを開く</a></span>
+  <span style="display:flex;gap:8px;justify-content:flex-end"><a class="btn btn-sub btn-sm" href="code/">選手の方</a><a class="btn btn-main btn-sm" href="../clear/">コーチ・顧問の方</a></span>
 </header>
 
 <main class="wrap">
   <div class="hero">
-    <p class="kicker">バドミントン部のコーチの先生へ</p>
-    <h1><span class="nw">合同練習の</span><span class="nw">対戦表、</span><br><span class="nw"><span class="grad">名簿を貼るだけ</span>で。</span></h1>
+    <p class="kicker">バドミントン部の練習試合・合同練習に</p>
+    <h1><span class="nw">合同練習の</span><span class="nw">対戦表、</span><br><span class="nw"><span class="grad">もっと楽に</span>。</span></h1>
     <p class="lead">ラブオールは、バドミントンの練習試合・合同練習の組み合わせを自動で作るWebアプリです。ランクが近い人どうし、なるべく他校の人と、同じ相手が続かないように、回転ごとに組み直します。</p>
-    <div class="row">
-      <a class="btn btn-main" href="../clear/">無料ではじめる</a>
-      <a class="btn btn-sub" href="#screens">画面を見る</a>
+    <div class="entry">
+      <a class="ent coach" href="../clear/"><small>コーチ・顧問の方はこちら</small><b>対戦表を作る</b><span>無料ではじめる・ログイン →</span></a>
+      <a class="ent player" href="code/"><small>選手の方はこちら</small><b>試合コードを入れる</b><span>対戦表を見る・点数を入れる →</span></a>
     </div>
-    <p class="note">インストール不要。PCでもスマホでも、ブラウザで開くだけ。</p>
+    <p class="note">インストール不要。PCでもスマホでも、ブラウザで開くだけ。<a href="#screens">画面を見る</a></p>
   </div>
 
   <section>
@@ -157,7 +166,10 @@ footer a{color:var(--faint)}
   <div class="cta">
     <h2>次の合同練習から、使ってみませんか</h2>
     <p class="sub">見本で試すだけなら、登録はいりません。</p>
-    <a class="btn btn-main" href="../clear/">ラブオールを開く</a>
+    <div class="row" style="justify-content:center;display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn btn-main" href="../clear/">コーチ・顧問の方はこちら</a>
+      <a class="btn btn-sub" href="code/">選手の方はこちら(試合コード)</a>
+    </div>
   </div>
 </main>
 
