@@ -33,6 +33,7 @@
 .auth-msg{font-size:.86rem;padding:8px 12px;border-radius:12px;background:var(--surface-soft);color:var(--text-secondary)}
 .auth-msg.err{background:var(--error-soft);color:var(--error)}.auth-msg.ok{background:var(--success-soft);color:var(--success)}
 .auth-guest{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--hairline);text-align:center}
+.auth-legal{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;margin:6px 0 0;font-size:.78rem}.auth-legal a{color:var(--text-tertiary)}
 .account-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:8px}
 `;
 
@@ -231,6 +232,8 @@
   });
 
   /* ============ ログインの画面 ============ */
+  const LEGAL = "https://huangwox-prog.github.io/study-apps/sumatch/";
+  const legalLinks = `<p class="auth-legal"><a href="${LEGAL}terms.html" target="_blank" rel="noopener">利用規約</a><a href="${LEGAL}privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><a href="${LEGAL}tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a></p>`;
   const UI = {
     mode: "login",
     msg: "",
@@ -258,7 +261,7 @@
       if (this.mode === "login")
         body = `<h2>ログイン</h2>${msg}${email}${pass("current-password")}<button class="btn btn-primary" type="submit" ${dis}>ログイン</button><div class="auth-links">${link("signup", "はじめての方(新規登録)")}${link("reset", "パスワードを忘れた")}</div>${ALLOW_GUEST ? `<div class="auth-guest"><button type="button" class="btn btn-ghost" data-auth-guest>ログインせずに使う</button><span class="faint">見本を試す・前に使っていたデータを開くときはこちら。あとからいつでもログインできます。</span></div>` : ""}`;
       else if (this.mode === "signup")
-        body = `<h2>新規登録</h2>${msg}${email}${pass("new-password", "パスワード(8文字以上)")}<button class="btn btn-primary" type="submit" ${dis}>登録する</button><div class="auth-links">${link("login", "登録済みの方はログイン")}</div>`;
+        body = `<h2>新規登録</h2>${msg}${email}${pass("new-password", "パスワード(8文字以上)")}<p class="faint" style="margin:0;font-size:.82rem">登録すると、利用規約とプライバシーポリシーに同意したことになります。</p><button class="btn btn-primary" type="submit" ${dis}>登録する</button><div class="auth-links">${link("login", "登録済みの方はログイン")}</div>`;
       else if (this.mode === "reset")
         body = `<h2>パスワードの再設定</h2>${msg}<p class="faint" style="margin:0">登録したメールアドレスに、再設定のリンクを送ります。</p>${email}<button class="btn btn-primary" type="submit" ${dis}>リンクを送る</button><div class="auth-links">${link("login", "ログインに戻る")}</div>`;
       else if (this.mode === "newpass")
@@ -266,7 +269,7 @@
       else if (this.mode === "sent")
         body = `<h2>メールを送りました</h2>${msg}<div class="auth-links">${link("login", "ログインへ")}</div>`;
       app.innerHTML = `<div class="auth-wrap"><form class="card auth-card" id="auth-form" novalidate>
-      <div class="auth-brand"><span>スマッチ</span></div>${body}</form></div>`;
+      <div class="auth-brand"><span>スマッチ</span></div>${body}${legalLinks}</form></div>`;
       const f = document.getElementById("auth-form");
       f.addEventListener("submit", (e) => {
         e.preventDefault();

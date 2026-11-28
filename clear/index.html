@@ -3150,14 +3150,14 @@ details[open] > summary {
 .st-phead,
 .st-prow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 6.5em 5em 5.5em 9em calc(var(--nr, 4) * 24px + 4px);
+  grid-template-columns: minmax(0, 1fr) 6.5rem 5rem 5.5rem 9rem calc(var(--nr, 4) * 24px + 4px);
   align-items: center;
   gap: 8px 14px;
   padding: 10px 6px;
 }
 .st-pairs .st-phead,
 .st-pairs .st-prow {
-  grid-template-columns: minmax(0, 1fr) 5em 5.5em 9em;
+  grid-template-columns: minmax(0, 1fr) 5rem 5.5rem 9rem;
 }
 .st-phead {
   font-size: 0.72rem;
@@ -3649,6 +3649,18 @@ details[open] > summary {
   .rs-hdate {
     grid-column: 1/-1;
   }
+}
+
+/* はじめの画面のいちばん下の、規約などへのリンク */
+.legal-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 24px 0 0;
+  font-size: 0.8rem;
+}
+.legal-foot a {
+  color: var(--text-tertiary);
 }
 
 </style></head>
@@ -5603,6 +5615,7 @@ if (typeof module !== "undefined") module.exports = Core;
 .auth-msg{font-size:.86rem;padding:8px 12px;border-radius:12px;background:var(--surface-soft);color:var(--text-secondary)}
 .auth-msg.err{background:var(--error-soft);color:var(--error)}.auth-msg.ok{background:var(--success-soft);color:var(--success)}
 .auth-guest{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--hairline);text-align:center}
+.auth-legal{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;margin:6px 0 0;font-size:.78rem}.auth-legal a{color:var(--text-tertiary)}
 .account-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:8px}
 `;
 
@@ -5801,6 +5814,8 @@ if (typeof module !== "undefined") module.exports = Core;
   });
 
   /* ============ ログインの画面 ============ */
+  const LEGAL = "https://huangwox-prog.github.io/study-apps/sumatch/";
+  const legalLinks = `<p class="auth-legal"><a href="${LEGAL}terms.html" target="_blank" rel="noopener">利用規約</a><a href="${LEGAL}privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><a href="${LEGAL}tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a></p>`;
   const UI = {
     mode: "login",
     msg: "",
@@ -5828,7 +5843,7 @@ if (typeof module !== "undefined") module.exports = Core;
       if (this.mode === "login")
         body = `<h2>ログイン</h2>${msg}${email}${pass("current-password")}<button class="btn btn-primary" type="submit" ${dis}>ログイン</button><div class="auth-links">${link("signup", "はじめての方(新規登録)")}${link("reset", "パスワードを忘れた")}</div>${ALLOW_GUEST ? `<div class="auth-guest"><button type="button" class="btn btn-ghost" data-auth-guest>ログインせずに使う</button><span class="faint">見本を試す・前に使っていたデータを開くときはこちら。あとからいつでもログインできます。</span></div>` : ""}`;
       else if (this.mode === "signup")
-        body = `<h2>新規登録</h2>${msg}${email}${pass("new-password", "パスワード(8文字以上)")}<button class="btn btn-primary" type="submit" ${dis}>登録する</button><div class="auth-links">${link("login", "登録済みの方はログイン")}</div>`;
+        body = `<h2>新規登録</h2>${msg}${email}${pass("new-password", "パスワード(8文字以上)")}<p class="faint" style="margin:0;font-size:.82rem">登録すると、利用規約とプライバシーポリシーに同意したことになります。</p><button class="btn btn-primary" type="submit" ${dis}>登録する</button><div class="auth-links">${link("login", "登録済みの方はログイン")}</div>`;
       else if (this.mode === "reset")
         body = `<h2>パスワードの再設定</h2>${msg}<p class="faint" style="margin:0">登録したメールアドレスに、再設定のリンクを送ります。</p>${email}<button class="btn btn-primary" type="submit" ${dis}>リンクを送る</button><div class="auth-links">${link("login", "ログインに戻る")}</div>`;
       else if (this.mode === "newpass")
@@ -5836,7 +5851,7 @@ if (typeof module !== "undefined") module.exports = Core;
       else if (this.mode === "sent")
         body = `<h2>メールを送りました</h2>${msg}<div class="auth-links">${link("login", "ログインへ")}</div>`;
       app.innerHTML = `<div class="auth-wrap"><form class="card auth-card" id="auth-form" novalidate>
-      <div class="auth-brand"><span>スマッチ</span></div>${body}</form></div>`;
+      <div class="auth-brand"><span>スマッチ</span></div>${body}${legalLinks}</form></div>`;
       const f = document.getElementById("auth-form");
       f.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -6351,7 +6366,7 @@ if (typeof module !== "undefined") module.exports = Core;
       <div class="row"><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice">見本の練習試合(32人)</button><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></div></section>
     <section class="card stack"><h3 style="margin:0">前に使ったことがある人</h3>
       ${list.length ? `<p class="faint" style="margin:0">この端末に前のデータがあります。このまま開けます(人の追加は${GUEST_ADDS}人まで)。</p><div class="event-grid">${list.map(eventCardHTML).join("")}</div>` : `<p class="faint" style="margin:0">この端末・このブラウザには、前のデータがありません。前に使ったパソコンやスマホで開いてください。</p>`}
-      <p class="faint" style="margin:0"><b>引き継ぎ方:</b>前に使った端末で ①「ログイン・新規登録」でアカウントを作る ②ログインする ③ホームの下の「アカウントに取り込む」を押す。これで、ほかの端末からも見られて、制限なく使えます。元のデータは消えません。</p></section>`;
+      <p class="faint" style="margin:0"><b>引き継ぎ方:</b>前に使った端末で ①「ログイン・新規登録」でアカウントを作る ②ログインする ③ホームの下の「アカウントに取り込む」を押す。これで、ほかの端末からも見られて、制限なく使えます。元のデータは消えません。</p></section>${legalFooter()}`;
     return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
     <div class="make-grid">${Object.entries(MODES)
       .filter(
@@ -6365,7 +6380,12 @@ if (typeof module !== "undefined") module.exports = Core;
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
     ${App.rosterHomeCard ? App.rosterHomeCard() : ""}
     ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}
-    ${accountHTML()}`;
+    ${accountHTML()}${legalFooter()}`;
+  }
+  /* 規約などへのリンク(はじめの画面のいちばん下) */
+  function legalFooter() {
+    const u = "https://huangwox-prog.github.io/study-apps/sumatch/";
+    return `<p class="legal-foot"><a href="${u}terms.html" target="_blank" rel="noopener">利用規約</a><a href="${u}privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><a href="${u}tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a></p>`;
   }
   /* ログインしているときだけ:アカウントとログアウト、ログイン前のデータの取り込み */
   function accountHTML() {
@@ -10223,7 +10243,7 @@ if (typeof module !== "undefined") module.exports = Core;
         const g = list.reduce((t, r) => t + r.w + r.l, 0),
           w = list.reduce((t, r) => t + r.w, 0);
         return `<section class="card st-card st-school ${SC.cls(sk)}"><div class="card-head"><div><h2>${esc(sk || "学校なし")}</h2><p class="faint">${list.length}人 · ${w}勝${g - w}敗${g ? ` · 勝率 ${Math.round((w / g) * 100)}%` : ""}</p></div></div>
-      <div class="st-plist" style="--nr:${rs.length}"><div class="st-phead"><span>選手</span><span>ランク</span><span>試合</span><span>勝敗</span><span>勝率</span><span>出場(回転ごと)</span></div>
+      <div class="st-plist" style="--nr:${rs.length}"><div class="st-phead"><span>選手</span><span>ランク</span><span>試合</span><span>勝敗</span><span>勝率</span><span>出場</span></div>
       ${list.map((r) => `<div class="st-prow ${maxG - r.games >= 2 ? "is-few" : ""}"><span class="st-pname"><button class="plink" data-action="pplayer" data-id="${r.p.id}">${esc(r.p.name)}</button>${dayTxt(r)}</span><span class="st-lv">${App.levelBar(r.p.level)}</span><span class="st-games"><b>${r.games}</b>試合</span><span class="st-wl">${r.w}勝${r.l}敗</span>${rateBar(r.rate)}${dots(r)}</div>`).join("")}</div></section>`;
       })
       .join("");

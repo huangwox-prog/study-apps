@@ -338,7 +338,7 @@
         const g = list.reduce((t, r) => t + r.w + r.l, 0),
           w = list.reduce((t, r) => t + r.w, 0);
         return `<section class="card st-card st-school ${SC.cls(sk)}"><div class="card-head"><div><h2>${esc(sk || "学校なし")}</h2><p class="faint">${list.length}人 · ${w}勝${g - w}敗${g ? ` · 勝率 ${Math.round((w / g) * 100)}%` : ""}</p></div></div>
-      <div class="st-plist" style="--nr:${rs.length}"><div class="st-phead"><span>選手</span><span>ランク</span><span>試合</span><span>勝敗</span><span>勝率</span><span>出場(回転ごと)</span></div>
+      <div class="st-plist" style="--nr:${rs.length}"><div class="st-phead"><span>選手</span><span>ランク</span><span>試合</span><span>勝敗</span><span>勝率</span><span>出場</span></div>
       ${list.map((r) => `<div class="st-prow ${maxG - r.games >= 2 ? "is-few" : ""}"><span class="st-pname"><button class="plink" data-action="pplayer" data-id="${r.p.id}">${esc(r.p.name)}</button>${dayTxt(r)}</span><span class="st-lv">${App.levelBar(r.p.level)}</span><span class="st-games"><b>${r.games}</b>試合</span><span class="st-wl">${r.w}勝${r.l}敗</span>${rateBar(r.rate)}${dots(r)}</div>`).join("")}</div></section>`;
       })
       .join("");

@@ -3137,14 +3137,14 @@ details[open] > summary {
 .st-phead,
 .st-prow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 6.5em 5em 5.5em 9em calc(var(--nr, 4) * 24px + 4px);
+  grid-template-columns: minmax(0, 1fr) 6.5rem 5rem 5.5rem 9rem calc(var(--nr, 4) * 24px + 4px);
   align-items: center;
   gap: 8px 14px;
   padding: 10px 6px;
 }
 .st-pairs .st-phead,
 .st-pairs .st-prow {
-  grid-template-columns: minmax(0, 1fr) 5em 5.5em 9em;
+  grid-template-columns: minmax(0, 1fr) 5rem 5.5rem 9rem;
 }
 .st-phead {
   font-size: 0.72rem;
@@ -3636,4 +3636,16 @@ details[open] > summary {
   .rs-hdate {
     grid-column: 1/-1;
   }
+}
+
+/* はじめの画面のいちばん下の、規約などへのリンク */
+.legal-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 24px 0 0;
+  font-size: 0.8rem;
+}
+.legal-foot a {
+  color: var(--text-tertiary);
 }

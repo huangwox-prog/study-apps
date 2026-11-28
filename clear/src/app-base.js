@@ -438,7 +438,7 @@
       <div class="row"><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice">見本の練習試合(32人)</button><button class="btn btn-ghost btn-sm" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></div></section>
     <section class="card stack"><h3 style="margin:0">前に使ったことがある人</h3>
       ${list.length ? `<p class="faint" style="margin:0">この端末に前のデータがあります。このまま開けます(人の追加は${GUEST_ADDS}人まで)。</p><div class="event-grid">${list.map(eventCardHTML).join("")}</div>` : `<p class="faint" style="margin:0">この端末・このブラウザには、前のデータがありません。前に使ったパソコンやスマホで開いてください。</p>`}
-      <p class="faint" style="margin:0"><b>引き継ぎ方:</b>前に使った端末で ①「ログイン・新規登録」でアカウントを作る ②ログインする ③ホームの下の「アカウントに取り込む」を押す。これで、ほかの端末からも見られて、制限なく使えます。元のデータは消えません。</p></section>`;
+      <p class="faint" style="margin:0"><b>引き継ぎ方:</b>前に使った端末で ①「ログイン・新規登録」でアカウントを作る ②ログインする ③ホームの下の「アカウントに取り込む」を押す。これで、ほかの端末からも見られて、制限なく使えます。元のデータは消えません。</p></section>${legalFooter()}`;
     return `<div class="home-head"><h2 class="home-title">何を作りますか？</h2><p class="muted">下から1つ選んでください。</p></div>
     <div class="make-grid">${Object.entries(MODES)
       .filter(
@@ -452,7 +452,12 @@
     <p class="faint" style="margin:0">見てみたいとき: <button class="link-btn" data-action="sample" data-type="practice">見本の練習試合(32人)</button> <button class="link-btn" data-action="sample" data-type="practice64">見本の練習試合(64人)</button></p>
     ${App.rosterHomeCard ? App.rosterHomeCard() : ""}
     ${list.length ? `<section class="stack"><h3>続きから</h3><div class="event-grid">${list.map(eventCardHTML).join("")}</div></section>` : ""}
-    ${accountHTML()}`;
+    ${accountHTML()}${legalFooter()}`;
+  }
+  /* 規約などへのリンク(はじめの画面のいちばん下) */
+  function legalFooter() {
+    const u = "https://huangwox-prog.github.io/study-apps/sumatch/";
+    return `<p class="legal-foot"><a href="${u}terms.html" target="_blank" rel="noopener">利用規約</a><a href="${u}privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a><a href="${u}tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a></p>`;
   }
   /* ログインしているときだけ:アカウントとログアウト、ログイン前のデータの取り込み */
   function accountHTML() {
