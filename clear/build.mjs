@@ -52,4 +52,6 @@ const art = page(false)
   .replace("</body></html>", "")
   .trim();
 writeFileSync(join(out, "artifact.html"), art);
+// claude.ai に出し直すとき用:<!DOCTYPE html> から始まる形(Artifact の publish はこの形でないと受け付けない)
+writeFileSync(join(out, "artifact-doc.html"), '<!DOCTYPE html>\n<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n' + art.replace('<div class="bg-glow">', '</head><body>\n<div class="bg-glow">') + "\n</body></html>\n");
 console.log("artifact " + Buffer.byteLength(art) + " bytes");
