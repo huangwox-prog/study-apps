@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>試合コード入力（選手の方）｜ラブオール バドミントン対戦表メーカー</title>
+<meta name="description" content="ラブオールの試合コード入力ページ。先生から聞いた8桁の試合コードを入れると、練習試合の対戦表を見て、点数を入れられます。ログインは不要です。">
+<link rel="canonical" href="https://huangwox-prog.github.io/study-apps/loveall/code/">
+<meta property="og:title" content="試合コード入力（選手の方）｜ラブオール バドミントン対戦表メーカー">
+<meta property="og:description" content="ラブオールの試合コード入力ページ。先生から聞いた8桁の試合コードを入れると、練習試合の対戦表を見て、点数を入れられます。ログインは不要です。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://huangwox-prog.github.io/study-apps/loveall/code/">
+<meta property="og:site_name" content="ラブオール">
+<link rel="stylesheet" href="../legal.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="../"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M3 28C6 9 23 4 28.5 20" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><circle cx="28.4" cy="23.6" r="2.1" fill="currentColor"/></svg>ラブオール</a>
+  <a class="back" href="../">紹介ページへ</a>
+</header>
+<main>
+  <h1>試合コードを入れる</h1>
+  <p class="date">選手の方はこちら。先生から聞いた8桁の数字を入れると、対戦表を見て点数を入れられます。</p>
+  <form id="f" novalidate style="display:flex;flex-direction:column;gap:14px;max-width:420px">
+    <input id="c" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="12345678" aria-label="試合コード(8桁)"
+      style="font:800 2rem/1.2 var(--font);letter-spacing:.25em;text-align:center;padding:14px;border-radius:16px;border:2px solid var(--line);background:#fff;color:var(--text)">
+    <p id="m" role="alert" style="margin:0;color:#c0392b;min-height:1.5em"></p>
+    <button style="font:700 1.1rem var(--font);padding:14px;border-radius:999px;border:0;background:var(--accent);color:#fff;cursor:pointer">参加する</button>
+  </form>
+  <h2>よくある質問</h2>
+  <p><b>ログインはいりますか？</b><br>いりません。コードだけで入れます。</p>
+  <p><b>コードはどこで分かりますか？</b><br>練習試合を作った先生が知っています。先生から送られたURLを開いた場合は、コードを入れなくてもそのまま入れます。</p>
+  <p><b>「使えないコード」と出ます</b><br>数字がまちがっているか、先生がコードを止めた・新しくした可能性があります。先生に確かめてください。何度もまちがえると、しばらく入れなくなります。</p>
+  <p><b>できることは？</b><br>対戦表と点数を見ることと、自分たちの試合の点数を入れることです。組み合わせは変えられません。</p>
+  <script>
+  (function(){var f=document.getElementById("f"),c=document.getElementById("c"),m=document.getElementById("m");
+  c.addEventListener("input",function(){c.value=c.value.replace(/\D/g,"").slice(0,8);m.textContent="";});
+  f.addEventListener("submit",function(e){e.preventDefault();if(c.value.length!==8){m.textContent="8桁の数字を入れてください。";return;}location.href="../../clear/?code="+c.value;});
+  c.focus();})();
+  </script>
+</main>
+<footer><span>ラブオール ― バドミントン対戦表メーカー</span><a href="../guide/">読みもの</a><a href="../code/">試合コードを入れる</a><a href="../terms.html">利用規約</a><a href="../privacy.html">プライバシーポリシー</a></footer>
+</body></html>

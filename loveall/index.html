@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ラブオール｜バドミントンの合同練習・練習試合の対戦表を自動作成</title>
+<title>ラブオール｜バドミントン対戦表メーカー - 練習試合・合同練習の組み合わせを自動作成</title>
 <meta name="description" content="バドミントン部のコーチの先生向けWebアプリ。名簿を貼るだけで、ランクが近く・他校と当たり・同じ相手が続かない練習試合の組み合わせを回転ごとに自動作成。リーグ戦・トーナメント、成績集計、Excelへのコピーと印刷にも対応。インストール不要で、PCとスマホで同じデータを使えます。">
 <link rel="canonical" href="https://huangwox-prog.github.io/study-apps/loveall/">
-<meta property="og:title" content="ラブオール｜バドミントンの対戦表を自動作成">
+<meta property="og:title" content="ラブオール｜バドミントン対戦表メーカー">
 <meta property="og:description" content="合同練習・練習試合の組み合わせを、ランクと学校を見て自動で。コーチの先生の段取りを楽にするWebアプリ。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://huangwox-prog.github.io/study-apps/loveall/">
@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="ラブオール">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"ラブオール","alternateName":"LOVEALL","url":"https://huangwox-prog.github.io/study-apps/loveall/","applicationCategory":"SportsApplication","operatingSystem":"Web","inLanguage":"ja","description":"バドミントンの合同練習・練習試合・リーグ戦・トーナメントの対戦表を自動で作るWebアプリ。","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}}
+{"@context":"https://schema.org","@type":"WebApplication","name":"ラブオール","alternateName":["LOVEALL","ラブオール バドミントン対戦表メーカー"],"url":"https://huangwox-prog.github.io/study-apps/loveall/","applicationCategory":"SportsApplication","operatingSystem":"Web","inLanguage":"ja","description":"バドミントンの合同練習・練習試合・リーグ戦・トーナメントの対戦表を自動で作るWebアプリ。","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}}
 </script>
 <style>
 :root{--bg:#f1f0ec;--ink:#08090d;--text:#0b0c11;--sub:#4a4c54;--faint:#656771;--line:rgba(9,10,14,.12);--card:#fff;--accent:#2f4cf0;--a2:#8134ea;--a3:#08967e;--aurora:linear-gradient(115deg,#2f4cf0,#8134ea 52%,#08967e);--font:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Noto Sans JP",Meiryo,sans-serif}
@@ -61,6 +61,7 @@ details{background:var(--card);border:1px solid var(--line);border-radius:14px;p
 summary{font-weight:700;cursor:pointer}
 details p{margin:8px 0 0;color:var(--sub)}
 .cta{text-align:center;padding:40px 20px;background:var(--card);border:1px solid var(--line);border-radius:34px}
+header.top{gap:10px}.logo{white-space:nowrap;flex-shrink:0}@media(max-width:420px){header.top .btn-sm{padding:8px 13px;font-size:.84rem}}
 footer{color:var(--faint);font-size:.85rem;padding:24px 20px 48px;text-align:center}
 footer a{color:var(--faint)}
 </style>
@@ -68,7 +69,7 @@ footer a{color:var(--faint)}
 <body>
 <header class="top">
   <a class="logo" href="./" aria-label="ラブオール"><svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M3 28C6 9 23 4 28.5 20" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><circle cx="28.4" cy="23.6" r="2.1" fill="currentColor"/></svg>ラブオール</a>
-  <a class="btn btn-main btn-sm" href="../clear/">アプリを開く</a>
+  <span style="display:flex;gap:8px;justify-content:flex-end"><a class="btn btn-sub btn-sm" href="code/">試合コード</a><a class="btn btn-main btn-sm" href="../clear/">アプリを開く</a></span>
 </header>
 
 <main class="wrap">
@@ -139,7 +140,18 @@ footer a{color:var(--faint)}
     <details><summary>生徒の名前を入れても大丈夫ですか？</summary><p>データは、ログインした本人だけが読み書きできるように守られています。気になる場合は、名字だけやニックネームでも使えます。</p></details>
     <details><summary>前のバージョン（スマッチ・CLEAR）を使っていました</summary><p>ラブオールは、スマッチ（その前はCLEAR）の新しい名前です。前に使っていたPCやスマホで開けば、データはそのまま使えます。ログインして「アカウントに取り込む」を押すと、ほかの端末でも見られるようになります。</p></details>
     <details><summary>「ラブオール」ってどういう意味？</summary><p>バドミントンの試合が始まるときに審判が言うコール「ラブオール、プレー」（0対0、はじめ！）からつけました。</p></details>
+    <details><summary>選手が点数を入れられますか？</summary><p>入れられます。先生が練習試合の「選手用コード」で8桁の番号を作り、選手に伝えます。選手は<a href="code/">試合コードのページ</a>で番号を入れると、対戦表を見て点数を入れられます。ランクは選手には見えません。</p></details>
     <details><summary>バドミントン以外でも使えますか？</summary><p>いまはバドミントン専用です（点数のルールや順位の決め方をバドミントンに合わせています）。</p></details>
+  </section>
+
+  <section>
+    <h2>読みもの</h2>
+    <p class="sub">組み合わせを手で作るときにも使える考え方をまとめました。</p>
+    <div class="grid">
+      <a class="card" href="guide/kumiawase.html" style="text-decoration:none"><h3>練習試合の組み合わせの作り方</h3><p>ランク・学校・かぶりを考えて組む手順</p></a>
+      <a class="card" href="guide/goudou.html" style="text-decoration:none"><h3>合同練習で同じ学校どうしを当てないコツ</h3><p>他校の選手と打てる対戦表にする</p></a>
+      <a class="card" href="guide/league-juni.html" style="text-decoration:none"><h3>リーグ戦の順位の決め方</h3><p>勝ち数が並んだときはどうする？</p></a>
+    </div>
   </section>
 
   <div class="cta">
@@ -150,7 +162,8 @@ footer a{color:var(--faint)}
 </main>
 
 <footer>
-  <p>ラブオール ― バドミントンの合同練習・練習試合の対戦表づくり</p>
+  <p>ラブオール ― バドミントン対戦表メーカー（練習試合・合同練習の組み合わせを自動作成）</p>
+  <p><a href="code/">試合コードを入れる（選手の方）</a>　<a href="guide/">読みもの</a></p>
   <p>お問い合わせ：<a href="mailto:sumatchi408@gmail.com">sumatchi408@gmail.com</a></p>
   <p><a href="terms.html">利用規約</a>　<a href="privacy.html">プライバシーポリシー</a>　<a href="tokushoho.html">特定商取引法に基づく表記</a></p>
 </footer>
