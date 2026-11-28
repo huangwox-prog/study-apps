@@ -3740,6 +3740,11 @@ details[open] > summary {
 .share-full .share-code {
   font-size: clamp(2.4rem, 8vw, 4.4rem);
 }
+/* 同じ回転で、同じコート番号を使っている */
+.court-in.dup {
+  border-color: #e0a100;
+  background: rgba(255, 190, 0, 0.18);
+}
 
 </style></head>
 <body>
@@ -6070,6 +6075,34 @@ if (typeof module !== "undefined") module.exports = Core;
 .sh-confirm h3{color:var(--error);margin:0}
 .sh-sum{padding:10px 12px;border-radius:12px;background:var(--surface-soft);font-variant-numeric:tabular-nums;font-size:1.15rem}
 .sh-flash{animation:shflash 3s ease-out 1}@keyframes shflash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+.sh-search{position:sticky;top:0;z-index:6;box-shadow:0 8px 18px -14px rgba(0,0,0,.35)}
+@media (max-width:640px){
+.sh-page{padding-left:10px;padding-right:10px}
+.sh-page .hero{padding:14px 16px;gap:6px}
+.sh-page .hero-name{font-size:1.3rem;line-height:1.3}
+.sh-page .hero-stats{gap:16px}
+.sh-page .card{padding:12px 10px}
+.sh-page .pgrid{gap:6px}
+.sh-page .pmatch{grid-template-columns:2.6em minmax(0,1fr) auto minmax(0,1fr)!important;gap:4px 5px;padding:6px 6px 6px 4px;border-radius:12px 12px 12px 20px}
+.sh-page .pmatch>*{grid-column:auto!important}
+.sh-page .pmatch>.pm-extra{grid-column:1/-1!important}
+.sh-page .pm-num{flex-direction:column!important;gap:1px;font-size:.9rem}
+.sh-page .court-lb{font-size:.56rem}
+.sh-page .court-in{width:2.4em;height:1.8em;font-size:.8rem;border-radius:7px}
+.sh-page .team{padding:2px 3px!important;border-width:1px;border-radius:9px;gap:0}
+.sh-page .team.b{align-items:stretch!important;text-align:right!important}
+.sh-page .member{padding:2px 4px;display:block}
+.sh-page .member .pname{font-size:.84rem;line-height:1.25;display:block;overflow-wrap:anywhere}
+.sh-page .member .pschool{font-size:.6rem;line-height:1.2}
+.sh-page .pm-mid{min-width:48px!important;padding:2px 0!important;justify-self:stretch!important}
+.sh-page .glines{gap:0}
+.sh-page .glines small{display:none}
+.sh-page .glines b{font-size:.9rem}
+.sh-page .pm-extra{padding-top:6px}
+.sh-page .pm-extra .game{justify-content:center}
+.sh-page .card-head h2{font-size:1rem}
+}
+.court-in.dup{border-color:#e0a100;background:rgba(255,190,0,.18)}
 .sh-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 `;
 
@@ -6294,7 +6327,7 @@ if (typeof module !== "undefined") module.exports = Core;
           ${S.edit.err ? `<div class="note err" style="white-space:normal">${esc(S.edit.err)}</div>` : ""}
           <div class="row"><button class="btn btn-primary btn-sm" data-sh="save">記録する</button><button class="btn btn-ghost btn-sm" data-sh="cancel">閉じる</button></div></div>`
         : "";
-      return `<div class="pmatch ${o.winner ? "is-done" : o.started ? "is-live" : ""} ${S.flash && S.flash.has(m.id) ? "sh-flash" : ""}"><span class="pm-num">${mi + 1}<label class="court-lb" for="sc-${esc(m.id)}">コート</label><input class="court-in sh-court" id="sc-${esc(m.id)}" data-r="${esc(r.id)}" data-m="${esc(m.id)}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${team(m.a, "a", o.winner === "a")}
+      return `<div class="pmatch ${o.winner ? "is-done" : o.started ? "is-live" : ""} ${S.flash && S.flash.has(m.id) ? "sh-flash" : ""}"><span class="pm-num">${mi + 1}<label class="court-lb" for="sc-${esc(m.id)}">コート</label><input class="court-in sh-court ${m.ct && r.matches.some((x) => x !== m && x.ct === m.ct) ? "dup" : ""}" id="sc-${esc(m.id)}" data-r="${esc(r.id)}" data-m="${esc(m.id)}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${team(m.a, "a", o.winner === "a")}
       <button class="pm-mid" data-sh="edit" data-r="${esc(r.id)}" data-m="${esc(m.id)}" aria-label="点数を入れる" style="text-align:center;min-width:64px">${gtxt ? `<span class="glines num">${gtxt}</span>` : `<span class="faint" style="font-size:.72rem">点数を入れる</span>`}${tot}</button>
       ${team(m.b, "b", o.winner === "b")}${inputs}</div>`;
     };
@@ -6311,11 +6344,11 @@ if (typeof module !== "undefined") module.exports = Core;
     const all = rs.flatMap((r) => r.matches),
       fin = all.filter((m) => Core.pOutcome(e, m).winner).length;
     root.innerHTML = `<nav class="nav"><span class="lockup"><span>ラブオール</span></span><div class="nav-right"><button class="btn btn-ghost btn-sm" data-sh="leave">コードを入れ直す</button></div></nav>
-      <main class="page"><section class="hero"><span class="kicker">練習試合</span>
+      <main class="page sh-page"><section class="hero"><span class="kicker">練習試合</span>
       <div class="hero-name" style="white-space:normal">${esc(d.name || "練習試合")}</div>
       <div class="hero-sub">${d.date ? `<span>${esc(d.date)}</span>` : ""}<span>${e.points}点・${e.games === 3 ? "3ゲーム(2ゲーム先取)" : "1ゲーム"}</span></div>
       <div class="hero-stats"><div><span class="stat-value num">${rs.length}</span><span class="stat-label">回転</span></div><div><span class="stat-value num">${fin}/${all.length}</span><span class="stat-label">試合 終了/全体</span></div></div></section>
-      ${msg}<section class="card stack"><div class="qbox"><input class="input" id="sh-q" type="search" placeholder="名前・学校で探す" value="${esc(S.q)}" autocomplete="off"><button class="btn btn-secondary btn-sm" data-sh="reload">新しくする</button></div>
+      ${msg}<section class="card stack sh-search"><div class="qbox"><input class="input" id="sh-q" type="search" placeholder="名前・学校で探す" value="${esc(S.q)}" autocomplete="off"><button class="btn btn-secondary btn-sm" data-sh="reload">新しくする</button></div>
       <p class="faint" style="margin:0">点数のところを押すと入れられます。</p></section>
       ${rounds || `<section class="card"><p class="faint" style="margin:0">${rs.length && q ? "見つかりませんでした" : "まだ対戦がありません。先生が組むまで待ってください。"}</p></section>`}
       ${S.edit && S.ask ? askHTML(e, pm) : ""}</main>`;
@@ -6631,7 +6664,15 @@ if (typeof module !== "undefined") module.exports = Core;
       return load(S.code, true);
     }
     S.data = data;
-    toast(v ? `コート ${v} にしました` : "コート番号を消しました");
+    const r = S.data.rounds.find((x) => x.id === inp.dataset.r),
+      dup = v && r ? r.matches.map((x, i) => (x.id !== inp.dataset.m && x.ct === v ? i + 1 : 0)).filter(Boolean) : [];
+    toast(
+      dup.length
+        ? `コート${v}は重複しています(この回転の${dup.join("・")}番の試合でも使っています)`
+        : v
+          ? `コート ${v} にしました`
+          : "コート番号を消しました"
+    );
     if (!S.edit) draw();
   }
 
@@ -6872,6 +6913,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       }
       const stamp = e.updatedAt;
       this.pending.set(e.id, stamp);
+      this.gen.set(e.id, (this.gen.get(e.id) || 0) + 1);
       setSave("saving");
       clearTimeout(this.timers.get(e.id));
       this.timers.set(
@@ -6905,8 +6947,11 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             }
           } catch (x) {}
         }
-        await this.db.collection("events").doc(id).set(clone(e));
-        this.base.set(id, clone(e));
+        /* 送った形をそのまま覚える(送っているあいだに先生が打った分は、まだサーバーにない) */
+        const sent = clone(e);
+        await this.db.collection("events").doc(id).set(sent);
+        this.base.set(id, clone(sent));
+        this.gen.set(id, (this.gen.get(id) || 0) + 1);
         if (this.pending.get(id) === stamp) this.pending.delete(id);
         setSave(this.pending.size ? "saving" : "saved");
       } catch (err) {
@@ -6926,6 +6971,42 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         toast("削除を保存できませんでした");
       }
     },
+    /* サーバーから読んだ形を画面に入れる。こちらが新しければ、選手が入れた点数・コートだけ取り込む。入れたら true */
+    apply(id, d) {
+      const prev = this.base.get(id);
+      let changed = false;
+      if (!events[id] || (d.updatedAt || 0) >= (events[id].updatedAt || 0)) {
+        changed = JSON.stringify(events[id] || null) !== JSON.stringify(d);
+        events[id] = d;
+      } else if (prev && Core.mergeShared(events[id], d, prev)) {
+        this.lsWrite();
+        changed = true;
+      }
+      this.base.set(id, clone(d));
+      return changed;
+    },
+    refreshing: new Map(),
+    gen: new Map(), // 保存を始める・終えるたびに増やす。読み直しのあいだに保存があったら、その読み直しは古いので捨てる
+    refresh(id) {
+      clearTimeout(this.refreshing.get(id));
+      this.refreshing.set(
+        id,
+        setTimeout(async () => {
+          this.refreshing.delete(id);
+          if (this.pending.has(id) || this.writing.has(id)) return;
+          const g0 = this.gen.get(id) || 0;
+          try {
+            const snap = await this.db.collection("events").doc(id).get();
+            if (!snap.exists || this.pending.has(id) || this.writing.has(id)) return;
+            if ((this.gen.get(id) || 0) !== g0) return this.refresh(id);
+            if (this.apply(id, Object.assign(Core.migrate(snap.data()), { id }))) {
+              this.lsWrite();
+              render();
+            }
+          } catch (x) {}
+        }, 250)
+      );
+    },
     subscribe() {
       if (!this.db) return;
       this.db.collection("events").onSnapshot(
@@ -6941,17 +7022,14 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
               }
               return;
             }
-            const d = Object.assign(Core.migrate(ch.doc.data()), { id }),
-              prev = this.base.get(id);
-            if (!events[id] || (d.updatedAt || 0) > (events[id].updatedAt || 0)) {
-              events[id] = d;
-              changed = true;
-            } else if (prev && Core.mergeShared(events[id], d, prev)) {
-              /* 時計のずれなどで新しく見えなくても、選手が入れた点数・コートは取り込む */
-              this.lsWrite();
-              changed = true;
+            const d = Object.assign(Core.migrate(ch.doc.data()), { id });
+            /* 練習試合(選手も書きこむ)は、届いた中身を信じずにサーバーの最新を読み直す。
+               遅れて届いた古い知らせで、先生がいま保存した点数を前の値にもどさないため */
+            if (d.mode === "practice" && this.cloud) {
+              this.refresh(id);
+              return;
             }
-            this.base.set(id, clone(d));
+            if (this.apply(id, d)) changed = true;
           });
           if (changed) {
             if (!events[currentId]) {
@@ -9276,8 +9354,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     )
       .slice(0, 2)
       .join("");
+  /* 同じ回転で、同じコート番号を使っている試合の番号(1から) */
+  const courtDup = (r, m) =>
+    m.ct ? r.matches.map((x, i) => (x !== m && x.ct === m.ct ? i + 1 : 0)).filter(Boolean) : [];
+  const markDup = (r) =>
+    r.matches.forEach((x) =>
+      document
+        .querySelectorAll(`input.court-in[data-m="${x.id}"]`)
+        .forEach((n) => n.classList.toggle("dup", courtDup(r, x).length > 0))
+    );
   function setCourt(t, done) {
-    const [, m] = matchById(ev(), t.dataset.m);
+    const [r, m] = matchById(ev(), t.dataset.m);
     if (!m) return;
     m.ct = courtText(t.value);
     if (done) t.value = m.ct;
@@ -9285,6 +9372,9 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       if (n !== t) n.value = m.ct;
     }); // 対戦表と試合カードの欄をそろえる
     commit();
+    if (r) markDup(r);
+    if (done && r && courtDup(r, m).length)
+      toast(`コート${m.ct}は重複しています(この回転の${courtDup(r, m).join("・")}番の試合でも使っています)`);
   }
   /* 組み直しても、コートは番号の位置に残す */
   const keepCourts = (before, after) =>
@@ -9722,7 +9812,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         }).join("")}
       <div class="row"><button class="qwin ${o.winner === "a" ? "on" : ""}" data-action="pqwin" ${cur} data-w="a">${o.winner === "a" ? "○ " : ""}左が勝ち</button><button class="qwin ${o.winner === "b" ? "on" : ""}" data-action="pqwin" ${cur} data-w="b">${o.winner === "b" ? "○ " : ""}右が勝ち</button><button class="btn btn-ghost btn-sm" data-action="popen" ${cur}>閉じる</button></div></div>`
       : "";
-    return `<div class="pmatch ${o.winner ? "is-done" : isLive(o) ? "is-live" : ""}" id="pm-${m.id}"><span class="pm-num">${mi + 1}<label class="court-lb" for="ct-${m.id}">コート</label><input class="court-in" id="ct-${m.id}" data-input="pcourt" data-change="pcourt" data-m="${m.id}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${teamHTML(e, SC, r, ri, mi, "a", cum, o.winner === "a")}
+    return `<div class="pmatch ${o.winner ? "is-done" : isLive(o) ? "is-live" : ""}" id="pm-${m.id}"><span class="pm-num">${mi + 1}<label class="court-lb" for="ct-${m.id}">コート</label><input class="court-in ${courtDup(r, m).length ? "dup" : ""}" id="ct-${m.id}" data-input="pcourt" data-change="pcourt" data-m="${m.id}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${teamHTML(e, SC, r, ri, mi, "a", cum, o.winner === "a")}
     <button class="pm-mid" data-action="popen" ${cur} aria-label="点数を入れる" style="text-align:center;min-width:64px">${gtxt ? `<span class="glines num">${gtxt}</span>` : `<span class="faint" style="font-size:.72rem">点数を入れる</span>`}${pStHTML(e, o)}</button>
     ${teamHTML(e, SC, r, ri, mi, "b", cum, o.winner === "b")}${notes ? `<div class="pm-extra" style="grid-column:2/-1;display:flex;flex-wrap:wrap;gap:4px">${notes}</div>` : ""}${inputs}</div>`;
   }

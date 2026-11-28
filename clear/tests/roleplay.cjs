@@ -72,6 +72,8 @@ const api = (p) => fetch(`http://localhost:${PORT}${p}`).then((r) => r.json());
     await openM(B, 2); { const b = await boxes(B); await b[0].fill("15"); await b[1].fill("8"); await b[2].fill("15"); await b[3].fill("9"); }
     await save(B);
     await B.fill(`#sc-${M[2].m}`, "a3"); await B.press(`#sc-${M[2].m}`, "Enter"); await B.waitForTimeout(300);
+    const fe = await T.evaluate(() => document.activeElement && document.activeElement.id);
+    if (fe !== `ps-${M[7].m}-0-0`) console.log("    (先生の入力欄から外れていた: " + fe + ")");
     await T.keyboard.type("3"); await T.waitForTimeout(3500);
     const m2 = await srvG(2), m7 = await srvG(7);
     ok(JSON.stringify(m2.g) === "[[15,8],[15,9]]" && m2.ct === "A3", "先生が保存しても、選手が入れた点数・コートが残る " + JSON.stringify(m2.g) + " " + m2.ct);
@@ -114,7 +116,7 @@ const api = (p) => fetch(`http://localhost:${PORT}${p}`).then((r) => r.json());
     { const b = await boxes(A); await b[0].click(); const cdp = await A.context().newCDPSession(A);
       await cdp.send("Input.imeSetComposition", { text: "１", selectionStart: 1, selectionEnd: 1 });
       await cdp.send("Input.imeSetComposition", { text: "１５", selectionStart: 2, selectionEnd: 2 });
-      await cdp.send("Input.insertText", { text: "１５" }); await A.waitForTimeout(200);
+      await A.waitForTimeout(300);
       await A.keyboard.type("8"); await A.waitForTimeout(200); }
     const ime = await A.$$eval(".pm-extra .score", (a) => a.slice(0, 2).map((x) => x.value).join("-"));
     ok(ime === "15-8", "選手A: 日本語入力で「１５」と打っても、次の欄へ移って続きが入る " + ime);

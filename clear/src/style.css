@@ -3727,3 +3727,8 @@ details[open] > summary {
 .share-full .share-code {
   font-size: clamp(2.4rem, 8vw, 4.4rem);
 }
+/* 同じ回転で、同じコート番号を使っている */
+.court-in.dup {
+  border-color: #e0a100;
+  background: rgba(255, 190, 0, 0.18);
+}

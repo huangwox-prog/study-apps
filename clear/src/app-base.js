@@ -184,6 +184,7 @@
       }
       const stamp = e.updatedAt;
       this.pending.set(e.id, stamp);
+      this.gen.set(e.id, (this.gen.get(e.id) || 0) + 1);
       setSave("saving");
       clearTimeout(this.timers.get(e.id));
       this.timers.set(
@@ -217,8 +218,11 @@
             }
           } catch (x) {}
         }
-        await this.db.collection("events").doc(id).set(clone(e));
-        this.base.set(id, clone(e));
+        /* 送った形をそのまま覚える(送っているあいだに先生が打った分は、まだサーバーにない) */
+        const sent = clone(e);
+        await this.db.collection("events").doc(id).set(sent);
+        this.base.set(id, clone(sent));
+        this.gen.set(id, (this.gen.get(id) || 0) + 1);
         if (this.pending.get(id) === stamp) this.pending.delete(id);
         setSave(this.pending.size ? "saving" : "saved");
       } catch (err) {
@@ -238,6 +242,42 @@
         toast("削除を保存できませんでした");
       }
     },
+    /* サーバーから読んだ形を画面に入れる。こちらが新しければ、選手が入れた点数・コートだけ取り込む。入れたら true */
+    apply(id, d) {
+      const prev = this.base.get(id);
+      let changed = false;
+      if (!events[id] || (d.updatedAt || 0) >= (events[id].updatedAt || 0)) {
+        changed = JSON.stringify(events[id] || null) !== JSON.stringify(d);
+        events[id] = d;
+      } else if (prev && Core.mergeShared(events[id], d, prev)) {
+        this.lsWrite();
+        changed = true;
+      }
+      this.base.set(id, clone(d));
+      return changed;
+    },
+    refreshing: new Map(),
+    gen: new Map(), // 保存を始める・終えるたびに増やす。読み直しのあいだに保存があったら、その読み直しは古いので捨てる
+    refresh(id) {
+      clearTimeout(this.refreshing.get(id));
+      this.refreshing.set(
+        id,
+        setTimeout(async () => {
+          this.refreshing.delete(id);
+          if (this.pending.has(id) || this.writing.has(id)) return;
+          const g0 = this.gen.get(id) || 0;
+          try {
+            const snap = await this.db.collection("events").doc(id).get();
+            if (!snap.exists || this.pending.has(id) || this.writing.has(id)) return;
+            if ((this.gen.get(id) || 0) !== g0) return this.refresh(id);
+            if (this.apply(id, Object.assign(Core.migrate(snap.data()), { id }))) {
+              this.lsWrite();
+              render();
+            }
+          } catch (x) {}
+        }, 250)
+      );
+    },
     subscribe() {
       if (!this.db) return;
       this.db.collection("events").onSnapshot(
@@ -253,17 +293,14 @@
               }
               return;
             }
-            const d = Object.assign(Core.migrate(ch.doc.data()), { id }),
-              prev = this.base.get(id);
-            if (!events[id] || (d.updatedAt || 0) > (events[id].updatedAt || 0)) {
-              events[id] = d;
-              changed = true;
-            } else if (prev && Core.mergeShared(events[id], d, prev)) {
-              /* 時計のずれなどで新しく見えなくても、選手が入れた点数・コートは取り込む */
-              this.lsWrite();
-              changed = true;
+            const d = Object.assign(Core.migrate(ch.doc.data()), { id });
+            /* 練習試合(選手も書きこむ)は、届いた中身を信じずにサーバーの最新を読み直す。
+               遅れて届いた古い知らせで、先生がいま保存した点数を前の値にもどさないため */
+            if (d.mode === "practice" && this.cloud) {
+              this.refresh(id);
+              return;
             }
-            this.base.set(id, clone(d));
+            if (this.apply(id, d)) changed = true;
           });
           if (changed) {
             if (!events[currentId]) {

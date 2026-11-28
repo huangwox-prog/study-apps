@@ -22,6 +22,34 @@
 .sh-confirm h3{color:var(--error);margin:0}
 .sh-sum{padding:10px 12px;border-radius:12px;background:var(--surface-soft);font-variant-numeric:tabular-nums;font-size:1.15rem}
 .sh-flash{animation:shflash 3s ease-out 1}@keyframes shflash{0%,40%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+.sh-search{position:sticky;top:0;z-index:6;box-shadow:0 8px 18px -14px rgba(0,0,0,.35)}
+@media (max-width:640px){
+.sh-page{padding-left:10px;padding-right:10px}
+.sh-page .hero{padding:14px 16px;gap:6px}
+.sh-page .hero-name{font-size:1.3rem;line-height:1.3}
+.sh-page .hero-stats{gap:16px}
+.sh-page .card{padding:12px 10px}
+.sh-page .pgrid{gap:6px}
+.sh-page .pmatch{grid-template-columns:2.6em minmax(0,1fr) auto minmax(0,1fr)!important;gap:4px 5px;padding:6px 6px 6px 4px;border-radius:12px 12px 12px 20px}
+.sh-page .pmatch>*{grid-column:auto!important}
+.sh-page .pmatch>.pm-extra{grid-column:1/-1!important}
+.sh-page .pm-num{flex-direction:column!important;gap:1px;font-size:.9rem}
+.sh-page .court-lb{font-size:.56rem}
+.sh-page .court-in{width:2.4em;height:1.8em;font-size:.8rem;border-radius:7px}
+.sh-page .team{padding:2px 3px!important;border-width:1px;border-radius:9px;gap:0}
+.sh-page .team.b{align-items:stretch!important;text-align:right!important}
+.sh-page .member{padding:2px 4px;display:block}
+.sh-page .member .pname{font-size:.84rem;line-height:1.25;display:block;overflow-wrap:anywhere}
+.sh-page .member .pschool{font-size:.6rem;line-height:1.2}
+.sh-page .pm-mid{min-width:48px!important;padding:2px 0!important;justify-self:stretch!important}
+.sh-page .glines{gap:0}
+.sh-page .glines small{display:none}
+.sh-page .glines b{font-size:.9rem}
+.sh-page .pm-extra{padding-top:6px}
+.sh-page .pm-extra .game{justify-content:center}
+.sh-page .card-head h2{font-size:1rem}
+}
+.court-in.dup{border-color:#e0a100;background:rgba(255,190,0,.18)}
 .sh-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 `;
 
@@ -246,7 +274,7 @@
           ${S.edit.err ? `<div class="note err" style="white-space:normal">${esc(S.edit.err)}</div>` : ""}
           <div class="row"><button class="btn btn-primary btn-sm" data-sh="save">記録する</button><button class="btn btn-ghost btn-sm" data-sh="cancel">閉じる</button></div></div>`
         : "";
-      return `<div class="pmatch ${o.winner ? "is-done" : o.started ? "is-live" : ""} ${S.flash && S.flash.has(m.id) ? "sh-flash" : ""}"><span class="pm-num">${mi + 1}<label class="court-lb" for="sc-${esc(m.id)}">コート</label><input class="court-in sh-court" id="sc-${esc(m.id)}" data-r="${esc(r.id)}" data-m="${esc(m.id)}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${team(m.a, "a", o.winner === "a")}
+      return `<div class="pmatch ${o.winner ? "is-done" : o.started ? "is-live" : ""} ${S.flash && S.flash.has(m.id) ? "sh-flash" : ""}"><span class="pm-num">${mi + 1}<label class="court-lb" for="sc-${esc(m.id)}">コート</label><input class="court-in sh-court ${m.ct && r.matches.some((x) => x !== m && x.ct === m.ct) ? "dup" : ""}" id="sc-${esc(m.id)}" data-r="${esc(r.id)}" data-m="${esc(m.id)}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${team(m.a, "a", o.winner === "a")}
       <button class="pm-mid" data-sh="edit" data-r="${esc(r.id)}" data-m="${esc(m.id)}" aria-label="点数を入れる" style="text-align:center;min-width:64px">${gtxt ? `<span class="glines num">${gtxt}</span>` : `<span class="faint" style="font-size:.72rem">点数を入れる</span>`}${tot}</button>
       ${team(m.b, "b", o.winner === "b")}${inputs}</div>`;
     };
@@ -263,11 +291,11 @@
     const all = rs.flatMap((r) => r.matches),
       fin = all.filter((m) => Core.pOutcome(e, m).winner).length;
     root.innerHTML = `<nav class="nav"><span class="lockup"><span>ラブオール</span></span><div class="nav-right"><button class="btn btn-ghost btn-sm" data-sh="leave">コードを入れ直す</button></div></nav>
-      <main class="page"><section class="hero"><span class="kicker">練習試合</span>
+      <main class="page sh-page"><section class="hero"><span class="kicker">練習試合</span>
       <div class="hero-name" style="white-space:normal">${esc(d.name || "練習試合")}</div>
       <div class="hero-sub">${d.date ? `<span>${esc(d.date)}</span>` : ""}<span>${e.points}点・${e.games === 3 ? "3ゲーム(2ゲーム先取)" : "1ゲーム"}</span></div>
       <div class="hero-stats"><div><span class="stat-value num">${rs.length}</span><span class="stat-label">回転</span></div><div><span class="stat-value num">${fin}/${all.length}</span><span class="stat-label">試合 終了/全体</span></div></div></section>
-      ${msg}<section class="card stack"><div class="qbox"><input class="input" id="sh-q" type="search" placeholder="名前・学校で探す" value="${esc(S.q)}" autocomplete="off"><button class="btn btn-secondary btn-sm" data-sh="reload">新しくする</button></div>
+      ${msg}<section class="card stack sh-search"><div class="qbox"><input class="input" id="sh-q" type="search" placeholder="名前・学校で探す" value="${esc(S.q)}" autocomplete="off"><button class="btn btn-secondary btn-sm" data-sh="reload">新しくする</button></div>
       <p class="faint" style="margin:0">点数のところを押すと入れられます。</p></section>
       ${rounds || `<section class="card"><p class="faint" style="margin:0">${rs.length && q ? "見つかりませんでした" : "まだ対戦がありません。先生が組むまで待ってください。"}</p></section>`}
       ${S.edit && S.ask ? askHTML(e, pm) : ""}</main>`;
@@ -583,7 +611,15 @@
       return load(S.code, true);
     }
     S.data = data;
-    toast(v ? `コート ${v} にしました` : "コート番号を消しました");
+    const r = S.data.rounds.find((x) => x.id === inp.dataset.r),
+      dup = v && r ? r.matches.map((x, i) => (x.id !== inp.dataset.m && x.ct === v ? i + 1 : 0)).filter(Boolean) : [];
+    toast(
+      dup.length
+        ? `コート${v}は重複しています(この回転の${dup.join("・")}番の試合でも使っています)`
+        : v
+          ? `コート ${v} にしました`
+          : "コート番号を消しました"
+    );
     if (!S.edit) draw();
   }
 

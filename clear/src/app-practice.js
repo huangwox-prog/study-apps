@@ -110,8 +110,17 @@
     )
       .slice(0, 2)
       .join("");
+  /* 同じ回転で、同じコート番号を使っている試合の番号(1から) */
+  const courtDup = (r, m) =>
+    m.ct ? r.matches.map((x, i) => (x !== m && x.ct === m.ct ? i + 1 : 0)).filter(Boolean) : [];
+  const markDup = (r) =>
+    r.matches.forEach((x) =>
+      document
+        .querySelectorAll(`input.court-in[data-m="${x.id}"]`)
+        .forEach((n) => n.classList.toggle("dup", courtDup(r, x).length > 0))
+    );
   function setCourt(t, done) {
-    const [, m] = matchById(ev(), t.dataset.m);
+    const [r, m] = matchById(ev(), t.dataset.m);
     if (!m) return;
     m.ct = courtText(t.value);
     if (done) t.value = m.ct;
@@ -119,6 +128,9 @@
       if (n !== t) n.value = m.ct;
     }); // 対戦表と試合カードの欄をそろえる
     commit();
+    if (r) markDup(r);
+    if (done && r && courtDup(r, m).length)
+      toast(`コート${m.ct}は重複しています(この回転の${courtDup(r, m).join("・")}番の試合でも使っています)`);
   }
   /* 組み直しても、コートは番号の位置に残す */
   const keepCourts = (before, after) =>
@@ -556,7 +568,7 @@
         }).join("")}
       <div class="row"><button class="qwin ${o.winner === "a" ? "on" : ""}" data-action="pqwin" ${cur} data-w="a">${o.winner === "a" ? "○ " : ""}左が勝ち</button><button class="qwin ${o.winner === "b" ? "on" : ""}" data-action="pqwin" ${cur} data-w="b">${o.winner === "b" ? "○ " : ""}右が勝ち</button><button class="btn btn-ghost btn-sm" data-action="popen" ${cur}>閉じる</button></div></div>`
       : "";
-    return `<div class="pmatch ${o.winner ? "is-done" : isLive(o) ? "is-live" : ""}" id="pm-${m.id}"><span class="pm-num">${mi + 1}<label class="court-lb" for="ct-${m.id}">コート</label><input class="court-in" id="ct-${m.id}" data-input="pcourt" data-change="pcourt" data-m="${m.id}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${teamHTML(e, SC, r, ri, mi, "a", cum, o.winner === "a")}
+    return `<div class="pmatch ${o.winner ? "is-done" : isLive(o) ? "is-live" : ""}" id="pm-${m.id}"><span class="pm-num">${mi + 1}<label class="court-lb" for="ct-${m.id}">コート</label><input class="court-in ${courtDup(r, m).length ? "dup" : ""}" id="ct-${m.id}" data-input="pcourt" data-change="pcourt" data-m="${m.id}" value="${esc(m.ct || "")}" maxlength="2" autocomplete="off" autocapitalize="characters" aria-label="${mi + 1}番の試合のコート番号"></span>${teamHTML(e, SC, r, ri, mi, "a", cum, o.winner === "a")}
     <button class="pm-mid" data-action="popen" ${cur} aria-label="点数を入れる" style="text-align:center;min-width:64px">${gtxt ? `<span class="glines num">${gtxt}</span>` : `<span class="faint" style="font-size:.72rem">点数を入れる</span>`}${pStHTML(e, o)}</button>
     ${teamHTML(e, SC, r, ri, mi, "b", cum, o.winner === "b")}${notes ? `<div class="pm-extra" style="grid-column:2/-1;display:flex;flex-wrap:wrap;gap:4px">${notes}</div>` : ""}${inputs}</div>`;
   }
